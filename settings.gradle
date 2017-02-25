@@ -1,0 +1,5 @@
+rootProject.name = 'chronos'
+
+include 'chronos-core'
+include 'chronos-java'
+

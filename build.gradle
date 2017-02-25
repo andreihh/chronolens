@@ -1,0 +1,28 @@
+allprojects {
+    group 'org.chronos'
+    version '0.1-SNAPSHOT'
+
+    buildscript {
+        ext {
+            kotlin_version = '1.0.6'
+            dokka_version = '0.9.13'
+            junit_version = '4.12'
+            jdt_version = '3.12.2'
+        }
+
+        repositories {
+            mavenCentral()
+            jcenter()
+        }
+
+        dependencies {
+            classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+            classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
+        }
+    }
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+}
