@@ -21,18 +21,23 @@ package org.chronos.core
  *
  * @property nodes the nodes contained by this source file
  */
-data class SourceFile(val nodes: Set<Node>) {
-    /**
-     * Creates a source file containing the given `nodes`.
-     *
-     * @throws IllegalArgumentException if multiple `nodes` have the same
-     * signature
-     */
-    constructor(nodes: Collection<Node>) : this(nodes = nodes.let {
-        val setOfNodes = nodes.toSet()
-        require(setOfNodes.size == nodes.size) {
-            "$nodes contains duplicated nodes!"
+data class SourceFile private constructor(val nodes: Set<Node>) {
+    companion object {
+        /**
+         * Creates a source file containing the given `nodes`.
+         *
+         * @throws IllegalArgumentException if `nodes` contains duplicated
+         * elements
+         */
+        operator fun invoke(nodes: Collection<Node>): SourceFile {
+            val setOfNodes = nodes.toSet()
+            require(setOfNodes.size == nodes.size) {
+                "$nodes contains duplicated nodes!"
+            }
+            return SourceFile(setOfNodes)
         }
-        setOfNodes
-    })
+
+        operator fun invoke(vararg nodes: Node): SourceFile =
+                invoke(nodes.asList())
+    }
 }

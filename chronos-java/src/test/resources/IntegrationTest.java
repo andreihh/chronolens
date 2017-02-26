@@ -1,12 +1,27 @@
-public enum Colors {
+public interface IEnumeration {
+    default int getInt() {
+        return 2;
+    }
+}
+
+public enum Colors implements IEnumeration {
     RED, GREEN, BLUE;
 }
 
-class SampleClass {
+abstract class IClass {
+
+}
+
+class SampleClass extends IClass implements IEnumeration {
     private int i = 0;
 
     private static class StaticInnerClass {
         public StaticInnerClass(final int i) {
+        }
+
+        @interface Ann {
+            String stringField();
+            int version() default 1;
         }
     }
 
@@ -41,6 +56,41 @@ class SampleClass {
         SATURN  (5.688e+26, 6.0268e7),
         URANUS  (8.686e+25, 2.5559e7),
         NEPTUNE (1.024e+26, 2.4746e7);
+
+        public enum Currency {
+            PENNY(1) {
+                @Override
+                public String color() {
+                    return "copper";
+                }
+            },
+            NICKLE(5) {
+                @Override
+                public String color() {
+                    return "bronze";
+                }
+            },
+            DIME(10) {
+                @Override
+                public String color() {
+                    return "silver";
+                }
+            },
+            QUARTER(25) {
+                @Override
+                public String color() {
+                    return "silver";
+                }
+            };
+            private int value;
+
+            public abstract String color();
+
+            private Currency(int value) {
+                this.value = value;
+            }
+
+        }
 
         private final double mass;   // in kilograms
         private final double radius; // in meters

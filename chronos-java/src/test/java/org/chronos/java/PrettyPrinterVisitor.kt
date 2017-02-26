@@ -23,7 +23,8 @@ class PrettyPrinterVisitor : NodeVisitor() {
     var indent = ""
 
     override fun visit(type: Node.Type) {
-        println("$indent${type.signature}")
+        val supertypes = type.supertypes.joinToString()
+        println("${indent}Type(${type.name}) : ($supertypes)")
         indent += "  "
     }
 
@@ -32,7 +33,7 @@ class PrettyPrinterVisitor : NodeVisitor() {
     }
 
     override fun visit(variable: Node.Variable) {
-        println("$indent${variable.signature} = ${variable.initializer}")
+        println("${indent}Variable(${variable.name}) = ${variable.initializer}")
         indent += "  "
     }
 
@@ -41,7 +42,7 @@ class PrettyPrinterVisitor : NodeVisitor() {
     }
 
     override fun visit(function: Node.Function) {
-        println("$indent${function.signature}:\n${function.body}\n")
+        println("${indent}Function(${function.name}):\n${function.body}")
         indent += "  "
     }
 

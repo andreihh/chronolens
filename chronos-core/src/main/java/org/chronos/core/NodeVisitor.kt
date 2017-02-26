@@ -16,14 +16,14 @@
 
 package org.chronos.core
 
-/** An abstract source file metadata processor. */
+/** An abstract node and source file metadata processor. */
 abstract class NodeVisitor {
-    open fun visit(type: Node.Type) {}
-    open fun visit(variable: Node.Variable) {}
-    open fun visit(function: Node.Function) {}
-    open fun endVisit(type: Node.Type) {}
-    open fun endVisit(variable: Node.Variable) {}
-    open fun endVisit(function: Node.Function) {}
+    protected open fun visit(type: Node.Type) {}
+    protected open fun visit(variable: Node.Variable) {}
+    protected open fun visit(function: Node.Function) {}
+    protected open fun endVisit(type: Node.Type) {}
+    protected open fun endVisit(variable: Node.Variable) {}
+    protected open fun endVisit(function: Node.Function) {}
 
     private fun visitType(type: Node.Type) {
         visit(type)
@@ -48,17 +48,24 @@ abstract class NodeVisitor {
     }
 
     /**
+     * Processes the code metadata in the given `node`.
+     *
+     * @param node the processed node
+     */
+    fun visit(node: Node) {
+        when (node) {
+            is Node.Type -> visitType(node)
+            is Node.Variable -> visitVariable(node)
+            is Node.Function -> visitFunction(node)
+        }
+    }
+
+    /**
      * Processes the code metadata in the given source file.
      *
      * @param sourceFile the processed source file
      */
     fun visit(sourceFile: SourceFile) {
-        sourceFile.nodes.forEach { node ->
-            when (node) {
-                is Node.Type -> visitType(node)
-                is Node.Variable -> visitVariable(node)
-                is Node.Function -> visitFunction(node)
-            }
-        }
+        sourceFile.nodes.forEach { visit(it) }
     }
 }
