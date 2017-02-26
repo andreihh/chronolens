@@ -19,7 +19,7 @@ package org.chronos.java
 import org.chronos.core.Node
 import org.chronos.core.Parser
 import org.chronos.core.SourceFile
-import org.chronos.core.SyntaxError
+
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.core.dom.AST
 import org.eclipse.jdt.core.dom.ASTParser
@@ -87,7 +87,7 @@ class JavaParser : Parser() {
         fun visit(node: EnumConstantDeclaration): Node.Variable = Node.Variable(
                 name = "${node.name}",
                 initializer = "${node.name}(${node.arguments().joinToString()})"
-                        + ": " + (node.anonymousClassDeclaration ?: "{}")
+                        + (node.anonymousClassDeclaration ?: "{}")
         )
 
         fun visit(node: VariableDeclaration): Node.Variable =

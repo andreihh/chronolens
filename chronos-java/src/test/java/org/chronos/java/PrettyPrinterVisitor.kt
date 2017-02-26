@@ -42,7 +42,7 @@ class PrettyPrinterVisitor : NodeVisitor() {
     }
 
     override fun visit(function: Node.Function) {
-        println("${indent}Function(${function.name}):\n${function.body}")
+        println("${indent}Function(${function.name})${function.body}")
         indent += "  "
     }
 

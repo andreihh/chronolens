@@ -22,6 +22,12 @@ import java.net.URL
 
 /** An abstract source file parser of a specific programming language. */
 abstract class Parser {
+    /** Indicates a syntax error detected in a source file. */
+    class SyntaxError(
+            message: String? = null,
+            cause: Throwable? = null
+    ) : Exception(message, cause)
+
     /**
      * Parses the given `source` code and returns the associated code metadata.
      *

@@ -1,0 +1,29 @@
+=========================================================================
+==  NOTICE file corresponding to the section 4 d of                    ==
+==  the Apache License, Version 2.0,                                   ==
+==  in this case for the Algostorm engine distribution.                ==
+=========================================================================
+
+Chronos
+Copyright 2017 Andrei Heidelbacher
+
+This product includes software developed by Andrei Heidelbacher
+(andrei.heidelbacher@gmail.com).
+
+This product uses a series of third-party software libraries.
+
+The Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+applies to the following third-party libraries:
+- kotlin-runtime, Copyright JetBrains s.r.o.
+- kotlin-stdlib, Copyright JetBrains s.r.o.
+- kotlin-test, Copyright JetBrains s.r.o.
+
+The Eclipse Public License, Version 1.0
+(https://www.eclipse.org/legal/epl-v10.html) applies to the following
+third-party libraries:
+- junit, Copyright JUnit
+- eclipse-jdt-core, Copyright Eclipse Foundation
+
+The BSD License (https://opensource.org/licenses/BSD-3-Clause) applies to the
+following third-party libraries:
+- hamcrest-core, Copyright www.hamcrest.org

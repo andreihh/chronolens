@@ -5,5 +5,3 @@
 ### Using Chronos
 
 ### Documentation
-
-### Licensing

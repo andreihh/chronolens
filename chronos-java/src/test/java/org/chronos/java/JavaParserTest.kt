@@ -18,8 +18,11 @@ package org.chronos.java
 
 import org.chronos.core.Node
 import org.chronos.core.SourceFile
-import org.junit.Assert.assertEquals
+import org.chronos.test.assertEquals
+
 import org.junit.Test
+
+import java.net.URL
 
 class JavaParserTest {
     val parser = JavaParser()
@@ -87,9 +90,73 @@ class JavaParserTest {
         val expected = SourceFile(Node.Type(
                 name = "Color",
                 members = setOf(
-                        Node.Variable(name = "RED"),
-                        Node.Variable(name = "GREEN"),
-                        Node.Variable(name = "BLUE")
+                        Node.Variable(name = "RED", initializer = "RED(){}"),
+                        Node.Variable(
+                                name = "GREEN",
+                                initializer = "GREEN(){}"
+                        ),
+                        Node.Variable(name = "BLUE", initializer = "BLUE(){}")
+                )
+        ))
+        assertEquals(expected, parser.parse(source))
+    }
+
+    @Test fun `test enum with anonymous class constants`() {
+        val source = """
+        enum Color {
+            RED() {
+                @Override
+                String getCode() {
+                    return "#FF0000";
+                }
+            },
+            GREEN() {
+                @Override
+                String getCode() {
+                    return "#00FF00";
+                }
+            },
+            BLUE() {
+                @Override
+                String getCode() {
+                    return "#0000FF";
+                }
+            };
+
+            abstract String getCode();
+        }
+        """
+        val expected = SourceFile(Node.Type(
+                name = "Color",
+                members = setOf(
+                        Node.Variable(
+                                name = "RED",
+                                initializer = """RED(){
+  @Override String getCode(){
+    return "#FF0000";
+  }
+}
+"""
+                        ),
+                        Node.Variable(
+                                name = "GREEN",
+                                initializer = """GREEN(){
+  @Override String getCode(){
+    return "#00FF00";
+  }
+}
+"""
+                        ),
+                        Node.Variable(
+                                name = "BLUE",
+                                initializer = """BLUE(){
+  @Override String getCode(){
+    return "#0000FF";
+  }
+}
+"""
+                        ),
+                        Node.Function(name = "getCode()")
                 )
         ))
         assertEquals(expected, parser.parse(source))
@@ -123,6 +190,11 @@ class JavaParserTest {
 
     @Test fun `test integration`() {
         val source = javaClass.getResource("/IntegrationTest.java")
+        PrettyPrinterVisitor().visit(parser.parse(source))
+    }
+
+    @Test fun `test network`() {
+        val source = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/master/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
         PrettyPrinterVisitor().visit(parser.parse(source))
     }
 }
