@@ -15,6 +15,11 @@ allprojects {
             jcenter()
         }
 
+    }
+}
+
+subprojects {
+    buildscript {
         dependencies {
             classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
             classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
@@ -24,5 +29,16 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()
+    }
+
+    apply plugin: 'java'
+
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+    dependencies {
+        compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+        testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+        testCompile "junit:junit:$junit_version"
     }
 }

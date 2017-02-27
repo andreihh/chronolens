@@ -101,7 +101,7 @@ class JavaParser : Parser() {
     private fun visit(node: VariableDeclaration): Node.Variable =
             Node.Variable(node.name(), node.initializer?.toString())
 
-    fun visit(node: MethodDeclaration): Node.Function {
+    private fun visit(node: MethodDeclaration): Node.Function {
         val parameters = node.parameters()
                 .filterIsInstance<SingleVariableDeclaration>()
         val parameterTypes = parameters.map { it.type }
@@ -112,7 +112,7 @@ class JavaParser : Parser() {
         )
     }
 
-    fun visit(node: CompilationUnit): SourceFile =
+    private fun visit(node: CompilationUnit): SourceFile =
             node.types().filterIsInstance<AbstractTypeDeclaration>()
                     .map { visit(it) }.let { SourceFile(it) }
 

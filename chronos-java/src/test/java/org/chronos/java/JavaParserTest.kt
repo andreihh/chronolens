@@ -102,6 +102,33 @@ class JavaParserTest {
         assertEquals(expected, parser.parse(source))
     }
 
+    @Test fun `test enum with fields`() {
+        val source = """
+        enum Color {
+            RED,
+            GREEN,
+            BLUE;
+
+            public final String format = "hex";
+            public static int i;
+        }
+        """
+        val expected = SourceFile(Node.Type(
+                name = "Color",
+                members = setOf(
+                        Node.Variable(name = "RED", initializer = "RED() {}"),
+                        Node.Variable(
+                                name = "GREEN",
+                                initializer = "GREEN() {}"
+                        ),
+                        Node.Variable(name = "BLUE", initializer = "BLUE() {}"),
+                        Node.Variable(name = "format", initializer = "\"hex\""),
+                        Node.Variable(name = "i")
+                )
+        ))
+        assertEquals(expected, parser.parse(source))
+    }
+
     @Test fun `test enum with anonymous class constants`() {
         val source = """
         enum Color {
@@ -132,7 +159,8 @@ class JavaParserTest {
                 members = setOf(
                         Node.Variable(
                                 name = "RED",
-                                initializer = """RED() {
+                                initializer =
+"""RED() {
   @Override String getCode(){
     return "#FF0000";
   }
@@ -141,7 +169,8 @@ class JavaParserTest {
                         ),
                         Node.Variable(
                                 name = "GREEN",
-                                initializer = """GREEN() {
+                                initializer =
+"""GREEN() {
   @Override String getCode(){
     return "#00FF00";
   }
@@ -150,7 +179,8 @@ class JavaParserTest {
                         ),
                         Node.Variable(
                                 name = "BLUE",
-                                initializer = """BLUE() {
+                                initializer =
+"""BLUE() {
   @Override String getCode(){
     return "#0000FF";
   }
@@ -185,6 +215,61 @@ class JavaParserTest {
                         Node.Variable(name = "name", initializer = "null"),
                         Node.Variable(name = "version", initializer = "1")
                 )
+        ))
+        assertEquals(expected, parser.parse(source))
+    }
+
+    @Test fun `test interface with methods`() {
+        val source = """
+        interface IInterface {
+            String getName();
+            int getVersion();
+        }
+        """
+        val expected = SourceFile(Node.Type(
+                name = "IInterface",
+                members = setOf(
+                        Node.Function(signature = "getName()"),
+                        Node.Function(signature = "getVersion()")
+                )
+        ))
+        assertEquals(expected, parser.parse(source))
+    }
+
+    @Test fun `test interface with default methods`() {
+        val source = """
+        interface IInterface {
+            String getName();
+            default int getVersion() {
+                return 1;
+            }
+        }
+        """
+        val expected = SourceFile(Node.Type(
+                name = "IInterface",
+                members = setOf(
+                        Node.Function(signature = "getName()"),
+                        Node.Function(
+                                signature = "getVersion()",
+                                body =
+"""{
+  return 1;
+}
+"""
+                        )
+                )
+        ))
+        assertEquals(expected, parser.parse(source))
+    }
+
+    @Test fun `test interface with supertypes`() {
+        val source = """
+        interface IInterface extends Comparable<IInterface> {
+        }
+        """
+        val expected = SourceFile(Node.Type(
+                name = "IInterface",
+                supertypes = setOf("Comparable<IInterface>")
         ))
         assertEquals(expected, parser.parse(source))
     }

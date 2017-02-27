@@ -14,7 +14,6 @@ This product uses a series of third-party software libraries.
 
 The Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 applies to the following third-party libraries:
-- kotlin-runtime, Copyright JetBrains s.r.o.
 - kotlin-stdlib, Copyright JetBrains s.r.o.
 - kotlin-test, Copyright JetBrains s.r.o.
 
@@ -23,7 +22,3 @@ The Eclipse Public License, Version 1.0
 third-party libraries:
 - junit, Copyright JUnit
 - eclipse-jdt-core, Copyright Eclipse Foundation
-
-The BSD License (https://opensource.org/licenses/BSD-3-Clause) applies to the
-following third-party libraries:
-- hamcrest-core, Copyright www.hamcrest.org
