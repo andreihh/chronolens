@@ -106,7 +106,7 @@ class JavaParser : Parser() {
                 .filterIsInstance<SingleVariableDeclaration>()
         val parameterTypes = parameters.map { it.type }
         return Node.Function(
-                name = node.name() + "(${parameterTypes.joinToString()})",
+                signature = node.name() + "(${parameterTypes.joinToString()})",
                 parameters = parameters.map { visit(it) },
                 body = node.body?.toString()
         )

@@ -40,6 +40,6 @@ class PrettyPrinterVisitor : NodeVisitor() {
 
     override fun visit(function: Node.Function) {
         val body = function.body?.replace("\n", "\n$indent")
-        println("${indent}Function(${function.name}) " + (body ?: ""))
+        println("${indent}Function(${function.signature}) " + (body ?: ""))
     }
 }

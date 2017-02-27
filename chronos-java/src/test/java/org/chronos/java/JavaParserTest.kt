@@ -157,7 +157,7 @@ class JavaParserTest {
 }
 """
                         ),
-                        Node.Function(name = "getCode()")
+                        Node.Function(signature = "getCode()")
                 )
         ))
         assertEquals(expected, parser.parse(source))

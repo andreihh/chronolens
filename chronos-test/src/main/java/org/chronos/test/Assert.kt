@@ -74,7 +74,7 @@ fun assertEquals(
         actual: Node.Function,
         message: String? = null
 ) {
-    assertEqualsKt(expected.name, actual.name, message)
+    assertEqualsKt(expected.signature, actual.signature, message)
     assertEqualsKt(
             expected.parameters.size,
             actual.parameters.size,
