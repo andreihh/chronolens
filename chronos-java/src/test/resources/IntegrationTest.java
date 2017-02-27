@@ -73,7 +73,7 @@ class SampleClass extends IClass implements IEnumeration {
             DIME(10) {
                 @Override
                 public String color() {
-                    return "silver";
+                    return "silv\n\n \ner";
                 }
             },
             QUARTER(25) {

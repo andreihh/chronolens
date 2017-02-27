@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:JvmName("Assert")
+
 package org.chronos.test
 
 import org.chronos.core.Node

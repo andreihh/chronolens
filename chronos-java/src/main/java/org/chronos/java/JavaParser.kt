@@ -38,76 +38,83 @@ import org.eclipse.jdt.core.dom.TypeDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
 
 class JavaParser : Parser() {
-    private class JavaVisitor {
-        /** Returns the list of all supertypes of this type. */
-        private fun AbstractTypeDeclaration.supertypes() = when (this) {
-            is AnnotationTypeDeclaration -> emptyList()
-            is EnumDeclaration -> superInterfaceTypes()
-            is TypeDeclaration -> superInterfaceTypes() + superclassType
-            else -> throw AssertionError("Unknown declaration $this!")
-        }.filterNotNull().map(Any::toString)
+    /** Returns the name of this node. */
+    private fun AbstractTypeDeclaration.name() = name.identifier
+    private fun AnnotationTypeMemberDeclaration.name() = name.identifier
+    private fun EnumConstantDeclaration.name() = name.identifier
+    private fun MethodDeclaration.name() = name.identifier
+    private fun VariableDeclaration.name(): String = name.identifier
 
-        /**
-         * Returns the list of all members of this type.
-         *
-         * The returned elements can be of the following types:
-         * - [AbstractTypeDeclaration]
-         * - [AnnotationTypeMemberDeclaration]
-         * - [EnumConstantDeclaration]
-         * - [VariableDeclaration]
-         * - [MethodDeclaration]
-         * - [Initializer]
-         */
-        private fun AbstractTypeDeclaration.members() = (
-                if (this is EnumDeclaration) enumConstants()
-                else emptyList<BodyDeclaration>()
-        ) + bodyDeclarations().flatMap { member ->
-            if (member is FieldDeclaration) member.fragments()
-            else listOf(member)
-        }
+    /** Returns the list of all supertypes of this type. */
+    private fun AbstractTypeDeclaration.supertypes() = when (this) {
+        is AnnotationTypeDeclaration -> emptyList()
+        is EnumDeclaration -> superInterfaceTypes()
+        is TypeDeclaration -> superInterfaceTypes() + superclassType
+        else -> throw AssertionError("Unknown declaration $this!")
+    }.filterNotNull().map(Any::toString)
 
-        fun visit(node: AbstractTypeDeclaration): Node.Type {
-            val members = node.members().map { member ->
-                when (member) {
-                    is AbstractTypeDeclaration -> visit(member)
-                    is AnnotationTypeMemberDeclaration -> visit(member)
-                    is EnumConstantDeclaration -> visit(member)
-                    is VariableDeclaration -> visit(member)
-                    is MethodDeclaration -> visit(member)
-                    is Initializer -> TODO()
-                    else -> throw AssertionError("Unknown declaration $member!")
-                }
-            }
-            return Node.Type("${node.name}", node.supertypes(), members)
-        }
-
-        fun visit(node: AnnotationTypeMemberDeclaration): Node.Variable =
-                Node.Variable("${node.name}", node.default?.toString())
-
-        fun visit(node: EnumConstantDeclaration): Node.Variable = Node.Variable(
-                name = "${node.name}",
-                initializer = "${node.name}(${node.arguments().joinToString()})"
-                        + (node.anonymousClassDeclaration ?: "{}")
-        )
-
-        fun visit(node: VariableDeclaration): Node.Variable =
-                Node.Variable("${node.name}", node.initializer?.toString())
-
-        fun visit(node: MethodDeclaration): Node.Function {
-            val parameters = node.parameters()
-                    .filterIsInstance<SingleVariableDeclaration>()
-            val parameterTypes = parameters.map { it.type }
-            return Node.Function(
-                    name = "${node.name}(${parameterTypes.joinToString()})",
-                    parameters = parameters.map { visit(it) },
-                    body = node.body?.toString()
-            )
-        }
-
-        fun visit(node: CompilationUnit): SourceFile =
-                node.types().filterIsInstance<AbstractTypeDeclaration>()
-                        .map { visit(it) }.let { SourceFile(it) }
+    /**
+     * Returns the list of all members of this type.
+     *
+     * The returned elements can be of the following types:
+     * - [AbstractTypeDeclaration]
+     * - [AnnotationTypeMemberDeclaration]
+     * - [EnumConstantDeclaration]
+     * - [VariableDeclaration]
+     * - [MethodDeclaration]
+     * - [Initializer]
+     */
+    private fun AbstractTypeDeclaration.members() = (
+            if (this is EnumDeclaration) enumConstants()
+            else emptyList<BodyDeclaration>()
+    ) + bodyDeclarations().flatMap { member ->
+        if (member is FieldDeclaration) member.fragments()
+        else listOf(member)
     }
+
+    private fun visit(node: AbstractTypeDeclaration): Node.Type {
+        val members = node.members().map { member ->
+            when (member) {
+                is AbstractTypeDeclaration -> visit(member)
+                is AnnotationTypeMemberDeclaration -> visit(member)
+                is EnumConstantDeclaration -> visit(member)
+                is VariableDeclaration -> visit(member)
+                is MethodDeclaration -> visit(member)
+                is Initializer -> TODO()
+                else -> throw AssertionError("Unknown declaration $member!")
+            }
+        }
+        return Node.Type(node.name(), node.supertypes(), members)
+    }
+
+    private fun visit(node: AnnotationTypeMemberDeclaration): Node.Variable =
+            Node.Variable(node.name(), node.default?.toString())
+
+    private fun visit(node: EnumConstantDeclaration): Node.Variable =
+            Node.Variable(
+                    name = node.name(),
+                    initializer = node.name()
+                            + "(${node.arguments().joinToString()}) "
+                            + (node.anonymousClassDeclaration ?: "{}")
+            )
+
+    private fun visit(node: VariableDeclaration): Node.Variable =
+            Node.Variable(node.name(), node.initializer?.toString())
+
+    fun visit(node: MethodDeclaration): Node.Function {
+        val parameters = node.parameters()
+                .filterIsInstance<SingleVariableDeclaration>()
+        val parameterTypes = parameters.map { it.type }
+        return Node.Function(
+                name = node.name() + "(${parameterTypes.joinToString()})",
+                parameters = parameters.map { visit(it) },
+                body = node.body?.toString()
+        )
+    }
+
+    fun visit(node: CompilationUnit): SourceFile =
+            node.types().filterIsInstance<AbstractTypeDeclaration>()
+                    .map { visit(it) }.let { SourceFile(it) }
 
     @Throws(SyntaxError::class)
     override fun parse(source: String): SourceFile {
@@ -118,7 +125,7 @@ class JavaParser : Parser() {
             JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
             jdtParser.setCompilerOptions(options)
             val compilationUnit = jdtParser.createAST(null) as CompilationUnit
-            return JavaVisitor().visit(compilationUnit)
+            return visit(compilationUnit)
         } catch (e: Exception) {
             throw SyntaxError(cause = e)
         }

@@ -51,7 +51,7 @@ sealed class Node {
              * @throws IllegalArgumentException if `supertypes` or `members`
              * contain duplicated elements
              */
-            operator fun invoke(
+            @JvmStatic operator fun invoke(
                     name: String,
                     supertypes: Collection<String> = emptyList(),
                     members: Collection<Node> = emptyList()
@@ -109,7 +109,7 @@ sealed class Node {
              * @throws IllegalArgumentException if multiple `parameters` have
              * the same name
              */
-            operator fun invoke(
+            @JvmStatic operator fun invoke(
                     name: String,
                     parameters: List<Variable> = emptyList(),
                     body: String? = null

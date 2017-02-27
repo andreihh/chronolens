@@ -29,7 +29,7 @@ data class SourceFile private constructor(val nodes: Set<Node>) {
          * @throws IllegalArgumentException if `nodes` contains duplicated
          * elements
          */
-        operator fun invoke(nodes: Collection<Node>): SourceFile {
+        @JvmStatic operator fun invoke(nodes: Collection<Node>): SourceFile {
             val setOfNodes = nodes.toSet()
             require(setOfNodes.size == nodes.size) {
                 "$nodes contains duplicated nodes!"

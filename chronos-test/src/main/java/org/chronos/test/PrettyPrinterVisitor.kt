@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.chronos.java
+package org.chronos.test
 
 import org.chronos.core.Node
 import org.chronos.core.NodeVisitor
@@ -33,20 +33,13 @@ class PrettyPrinterVisitor : NodeVisitor() {
     }
 
     override fun visit(variable: Node.Variable) {
-        println("${indent}Variable(${variable.name}) = ${variable.initializer}")
-        indent += "  "
-    }
-
-    override fun endVisit(variable: Node.Variable) {
-        indent = indent.dropLast(2)
+        val initializer = variable.initializer?.replace("\n", "\n$indent")
+        val append = if (initializer != null) " = $initializer" else ""
+        println("${indent}Variable(${variable.name})$append")
     }
 
     override fun visit(function: Node.Function) {
-        println("${indent}Function(${function.name})${function.body}")
-        indent += "  "
-    }
-
-    override fun endVisit(function: Node.Function) {
-        indent = indent.dropLast(2)
+        val body = function.body?.replace("\n", "\n$indent")
+        println("${indent}Function(${function.name}) " + (body ?: ""))
     }
 }

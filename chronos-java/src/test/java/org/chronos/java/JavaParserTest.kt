@@ -18,6 +18,7 @@ package org.chronos.java
 
 import org.chronos.core.Node
 import org.chronos.core.SourceFile
+import org.chronos.test.PrettyPrinterVisitor
 import org.chronos.test.assertEquals
 
 import org.junit.Test
@@ -90,12 +91,12 @@ class JavaParserTest {
         val expected = SourceFile(Node.Type(
                 name = "Color",
                 members = setOf(
-                        Node.Variable(name = "RED", initializer = "RED(){}"),
+                        Node.Variable(name = "RED", initializer = "RED() {}"),
                         Node.Variable(
                                 name = "GREEN",
-                                initializer = "GREEN(){}"
+                                initializer = "GREEN() {}"
                         ),
-                        Node.Variable(name = "BLUE", initializer = "BLUE(){}")
+                        Node.Variable(name = "BLUE", initializer = "BLUE() {}")
                 )
         ))
         assertEquals(expected, parser.parse(source))
@@ -131,7 +132,7 @@ class JavaParserTest {
                 members = setOf(
                         Node.Variable(
                                 name = "RED",
-                                initializer = """RED(){
+                                initializer = """RED() {
   @Override String getCode(){
     return "#FF0000";
   }
@@ -140,7 +141,7 @@ class JavaParserTest {
                         ),
                         Node.Variable(
                                 name = "GREEN",
-                                initializer = """GREEN(){
+                                initializer = """GREEN() {
   @Override String getCode(){
     return "#00FF00";
   }
@@ -149,7 +150,7 @@ class JavaParserTest {
                         ),
                         Node.Variable(
                                 name = "BLUE",
-                                initializer = """BLUE(){
+                                initializer = """BLUE() {
   @Override String getCode(){
     return "#0000FF";
   }
