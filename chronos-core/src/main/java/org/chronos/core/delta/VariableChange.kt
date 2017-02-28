@@ -16,4 +16,9 @@
 
 package org.chronos.core.delta
 
-data class VariableChange(val initializerChange: String?)
+import org.chronos.core.Node.Variable
+
+data class VariableChange(val initializerChange: String?) : Change<Variable> {
+    override fun applyOn(subject: Variable): Variable =
+            Variable(subject.name, initializerChange)
+}

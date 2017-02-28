@@ -18,6 +18,7 @@ package org.chronos.core.delta
 
 import org.chronos.core.Node.Function
 import org.chronos.core.Node.Variable
+import org.chronos.core.delta.Change.Companion.apply
 import org.chronos.core.delta.FunctionChange.ParameterChange
 import org.chronos.test.assertEquals
 

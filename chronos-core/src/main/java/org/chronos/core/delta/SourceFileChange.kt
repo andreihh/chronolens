@@ -16,4 +16,10 @@
 
 package org.chronos.core.delta
 
-data class SourceFileChange(val nodeChanges: List<NodeChange>)
+import org.chronos.core.SourceFile
+
+data class SourceFileChange(
+        val nodeChanges: List<NodeChange>
+) : Change<SourceFile> {
+    override fun applyOn(subject: SourceFile): SourceFile = subject // TODO
+}

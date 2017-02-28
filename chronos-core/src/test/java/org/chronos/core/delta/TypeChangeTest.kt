@@ -17,6 +17,7 @@
 package org.chronos.core.delta
 
 import org.chronos.core.Node.Type
+import org.chronos.core.delta.Change.Companion.apply
 import org.chronos.core.delta.TypeChange.SupertypeChange
 import org.chronos.test.assertEquals
 

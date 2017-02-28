@@ -16,13 +16,54 @@
 
 package org.chronos.core.delta
 
+import org.chronos.core.Node.Function
+import org.chronos.core.Node.Type
+import org.chronos.core.Node.Variable
+
 data class TypeChange(
         val supertypeChanges: List<SupertypeChange>,
         val memberChanges: List<NodeChange>
-) {
+) : Change<Type> {
     sealed class SupertypeChange {
          class Add(val name: String) : SupertypeChange()
 
         class Remove(val name: String) : SupertypeChange()
+    }
+
+    override fun applyOn(subject: Type): Type {
+        val supertypes = subject.supertypes.toMutableSet()
+        supertypeChanges.forEach { change ->
+            when (change) {
+                is SupertypeChange.Add -> supertypes.add(change.name)
+                is SupertypeChange.Remove -> supertypes.remove(change.name)
+            }
+        }
+        val types = hashMapOf<String, Type>()
+        val variables = hashMapOf<String, Variable>()
+        val functions = hashMapOf<String, Function>()
+        subject.members.forEach { node ->
+            when (node) {
+                is Type -> types[node.name] = node
+                is Variable -> variables[node.name] = node
+                is Function -> functions[node.signature] = node
+            }
+        }
+        memberChanges.forEach { change ->
+            when (change) {
+                is NodeChange.Add -> when (change.node) {
+                    is Type -> types[change.node.name] = change.node
+                    is Variable -> variables[change.node.name] = change.node
+                    is Function ->
+                        functions[change.node.signature] = change.node
+                }
+                is NodeChange.RemoveType -> types.remove(change.name)
+                is NodeChange.RemoveVariable -> variables.remove(change.name)
+                is NodeChange.RemoveFunction ->
+                    functions.remove(change.signature)
+                else -> TODO()
+            }
+        }
+        val members = types.values + variables.values + functions.values
+        return Type(subject.name, supertypes, members.toSet())
     }
 }

@@ -28,59 +28,6 @@ import org.chronos.core.delta.TypeChange.SupertypeChange
 
 fun SourceFile.diff(other: SourceFile): SourceFileChange = TODO()
 
-fun SourceFile.apply(changes: List<SourceFileChange>): SourceFile = this
-
-fun SourceFile.apply(vararg changes: SourceFileChange): SourceFile = this
-
-fun Type.apply(change: TypeChange): Type = Type(
-        name = name,
-        supertypes = supertypes.apply(change.supertypeChanges),
-        members = members
-)
-
-fun Variable.apply(changes: List<VariableChange>): Variable = Variable(
-        name,
-        if (changes.isEmpty()) initializer else changes.last().initializerChange
-)
-
-fun Variable.apply(vararg changes: VariableChange): Variable =
-        apply(changes.asList())
-
-fun Function.apply(changes: List<FunctionChange>): Function =
-        changes.fold(parameters to body) { f, change ->
-            val p = f.first.apply(change.parameterChanges)
-            val b = f.second.apply(listOf(change.bodyChange).filterNotNull())
-            p to b
-        }.let { f -> Function(signature, f.first, f.second) }
-
-fun Function.apply(vararg changes: FunctionChange): Function =
-        apply(changes.asList())
-
-fun List<Variable>.apply(changes: List<ParameterChange>): List<Variable> =
-        changes.fold(this.toMutableList()) { parameters, change ->
-            when (change) {
-                is ParameterChange.Add ->
-                    parameters.add(change.index, change.variable)
-                is ParameterChange.Remove -> parameters.removeAt(change.index)
-            }
-            parameters
-        }
-
-fun List<Variable>.apply(vararg changes: ParameterChange): List<Variable> =
-        apply(changes.asList())
-
-fun Set<String>.apply(changes: List<SupertypeChange>): Set<String> =
-        changes.fold(this.toMutableSet()) { supertypes, change ->
-            when (change) {
-                is SupertypeChange.Add -> supertypes.add(change.name)
-                is SupertypeChange.Remove -> supertypes.remove(change.name)
-            }
-            supertypes
-        }
-
-fun Set<String>.apply(vararg changes: SupertypeChange): Set<String> =
-        apply(changes.asList())
-
 fun String?.apply(changes: List<BlockChange>): String? =
         changes.fold(this) { block, change ->
             when (change) {

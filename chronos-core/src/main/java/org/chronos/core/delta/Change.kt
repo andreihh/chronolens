@@ -16,23 +16,18 @@
 
 package org.chronos.core.delta
 
-import org.chronos.core.delta.TypeChange.SupertypeChange
+interface Change<T> {
+    companion object {
+        fun <T> T.apply(change: Change<T>): T = change.applyOn(this)
 
-import org.junit.Test
+        fun <T> T.apply(changes: List<Change<T>>): T =
+                changes.fold(this) { subject, change -> subject.apply(change) }
 
-import kotlin.test.assertEquals
-
-class SupertypeChangeTest {
-    @Test fun `test add supertype`() {
-        val expected = setOf("IInterface", "IClass")
-        val actual = setOf("IInterface").apply(SupertypeChange.Add("IClass"))
-        assertEquals(expected, actual)
+        fun <T> T.apply(vararg changes: Change<T>): T = apply(changes.asList())
     }
 
-    @Test fun `test remove supertype`() {
-        val expected = setOf("IInterface")
-        val actual = setOf("IInterface", "IClass")
-                .apply(SupertypeChange.Remove("IClass"))
-        assertEquals(expected, actual)
-    }
+    /**
+     * @throws IllegalStateException
+     */
+    fun applyOn(subject: T): T
 }
