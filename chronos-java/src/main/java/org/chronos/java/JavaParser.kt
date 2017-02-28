@@ -40,6 +40,11 @@ import org.eclipse.jdt.core.dom.TypeDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
 
 class JavaParser : Parser() {
+    private fun <T> Collection<T>.requireDistinct(): Set<T> = toSet().let {
+        require(size == it.size) { "$this contains duplicated elements!" }
+        it
+    }
+
     /** Returns the name of this node. */
     private fun AbstractTypeDeclaration.name() = name.identifier
     private fun AnnotationTypeMemberDeclaration.name() = name.identifier
@@ -86,7 +91,11 @@ class JavaParser : Parser() {
                 else -> throw AssertionError("Unknown declaration $member!")
             }
         }
-        return Type(node.name(), node.supertypes(), members)
+        return Type(
+                name = node.name(),
+                supertypes = node.supertypes().requireDistinct(),
+                members = members.requireDistinct()
+        )
     }
 
     private fun visit(node: AnnotationTypeMemberDeclaration): Variable =
@@ -115,7 +124,7 @@ class JavaParser : Parser() {
 
     private fun visit(node: CompilationUnit): SourceFile =
             node.types().filterIsInstance<AbstractTypeDeclaration>()
-                    .map { visit(it) }.let { SourceFile(it) }
+                    .map { visit(it) }.requireDistinct().let(::SourceFile)
 
     @Throws(SyntaxError::class)
     override fun parse(source: String): SourceFile {

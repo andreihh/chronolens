@@ -22,10 +22,7 @@ sealed class Node {
 
     override abstract fun hashCode(): Int
 
-    /**
-     * Returns a string representation of this node suitable for debugging
-     * purposes only.
-     */
+    /** Returns a string representation of this node. */
     override abstract fun toString(): String
 
     /**
@@ -36,35 +33,11 @@ sealed class Node {
      * @property members the members of this type (variables, functions and
      * contained types)
      */
-    class Type private constructor(
+    class Type(
             val name: String,
-            val supertypes: Set<String>,
-            val members: Set<Node>
+            val supertypes: Set<String> = emptySet(),
+            val members: Set<Node> = emptySet()
     ) : Node() {
-        companion object {
-            /**
-             * Creates a type with the given `name`, `supertypes` and `members`.
-             *
-             * @throws IllegalArgumentException if `supertypes` or `members`
-             * contain duplicated elements
-             */
-            @JvmStatic operator fun invoke(
-                    name: String,
-                    supertypes: Collection<String> = emptyList(),
-                    members: Collection<Node> = emptyList()
-            ): Type {
-                val setOfSupertypes = supertypes.toSet()
-                require(setOfSupertypes.size == supertypes.size) {
-                    "$supertypes contains duplicated types!"
-                }
-                val setOfMembers = members.toSet()
-                require(setOfMembers.size == members.size) {
-                    "$members contains duplicated nodes!"
-                }
-                return Node.Type(name, setOfSupertypes, setOfMembers)
-            }
-        }
-
         /** Two types are equal if and only if they have the same [name]. */
         override fun equals(other: Any?): Boolean =
                 other is Type && name == other.name
@@ -114,26 +87,14 @@ sealed class Node {
      * @property parameters the parameters of this function
      * @property body the canonical string representation of the body of this
      * function, or `null` if it doesn't have a body
+     * @throws IllegalArgumentException if multiple `parameters` have the same
+     * `name`
      */
-    class Function private constructor(
+    class Function(
             val signature: String,
             val parameters: List<Variable>,
-            val body: String?
+            val body: String? = null
     ) : Node() {
-        companion object {
-            /**
-             * Creates a function with the given `signature`, `parameters` and
-             * `body`.
-             * @throws IllegalArgumentException if multiple `parameters` have
-             * the same name
-             */
-            @JvmStatic operator fun invoke(
-                    signature: String,
-                    parameters: List<Variable> = emptyList(),
-                    body: String? = null
-            ) : Function = Function(signature, parameters.toList(), body)
-        }
-
         init {
             require(parameters.distinctBy { it.name }.size == parameters.size) {
                 "$parameters contains duplicated parameters!"

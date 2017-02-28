@@ -28,7 +28,7 @@ class FunctionChangeTest {
         val signature = "println(String)"
         val parameter = Variable("s")
         val expected = Function(signature, listOf(parameter))
-        val actual = Function(signature).apply(FunctionChange(
+        val actual = Function(signature, emptyList()).apply(FunctionChange(
                 parameterChanges = listOf(ParameterChange.Add(0, parameter)),
                 bodyChange = null
         ))
@@ -37,7 +37,7 @@ class FunctionChangeTest {
 
     @Test fun `test remove parameter`() {
         val signature = "println()"
-        val expected = Function(signature)
+        val expected = Function(signature, emptyList())
         val actual = Function(signature, listOf(Variable("s"))).apply(
                 FunctionChange(listOf(ParameterChange.Remove(0)), null)
         )
@@ -63,8 +63,8 @@ class FunctionChangeTest {
     @Test fun `test change body`() {
         val signature = "println()"
         val body = "{\n  i = 1;\n}\n"
-        val expected = Function(signature, body = body)
-        val actual = Function(signature, body = "{\n  j = 2;\n}\n").apply(
+        val expected = Function(signature, emptyList(), body)
+        val actual = Function(signature, emptyList(), "{\n  j = 2;\n}\n").apply(
                 FunctionChange(emptyList(), BlockChange.Set(body))
         )
         assertEquals(expected, actual)

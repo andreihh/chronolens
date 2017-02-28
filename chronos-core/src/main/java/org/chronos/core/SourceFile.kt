@@ -21,37 +21,4 @@ package org.chronos.core
  *
  * @property nodes the nodes contained by this source file
  */
-class SourceFile private constructor(val nodes: Set<Node>) {
-    companion object {
-        /**
-         * Creates a source file containing the given `nodes`.
-         *
-         * @throws IllegalArgumentException if `nodes` contains duplicated
-         * elements
-         */
-        @JvmStatic operator fun invoke(nodes: Collection<Node>): SourceFile {
-            val setOfNodes = nodes.toSet()
-            require(setOfNodes.size == nodes.size) {
-                "$nodes contains duplicated nodes!"
-            }
-            return SourceFile(setOfNodes)
-        }
-
-        operator fun invoke(vararg nodes: Node): SourceFile =
-                invoke(nodes.asList())
-    }
-
-    /**
-     * Two source files are equal if and only if they contain the same [nodes].
-     */
-    override fun equals(other: Any?): Boolean =
-            other is SourceFile && nodes == other.nodes
-
-    override fun hashCode(): Int = nodes.hashCode()
-
-    /**
-     * Returns a string representation of this source file suitable for
-     * debugging purposes only.
-     */
-    override fun toString(): String = "SourceFile($nodes)"
-}
+data class SourceFile(val nodes: Set<Node>)
