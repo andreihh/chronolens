@@ -19,6 +19,9 @@
 package org.chronos.test
 
 import org.chronos.core.Node
+import org.chronos.core.Node.Function
+import org.chronos.core.Node.Type
+import org.chronos.core.Node.Variable
 import org.chronos.core.SourceFile
 
 import kotlin.test.fail
@@ -37,21 +40,16 @@ fun assertEquals(
 
 fun assertEquals(expected: Node, actual: Node, message: String? = null) {
     when {
-        expected is Node.Type && actual is Node.Type ->
+        expected is Type && actual is Type -> assertEquals(expected, actual)
+        expected is Variable && actual is Variable ->
             assertEquals(expected, actual)
-        expected is Node.Variable && actual is Node.Variable ->
-            assertEquals(expected, actual)
-        expected is Node.Function && actual is Node.Function ->
+        expected is Function && actual is Function ->
             assertEquals(expected, actual)
         else -> fail(message)
     }
 }
 
-fun assertEquals(
-        expected: Node.Type,
-        actual: Node.Type,
-        message: String? = null
-) {
+fun assertEquals(expected: Type, actual: Type, message: String? = null) {
     assertEqualsKt(expected.name, actual.name, message)
     assertEqualsKt(expected.supertypes, actual.supertypes, message)
     assertEqualsKt(expected.members.size, actual.members.size, message)
@@ -61,8 +59,8 @@ fun assertEquals(
 }
 
 fun assertEquals(
-        expected: Node.Variable,
-        actual: Node.Variable,
+        expected: Variable,
+        actual: Variable,
         message: String? = null
 ) {
     assertEqualsKt(expected.name, actual.name, message)
@@ -70,8 +68,8 @@ fun assertEquals(
 }
 
 fun assertEquals(
-        expected: Node.Function,
-        actual: Node.Function,
+        expected: Function,
+        actual: Function,
         message: String? = null
 ) {
     assertEqualsKt(expected.signature, actual.signature, message)

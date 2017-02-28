@@ -16,7 +16,9 @@
 
 package org.chronos.java
 
-import org.chronos.core.Node
+import org.chronos.core.Node.Function
+import org.chronos.core.Node.Type
+import org.chronos.core.Node.Variable
 import org.chronos.core.SourceFile
 import org.chronos.test.PrettyPrinterVisitor
 import org.chronos.test.assertEquals
@@ -33,7 +35,7 @@ class JavaParserTest {
         @interface AnnotationClass {
         }
         """
-        val expected = SourceFile(Node.Type(name = "AnnotationClass"))
+        val expected = SourceFile(Type("AnnotationClass"))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -44,12 +46,9 @@ class JavaParserTest {
             int version();
         }
         """
-        val expected = SourceFile(Node.Type(
+        val expected = SourceFile(Type(
                 name = "AnnotationClass",
-                members = setOf(
-                        Node.Variable(name = "name"),
-                        Node.Variable(name = "version")
-                )
+                members = setOf(Variable("name"), Variable("version"))
         ))
         assertEquals(expected, parser.parse(source))
     }
@@ -61,12 +60,9 @@ class JavaParserTest {
             int version() default 1;
         }
         """
-        val expected = SourceFile(Node.Type(
+        val expected = SourceFile(Type(
                 name = "AnnotationClass",
-                members = setOf(
-                        Node.Variable(name = "name"),
-                        Node.Variable(name = "version", initializer = "1")
-                )
+                members = setOf(Variable("name"), Variable("version", "1"))
         ))
         assertEquals(expected, parser.parse(source))
     }
@@ -76,7 +72,7 @@ class JavaParserTest {
         enum Color {
         }
         """
-        val expected = SourceFile(Node.Type(name = "Color"))
+        val expected = SourceFile(Type("Color"))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -88,15 +84,12 @@ class JavaParserTest {
             BLUE;
         }
         """
-        val expected = SourceFile(Node.Type(
+        val expected = SourceFile(Type(
                 name = "Color",
                 members = setOf(
-                        Node.Variable(name = "RED", initializer = "RED() {}"),
-                        Node.Variable(
-                                name = "GREEN",
-                                initializer = "GREEN() {}"
-                        ),
-                        Node.Variable(name = "BLUE", initializer = "BLUE() {}")
+                        Variable("RED", "RED() {}"),
+                        Variable("GREEN", "GREEN() {}"),
+                        Variable("BLUE", "BLUE() {}")
                 )
         ))
         assertEquals(expected, parser.parse(source))
@@ -113,17 +106,14 @@ class JavaParserTest {
             public static int i;
         }
         """
-        val expected = SourceFile(Node.Type(
+        val expected = SourceFile(Type(
                 name = "Color",
                 members = setOf(
-                        Node.Variable(name = "RED", initializer = "RED() {}"),
-                        Node.Variable(
-                                name = "GREEN",
-                                initializer = "GREEN() {}"
-                        ),
-                        Node.Variable(name = "BLUE", initializer = "BLUE() {}"),
-                        Node.Variable(name = "format", initializer = "\"hex\""),
-                        Node.Variable(name = "i")
+                        Variable("RED", "RED() {}"),
+                        Variable("GREEN", "GREEN() {}"),
+                        Variable("BLUE", "BLUE() {}"),
+                        Variable("format", "\"hex\""),
+                        Variable("i")
                 )
         ))
         assertEquals(expected, parser.parse(source))
@@ -154,10 +144,10 @@ class JavaParserTest {
             abstract String getCode();
         }
         """
-        val expected = SourceFile(Node.Type(
+        val expected = SourceFile(Type(
                 name = "Color",
                 members = setOf(
-                        Node.Variable(
+                        Variable(
                                 name = "RED",
                                 initializer =
 """RED() {
@@ -167,7 +157,7 @@ class JavaParserTest {
 }
 """
                         ),
-                        Node.Variable(
+                        Variable(
                                 name = "GREEN",
                                 initializer =
 """GREEN() {
@@ -177,7 +167,7 @@ class JavaParserTest {
 }
 """
                         ),
-                        Node.Variable(
+                        Variable(
                                 name = "BLUE",
                                 initializer =
 """BLUE() {
@@ -187,7 +177,7 @@ class JavaParserTest {
 }
 """
                         ),
-                        Node.Function(signature = "getCode()")
+                        Function(signature = "getCode()")
                 )
         ))
         assertEquals(expected, parser.parse(source))
@@ -198,7 +188,7 @@ class JavaParserTest {
         interface IInterface {
         }
         """
-        val expected = SourceFile(Node.Type(name = "IInterface"))
+        val expected = SourceFile(Type("IInterface"))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -209,11 +199,11 @@ class JavaParserTest {
             int version = 1;
         }
         """
-        val expected = SourceFile(Node.Type(
+        val expected = SourceFile(Type(
                 name = "IInterface",
                 members = setOf(
-                        Node.Variable(name = "name", initializer = "null"),
-                        Node.Variable(name = "version", initializer = "1")
+                        Variable("name", "null"),
+                        Variable("version", "1")
                 )
         ))
         assertEquals(expected, parser.parse(source))
@@ -226,12 +216,9 @@ class JavaParserTest {
             int getVersion();
         }
         """
-        val expected = SourceFile(Node.Type(
+        val expected = SourceFile(Type(
                 name = "IInterface",
-                members = setOf(
-                        Node.Function(signature = "getName()"),
-                        Node.Function(signature = "getVersion()")
-                )
+                members = setOf(Function("getName()"), Function("getVersion()"))
         ))
         assertEquals(expected, parser.parse(source))
     }
@@ -245,11 +232,11 @@ class JavaParserTest {
             }
         }
         """
-        val expected = SourceFile(Node.Type(
+        val expected = SourceFile(Type(
                 name = "IInterface",
                 members = setOf(
-                        Node.Function(signature = "getName()"),
-                        Node.Function(
+                        Function(signature = "getName()"),
+                        Function(
                                 signature = "getVersion()",
                                 body =
 """{
@@ -267,7 +254,7 @@ class JavaParserTest {
         interface IInterface extends Comparable<IInterface> {
         }
         """
-        val expected = SourceFile(Node.Type(
+        val expected = SourceFile(Type(
                 name = "IInterface",
                 supertypes = setOf("Comparable<IInterface>")
         ))

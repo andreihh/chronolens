@@ -5,3 +5,7 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
     outputFormat = 'javadoc'
     outputDirectory = javadoc.destinationDir
 }
+
+dependencies {
+    testCompile project(':chronos-test')
+}

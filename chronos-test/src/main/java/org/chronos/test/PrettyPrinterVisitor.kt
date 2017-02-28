@@ -16,29 +16,31 @@
 
 package org.chronos.test
 
-import org.chronos.core.Node
+import org.chronos.core.Node.Function
+import org.chronos.core.Node.Type
+import org.chronos.core.Node.Variable
 import org.chronos.core.NodeVisitor
 
 class PrettyPrinterVisitor : NodeVisitor() {
     var indent = ""
 
-    override fun visit(type: Node.Type) {
+    override fun visit(type: Type) {
         val supertypes = type.supertypes.joinToString()
         println("${indent}Type(${type.name}) : ($supertypes)")
         indent += "  "
     }
 
-    override fun endVisit(type: Node.Type) {
+    override fun endVisit(type: Type) {
         indent = indent.dropLast(2)
     }
 
-    override fun visit(variable: Node.Variable) {
+    override fun visit(variable: Variable) {
         val initializer = variable.initializer?.replace("\n", "\n$indent")
         val append = if (initializer != null) " = $initializer" else ""
         println("${indent}Variable(${variable.name})$append")
     }
 
-    override fun visit(function: Node.Function) {
+    override fun visit(function: Function) {
         val body = function.body?.replace("\n", "\n$indent")
         println("${indent}Function(${function.signature}) " + (body ?: ""))
     }

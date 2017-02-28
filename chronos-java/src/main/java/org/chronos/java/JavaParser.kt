@@ -16,7 +16,9 @@
 
 package org.chronos.java
 
-import org.chronos.core.Node
+import org.chronos.core.Node.Function
+import org.chronos.core.Node.Type
+import org.chronos.core.Node.Variable
 import org.chronos.core.Parser
 import org.chronos.core.SourceFile
 
@@ -72,7 +74,7 @@ class JavaParser : Parser() {
         else listOf(member)
     }
 
-    private fun visit(node: AbstractTypeDeclaration): Node.Type {
+    private fun visit(node: AbstractTypeDeclaration): Type {
         val members = node.members().map { member ->
             when (member) {
                 is AbstractTypeDeclaration -> visit(member)
@@ -84,28 +86,27 @@ class JavaParser : Parser() {
                 else -> throw AssertionError("Unknown declaration $member!")
             }
         }
-        return Node.Type(node.name(), node.supertypes(), members)
+        return Type(node.name(), node.supertypes(), members)
     }
 
-    private fun visit(node: AnnotationTypeMemberDeclaration): Node.Variable =
-            Node.Variable(node.name(), node.default?.toString())
+    private fun visit(node: AnnotationTypeMemberDeclaration): Variable =
+            Variable(node.name(), node.default?.toString())
 
-    private fun visit(node: EnumConstantDeclaration): Node.Variable =
-            Node.Variable(
-                    name = node.name(),
-                    initializer = node.name()
-                            + "(${node.arguments().joinToString()}) "
-                            + (node.anonymousClassDeclaration ?: "{}")
-            )
+    private fun visit(node: EnumConstantDeclaration): Variable = Variable(
+            name = node.name(),
+            initializer = node.name()
+                    + "(${node.arguments().joinToString()}) "
+                    + (node.anonymousClassDeclaration ?: "{}")
+    )
 
-    private fun visit(node: VariableDeclaration): Node.Variable =
-            Node.Variable(node.name(), node.initializer?.toString())
+    private fun visit(node: VariableDeclaration): Variable =
+            Variable(node.name(), node.initializer?.toString())
 
-    private fun visit(node: MethodDeclaration): Node.Function {
+    private fun visit(node: MethodDeclaration): Function {
         val parameters = node.parameters()
                 .filterIsInstance<SingleVariableDeclaration>()
         val parameterTypes = parameters.map { it.type }
-        return Node.Function(
+        return Function(
                 signature = node.name() + "(${parameterTypes.joinToString()})",
                 parameters = parameters.map { visit(it) },
                 body = node.body?.toString()

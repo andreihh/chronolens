@@ -16,33 +16,37 @@
 
 package org.chronos.core
 
+import org.chronos.core.Node.Function
+import org.chronos.core.Node.Type
+import org.chronos.core.Node.Variable
+
 /** An abstract node and source file metadata processor. */
 abstract class NodeVisitor {
-    protected open fun visit(type: Node.Type) {}
-    protected open fun visit(variable: Node.Variable) {}
-    protected open fun visit(function: Node.Function) {}
-    protected open fun endVisit(type: Node.Type) {}
-    protected open fun endVisit(variable: Node.Variable) {}
-    protected open fun endVisit(function: Node.Function) {}
+    protected open fun visit(type: Type) {}
+    protected open fun visit(variable: Variable) {}
+    protected open fun visit(function: Function) {}
+    protected open fun endVisit(type: Type) {}
+    protected open fun endVisit(variable: Variable) {}
+    protected open fun endVisit(function: Function) {}
 
-    private fun visitType(type: Node.Type) {
+    private fun visitType(type: Type) {
         visit(type)
         type.members.forEach { node ->
             when (node) {
-                is Node.Type -> visitType(node)
-                is Node.Variable -> visitVariable(node)
-                is Node.Function -> visitFunction(node)
+                is Type -> visitType(node)
+                is Variable -> visitVariable(node)
+                is Function -> visitFunction(node)
             }
         }
         endVisit(type)
     }
 
-    private fun visitVariable(variable: Node.Variable) {
+    private fun visitVariable(variable: Variable) {
         visit(variable)
         endVisit(variable)
     }
 
-    private fun visitFunction(function: Node.Function) {
+    private fun visitFunction(function: Function) {
         visit(function)
         endVisit(function)
     }
@@ -54,9 +58,9 @@ abstract class NodeVisitor {
      */
     fun visit(node: Node) {
         when (node) {
-            is Node.Type -> visitType(node)
-            is Node.Variable -> visitVariable(node)
-            is Node.Function -> visitFunction(node)
+            is Type -> visitType(node)
+            is Variable -> visitVariable(node)
+            is Function -> visitFunction(node)
         }
     }
 

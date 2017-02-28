@@ -23,10 +23,10 @@ sealed class Node {
     override abstract fun hashCode(): Int
 
     /**
-     * Returns a string representation of this node, useful for debug purposes
-     * only.
+     * Returns a string representation of this node suitable for debugging
+     * purposes only.
      */
-    //override abstract fun toString(): String
+    override abstract fun toString(): String
 
     /**
      * A type declared within a source file.
@@ -70,6 +70,8 @@ sealed class Node {
                 other is Type && name == other.name
 
         override fun hashCode(): Int = name.hashCode()
+
+        override fun toString(): String = "Type($name, $supertypes, $members)"
     }
 
     /**
@@ -88,6 +90,11 @@ sealed class Node {
                 other is Variable && name == other.name
 
         override fun hashCode(): Int = name.hashCode()
+
+        override fun toString(): String {
+            val initBlock = if (initializer != null) ": $initializer" else ""
+            return "Variable($name$initBlock)"
+        }
     }
 
     /**
@@ -141,5 +148,10 @@ sealed class Node {
                 other is Function && signature == other.signature
 
         override fun hashCode(): Int = signature.hashCode()
+
+        override fun toString(): String {
+            val bodyBlock = if (body != null) ": $body" else ""
+            return "Function(($signature, $parameters)$bodyBlock)"
+        }
     }
 }
