@@ -31,13 +31,7 @@ abstract class NodeVisitor {
 
     private fun visitType(type: Type) {
         visit(type)
-        type.members.forEach { node ->
-            when (node) {
-                is Type -> visitType(node)
-                is Variable -> visitVariable(node)
-                is Function -> visitFunction(node)
-            }
-        }
+        type.members.forEach(this::visit)
         endVisit(type)
     }
 
