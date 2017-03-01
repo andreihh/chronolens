@@ -33,8 +33,9 @@ fun assertEquals(
         message: String? = null
 ) {
     assertEqualsKt(expected.nodes.size, actual.nodes.size, message)
-    for ((en, an) in expected.nodes zip actual.nodes) {
-        assertEquals(en, an)
+    val nodes = expected.nodes.zip(actual.nodes)
+    nodes.forEach { (expectedNode, actualNode) ->
+        assertEquals(expectedNode, actualNode)
     }
 }
 
@@ -53,8 +54,9 @@ fun assertEquals(expected: Type, actual: Type, message: String? = null) {
     assertEqualsKt(expected.name, actual.name, message)
     assertEqualsKt(expected.supertypes, actual.supertypes, message)
     assertEqualsKt(expected.members.size, actual.members.size, message)
-    for ((em, am) in (expected.members zip actual.members)) {
-        assertEquals(em, am, message)
+    val members = expected.members.zip(actual.members)
+    members.forEach { (expectedMember, actualMember) ->
+        assertEquals(expectedMember, actualMember, message)
     }
 }
 
@@ -78,8 +80,9 @@ fun assertEquals(
             actual.parameters.size,
             message
     )
-    for ((ep, ap) in (expected.parameters zip actual.parameters)) {
-        assertEquals(ep, ap, message)
+    val parameters = expected.parameters.zip(actual.parameters)
+    parameters.forEach { (expectedParameter, actualParameter) ->
+        assertEquals(expectedParameter, actualParameter, message)
     }
     assertEqualsKt(expected.body, actual.body, message)
 }

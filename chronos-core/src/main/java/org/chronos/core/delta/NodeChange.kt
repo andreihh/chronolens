@@ -17,27 +17,73 @@
 package org.chronos.core.delta
 
 import org.chronos.core.Node
+import org.chronos.core.Node.Function
+import org.chronos.core.Node.Type
+import org.chronos.core.Node.Variable
+import org.chronos.core.delta.Change.Companion.apply
 
 sealed class NodeChange {
-    class Add(val node: Node) : NodeChange()
+    companion object {
+        internal fun Set<Node>.apply(changes: List<NodeChange>): Set<Node> {
+            val types = hashMapOf<String, Type>()
+            val variables = hashMapOf<String, Variable>()
+            val functions = hashMapOf<String, Function>()
+            forEach { node ->
+                when (node) {
+                    is Type -> types[node.name] = node
+                    is Variable -> variables[node.name] = node
+                    is Function -> functions[node.signature] = node
+                }
+            }
+            changes.forEach { change ->
+                when (change) {
+                    is AddType -> types[change.type.name] = change.type
+                    is AddVariable ->
+                        variables[change.variable.name] = change.variable
+                    is AddFunction ->
+                        functions[change.function.signature] = change.function
+                    is RemoveType -> types.remove(change.name)
+                    is RemoveVariable -> variables.remove(change.name)
+                    is RemoveFunction -> functions.remove(change.signature)
+                    is ChangeType -> types[change.name] = checkNotNull(
+                            types[change.name]
+                    ).apply(change.typeChange)
+                    is ChangeVariable -> variables[change.name] = checkNotNull(
+                            variables[change.name]
+                    ).apply(change.variableChange)
+                    is ChangeFunction -> functions[change.signature] = checkNotNull(
+                            functions[change.signature]
+                    ).apply(change.functionChange)
+                }
+            }
+            val members = types.values + variables.values + functions.values
+            return members.toSet()
+        }
+    }
 
-    class RemoveType(val name: String) : NodeChange()
+    data class AddType(val type: Type) : NodeChange()
 
-    class RemoveVariable(val name: String) : NodeChange()
+    data class AddVariable(val variable: Variable) : NodeChange()
 
-    class RemoveFunction(val signature: String) : NodeChange()
+    data class AddFunction(val function: Function) : NodeChange()
 
-    class ChangeType(
+    data class RemoveType(val name: String) : NodeChange()
+
+    data class RemoveVariable(val name: String) : NodeChange()
+
+    data class RemoveFunction(val signature: String) : NodeChange()
+
+    data class ChangeType(
             val name: String,
             val typeChange: TypeChange
     ) : NodeChange()
 
-    class ChangeVariable(
+    data class ChangeVariable(
             val name: String,
             val variableChange: VariableChange
     ) : NodeChange()
 
-    class ChangeFunction(
+    data class ChangeFunction(
             val signature: String,
             val functionChange: FunctionChange
     ) : NodeChange()

@@ -18,33 +18,33 @@ package org.chronos.core.delta
 
 import org.chronos.core.Node.Function
 import org.chronos.core.Node.Variable
+import org.chronos.core.delta.FunctionChange.ParameterChange.Add
+import org.chronos.core.delta.FunctionChange.ParameterChange.Remove
 
 data class FunctionChange(
         val parameterChanges: List<ParameterChange>,
         val bodyChange: BlockChange?
 ) : Change<Function> {
     sealed class ParameterChange {
-        class Add(val index: Int, val variable: Variable) : ParameterChange()
+        data class Add(
+                val index: Int,
+                val variable: Variable
+        ) : ParameterChange()
 
-        class Remove(val index: Int) : ParameterChange()
+        data class Remove(val index: Int) : ParameterChange()
     }
 
     override fun applyOn(subject: Function): Function {
         val parameters = subject.parameters.toMutableList()
         parameterChanges.forEach { change ->
             when (change) {
-                is ParameterChange.Add ->
-                    parameters.add(change.index, change.variable)
-                is ParameterChange.Remove -> parameters.removeAt(change.index)
+                is Add -> parameters.add(change.index, change.variable)
+                is Remove -> parameters.removeAt(change.index)
             }
         }
         val body =
                 if (bodyChange != null) subject.body.apply(bodyChange)
                 else subject.body
-        return Function(
-                signature = subject.signature,
-                parameters = parameters,
-                body = body
-        )
+        return subject.copy(parameters = parameters, body = body)
     }
 }

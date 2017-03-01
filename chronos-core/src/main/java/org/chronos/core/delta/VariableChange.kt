@@ -20,5 +20,5 @@ import org.chronos.core.Node.Variable
 
 data class VariableChange(val initializerChange: String?) : Change<Variable> {
     override fun applyOn(subject: Variable): Variable =
-            Variable(subject.name, initializerChange)
+            subject.copy(initializer = initializerChange)
 }

@@ -22,7 +22,6 @@ sealed class Node {
 
     override abstract fun hashCode(): Int
 
-    /** Returns a string representation of this node. */
     override abstract fun toString(): String
 
     /**
@@ -33,7 +32,7 @@ sealed class Node {
      * @property members the members of this type (variables, functions and
      * contained types)
      */
-    class Type(
+    data class Type(
             val name: String,
             val supertypes: Set<String> = emptySet(),
             val members: Set<Node> = emptySet()
@@ -43,8 +42,6 @@ sealed class Node {
                 other is Type && name == other.name
 
         override fun hashCode(): Int = name.hashCode()
-
-        override fun toString(): String = "Type($name, $supertypes, $members)"
     }
 
     /**
@@ -54,7 +51,7 @@ sealed class Node {
      * @property initializer the canonical string representation of the
      * initializer of this variable, or `null` if it doesn't have an initializer
      */
-    class Variable(
+    data class Variable(
             val name: String,
             val initializer: String? = null
     ) : Node() {
@@ -63,11 +60,6 @@ sealed class Node {
                 other is Variable && name == other.name
 
         override fun hashCode(): Int = name.hashCode()
-
-        override fun toString(): String {
-            val initBlock = if (initializer != null) ": $initializer" else ""
-            return "Variable($name$initBlock)"
-        }
     }
 
     /**
@@ -90,7 +82,7 @@ sealed class Node {
      * @throws IllegalArgumentException if multiple `parameters` have the same
      * `name`
      */
-    class Function(
+    data class Function(
             val signature: String,
             val parameters: List<Variable>,
             val body: String? = null
@@ -109,10 +101,5 @@ sealed class Node {
                 other is Function && signature == other.signature
 
         override fun hashCode(): Int = signature.hashCode()
-
-        override fun toString(): String {
-            val bodyBlock = if (body != null) ": $body" else ""
-            return "Function(($signature, $parameters)$bodyBlock)"
-        }
     }
 }

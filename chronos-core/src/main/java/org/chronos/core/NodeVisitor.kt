@@ -64,6 +64,6 @@ abstract class NodeVisitor {
      * @param sourceFile the processed source file
      */
     fun visit(sourceFile: SourceFile) {
-        sourceFile.nodes.forEach { visit(it) }
+        sourceFile.nodes.forEach(this::visit)
     }
 }

@@ -114,17 +114,17 @@ class JavaParser : Parser() {
     private fun visit(node: MethodDeclaration): Function {
         val parameters = node.parameters()
                 .filterIsInstance<SingleVariableDeclaration>()
-        val parameterTypes = parameters.map { it.type }
+        val parameterTypes = parameters.map(SingleVariableDeclaration::getType)
         return Function(
                 signature = node.name() + "(${parameterTypes.joinToString()})",
-                parameters = parameters.map { visit(it) },
+                parameters = parameters.map(this::visit),
                 body = node.body?.toString()
         )
     }
 
     private fun visit(node: CompilationUnit): SourceFile =
             node.types().filterIsInstance<AbstractTypeDeclaration>()
-                    .map { visit(it) }.requireDistinct().let(::SourceFile)
+                    .map(this::visit).requireDistinct().let(::SourceFile)
 
     @Throws(SyntaxError::class)
     override fun parse(source: String): SourceFile {

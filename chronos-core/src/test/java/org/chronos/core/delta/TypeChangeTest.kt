@@ -46,7 +46,15 @@ class TypeChangeTest {
         assertEquals(expected, actual)
     }
 
-    /*@Test fun `test add node`() {
+    /*@Test fun `test add type`() {
+        TODO()
+    }
+
+    @Test fun `test add variable`() {
+        TODO()
+    }
+
+    @Test fun `test add function`() {
         TODO()
     }
 
