@@ -17,7 +17,6 @@
 package org.chronos.core.delta
 
 import org.chronos.core.SourceFile
-import org.chronos.core.delta.NodeChange.Companion.apply
 
 data class SourceFileChange(
         val nodeChanges: List<NodeChange>

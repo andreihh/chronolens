@@ -25,6 +25,7 @@ import org.chronos.core.SourceFile
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.core.dom.AST
 import org.eclipse.jdt.core.dom.ASTParser
+import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeMemberDeclaration
@@ -39,6 +40,7 @@ import org.eclipse.jdt.core.dom.SingleVariableDeclaration
 import org.eclipse.jdt.core.dom.TypeDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
 
+/** Java 8 language parser. */
 class JavaParser : Parser() {
     private fun <T> Collection<T>.requireDistinct(): Set<T> = toSet().let {
         require(size == it.size) { "$this contains duplicated elements!" }
@@ -130,6 +132,7 @@ class JavaParser : Parser() {
     override fun parse(source: String): SourceFile {
         try {
             val jdtParser = ASTParser.newParser(AST.JLS8)
+            jdtParser.setKind(K_COMPILATION_UNIT)
             jdtParser.setSource(source.toCharArray())
             val options = JavaCore.getOptions()
             JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)

@@ -30,8 +30,7 @@ class FunctionChangeTest {
         val parameter = Variable("s")
         val expected = Function(signature, listOf(parameter))
         val actual = Function(signature, emptyList()).apply(FunctionChange(
-                parameterChanges = listOf(ParameterChange.Add(0, parameter)),
-                bodyChange = null
+                parameterChanges = listOf(ParameterChange.Add(0, parameter))
         ))
         assertEquals(expected, actual)
     }
@@ -54,8 +53,7 @@ class FunctionChangeTest {
                         parameterChanges = listOf(
                                 ParameterChange.Add(0, parameter),
                                 ParameterChange.Remove(1)
-                        ),
-                        bodyChange = null
+                        )
                 )
         )
         assertEquals(expected, actual)

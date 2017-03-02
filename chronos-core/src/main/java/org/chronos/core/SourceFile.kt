@@ -16,9 +16,19 @@
 
 package org.chronos.core
 
+import kotlin.reflect.KClass
+
 /**
  * The code metadata of a source file.
  *
  * @property nodes the nodes contained by this source file
  */
-data class SourceFile(val nodes: Set<Node>)
+data class SourceFile(val nodes: Set<Node>) {
+    @Transient private val nodeMap = nodes.associateBy { it::class to it.key }
+
+    fun find(type: KClass<out Node>, key: String): Node? =
+            nodeMap[type to key]
+
+    inline fun <reified T : Node> find(key: String): T? =
+            find(T::class, key) as T?
+}

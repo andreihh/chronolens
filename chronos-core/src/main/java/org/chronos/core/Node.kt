@@ -16,16 +16,30 @@
 
 package org.chronos.core
 
+import kotlin.reflect.KClass
+
 /** Abstract metadata of a declaration within a source file. */
 sealed class Node {
-    override abstract fun equals(other: Any?): Boolean
+    /**
+     *  A unique key to identify this node among other nodes of the same type.
+     */
+    abstract val key: String
 
-    override abstract fun hashCode(): Int
+    /**
+     * Two nodes are equal if and only if they have the same [key] and belong to
+     * the same node subtype.
+     */
+    final override fun equals(other: Any?): Boolean =
+            other is Node && key == other.key && javaClass == other.javaClass
+
+    final override fun hashCode(): Int = key.hashCode()
 
     override abstract fun toString(): String
 
     /**
      * A type declared within a source file.
+     *
+     * The [key] of a type is its [name].
      *
      * @property name the name of this type
      * @property supertypes the supertypes of this type
@@ -37,15 +51,24 @@ sealed class Node {
             val supertypes: Set<String> = emptySet(),
             val members: Set<Node> = emptySet()
     ) : Node() {
-        /** Two types are equal if and only if they have the same [name]. */
-        override fun equals(other: Any?): Boolean =
-                other is Type && name == other.name
+        override val key: String
+            get() = name
 
-        override fun hashCode(): Int = name.hashCode()
+        @Transient private val memberMap = members.associateBy {
+            it::class to it.key
+        }
+
+        fun find(type: KClass<out Node>, key: String): Node? =
+                memberMap[type to key]
+
+        inline fun <reified T : Node> find(key: String): T? =
+                find(T::class, key) as T?
     }
 
     /**
      * A variable declared within a source file.
+     *
+     * The [key] of a function is its [name].
      *
      * @property name the name of this variable
      * @property initializer the canonical string representation of the
@@ -55,11 +78,8 @@ sealed class Node {
             val name: String,
             val initializer: String? = null
     ) : Node() {
-        /** Two variables are equal if and only if they have the same [name]. */
-        override fun equals(other: Any?): Boolean =
-                other is Variable && name == other.name
-
-        override fun hashCode(): Int = name.hashCode()
+        override val key: String
+            get() = name
     }
 
     /**
@@ -75,6 +95,8 @@ sealed class Node {
      *
      * Otherwise, the signature of a function should be simply `name`.
      *
+     * The [key] of a function is its [signature].
+     *
      * @property signature the signature of this function
      * @property parameters the parameters of this function
      * @property body the canonical string representation of the body of this
@@ -87,19 +109,13 @@ sealed class Node {
             val parameters: List<Variable>,
             val body: String? = null
     ) : Node() {
+        override val key: String
+            get() = signature
+
         init {
             require(parameters.distinctBy { it.name }.size == parameters.size) {
                 "$parameters contains duplicated parameters!"
             }
         }
-
-        /**
-         * Two functions are equal if and only if they have the same
-         * [signature].
-         */
-        override fun equals(other: Any?): Boolean =
-                other is Function && signature == other.signature
-
-        override fun hashCode(): Int = signature.hashCode()
     }
 }

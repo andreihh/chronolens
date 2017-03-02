@@ -17,11 +17,10 @@
 package org.chronos.core.delta
 
 import org.chronos.core.Node.Type
-import org.chronos.core.delta.NodeChange.Companion.apply
 
 data class TypeChange(
-        val supertypeChanges: List<SupertypeChange>,
-        val memberChanges: List<NodeChange>
+        val supertypeChanges: List<SupertypeChange> = emptyList(),
+        val memberChanges: List<NodeChange> = emptyList()
 ) : Change<Type> {
     sealed class SupertypeChange {
         data class Add(val name: String) : SupertypeChange()

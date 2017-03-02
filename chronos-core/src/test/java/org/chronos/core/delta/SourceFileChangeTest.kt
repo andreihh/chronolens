@@ -16,8 +16,21 @@
 
 package org.chronos.core.delta
 
+import org.chronos.core.Node.Type
+import org.chronos.core.SourceFile
+import org.chronos.core.delta.Change.Companion.apply
+import org.chronos.core.delta.NodeChange.Add
+import org.chronos.test.assertEquals
+
 import org.junit.Test
 
 class SourceFileChangeTest {
-    @Test fun `test change`() {}
+    @Test fun `test add type`() {
+        val addedType = Type("IInterface")
+        val expected = SourceFile(setOf(addedType))
+        val actual = SourceFile(emptySet()).apply(SourceFileChange(
+                nodeChanges = listOf(Add(addedType))
+        ))
+        assertEquals(expected, actual)
+    }
 }

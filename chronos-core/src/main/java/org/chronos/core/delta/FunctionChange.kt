@@ -22,8 +22,8 @@ import org.chronos.core.delta.FunctionChange.ParameterChange.Add
 import org.chronos.core.delta.FunctionChange.ParameterChange.Remove
 
 data class FunctionChange(
-        val parameterChanges: List<ParameterChange>,
-        val bodyChange: BlockChange?
+        val parameterChanges: List<ParameterChange> = emptyList(),
+        val bodyChange: BlockChange? = null
 ) : Change<Function> {
     sealed class ParameterChange {
         data class Add(
