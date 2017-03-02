@@ -29,38 +29,29 @@ import org.chronos.core.delta.NodeChange.ChangeNode
 import org.chronos.core.delta.NodeChange.Remove
 import kotlin.reflect.KClass
 
-/*fun SourceFile.diff(other: SourceFile): SourceFileChange {
-    val add = other.nodes.filter { node -> node !in nodes }.map { node ->
-        when (node) {
-            is Type -> AddType(node)
-            is Variable -> AddVariable(node)
-            is Function -> AddFunction(node)
-        }
-    }
+fun SourceFile.diff(other: SourceFile): SourceFileChange {
+    val add = other.nodes.filter { node -> node !in nodes }.map(::Add)
     val remove = nodes.filter { node -> node !in other.nodes }.map { node ->
-        when (node) {
-            is Type -> RemoveType(node.name)
-            is Variable -> RemoveVariable(node.name)
-            is Function -> RemoveFunction(node.signature)
-        }
+        Remove(node::class, node.key)
     }
     val change = nodes.filter { node -> node in other.nodes }.map { node ->
+        val key = node.key
         when (node) {
             is Type -> null
             is Variable -> {
-                val name = node.name
                 val otherNode = checkNotNull(other.find<Variable>(node.name))
                 if (node.initializer != otherNode.initializer)
-                    ChangeVariable(otherNode.initializer)
+                    ChangeNode<Variable>(
+                            key = key,
+                            change = VariableChange(otherNode.initializer)
+                    )
                 else null
             }
             is Function -> null
         }
     }.filterNotNull()
-    TODO()
-}*/
-
-fun Node.diff(other: Node): Unit? = TODO()
+    return SourceFileChange(add + remove + change)
+}
 
 // TODO: clean-up these two methods
 fun String?.apply(changes: List<BlockChange>): String? =
