@@ -17,20 +17,11 @@
 package org.chronos.core.delta
 
 import org.chronos.core.Node
-import org.chronos.core.Node.Function
-import org.chronos.core.Node.Type
-import org.chronos.core.Node.Variable
 
 import kotlin.reflect.KClass
 
 sealed class NodeChange {
     data class Add(val node: Node) : NodeChange()
-
-    /*data class AddType(val type: Type) : NodeChange()
-
-    data class AddVariable(val variable: Variable) : NodeChange()
-
-    data class AddFunction(val function: Function) : NodeChange()*/
 
     data class Remove(
             val type: KClass<out Node>,
@@ -43,38 +34,16 @@ sealed class NodeChange {
         }
     }
 
-    /*data class RemoveType(val name: String) : NodeChange()
-
-    data class RemoveVariable(val name: String) : NodeChange()
-
-    data class RemoveFunction(val signature: String) : NodeChange()*/
-
     data class ChangeNode<T : Node>(
             val type: KClass<T>,
             val key: String,
             val change: Change<T>
     ) : NodeChange() {
         companion object {
-            @JvmStatic
-            inline operator fun <reified T : Node> invoke(
+            @JvmStatic inline operator fun <reified T : Node> invoke(
                     key: String,
                     change: Change<T>
             ): ChangeNode<T> = ChangeNode(T::class, key, change)
         }
     }
-
-    /*data class ChangeType(
-            val name: String,
-            val typeChange: TypeChange
-    ) : NodeChange()
-
-    data class ChangeVariable(
-            val name: String,
-            val variableChange: VariableChange
-    ) : NodeChange()
-
-    data class ChangeFunction(
-            val signature: String,
-            val functionChange: FunctionChange
-    ) : NodeChange()*/
 }

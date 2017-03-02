@@ -21,17 +21,8 @@ import org.chronos.core.Node.Type
 import org.chronos.core.Node.Variable
 import org.chronos.core.delta.Change.Companion.apply
 import org.chronos.core.delta.NodeChange.Add
-/*import org.chronos.core.delta.NodeChange.AddFunction
-import org.chronos.core.delta.NodeChange.AddType
-import org.chronos.core.delta.NodeChange.AddVariable
-import org.chronos.core.delta.NodeChange.ChangeFunction*/
 import org.chronos.core.delta.NodeChange.ChangeNode
-//import org.chronos.core.delta.NodeChange.ChangeType
-//import org.chronos.core.delta.NodeChange.ChangeVariable
 import org.chronos.core.delta.NodeChange.Remove
-/*import org.chronos.core.delta.NodeChange.RemoveFunction
-import org.chronos.core.delta.NodeChange.RemoveType
-import org.chronos.core.delta.NodeChange.RemoveVariable*/
 import org.chronos.core.delta.TypeChange.SupertypeChange
 import org.chronos.test.assertEquals
 
@@ -107,7 +98,9 @@ class TypeChangeTest {
         val actual = Type(
                 name = typeName,
                 members = setOf(Variable(removedName))
-        ).apply(TypeChange(memberChanges = listOf(Remove<Variable>(removedName))))
+        ).apply(TypeChange(
+                memberChanges = listOf(Remove<Variable>(removedName))
+        ))
         assertEquals(expected, actual)
     }
 
@@ -173,9 +166,7 @@ class TypeChangeTest {
                 members = setOf(Function(changedSignature, emptyList(), "{}"))
         ).apply(TypeChange(memberChanges = listOf(ChangeNode<Function>(
                 key = changedSignature,
-                change = FunctionChange(
-                        bodyChange = BlockChange.Set(null)
-                )
+                change = FunctionChange(bodyChange = BlockChange.Set(null))
         ))))
         assertEquals(expected, actual)
     }
