@@ -18,6 +18,12 @@ package org.chronos.core.delta
 
 import org.chronos.core.SourceFile
 
+/**
+ * A change which should be applied to a [SourceFile].
+ *
+ * @property nodeChanges the list of changes which should be applied to the set
+ * of `nodes`
+ */
 data class SourceFileChange(
         val nodeChanges: List<NodeChange>
 ) : Change<SourceFile> {

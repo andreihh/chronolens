@@ -17,23 +17,45 @@
 package org.chronos.core.delta
 
 import org.chronos.core.Node.Type
+import org.chronos.core.delta.TypeChange.SupertypeChange.AddSupertype
+import org.chronos.core.delta.TypeChange.SupertypeChange.RemoveSupertype
 
+/**
+ * A changed which should be applied to a [Type].
+ *
+ * @property supertypeChanges the list of changes which should be applied to the
+ * `supertypes`
+ * @property memberChanges the list of changes which should be applied to the
+ * `members`
+ */
 data class TypeChange(
         val supertypeChanges: List<SupertypeChange> = emptyList(),
         val memberChanges: List<NodeChange> = emptyList()
 ) : Change<Type> {
+    /** A change which should be applied to a set of supertypes. */
     sealed class SupertypeChange {
-        data class Add(val name: String) : SupertypeChange()
+        /**
+         * Indicates that a supertype should be added to the set of supertypes.
+         *
+         * @property name the name of the supertype which should be added
+         */
+        data class AddSupertype(val name: String) : SupertypeChange()
 
-        data class Remove(val name: String) : SupertypeChange()
+        /**
+         * Indicates that a supertype should be removed from the set of
+         * supertypes.
+         *
+         * @property name the name of the supertype which should be removed
+         */
+        data class RemoveSupertype(val name: String) : SupertypeChange()
     }
 
     override fun applyOn(subject: Type): Type {
         val supertypes = subject.supertypes.toMutableSet()
         supertypeChanges.forEach { change ->
             when (change) {
-                is SupertypeChange.Add -> supertypes.add(change.name)
-                is SupertypeChange.Remove -> supertypes.remove(change.name)
+                is AddSupertype -> supertypes.add(change.name)
+                is RemoveSupertype -> supertypes.remove(change.name)
             }
         }
         val members = subject.members.apply(memberChanges)

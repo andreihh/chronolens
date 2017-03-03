@@ -18,6 +18,11 @@ package org.chronos.core.delta
 
 import org.chronos.core.Node.Variable
 
+/**
+ * A change which should be applied to a [Variable].
+ *
+ * @property initializerChange the new initializer of the variable
+ */
 data class VariableChange(val initializerChange: String?) : Change<Variable> {
     override fun applyOn(subject: Variable): Variable =
             subject.copy(initializer = initializerChange)

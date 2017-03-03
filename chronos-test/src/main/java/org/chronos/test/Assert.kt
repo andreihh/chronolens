@@ -24,8 +24,8 @@ import org.chronos.core.Node.Type
 import org.chronos.core.Node.Variable
 import org.chronos.core.SourceFile
 
-import kotlin.test.fail
 import kotlin.test.assertEquals as assertEqualsKt
+import kotlin.test.assertNotNull
 
 fun assertEquals(
         expected: SourceFile,
@@ -33,20 +33,25 @@ fun assertEquals(
         message: String? = null
 ) {
     assertEqualsKt(expected.nodes.size, actual.nodes.size, message)
-    val nodes = expected.nodes.zip(actual.nodes)
-    nodes.forEach { (expectedNode, actualNode) ->
-        assertEquals(expectedNode, actualNode)
+    expected.nodes.forEach { expectedNode ->
+        val actualNode = actual.find(
+                expectedNode::class,
+                expectedNode.identifier
+        )
+        assertNotNull(actualNode, message)
+        assertEquals(expectedNode, actualNode!!, message)
     }
 }
 
 fun assertEquals(expected: Node, actual: Node, message: String? = null) {
+    assertEqualsKt(expected::class, actual::class, message)
     when {
         expected is Type && actual is Type -> assertEquals(expected, actual)
         expected is Variable && actual is Variable ->
             assertEquals(expected, actual)
         expected is Function && actual is Function ->
             assertEquals(expected, actual)
-        else -> fail(message)
+        else -> throw AssertionError("Invalid node types!")
     }
 }
 
@@ -54,9 +59,13 @@ fun assertEquals(expected: Type, actual: Type, message: String? = null) {
     assertEqualsKt(expected.name, actual.name, message)
     assertEqualsKt(expected.supertypes, actual.supertypes, message)
     assertEqualsKt(expected.members.size, actual.members.size, message)
-    val members = expected.members.zip(actual.members)
-    members.forEach { (expectedMember, actualMember) ->
-        assertEquals(expectedMember, actualMember, message)
+    expected.members.forEach { expectedMember ->
+        val actualMember = actual.find(
+                expectedMember::class,
+                expectedMember.identifier
+        )
+        assertNotNull(actualMember, message)
+        assertEquals(expectedMember, actualMember!!, message)
     }
 }
 

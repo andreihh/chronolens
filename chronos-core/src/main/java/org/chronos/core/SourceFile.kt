@@ -24,7 +24,8 @@ import kotlin.reflect.KClass
  * @property nodes the nodes contained by this source file
  */
 data class SourceFile(val nodes: Set<Node>) {
-    @Transient private val nodeMap = nodes.associateBy { it::class to it.key }
+    @Transient private val nodeMap =
+            nodes.associateBy { it::class to it.identifier }
 
     fun find(type: KClass<out Node>, key: String): Node? =
             nodeMap[type to key]

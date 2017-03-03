@@ -18,28 +18,50 @@ package org.chronos.core.delta
 
 import org.chronos.core.Node.Function
 import org.chronos.core.Node.Variable
-import org.chronos.core.delta.FunctionChange.ParameterChange.Add
-import org.chronos.core.delta.FunctionChange.ParameterChange.Remove
+import org.chronos.core.delta.FunctionChange.ParameterChange.AddParameter
+import org.chronos.core.delta.FunctionChange.ParameterChange.RemoveParameter
 
+/**
+ * A change which should be applied on a [Function].
+ *
+ * @property parameterChanges the list of changes which should be applied to the
+ * `parameters`
+ * @property bodyChange the change which should be applied to the `body`, or
+ * `null` if the `body` shouldn't be changed
+ */
 data class FunctionChange(
         val parameterChanges: List<ParameterChange> = emptyList(),
         val bodyChange: BlockChange? = null
 ) : Change<Function> {
+    /** A changed which should be applied to a list of function parameters. */
     sealed class ParameterChange {
-        data class Add(
+        /**
+         * Indicates that a parameter should be added in a parameter list.
+         *
+         * @property index the position in the parameter list where this
+         * parameter should be added
+         * @property variable the added parameter
+         */
+        data class AddParameter(
                 val index: Int,
                 val variable: Variable
         ) : ParameterChange()
 
-        data class Remove(val index: Int) : ParameterChange()
+        /**
+         * Indicates that a parameter should be removed from a parameter list.
+         *
+         * @property index the position in the parameter list of the parameter
+         * which should be removed
+         */
+        data class RemoveParameter(val index: Int) : ParameterChange()
     }
 
     override fun applyOn(subject: Function): Function {
         val parameters = subject.parameters.toMutableList()
         parameterChanges.forEach { change ->
             when (change) {
-                is Add -> parameters.add(change.index, change.variable)
-                is Remove -> parameters.removeAt(change.index)
+                is AddParameter -> parameters.add(change.index, change.variable)
+                is RemoveParameter -> parameters.removeAt(change.index)
             }
         }
         val body =

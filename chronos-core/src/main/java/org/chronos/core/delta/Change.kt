@@ -16,18 +16,38 @@
 
 package org.chronos.core.delta
 
+/**
+ * An abstract change to be applied on an object.
+ *
+ * @param T the type of the changed object
+ */
 interface Change<T> {
     companion object {
-        fun <T> T.apply(change: Change<T>): T = change.applyOn(this)
+        /**
+         * Applies the given `change` on this object, or does nothing if
+         * `change` is `null`.
+         */
+        fun <T> T.apply(change: Change<T>?): T =
+                if (change != null) change.applyOn(this) else this
 
+        /** Applies the given `changes` on this object. */
         fun <T> T.apply(changes: List<Change<T>>): T =
                 changes.fold(this) { subject, change -> subject.apply(change) }
 
-        fun <T> T.apply(vararg changes: Change<T>): T = apply(changes.asList())
+        fun <T> T.apply(
+                firstChange: Change<T>,
+                secondChange: Change<T>,
+                vararg remainingChanges: Change<T>
+        ): T = apply(listOf(firstChange, secondChange, *remainingChanges))
     }
 
     /**
-     * @throws IllegalStateException
+     * Applies this change on the given `subject`.
+     *
+     * @param subject the object which should be changed
+     * @return the object resulting from the applied change
+     * @throws IllegalStateException if the object has an invalid state and this
+     * change couldn't be applied
      */
     fun applyOn(subject: T): T
 }

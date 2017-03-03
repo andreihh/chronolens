@@ -20,10 +20,11 @@ import org.chronos.core.Node.Function
 import org.chronos.core.Node.Type
 import org.chronos.core.Node.Variable
 import org.chronos.core.delta.Change.Companion.apply
-import org.chronos.core.delta.NodeChange.Add
+import org.chronos.core.delta.NodeChange.AddNode
 import org.chronos.core.delta.NodeChange.ChangeNode
-import org.chronos.core.delta.NodeChange.Remove
-import org.chronos.core.delta.TypeChange.SupertypeChange
+import org.chronos.core.delta.NodeChange.RemoveNode
+import org.chronos.core.delta.TypeChange.SupertypeChange.AddSupertype
+import org.chronos.core.delta.TypeChange.SupertypeChange.RemoveSupertype
 import org.chronos.test.assertEquals
 
 import org.junit.Test
@@ -34,7 +35,7 @@ class TypeChangeTest {
         val supertype = "IInterface"
         val expected = Type(typeName, setOf(supertype))
         val actual = Type(typeName).apply(TypeChange(
-                supertypeChanges = listOf(SupertypeChange.Add(supertype)),
+                supertypeChanges = listOf(AddSupertype(supertype)),
                 memberChanges = emptyList()
         ))
         assertEquals(expected, actual)
@@ -45,7 +46,7 @@ class TypeChangeTest {
         val supertype = "IInterface"
         val expected = Type(typeName)
         val actual = Type(typeName, setOf(supertype)).apply(TypeChange(
-                supertypeChanges = listOf(SupertypeChange.Remove(supertype))
+                supertypeChanges = listOf(RemoveSupertype(supertype))
         ))
         assertEquals(expected, actual)
     }
@@ -55,7 +56,7 @@ class TypeChangeTest {
         val addedType = Type("IInterface")
         val expected = Type(name = typeName, members = setOf(addedType))
         val actual = Type(typeName).apply(TypeChange(
-                memberChanges = listOf(Add(addedType))
+                memberChanges = listOf(AddNode(addedType))
         ))
         assertEquals(expected, actual)
     }
@@ -65,7 +66,7 @@ class TypeChangeTest {
         val variable = Variable("version")
         val expected = Type(name = typeName, members = setOf(variable))
         val actual = Type(typeName).apply(TypeChange(
-                memberChanges = listOf(Add(variable))
+                memberChanges = listOf(AddNode(variable))
         ))
         assertEquals(expected, actual)
     }
@@ -75,7 +76,7 @@ class TypeChangeTest {
         val function = Function("getVersion()", emptyList())
         val expected = Type(name = typeName, members = setOf(function))
         val actual = Type(typeName).apply(TypeChange(
-                memberChanges = listOf(Add(function))
+                memberChanges = listOf(AddNode(function))
         ))
         assertEquals(expected, actual)
     }
@@ -87,7 +88,9 @@ class TypeChangeTest {
         val actual = Type(
                 name = typeName,
                 members = setOf(Type(removedName))
-        ).apply(TypeChange(memberChanges = listOf(Remove<Type>(removedName))))
+        ).apply(TypeChange(
+                memberChanges = listOf(RemoveNode<Type>(removedName))
+        ))
         assertEquals(expected, actual)
     }
 
@@ -99,7 +102,7 @@ class TypeChangeTest {
                 name = typeName,
                 members = setOf(Variable(removedName))
         ).apply(TypeChange(
-                memberChanges = listOf(Remove<Variable>(removedName))
+                memberChanges = listOf(RemoveNode<Variable>(removedName))
         ))
         assertEquals(expected, actual)
     }
@@ -112,7 +115,7 @@ class TypeChangeTest {
                 name = typeName,
                 members = setOf(Function(removedSignature, emptyList()))
         ).apply(TypeChange(
-                memberChanges = listOf(Remove<Function>(removedSignature))
+                memberChanges = listOf(RemoveNode<Function>(removedSignature))
         ))
         assertEquals(expected, actual)
     }
@@ -129,9 +132,9 @@ class TypeChangeTest {
                         supertypes = setOf(supertype)
                 ))
         ).apply(TypeChange(memberChanges = listOf(ChangeNode<Type>(
-                key = changedName,
+                identifier = changedName,
                 change = TypeChange(supertypeChanges = listOf(
-                        SupertypeChange.Remove(supertype)
+                        RemoveSupertype(supertype)
                 ))
         ))))
         assertEquals(expected, actual)
@@ -148,7 +151,7 @@ class TypeChangeTest {
                 name = typeName,
                 members = setOf(Variable(changedName, "1"))
         ).apply(TypeChange(memberChanges = listOf(ChangeNode<Variable>(
-                key = changedName,
+                identifier = changedName,
                 change = VariableChange(null)
         ))))
         assertEquals(expected, actual)
@@ -165,7 +168,7 @@ class TypeChangeTest {
                 name = typeName,
                 members = setOf(Function(changedSignature, emptyList(), "{}"))
         ).apply(TypeChange(memberChanges = listOf(ChangeNode<Function>(
-                key = changedSignature,
+                identifier = changedSignature,
                 change = FunctionChange(bodyChange = BlockChange.Set(null))
         ))))
         assertEquals(expected, actual)

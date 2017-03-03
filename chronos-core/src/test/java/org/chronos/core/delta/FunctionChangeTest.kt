@@ -19,7 +19,8 @@ package org.chronos.core.delta
 import org.chronos.core.Node.Function
 import org.chronos.core.Node.Variable
 import org.chronos.core.delta.Change.Companion.apply
-import org.chronos.core.delta.FunctionChange.ParameterChange
+import org.chronos.core.delta.FunctionChange.ParameterChange.AddParameter
+import org.chronos.core.delta.FunctionChange.ParameterChange.RemoveParameter
 import org.chronos.test.assertEquals
 
 import org.junit.Test
@@ -30,7 +31,7 @@ class FunctionChangeTest {
         val parameter = Variable("s")
         val expected = Function(signature, listOf(parameter))
         val actual = Function(signature, emptyList()).apply(FunctionChange(
-                parameterChanges = listOf(ParameterChange.Add(0, parameter))
+                parameterChanges = listOf(AddParameter(0, parameter))
         ))
         assertEquals(expected, actual)
     }
@@ -39,7 +40,7 @@ class FunctionChangeTest {
         val signature = "println()"
         val expected = Function(signature, emptyList())
         val actual = Function(signature, listOf(Variable("s"))).apply(
-                FunctionChange(listOf(ParameterChange.Remove(0)), null)
+                FunctionChange(listOf(RemoveParameter(0)), null)
         )
         assertEquals(expected, actual)
     }
@@ -51,8 +52,8 @@ class FunctionChangeTest {
         val actual = Function(signature, listOf(Variable("t"))).apply(
                 FunctionChange(
                         parameterChanges = listOf(
-                                ParameterChange.Add(0, parameter),
-                                ParameterChange.Remove(1)
+                                AddParameter(0, parameter),
+                                RemoveParameter(1)
                         )
                 )
         )
@@ -80,8 +81,8 @@ class FunctionChangeTest {
                 body = "{\n  j = 2;\n}\n"
         ).apply(FunctionChange(
                 parameterChanges = listOf(
-                        ParameterChange.Add(1, parameter),
-                        ParameterChange.Remove(0)
+                        AddParameter(1, parameter),
+                        RemoveParameter(0)
                 ),
                 bodyChange = BlockChange.Set(body)
         ))

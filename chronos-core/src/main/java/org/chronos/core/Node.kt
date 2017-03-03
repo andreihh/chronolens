@@ -21,25 +21,26 @@ import kotlin.reflect.KClass
 /** Abstract metadata of a declaration within a source file. */
 sealed class Node {
     /**
-     *  A unique key to identify this node among other nodes of the same type.
+     *  A unique identifier other nodes of the same type.
      */
-    abstract val key: String
+    abstract val identifier: String
 
     /**
-     * Two nodes are equal if and only if they have the same [key] and belong to
-     * the same node subtype.
+     * Two nodes are equal if and only if they have the same [identifier] and
+     * belong to the same node subtype.
      */
     final override fun equals(other: Any?): Boolean =
-            other is Node && key == other.key && javaClass == other.javaClass
+            other is Node && identifier == other.identifier
+                    && javaClass == other.javaClass
 
-    final override fun hashCode(): Int = key.hashCode()
+    final override fun hashCode(): Int = identifier.hashCode()
 
     override abstract fun toString(): String
 
     /**
      * A type declared within a source file.
      *
-     * The [key] of a type is its [name].
+     * The [identifier] of a type is its [name].
      *
      * @property name the name of this type
      * @property supertypes the supertypes of this type
@@ -51,24 +52,23 @@ sealed class Node {
             val supertypes: Set<String> = emptySet(),
             val members: Set<Node> = emptySet()
     ) : Node() {
-        override val key: String
+        override val identifier: String
             get() = name
 
-        @Transient private val memberMap = members.associateBy {
-            it::class to it.key
-        }
+        @Transient private val memberMap =
+                members.associateBy { it::class to it.identifier }
 
-        fun find(type: KClass<out Node>, key: String): Node? =
-                memberMap[type to key]
+        fun find(type: KClass<out Node>, identifier: String): Node? =
+                memberMap[type to identifier]
 
-        inline fun <reified T : Node> find(key: String): T? =
-                find(T::class, key) as T?
+        inline fun <reified T : Node> find(identifier: String): T? =
+                find(T::class, identifier) as T?
     }
 
     /**
      * A variable declared within a source file.
      *
-     * The [key] of a function is its [name].
+     * The [identifier] of a variable is its [name].
      *
      * @property name the name of this variable
      * @property initializer the canonical string representation of the
@@ -78,7 +78,7 @@ sealed class Node {
             val name: String,
             val initializer: String? = null
     ) : Node() {
-        override val key: String
+        override val identifier: String
             get() = name
     }
 
@@ -87,15 +87,12 @@ sealed class Node {
      *
      * The parameters of a function must have unique names.
      *
+     * The [identifier] of a function is its [signature].
+     *
      * The signature of a function should be `name(type_1, type_2, ...)` if
-     * function overloading at the type level is allowed.
-     *
-     * The signature of a function should be `name(n)`, where n is the arity of
-     * the function, if function overloading at the arity level is allowed.
-     *
-     * Otherwise, the signature of a function should be simply `name`.
-     *
-     * The [key] of a function is its [signature].
+     * function overloading at the type level is allowed, or `name(n)` (where
+     * `n` is the arity of the function) if function overloading at the arity
+     * level is allowed, or `name` otherwise.
      *
      * @property signature the signature of this function
      * @property parameters the parameters of this function
@@ -109,7 +106,7 @@ sealed class Node {
             val parameters: List<Variable>,
             val body: String? = null
     ) : Node() {
-        override val key: String
+        override val identifier: String
             get() = signature
 
         init {

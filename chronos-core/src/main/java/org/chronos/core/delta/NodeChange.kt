@@ -21,29 +21,30 @@ import org.chronos.core.Node
 import kotlin.reflect.KClass
 
 sealed class NodeChange {
-    data class Add(val node: Node) : NodeChange()
+    data class AddNode(val node: Node) : NodeChange()
 
-    data class Remove(
+    data class RemoveNode(
             val type: KClass<out Node>,
-            val key: String
+            val identifier: String
     ) : NodeChange() {
         companion object {
             @JvmStatic
-            inline operator fun <reified T : Node> invoke(key: String): Remove =
-                    Remove(T::class, key)
+            inline operator fun <reified T : Node> invoke(
+                    identifier: String
+            ): RemoveNode = RemoveNode(T::class, identifier)
         }
     }
 
     data class ChangeNode<T : Node>(
             val type: KClass<T>,
-            val key: String,
+            val identifier: String,
             val change: Change<T>
     ) : NodeChange() {
         companion object {
             @JvmStatic inline operator fun <reified T : Node> invoke(
-                    key: String,
+                    identifier: String,
                     change: Change<T>
-            ): ChangeNode<T> = ChangeNode(T::class, key, change)
+            ): ChangeNode<T> = ChangeNode(T::class, identifier, change)
         }
     }
 }
