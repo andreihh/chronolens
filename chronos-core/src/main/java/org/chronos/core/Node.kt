@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
 /** Abstract metadata of a declaration within a source file. */
 sealed class Node {
     /**
-     *  A unique identifier other nodes of the same type.
+     *  A unique identifier among other nodes of the same type.
      */
     abstract val identifier: String
 

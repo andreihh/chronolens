@@ -1,6 +1,6 @@
 rootProject.name = 'chronos'
 
 include 'chronos-core'
-include 'chronos-java'
 include 'chronos-test'
+include 'chronos-java'
 

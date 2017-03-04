@@ -3,6 +3,7 @@
 ### Features
 
 - an abstract model which contains code metadata
+- an abstract transaction model to represent diffs between code metadata models
 - a Java source file parser which extracts Java code metadata
 
 ### Using Chronos
