@@ -34,14 +34,6 @@ import org.chronos.core.delta.TypeTransaction.SupertypeChange.RemoveSupertype
 
 import kotlin.reflect.KClass
 
-/** Returns the hash key of this node. */
-private val NodeChange.key: Pair<KClass<out Node>, String>
-    get() = when (this) {
-        is AddNode -> node::class to node.identifier
-        is RemoveNode -> type to identifier
-        is ChangeNode<*> -> type to identifier
-    }
-
 /**
  * Returns the transaction which should be applied on this source file to obtain the
  * `other` source file, or `null` if they are identical.
@@ -59,19 +51,6 @@ fun SourceFile.diff(other: SourceFile): SourceFileTransaction {
         node.diff(checkNotNull(otherNode))
     }.filterNotNull()
     return SourceFileTransaction(addedNodes + removedNodes + changedNodes)
-}
-
-/** Utility method. */
-private fun Node.diff(other: Node): ChangeNode<*>? = when (this) {
-    is Type -> diff(other as Type)?.let { change ->
-        ChangeNode<Type>(identifier, change)
-    }
-    is Variable -> diff(other as Variable)?.let { change ->
-        ChangeNode<Variable>(identifier, change)
-    }
-    is Function -> diff(other as Function)?.let { change ->
-        ChangeNode<Function>(identifier, change)
-    }
 }
 
 /**
@@ -173,4 +152,25 @@ internal fun Set<Node>.apply(changes: List<NodeChange>): Set<Node> {
         }
     }
     return members.values.toSet()
+}
+
+/** Returns the hash key of this node. */
+private val NodeChange.key: Pair<KClass<out Node>, String>
+    get() = when (this) {
+        is AddNode -> node::class to node.identifier
+        is RemoveNode -> type to identifier
+        is ChangeNode<*> -> type to identifier
+    }
+
+/** Utility method. */
+private fun Node.diff(other: Node): ChangeNode<*>? = when (this) {
+    is Type -> diff(other as Type)?.let { change ->
+        ChangeNode<Type>(identifier, change)
+    }
+    is Variable -> diff(other as Variable)?.let { change ->
+        ChangeNode<Variable>(identifier, change)
+    }
+    is Function -> diff(other as Function)?.let { change ->
+        ChangeNode<Function>(identifier, change)
+    }
 }
