@@ -27,9 +27,25 @@ data class SourceFile(val nodes: Set<Node>) {
     @Transient private val nodeMap =
             nodes.associateBy { it::class to it.identifier }
 
-    fun find(type: KClass<out Node>, key: String): Node? =
-            nodeMap[type to key]
+    /**
+     * Returns the node with the specified `type` and `identifier`.
+     *
+     * @param nodeType the class object of the requested node
+     * @param identifier the identifier of the requested node
+     * @return the requested node, or `null` if this source file doesn't contain
+     * a node with the specified `type` and `identifier`
+     */
+    fun find(nodeType: KClass<out Node>, identifier: String): Node? =
+            nodeMap[nodeType to identifier]
 
-    inline fun <reified T : Node> find(key: String): T? =
-            find(T::class, key) as T?
+    /**
+     * Returns the node with the specified type and `identifier`.
+     *
+     * @param T the type of the requested node
+     * @param identifier the identifier of the requested node
+     * @return the requested node, or `null` if this source file doesn't contain
+     * a node with the specified type and `identifier`
+     */
+    inline fun <reified T : Node> find(identifier: String): T? =
+            find(T::class, identifier) as T?
 }

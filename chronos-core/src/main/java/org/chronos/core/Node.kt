@@ -58,9 +58,25 @@ sealed class Node {
         @Transient private val memberMap =
                 members.associateBy { it::class to it.identifier }
 
-        fun find(type: KClass<out Node>, identifier: String): Node? =
-                memberMap[type to identifier]
+        /**
+         * Returns the member with the specified `type` and `identifier`.
+         *
+         * @param nodeType the class object of the requested member node
+         * @param identifier the identifier of the requested member node
+         * @return the requested member node, or `null` if this node doesn't
+         * contain a member with the specified `type` and `identifier`
+         */
+        fun find(nodeType: KClass<out Node>, identifier: String): Node? =
+                memberMap[nodeType to identifier]
 
+        /**
+         * Returns the member with the specified type and `identifier`.
+         *
+         * @param T the type of the requested member node
+         * @param identifier the identifier of the requested member node
+         * @return the requested member node, or `null` if this node doesn't
+         * contain a member with the specified type and `identifier`
+         */
         inline fun <reified T : Node> find(identifier: String): T? =
                 find(T::class, identifier) as T?
     }
