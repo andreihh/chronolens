@@ -8,4 +8,5 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
 
 dependencies {
     testCompile project(':chronos-test')
+    testCompile project(':chronos-java')
 }

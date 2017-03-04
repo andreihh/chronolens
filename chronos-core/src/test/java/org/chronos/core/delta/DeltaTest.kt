@@ -21,25 +21,31 @@ import org.chronos.core.Node.Type
 import org.chronos.core.Node.Variable
 import org.chronos.core.SourceFile
 import org.chronos.core.delta.Transaction.Companion.apply
+import org.chronos.java.JavaParser
 import org.chronos.test.assertEquals
 
 import org.junit.Test
+import java.net.URL
 
 class DeltaTest {
     fun test(src: SourceFile, dst: SourceFile) {
         assertEquals(dst, src.apply(src.diff(dst)))
+        assertEquals(src, dst.apply(dst.diff(src)))
     }
 
     fun test(src: Type, dst: Type) {
         assertEquals(dst, src.apply(src.diff(dst)))
+        assertEquals(src, dst.apply(dst.diff(src)))
     }
 
     fun test(src: Variable, dst: Variable) {
         assertEquals(dst, src.apply(src.diff(dst)))
+        assertEquals(src, dst.apply(dst.diff(src)))
     }
 
     fun test(src: Function, dst: Function) {
         assertEquals(dst, src.apply(src.diff(dst)))
+        assertEquals(src, dst.apply(dst.diff(src)))
     }
 
     @Test fun `test equal empty source files`() {
@@ -93,6 +99,15 @@ class DeltaTest {
                 Variable("DEBUG", "true"),
                 Function("main(String[])", listOf(Variable("args")), "{}")
         ))
+        test(src, dst)
+    }
+
+    @Test fun `test network`() {
+        val srcUrl = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/826e565b7cfba8de05f9f652c1541df8e8e7efe2/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
+        val dstUrl = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/5e946c270018c71bf25778bc2dc25e5a9dd809b0/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
+        val parser = JavaParser()
+        val src = parser.parse(srcUrl)
+        val dst = parser.parse(dstUrl)
         test(src, dst)
     }
 }
