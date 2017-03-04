@@ -18,19 +18,19 @@ package org.chronos.core.delta
 
 import org.chronos.core.Node.Function
 import org.chronos.core.Node.Variable
-import org.chronos.core.delta.Change.Companion.apply
-import org.chronos.core.delta.FunctionChange.ParameterChange.AddParameter
-import org.chronos.core.delta.FunctionChange.ParameterChange.RemoveParameter
+import org.chronos.core.delta.FunctionTransaction.ParameterChange.AddParameter
+import org.chronos.core.delta.FunctionTransaction.ParameterChange.RemoveParameter
+import org.chronos.core.delta.Transaction.Companion.apply
 import org.chronos.test.assertEquals
 
 import org.junit.Test
 
-class FunctionChangeTest {
+class FunctionTransactionTest {
     @Test fun `test add parameter`() {
         val signature = "println(String)"
         val parameter = Variable("s")
         val expected = Function(signature, listOf(parameter))
-        val actual = Function(signature, emptyList()).apply(FunctionChange(
+        val actual = Function(signature, emptyList()).apply(FunctionTransaction(
                 parameterChanges = listOf(AddParameter(0, parameter))
         ))
         assertEquals(expected, actual)
@@ -40,7 +40,7 @@ class FunctionChangeTest {
         val signature = "println()"
         val expected = Function(signature, emptyList())
         val actual = Function(signature, listOf(Variable("s"))).apply(
-                FunctionChange(listOf(RemoveParameter(0)), null)
+                FunctionTransaction(listOf(RemoveParameter(0)), null)
         )
         assertEquals(expected, actual)
     }
@@ -50,7 +50,7 @@ class FunctionChangeTest {
         val parameter = Variable("s")
         val expected = Function(signature, listOf(parameter))
         val actual = Function(signature, listOf(Variable("t"))).apply(
-                FunctionChange(
+                FunctionTransaction(
                         parameterChanges = listOf(
                                 AddParameter(0, parameter),
                                 RemoveParameter(1)
@@ -65,7 +65,7 @@ class FunctionChangeTest {
         val body = "{\n  i = 1;\n}\n"
         val expected = Function(signature, emptyList(), body)
         val actual = Function(signature, emptyList(), "{\n  j = 2;\n}\n").apply(
-                FunctionChange(emptyList(), BlockChange.Set(body))
+                FunctionTransaction(emptyList(), BlockChange.Set(body))
         )
         assertEquals(expected, actual)
     }
@@ -79,7 +79,7 @@ class FunctionChangeTest {
                 signature = signature,
                 parameters = listOf(Variable("t")),
                 body = "{\n  j = 2;\n}\n"
-        ).apply(FunctionChange(
+        ).apply(FunctionTransaction(
                 parameterChanges = listOf(
                         AddParameter(1, parameter),
                         RemoveParameter(0)

@@ -20,8 +20,7 @@ import org.chronos.core.Node.Function
 import org.chronos.core.Node.Type
 import org.chronos.core.Node.Variable
 import org.chronos.core.SourceFile
-import org.chronos.core.delta.Change.Companion.apply
-import org.chronos.test.PrettyPrinterVisitor
+import org.chronos.core.delta.Transaction.Companion.apply
 import org.chronos.test.assertEquals
 
 import org.junit.Test

@@ -17,17 +17,18 @@
 package org.chronos.core.delta
 
 import org.chronos.core.Node.Variable
-import org.chronos.core.delta.Change.Companion.apply
+import org.chronos.core.delta.Transaction.Companion.apply
 import org.chronos.test.assertEquals
 
 import org.junit.Test
 
-class VariableChangeTest {
+class VariableTransactionTest {
     @Test fun `test variable change initializer from null to not-null`() {
         val name = "version"
         val initializer = "1"
         val expected = Variable(name, initializer)
-        val actual = Variable(name, null).apply(VariableChange(initializer))
+        val actual = Variable(name, null)
+                .apply(VariableTransaction(initializer))
         assertEquals(expected, actual)
     }
 
@@ -35,7 +36,8 @@ class VariableChangeTest {
         val name = "version"
         val initializer = "1"
         val expected = Variable(name, null)
-        val actual = Variable(name, initializer).apply(VariableChange(null))
+        val actual = Variable(name, initializer)
+                .apply(VariableTransaction(null))
         assertEquals(expected, actual)
     }
 
@@ -45,7 +47,7 @@ class VariableChangeTest {
         val expectedInitializer = "2"
         val expected = Variable(name, expectedInitializer)
         val actual = Variable(name, initializer)
-                .apply(VariableChange(expectedInitializer))
+                .apply(VariableTransaction(expectedInitializer))
         assertEquals(expected, actual)
     }
 }

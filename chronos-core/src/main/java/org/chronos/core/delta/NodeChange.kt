@@ -28,8 +28,7 @@ sealed class NodeChange {
             val identifier: String
     ) : NodeChange() {
         companion object {
-            @JvmStatic
-            inline operator fun <reified T : Node> invoke(
+            @JvmStatic inline operator fun <reified T : Node> invoke(
                     identifier: String
             ): RemoveNode = RemoveNode(T::class, identifier)
         }
@@ -38,13 +37,13 @@ sealed class NodeChange {
     data class ChangeNode<T : Node>(
             val type: KClass<T>,
             val identifier: String,
-            val change: Change<T>
+            val transaction: Transaction<T>
     ) : NodeChange() {
         companion object {
             @JvmStatic inline operator fun <reified T : Node> invoke(
                     identifier: String,
-                    change: Change<T>
-            ): ChangeNode<T> = ChangeNode(T::class, identifier, change)
+                    transaction: Transaction<T>
+            ): ChangeNode<T> = ChangeNode(T::class, identifier, transaction)
         }
     }
 }

@@ -16,21 +16,16 @@
 
 package org.chronos.core.delta
 
-import org.chronos.core.Node.Type
-import org.chronos.core.SourceFile
-import org.chronos.core.delta.Change.Companion.apply
-import org.chronos.core.delta.NodeChange.AddNode
-import org.chronos.test.assertEquals
+import org.chronos.core.Node.Variable
 
-import org.junit.Test
-
-class SourceFileChangeTest {
-    @Test fun `test add type`() {
-        val addedType = Type("IInterface")
-        val expected = SourceFile(setOf(addedType))
-        val actual = SourceFile(emptySet()).apply(SourceFileChange(
-                nodeChanges = listOf(AddNode(addedType))
-        ))
-        assertEquals(expected, actual)
-    }
+/**
+ * A transaction which should be applied to a [Variable].
+ *
+ * @property initializerChange the new initializer of the variable
+ */
+data class VariableTransaction(
+        val initializerChange: String?
+) : Transaction<Variable> {
+    override fun applyOn(subject: Variable): Variable =
+            subject.copy(initializer = initializerChange)
 }

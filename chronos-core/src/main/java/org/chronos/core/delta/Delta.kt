@@ -23,14 +23,14 @@ import org.chronos.core.Node.Function
 import org.chronos.core.Node.Type
 import org.chronos.core.Node.Variable
 import org.chronos.core.SourceFile
-import org.chronos.core.delta.Change.Companion.apply
-import org.chronos.core.delta.FunctionChange.ParameterChange.AddParameter
-import org.chronos.core.delta.FunctionChange.ParameterChange.RemoveParameter
+import org.chronos.core.delta.FunctionTransaction.ParameterChange.AddParameter
+import org.chronos.core.delta.FunctionTransaction.ParameterChange.RemoveParameter
 import org.chronos.core.delta.NodeChange.AddNode
 import org.chronos.core.delta.NodeChange.ChangeNode
 import org.chronos.core.delta.NodeChange.RemoveNode
-import org.chronos.core.delta.TypeChange.SupertypeChange.AddSupertype
-import org.chronos.core.delta.TypeChange.SupertypeChange.RemoveSupertype
+import org.chronos.core.delta.Transaction.Companion.apply
+import org.chronos.core.delta.TypeTransaction.SupertypeChange.AddSupertype
+import org.chronos.core.delta.TypeTransaction.SupertypeChange.RemoveSupertype
 
 import kotlin.reflect.KClass
 
@@ -43,26 +43,22 @@ private val NodeChange.key: Pair<KClass<out Node>, String>
     }
 
 /**
- * Returns the change which should be applied on this source file to obtain the
+ * Returns the transaction which should be applied on this source file to obtain the
  * `other` source file, or `null` if they are identical.
  *
  * @param other the source file which should be obtained
- * @return the change which should be applied on this source file
+ * @return the transaction which should be applied on this source file
  */
-fun SourceFile.diff(other: SourceFile): SourceFileChange {
-    val addedNodes = other.nodes
-            .filter { node -> node !in nodes }
-            .map(::AddNode)
-    val removedNodes = nodes
-            .filter { node -> node !in other.nodes }
-            .map { node -> RemoveNode(node::class, node.identifier) }
-    val changedNodes = nodes
-            .filter { node -> node in other.nodes }
-            .map { node ->
-                val otherNode = other.find(node::class, node.identifier)
-                node.diff(checkNotNull(otherNode))
-            }.filterNotNull()
-    return SourceFileChange(addedNodes + removedNodes + changedNodes)
+fun SourceFile.diff(other: SourceFile): SourceFileTransaction {
+    val addedNodes = other.nodes.minus(nodes).map(::AddNode)
+    val removedNodes = nodes.minus(other.nodes).map { node ->
+        RemoveNode(node::class, node.identifier)
+    }
+    val changedNodes = nodes.intersect(other.nodes).map { node ->
+        val otherNode = other.find(node::class, node.identifier)
+        node.diff(checkNotNull(otherNode))
+    }.filterNotNull()
+    return SourceFileTransaction(addedNodes + removedNodes + changedNodes)
 }
 
 /** Utility method. */
@@ -79,61 +75,63 @@ private fun Node.diff(other: Node): ChangeNode<*>? = when (this) {
 }
 
 /**
- * Returns the change which should be applied on this type to obtain the `other`
- * type, or `null` if they are identical.
+ * Returns the transaction which should be applied on this type to obtain the
+ * `other` type, or `null` if they are identical.
  *
  * @param other the type which should be obtained
- * @return the change which should be applied on this type
+ * @return the transaction which should be applied on this type
+ * @throws IllegalArgumentException if the given types have different
+ * identifiers
  */
-fun Type.diff(other: Type): TypeChange? {
+fun Type.diff(other: Type): TypeTransaction? {
     require(identifier == other.identifier)
-    val addedSupertypes = other.supertypes
-            .filter { supertype -> supertype !in supertypes }
-            .map(::AddSupertype)
-    val removedSupertypes = supertypes
-            .filter { supertype -> supertype !in other.supertypes }
+
+    val addedSupertypes = other.supertypes.minus(supertypes).map(::AddSupertype)
+    val removedSupertypes = supertypes.minus(other.supertypes)
             .map(::RemoveSupertype)
     val supertypeChanges = removedSupertypes + addedSupertypes
-    val addedMembers = other.members
-            .filter { member -> member !in members }
-            .map(::AddNode)
-    val removedMembers = members
-            .filter { member -> member !in other.members }
-            .map { member -> RemoveNode(member::class, member.identifier) }
-    val changedMembers = members
-            .filter { member -> member in other.members }
-            .map { member ->
-                val otherMember = other.find(member::class, member.identifier)
-                member.diff(checkNotNull(otherMember))
-            }.filterNotNull()
+
+    val addedMembers = other.members.minus(members).map(::AddNode)
+    val removedMembers = members.minus(other.members).map { member ->
+        RemoveNode(member::class, member.identifier)
+    }
+    val changedMembers = members.intersect(other.members).map { member ->
+        val otherMember = other.find(member::class, member.identifier)
+        member.diff(checkNotNull(otherMember))
+    }.filterNotNull()
     val memberChanges = addedMembers + removedMembers + changedMembers
+
     return if (supertypeChanges.isNotEmpty() || memberChanges.isNotEmpty())
-        TypeChange(supertypeChanges, memberChanges)
+        TypeTransaction(supertypeChanges, memberChanges)
     else null
 }
 
 /**
- * Returns the change which should be applied on this variable to obtain the
- * `other` variable, or `null` if they are identical.
+ * Returns the transaction which should be applied on this variable to obtain
+ * the `other` variable, or `null` if they are identical.
  *
  * @param other the variable which should be obtained
- * @return the change which should be applied on this variable
+ * @return the transaction which should be applied on this variable
+ * @throws IllegalArgumentException if the given variables have different
+ * identifiers
  */
-fun Variable.diff(other: Variable): VariableChange? {
+fun Variable.diff(other: Variable): VariableTransaction? {
     require(identifier == other.identifier)
     return if (initializer != other.initializer)
-        VariableChange(other.initializer)
+        VariableTransaction(other.initializer)
     else null
 }
 
 /**
- * Returns the change which should be applied on this function to obtain the
- * `other` function, or `null` if they are identical.
+ * Returns the transaction which should be applied on this function to obtain
+ * the `other` function, or `null` if they are identical.
  *
  * @param other the function which should be obtained
- * @return the change which should be applied on this function
+ * @return the transaction which should be applied on this function
+ * @throws IllegalArgumentException if the given functions have different
+ * identifiers
  */
-fun Function.diff(other: Function): FunctionChange? {
+fun Function.diff(other: Function): FunctionTransaction? {
     require(identifier == other.identifier)
     // TODO: optimize parameter changes
     val removedParameters = parameters.map { RemoveParameter(0) }
@@ -143,7 +141,7 @@ fun Function.diff(other: Function): FunctionChange? {
             if (body != other.body) BlockChange.Set(other.body)
             else null
     return if (parameterChanges.isNotEmpty() || bodyChange != null)
-        FunctionChange(parameterChanges, bodyChange)
+        FunctionTransaction(parameterChanges, bodyChange)
     else null
 }
 
@@ -160,8 +158,9 @@ fun String?.apply(vararg changes: BlockChange): String? =
 
 /** Applies a list of changes on a set of nodes. */
 internal fun Set<Node>.apply(changes: List<NodeChange>): Set<Node> {
-    val members = hashMapOf<Pair<KClass<out Node>, String>, Node>()
-    forEach { node -> members[node::class to node.identifier] = node }
+    val members = associateByTo(hashMapOf()) { node ->
+        node::class to node.identifier
+    }
     changes.forEach { change ->
         when (change) {
             is AddNode -> { members[change.key] = change.node }
@@ -169,7 +168,7 @@ internal fun Set<Node>.apply(changes: List<NodeChange>): Set<Node> {
             is ChangeNode<*> -> {
                 @Suppress("unchecked_cast")
                 members[change.key] = checkNotNull(members[change.key])
-                        .apply(change.change as Change<Node>)
+                        .apply(change.transaction as Transaction<Node>)
             }
         }
     }

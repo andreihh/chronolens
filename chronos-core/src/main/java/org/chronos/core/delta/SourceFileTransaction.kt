@@ -16,14 +16,17 @@
 
 package org.chronos.core.delta
 
-import org.chronos.core.Node.Variable
+import org.chronos.core.SourceFile
 
 /**
- * A change which should be applied to a [Variable].
+ * A transaction which should be applied to a [SourceFile].
  *
- * @property initializerChange the new initializer of the variable
+ * @property nodeChanges the list of changes which should be applied to the set
+ * of `nodes`
  */
-data class VariableChange(val initializerChange: String?) : Change<Variable> {
-    override fun applyOn(subject: Variable): Variable =
-            subject.copy(initializer = initializerChange)
+data class SourceFileTransaction(
+        val nodeChanges: List<NodeChange>
+) : Transaction<SourceFile> {
+    override fun applyOn(subject: SourceFile): SourceFile =
+            subject.copy(nodes = subject.nodes.apply(nodeChanges))
 }

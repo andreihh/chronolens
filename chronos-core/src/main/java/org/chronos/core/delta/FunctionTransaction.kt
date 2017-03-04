@@ -18,21 +18,21 @@ package org.chronos.core.delta
 
 import org.chronos.core.Node.Function
 import org.chronos.core.Node.Variable
-import org.chronos.core.delta.FunctionChange.ParameterChange.AddParameter
-import org.chronos.core.delta.FunctionChange.ParameterChange.RemoveParameter
+import org.chronos.core.delta.FunctionTransaction.ParameterChange.AddParameter
+import org.chronos.core.delta.FunctionTransaction.ParameterChange.RemoveParameter
 
 /**
- * A change which should be applied on a [Function].
+ * A transaction which should be applied on a [Function].
  *
  * @property parameterChanges the list of changes which should be applied to the
  * `parameters`
  * @property bodyChange the change which should be applied to the `body`, or
  * `null` if the `body` shouldn't be changed
  */
-data class FunctionChange(
+data class FunctionTransaction(
         val parameterChanges: List<ParameterChange> = emptyList(),
         val bodyChange: BlockChange? = null
-) : Change<Function> {
+) : Transaction<Function> {
     /** A changed which should be applied to a list of function parameters. */
     sealed class ParameterChange {
         /**

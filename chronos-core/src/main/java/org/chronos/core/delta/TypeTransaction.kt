@@ -17,21 +17,21 @@
 package org.chronos.core.delta
 
 import org.chronos.core.Node.Type
-import org.chronos.core.delta.TypeChange.SupertypeChange.AddSupertype
-import org.chronos.core.delta.TypeChange.SupertypeChange.RemoveSupertype
+import org.chronos.core.delta.TypeTransaction.SupertypeChange.AddSupertype
+import org.chronos.core.delta.TypeTransaction.SupertypeChange.RemoveSupertype
 
 /**
- * A changed which should be applied to a [Type].
+ * A transaction which should be applied to a [Type].
  *
  * @property supertypeChanges the list of changes which should be applied to the
  * `supertypes`
  * @property memberChanges the list of changes which should be applied to the
  * `members`
  */
-data class TypeChange(
+data class TypeTransaction(
         val supertypeChanges: List<SupertypeChange> = emptyList(),
         val memberChanges: List<NodeChange> = emptyList()
-) : Change<Type> {
+) : Transaction<Type> {
     /** A change which should be applied to a set of supertypes. */
     sealed class SupertypeChange {
         /**

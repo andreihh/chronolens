@@ -16,17 +16,21 @@
 
 package org.chronos.core.delta
 
+import org.chronos.core.Node.Type
 import org.chronos.core.SourceFile
+import org.chronos.core.delta.NodeChange.AddNode
+import org.chronos.core.delta.Transaction.Companion.apply
+import org.chronos.test.assertEquals
 
-/**
- * A change which should be applied to a [SourceFile].
- *
- * @property nodeChanges the list of changes which should be applied to the set
- * of `nodes`
- */
-data class SourceFileChange(
-        val nodeChanges: List<NodeChange>
-) : Change<SourceFile> {
-    override fun applyOn(subject: SourceFile): SourceFile =
-            subject.copy(nodes = subject.nodes.apply(nodeChanges))
+import org.junit.Test
+
+class SourceFileTransactionTest {
+    @Test fun `test add type`() {
+        val addedType = Type("IInterface")
+        val expected = SourceFile(setOf(addedType))
+        val actual = SourceFile(emptySet()).apply(SourceFileTransaction(
+                nodeChanges = listOf(AddNode(addedType))
+        ))
+        assertEquals(expected, actual)
+    }
 }
