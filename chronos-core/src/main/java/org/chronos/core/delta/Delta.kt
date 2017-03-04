@@ -35,8 +35,8 @@ import org.chronos.core.delta.TypeTransaction.SupertypeChange.RemoveSupertype
 import kotlin.reflect.KClass
 
 /**
- * Returns the transaction which should be applied on this source file to obtain the
- * `other` source file, or `null` if they are identical.
+ * Returns the transaction which should be applied on this source file to obtain
+ * the `other` source file, or `null` if they are identical.
  *
  * @param other the source file which should be obtained
  * @return the transaction which should be applied on this source file
