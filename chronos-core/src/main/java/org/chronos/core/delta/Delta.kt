@@ -112,7 +112,7 @@ fun Variable.diff(other: Variable): VariableTransaction? {
  */
 fun Function.diff(other: Function): FunctionTransaction? {
     require(identifier == other.identifier)
-    // TODO: optimize parameter changes
+    // TODO: optimize finding minimum parameter changes
     val removedParameters = parameters.map { RemoveParameter(0) }
     val addedParameters = other.parameters.mapIndexed(::AddParameter)
     val parameterChanges = removedParameters + addedParameters

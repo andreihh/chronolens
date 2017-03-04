@@ -92,7 +92,7 @@ sealed class Node {
      * The signature of a function should be `name(type_1, type_2, ...)` if
      * function overloading at the type level is allowed, or `name(n)` (where
      * `n` is the arity of the function) if function overloading at the arity
-     * level is allowed, or `name` otherwise.
+     * level is allowed, or `name()` otherwise.
      *
      * @property signature the signature of this function
      * @property parameters the parameters of this function
