@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-package org.chronos.core.delta
+package org.chronos.core.delta;
 
-// Anticipate the addition of `Block` node.
-sealed class BlockChange {
-    // To be replaced with `Add` and `Remove`.
-    class Set(val statements: String?) : BlockChange()
+import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class SetEditTest {
+    @Test public void testApply() {
+        Set<Integer> set = new HashSet<>();
+
+    }
 }

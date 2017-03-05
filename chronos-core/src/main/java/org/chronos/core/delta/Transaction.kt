@@ -17,7 +17,7 @@
 package org.chronos.core.delta
 
 /**
- * An abstract atomic change which should be applied to an object.
+ * A series of changes which should be applied to an object.
  *
  * @param T the type of the changed object
  */

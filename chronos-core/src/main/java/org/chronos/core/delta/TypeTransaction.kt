@@ -17,48 +17,45 @@
 package org.chronos.core.delta
 
 import org.chronos.core.Node.Type
-import org.chronos.core.delta.TypeTransaction.SupertypeChange.AddSupertype
-import org.chronos.core.delta.TypeTransaction.SupertypeChange.RemoveSupertype
+import org.chronos.core.delta.NodeSetEdit.Companion.apply
+import org.chronos.core.delta.NodeSetEdit.Companion.diff
+import org.chronos.core.delta.SetEdit.Companion.apply
+import org.chronos.core.delta.SetEdit.Companion.diff
 
 /**
  * A transaction which should be applied to a [Type].
  *
- * @property supertypeChanges the list of changes which should be applied to the
+ * @property supertypeEdits the list of edits which should be applied to the
  * `supertypes`
- * @property memberChanges the list of changes which should be applied to the
+ * @property memberEdits the list of edits which should be applied to the
  * `members`
  */
 data class TypeTransaction(
-        val supertypeChanges: List<SupertypeChange> = emptyList(),
-        val memberChanges: List<NodeChange> = emptyList()
+        val supertypeEdits: List<SetEdit<String>> = emptyList(),
+        val memberEdits: List<NodeSetEdit> = emptyList()
 ) : Transaction<Type> {
-    /** A change which should be applied to a set of supertypes. */
-    sealed class SupertypeChange {
+    companion object {
         /**
-         * Indicates that a supertype should be added to the set of supertypes.
+         * Returns the transaction which should be applied on this type to
+         * obtain the `other` type, or `null` if they are identical.
          *
-         * @property name the name of the supertype which should be added
+         * @param other the type which should be obtained
+         * @return the transaction which should be applied on this type
+         * @throws IllegalArgumentException if the given types have different
+         * identifiers
          */
-        data class AddSupertype(val name: String) : SupertypeChange()
-
-        /**
-         * Indicates that a supertype should be removed from the set of
-         * supertypes.
-         *
-         * @property name the name of the supertype which should be removed
-         */
-        data class RemoveSupertype(val name: String) : SupertypeChange()
-    }
-
-    override fun applyOn(subject: Type): Type {
-        val supertypes = subject.supertypes.toMutableSet()
-        supertypeChanges.forEach { change ->
-            when (change) {
-                is AddSupertype -> supertypes.add(change.name)
-                is RemoveSupertype -> supertypes.remove(change.name)
-            }
+        fun Type.diff(other: Type): TypeTransaction? {
+            require(identifier == other.identifier)
+            val supertypeEdits = supertypes.diff(other.supertypes)
+            val memberEdits = members.diff(other.members)
+            return if (supertypeEdits.isNotEmpty() || memberEdits.isNotEmpty())
+                TypeTransaction(supertypeEdits, memberEdits)
+            else null
         }
-        val members = subject.members.apply(memberChanges)
-        return subject.copy(supertypes = supertypes, members = members)
     }
+
+    override fun applyOn(subject: Type): Type = subject.copy(
+            supertypes = subject.supertypes.apply(supertypeEdits),
+            members = subject.members.apply(memberEdits)
+    )
 }
