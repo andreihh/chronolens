@@ -32,7 +32,7 @@ abstract class Parser {
      * Parses the given `source` code and returns the associated code metadata.
      *
      * @param source the source code which should be parsed
-     * @return the source file meta-data
+     * @return the source file metadata
      * @throws SyntaxError if the given `source` is not valid source code
      */
     @Throws(SyntaxError::class)
@@ -42,7 +42,7 @@ abstract class Parser {
      * Parses the given `file` and returns the associated code meta-data.
      *
      * @param file the file which should be parsed
-     * @return the source file meta-data
+     * @return the source file metadata
      * @throws SyntaxError if the given `file` contains invalid source code
      * @throws IOException if an error occurs trying to read the `file` content
      */
@@ -54,7 +54,7 @@ abstract class Parser {
      * meta-data.
      *
      * @param url the location of the content which should be parsed
-     * @return the source file meta-data
+     * @return the source file metadata
      * @throws SyntaxError if the content at the specified `url` contains
      * invalid source code
      * @throws IOException if an error occurs trying to read the content at the
