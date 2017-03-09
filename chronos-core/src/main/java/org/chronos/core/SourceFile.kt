@@ -28,12 +28,12 @@ data class SourceFile(val nodes: Set<Node>) {
             nodes.associateBy { it::class to it.identifier }
 
     /**
-     * Returns the node with the specified `type` and `identifier`.
+     * Returns the node with the specified `nodeType` and `identifier`.
      *
      * @param nodeType the class object of the requested node
      * @param identifier the identifier of the requested node
      * @return the requested node, or `null` if this source file doesn't contain
-     * a node with the specified `type` and `identifier`
+     * a node with the specified `nodeType` and `identifier`
      */
     fun find(nodeType: KClass<out Node>, identifier: String): Node? =
             nodeMap[nodeType to identifier]

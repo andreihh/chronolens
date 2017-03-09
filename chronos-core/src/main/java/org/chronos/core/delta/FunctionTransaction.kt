@@ -26,7 +26,7 @@ import org.chronos.core.delta.ListEdit.Companion.diff
 /**
  * A transaction which should be applied on a [Function].
  *
- * @property parameterEdits the list of edits which should be applied to the
+ * @property parameterEdits the edits which should be applied to the
  * `parameters`
  * @property bodyEdit the edit which should be applied to the `body`, or `null`
  * if the `body` shouldn't be changed

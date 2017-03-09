@@ -26,25 +26,29 @@ interface Transaction<T> {
         /**
          * Applies the given `transaction` on this object, or does nothing if
          * `transaction` is `null`.
+         *
+         * @param T the type of the changed object
+         * @param transaction the transaction which should be applied
+         * @return the object resulting from the applied transaction
+         * @throws IllegalStateException if this object has an invalid state and
+         * the `transaction` couldn't be applied
          */
         fun <T> T.apply(transaction: Transaction<T>?): T =
                 if (transaction != null) transaction.applyOn(this) else this
 
-        /** Applies the given `transactions` on this object. */
+        /**
+         * Applies the given `transactions` on this object.
+         *
+         * @param T the type of the changed object
+         * @param transactions the transactions which should be applied
+         * @return the object resulting from the applied transactions
+         * @throws IllegalStateException if this object has an invalid state and
+         * the `transactions` couldn't be applied
+         */
         fun <T> T.apply(transactions: List<Transaction<T>>): T =
                 transactions.fold(this) { subject, change ->
                     subject.apply(change)
                 }
-
-        fun <T> T.apply(
-                firstTransaction: Transaction<T>,
-                secondTransaction: Transaction<T>,
-                vararg remainingTransactions: Transaction<T>
-        ): T = apply(listOf(
-                firstTransaction,
-                secondTransaction,
-                *remainingTransactions
-        ))
     }
 
     /**

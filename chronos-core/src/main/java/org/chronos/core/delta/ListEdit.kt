@@ -24,8 +24,7 @@ package org.chronos.core.delta
 sealed class ListEdit<T> {
     companion object {
         /**
-         * Applies the given list of `edits` on this list and returns the
-         * result.
+         * Applies the given `edits` on this list and returns the result.
          *
          * @param T the type of the elements of the edited list
          * @param edits the edits which should be applied
@@ -39,13 +38,28 @@ sealed class ListEdit<T> {
                     list
                 }
 
+        /**
+         * Returns the edits which should be applied on this list to obtain the
+         * `other` list.
+         *
+         * @param other the list which should be obtained
+         * @return the edits which should be applied on this list
+         */
         @JvmStatic fun <T> List<T>.diff(other: List<T>): List<ListEdit<T>> {
             val removed = this.map { Remove<T>(0) }
             val added = other.mapIndexed(::Add)
             return removed + added
         }
+
     }
 
+    /**
+     * Applies this edit on the given mutable list.
+     *
+     * @param subject the list which should be edited
+     * @throws IllegalStateException if the list has an invalid state and this
+     * edit couldn't be applied
+     */
     protected abstract fun applyOn(subject: MutableList<T>): Unit
 
     /**

@@ -23,6 +23,11 @@ import org.chronos.core.Node.Function
 import org.chronos.core.Node.Type
 import org.chronos.core.Node.Variable
 import org.chronos.core.SourceFile
+import org.chronos.core.delta.FunctionTransaction.Companion.diff
+import org.chronos.core.delta.SourceFileTransaction.Companion.diff
+import org.chronos.core.delta.Transaction.Companion.apply
+import org.chronos.core.delta.TypeTransaction.Companion.diff
+import org.chronos.core.delta.VariableTransaction.Companion.diff
 
 import kotlin.test.assertEquals as assertEqualsKt
 import kotlin.test.assertNotNull
@@ -94,4 +99,24 @@ fun assertEquals(
         assertEquals(expectedParameter, actualParameter, message)
     }
     assertEqualsKt(expected.body, actual.body, message)
+}
+
+fun assertDiff(src: Type, dst: Type) {
+    assertEquals(src.apply(src.diff(dst)), dst)
+    assertEquals(dst.apply(dst.diff(src)), src)
+}
+
+fun assertDiff(src: Function, dst: Function) {
+    assertEquals(src.apply(src.diff(dst)), dst)
+    assertEquals(dst.apply(dst.diff(src)), src)
+}
+
+fun assertDiff(src: Variable, dst: Variable) {
+    assertEquals(src.apply(src.diff(dst)), dst)
+    assertEquals(dst.apply(dst.diff(src)), src)
+}
+
+fun assertDiff(src: SourceFile, dst: SourceFile) {
+    assertEquals(src.apply(src.diff(dst)), dst)
+    assertEquals(dst.apply(dst.diff(src)), src)
 }

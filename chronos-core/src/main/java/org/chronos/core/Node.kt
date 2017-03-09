@@ -20,9 +20,7 @@ import kotlin.reflect.KClass
 
 /** Abstract metadata of a declaration within a source file. */
 sealed class Node {
-    /**
-     *  A unique identifier among other nodes of the same type.
-     */
+    /** A unique identifier among other nodes of the same type. */
     abstract val identifier: String
 
     /**
@@ -59,12 +57,12 @@ sealed class Node {
                 members.associateBy { it::class to it.identifier }
 
         /**
-         * Returns the member with the specified `type` and `identifier`.
+         * Returns the member with the specified `nodeType` and `identifier`.
          *
          * @param nodeType the class object of the requested member node
          * @param identifier the identifier of the requested member node
          * @return the requested member node, or `null` if this node doesn't
-         * contain a member with the specified `type` and `identifier`
+         * contain a member with the specified `nodeType` and `identifier`
          */
         fun find(nodeType: KClass<out Node>, identifier: String): Node? =
                 memberMap[nodeType to identifier]

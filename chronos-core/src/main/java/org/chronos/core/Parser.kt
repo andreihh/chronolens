@@ -42,6 +42,7 @@ abstract class Parser {
      * Parses the given `file` and returns the associated code meta-data.
      *
      * @param file the file which should be parsed
+     * @return the source file meta-data
      * @throws SyntaxError if the given `file` contains invalid source code
      * @throws IOException if an error occurs trying to read the `file` content
      */
@@ -49,9 +50,11 @@ abstract class Parser {
     fun parse(file: File): SourceFile = parse(file.readText())
 
     /**
-     * Parses the content at the given `url` the associated code meta-data.
+     * Parses the content at the given `url` and returns the associated code
+     * meta-data.
      *
      * @param url the location of the content which should be parsed
+     * @return the source file meta-data
      * @throws SyntaxError if the content at the specified `url` contains
      * invalid source code
      * @throws IOException if an error occurs trying to read the content at the

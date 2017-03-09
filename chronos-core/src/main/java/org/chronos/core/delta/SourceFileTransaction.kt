@@ -23,8 +23,7 @@ import org.chronos.core.delta.NodeSetEdit.Companion.diff
 /**
  * A transaction which should be applied to a [SourceFile].
  *
- * @property nodeEdits the list of edits which should be applied to the set of
- * `nodes`
+ * @property nodeEdits the edits which should be applied to the set of `nodes`
  */
 data class SourceFileTransaction(
         val nodeEdits: List<NodeSetEdit>
@@ -37,7 +36,9 @@ data class SourceFileTransaction(
          * @param other the source file which should be obtained
          * @return the transaction which should be applied on this source file
          */
-        fun SourceFile.diff(other: SourceFile): SourceFileTransaction? {
+        @JvmStatic fun SourceFile.diff(
+                other: SourceFile
+        ): SourceFileTransaction? {
             val nodeEdits = nodes.diff(other.nodes)
             return if (nodeEdits.isNotEmpty()) SourceFileTransaction(nodeEdits)
             else null

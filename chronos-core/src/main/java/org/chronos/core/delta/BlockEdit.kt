@@ -24,7 +24,7 @@ sealed class BlockEdit {
 
         // TODO: clean this up
         @JvmStatic fun String?.apply(edit: BlockEdit?): String? =
-                edit?.applyOn(this) ?: this
+                if (edit == null) this else edit.applyOn(this)
 
         @JvmStatic fun String?.diff(other: String?): BlockEdit? =
                 if (this != other) BlockEdit.Set(other) else null

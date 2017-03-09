@@ -25,10 +25,9 @@ import org.chronos.core.delta.SetEdit.Companion.diff
 /**
  * A transaction which should be applied to a [Type].
  *
- * @property supertypeEdits the list of edits which should be applied to the
+ * @property supertypeEdits the edits which should be applied to the
  * `supertypes`
- * @property memberEdits the list of edits which should be applied to the
- * `members`
+ * @property memberEdits the edits which should be applied to the `members`
  */
 data class TypeTransaction(
         val supertypeEdits: List<SetEdit<String>> = emptyList(),
@@ -44,7 +43,7 @@ data class TypeTransaction(
          * @throws IllegalArgumentException if the given types have different
          * identifiers
          */
-        fun Type.diff(other: Type): TypeTransaction? {
+        @JvmStatic fun Type.diff(other: Type): TypeTransaction? {
             require(identifier == other.identifier)
             val supertypeEdits = supertypes.diff(other.supertypes)
             val memberEdits = members.diff(other.members)

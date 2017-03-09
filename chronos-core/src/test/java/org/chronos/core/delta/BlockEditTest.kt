@@ -16,26 +16,28 @@
 
 package org.chronos.core.delta
 
+import org.chronos.core.delta.BlockEdit.Companion.apply
+
 import org.junit.Test
 
 import kotlin.test.assertEquals
 
-class BlockChangeTest {
+class BlockEditTest {
     @Test fun `test set block from null to not-null`() {
         val expected = "{\n  int i = 1;\n}\n"
-        val actual = null.apply(BlockChange.Set(expected))
+        val actual = null.apply(BlockEdit.Set(expected))
         assertEquals(expected, actual)
     }
 
     @Test fun `test set block from not-null to null`() {
         val expected = null
-        val actual = "{\n  int i = 1;\n}\n".apply(BlockChange.Set(expected))
+        val actual = "{\n  int i = 1;\n}\n".apply(BlockEdit.Set(expected))
         assertEquals(expected, actual)
     }
 
     @Test fun `test set block`() {
         val expected = "{\n  int j = 2;\n}\n"
-        val actual = "{\n  int i = 1;\n}\n".apply(BlockChange.Set(expected))
+        val actual = "{\n  int i = 1;\n}\n".apply(BlockEdit.Set(expected))
         assertEquals(expected, actual)
     }
 }

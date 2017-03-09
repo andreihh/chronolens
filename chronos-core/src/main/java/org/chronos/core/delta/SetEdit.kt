@@ -24,7 +24,7 @@ package org.chronos.core.delta
 sealed class SetEdit<T> {
     companion object {
         /**
-         * Applies the given list of `edits` on this set and returns the result.
+         * Applies the given `edits` on this set and returns the result.
          *
          * @param T the type of the elements of the edited set
          * @param edits the edits which should be applied
@@ -38,6 +38,13 @@ sealed class SetEdit<T> {
                     set
                 }
 
+        /**
+         * Returns the edits which should be applied on this set to obtain the
+         * `other` set.
+         *
+         * @param other the set which should be obtained
+         * @return the edits which should be applied on this set
+         */
         @JvmStatic fun <T> Set<T>.diff(other: Set<T>): List<SetEdit<T>> {
             val added = (other - this).map(::Add)
             val removed = (this - other).map(::Remove)
@@ -46,11 +53,11 @@ sealed class SetEdit<T> {
     }
 
     /**
-     * Applies this change on the given mutable set.
+     * Applies this edit on the given mutable set.
      *
-     * @param subject the set which should be changed
+     * @param subject the set which should be edited
      * @throws IllegalStateException if the set has an invalid state and this
-     * change couldn't be applied
+     * edit couldn't be applied
      */
     protected abstract fun applyOn(subject: MutableSet<T>): Unit
 
