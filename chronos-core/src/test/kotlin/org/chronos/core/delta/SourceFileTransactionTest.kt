@@ -20,9 +20,9 @@ import org.chronos.core.Node.Function
 import org.chronos.core.Node.Type
 import org.chronos.core.Node.Variable
 import org.chronos.core.SourceFile
+import org.chronos.core.delta.SourceFileTransaction.Companion.diff
 import org.chronos.core.delta.Transaction.Companion.apply
 import org.chronos.java.JavaParser
-import org.chronos.test.assertDiff
 import org.chronos.test.assertEquals
 
 import org.junit.Test
@@ -30,6 +30,11 @@ import org.junit.Test
 import java.net.URL
 
 class SourceFileTransactionTest {
+    private fun assertDiff(src: SourceFile, dst: SourceFile) {
+        assertEquals(src.apply(src.diff(dst)), dst)
+        assertEquals(dst.apply(dst.diff(src)), src)
+    }
+
     @Test fun `test add type`() {
         val addedType = Type("IInterface")
         val expected = SourceFile(setOf(addedType))

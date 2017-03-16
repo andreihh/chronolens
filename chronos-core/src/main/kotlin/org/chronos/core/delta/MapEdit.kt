@@ -41,6 +41,10 @@ sealed class MapEdit<K, V : Any> {
             map
         }
 
+        @JvmStatic fun <K, V : Any> Map<K, V>.apply(
+                vararg edits: MapEdit<K, V>
+        ): Map<K, V> = apply(edits.asList())
+
         /**
          * Returns the edits which should be applied on this map to obtain the
          * `other` map.

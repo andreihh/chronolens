@@ -50,6 +50,9 @@ sealed class NodeSetEdit {
             }.values.toSet()
         }
 
+        @JvmStatic fun Set<Node>.apply(vararg edits: NodeSetEdit): Set<Node> =
+                apply(edits.asList())
+
         /**
          * Returns the edits which should be applied on this set of nodes to
          * obtain the `other` set of nodes.

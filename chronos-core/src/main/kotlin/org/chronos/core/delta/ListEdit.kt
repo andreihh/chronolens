@@ -38,6 +38,9 @@ sealed class ListEdit<T> {
                     list
                 }
 
+        @JvmStatic fun <T> List<T>.apply(vararg edits: ListEdit<T>): List<T> =
+                apply(edits.asList())
+
         /**
          * Returns the edits which should be applied on this list to obtain the
          * `other` list.
@@ -72,7 +75,7 @@ sealed class ListEdit<T> {
                     edits.add(Remove(i - 1))
                     i--
                 } else if (dp[i][j] == dp[i][j - 1] + 1) {
-                    edits.add(Add(i - 1, other[j - 1]))
+                    edits.add(Add(i, other[j - 1]))
                     j--
                 } else {
                     if (dp[i][j] == dp[i - 1][j - 1] + 1) {

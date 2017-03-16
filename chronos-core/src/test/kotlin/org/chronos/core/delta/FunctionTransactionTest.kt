@@ -18,12 +18,18 @@ package org.chronos.core.delta
 
 import org.chronos.core.Node.Function
 import org.chronos.core.Node.Variable
+import org.chronos.core.delta.FunctionTransaction.Companion.diff
 import org.chronos.core.delta.Transaction.Companion.apply
 import org.chronos.test.assertEquals
 
 import org.junit.Test
 
 class FunctionTransactionTest {
+    private fun assertDiff(src: Function, dst: Function) {
+        assertEquals(src.apply(src.diff(dst)), dst)
+        assertEquals(dst.apply(dst.diff(src)), src)
+    }
+
     @Test fun `test add parameter`() {
         val signature = "println(String)"
         val parameter = Variable("s")

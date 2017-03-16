@@ -31,49 +31,47 @@ class MapEditTest {
 
     @Test fun `test add non-existing key`() {
         val expected = mapOf(1 to "a", 2 to "b")
-        val actual = mapOf(1 to "a").apply(listOf(MapEdit.Add(2, "b")))
+        val actual = mapOf(1 to "a").apply(MapEdit.Add(2, "b"))
         assertEquals(expected, actual)
     }
 
     @Test(expected = IllegalStateException::class)
     fun `test add duplicate key throws`() {
-        mapOf(1 to "a").apply(listOf(MapEdit.Add(1, "a")))
+        mapOf(1 to "a").apply(MapEdit.Add(1, "a"))
     }
 
     @Test fun `test remove existing key`() {
         val expected = mapOf(1 to "a")
-        val actual = mapOf(1 to "a", 2 to "b")
-                .apply(listOf(MapEdit.Remove(2)))
+        val actual = mapOf(1 to "a", 2 to "b").apply(MapEdit.Remove(2))
         assertEquals(expected, actual)
     }
 
     @Test(expected = IllegalStateException::class)
     fun `test remove non-existing key throws`() {
-        mapOf(1 to "a").apply(listOf(MapEdit.Remove(2)))
+        mapOf(1 to "a").apply(MapEdit.Remove(2))
     }
 
     @Test fun `test replace key value`() {
         val expected = mapOf(1 to "A", 2 to "b")
-        val actual = mapOf(1 to "a", 2 to "b")
-                .apply(listOf(MapEdit.Replace(1, "A")))
+        val actual = mapOf(1 to "a", 2 to "b").apply(MapEdit.Replace(1, "A"))
         assertEquals(expected, actual)
     }
 
     @Test(expected = IllegalStateException::class)
     fun `test replace non-existing key throws`() {
-        mapOf(2 to "b").apply(listOf(MapEdit.Replace(1, "A")))
+        mapOf(2 to "b").apply(MapEdit.Replace(1, "A"))
     }
 
     @Test fun `test chained edits`() {
         val expected = mapOf(1 to "a", 2 to "b", 4 to "d", 5 to "e")
-        val actual = mapOf(1 to "a", 4 to "d").apply(listOf(
+        val actual = mapOf(1 to "a", 4 to "d").apply(
                 MapEdit.Remove(4),
                 MapEdit.Add(2, "b"),
                 MapEdit.Add(3, "c"),
                 MapEdit.Add(4, "d"),
                 MapEdit.Add(5, "e"),
                 MapEdit.Remove(3)
-        ))
+        )
         assertEquals(expected, actual)
     }
 

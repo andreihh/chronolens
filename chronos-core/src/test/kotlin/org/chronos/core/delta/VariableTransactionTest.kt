@@ -18,11 +18,17 @@ package org.chronos.core.delta
 
 import org.chronos.core.Node.Variable
 import org.chronos.core.delta.Transaction.Companion.apply
+import org.chronos.core.delta.VariableTransaction.Companion.diff
 import org.chronos.test.assertEquals
 
 import org.junit.Test
 
 class VariableTransactionTest {
+    private fun assertDiff(src: Variable, dst: Variable) {
+        assertEquals(src.apply(src.diff(dst)), dst)
+        assertEquals(dst.apply(dst.diff(src)), src)
+    }
+
     @Test fun `test variable change initializer from null to not-null`() {
         val name = "version"
         val initializer = "1"

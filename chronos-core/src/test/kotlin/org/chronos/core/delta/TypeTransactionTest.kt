@@ -20,11 +20,17 @@ import org.chronos.core.Node.Function
 import org.chronos.core.Node.Type
 import org.chronos.core.Node.Variable
 import org.chronos.core.delta.Transaction.Companion.apply
+import org.chronos.core.delta.TypeTransaction.Companion.diff
 import org.chronos.test.assertEquals
 
 import org.junit.Test
 
 class TypeTransactionTest {
+    private fun assertDiff(src: Type, dst: Type) {
+        assertEquals(src.apply(src.diff(dst)), dst)
+        assertEquals(dst.apply(dst.diff(src)), src)
+    }
+
     @Test fun `test add supertype`() {
         val typeName = "IClass"
         val supertype = "IInterface"

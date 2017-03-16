@@ -32,46 +32,10 @@ import org.chronos.core.delta.VariableTransaction.Companion.diff
 import kotlin.test.assertEquals as assertEqualsKt
 import kotlin.test.assertNotNull
 
-fun assertEquals(
-        expected: SourceFile,
-        actual: SourceFile,
-        message: String? = null
-) {
-    assertEqualsKt(expected.nodes.size, actual.nodes.size, message)
-    expected.nodes.forEach { expectedNode ->
-        val actualNode = actual.find(
-                expectedNode::class,
-                expectedNode.identifier
-        )
-        assertNotNull(actualNode, message)
-        assertEquals(expectedNode, actualNode!!, message)
-    }
-}
-
-fun assertEquals(expected: Node, actual: Node, message: String? = null) {
-    assertEqualsKt(expected::class, actual::class, message)
-    when {
-        expected is Type && actual is Type -> assertEquals(expected, actual)
-        expected is Variable && actual is Variable ->
-            assertEquals(expected, actual)
-        expected is Function && actual is Function ->
-            assertEquals(expected, actual)
-        else -> throw AssertionError("Invalid node types!")
-    }
-}
-
 fun assertEquals(expected: Type, actual: Type, message: String? = null) {
     assertEqualsKt(expected.name, actual.name, message)
     assertEqualsKt(expected.supertypes, actual.supertypes, message)
-    assertEqualsKt(expected.members.size, actual.members.size, message)
-    expected.members.forEach { expectedMember ->
-        val actualMember = actual.find(
-                expectedMember::class,
-                expectedMember.identifier
-        )
-        assertNotNull(actualMember, message)
-        assertEquals(expectedMember, actualMember!!, message)
-    }
+    assertEquals(expected.members, actual.members, message)
 }
 
 fun assertEquals(
@@ -101,22 +65,37 @@ fun assertEquals(
     assertEqualsKt(expected.body, actual.body, message)
 }
 
-fun assertDiff(src: Type, dst: Type) {
-    assertEquals(src.apply(src.diff(dst)), dst)
-    assertEquals(dst.apply(dst.diff(src)), src)
+fun assertEquals(expected: Node, actual: Node, message: String? = null) {
+    assertEqualsKt(expected::class, actual::class, message)
+    when {
+        expected is Type && actual is Type -> assertEquals(expected, actual)
+        expected is Variable && actual is Variable ->
+            assertEquals(expected, actual)
+        expected is Function && actual is Function ->
+            assertEquals(expected, actual)
+        else -> throw AssertionError("Invalid node types!")
+    }
 }
 
-fun assertDiff(src: Function, dst: Function) {
-    assertEquals(src.apply(src.diff(dst)), dst)
-    assertEquals(dst.apply(dst.diff(src)), src)
+fun assertEquals(
+        expected: Set<Node>,
+        actual: Set<Node>,
+        message: String? = null
+) {
+    assertEqualsKt(expected.size, actual.size, message)
+    val actualSourceFile = SourceFile(actual)
+    expected.forEach { expectedNode ->
+        val actualNode = actualSourceFile
+                .find(expectedNode::class, expectedNode.identifier)
+        assertNotNull(actualNode, message)
+        assertEquals(expectedNode, actualNode as Node, message)
+    }
 }
 
-fun assertDiff(src: Variable, dst: Variable) {
-    assertEquals(src.apply(src.diff(dst)), dst)
-    assertEquals(dst.apply(dst.diff(src)), src)
-}
-
-fun assertDiff(src: SourceFile, dst: SourceFile) {
-    assertEquals(src.apply(src.diff(dst)), dst)
-    assertEquals(dst.apply(dst.diff(src)), src)
+fun assertEquals(
+        expected: SourceFile,
+        actual: SourceFile,
+        message: String? = null
+) {
+    assertEquals(expected.nodes, actual.nodes, message)
 }

@@ -38,6 +38,9 @@ sealed class SetEdit<T> {
                     set
                 }
 
+        @JvmStatic fun <T> Set<T>.apply(vararg edits: SetEdit<T>): Set<T> =
+                apply(edits.asList())
+
         /**
          * Returns the edits which should be applied on this set to obtain the
          * `other` set.
