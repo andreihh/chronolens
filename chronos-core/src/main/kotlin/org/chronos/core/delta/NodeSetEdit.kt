@@ -87,7 +87,16 @@ sealed class NodeSetEdit {
             val identifier: String
     )
 
+    /** They key of the node affected by this edit. */
     protected abstract val key: NodeKey
+
+    /**
+     * Applies this edit on the given mutable map from node keys to nodes.
+     *
+     * @param subject the map which should be edited
+     * @throws IllegalStateException if the map has an invalid state and this
+     * edit couldn't be applied
+     */
     protected abstract fun applyOn(subject: MutableMap<NodeKey, Node>): Unit
 
     /**

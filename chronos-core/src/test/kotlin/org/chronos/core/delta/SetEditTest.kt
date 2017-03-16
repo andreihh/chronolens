@@ -16,5 +16,59 @@
 
 package org.chronos.core.delta
 
+import org.chronos.core.delta.SetEdit.Companion.apply
+import org.chronos.core.delta.SetEdit.Companion.diff
+
+import org.junit.Test
+
+import kotlin.test.assertEquals
+
 class SetEditTest {
+    private fun <T> assertDiff(src: Set<T>, dst: Set<T>) {
+        assertEquals(dst, src.apply(src.diff(dst)))
+        assertEquals(src, dst.apply(dst.diff(src)))
+    }
+
+    @Test fun `test add non-existing element`() {
+        val expected = setOf(1, 2)
+        val actual = setOf(1).apply(listOf(SetEdit.Add(2)))
+        assertEquals(expected, actual)
+    }
+
+    @Test(expected = IllegalStateException::class)
+    fun `test add duplicate throws`() {
+        setOf(1).apply(listOf(SetEdit.Add(1)))
+    }
+
+    @Test fun `test remove existing element`() {
+        val expected = setOf(1)
+        val actual = setOf(1, 2).apply(listOf(SetEdit.Remove(2)))
+        assertEquals(expected, actual)
+    }
+
+    @Test(expected = IllegalStateException::class)
+    fun `test remove non-existing element throws`() {
+        setOf(1).apply(listOf(SetEdit.Remove(2)))
+    }
+
+    @Test fun `test chained edits`() {
+        val expected = setOf(1, 2, 3, 4, 6, 7)
+        val actual = setOf(1, 4).apply(listOf(
+                SetEdit.Remove(4),
+                SetEdit.Add(2),
+                SetEdit.Add(3),
+                SetEdit.Add(4),
+                SetEdit.Add(5),
+                SetEdit.Add(6),
+                SetEdit.Add(7),
+                SetEdit.Remove(5)
+        ))
+        assertEquals(expected, actual)
+    }
+
+    @Test fun `test diff`() {
+        val src = setOf(1, 2, 5, 6)
+        val dst = setOf(1, 3, 4, 6)
+        assertDiff(src, dst)
+    }
 }
