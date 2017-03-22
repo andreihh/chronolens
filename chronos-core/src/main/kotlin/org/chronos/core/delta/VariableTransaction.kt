@@ -17,14 +17,18 @@
 package org.chronos.core.delta
 
 import org.chronos.core.Node.Variable
+import org.chronos.core.delta.MapEdit.Companion.apply
+import org.chronos.core.delta.MapEdit.Companion.diff
 
 /**
  * A transaction which should be applied to a [Variable].
  *
  * @property initializerEdit the new initializer of the variable
+ * @property propertyEdits the edits which should be applied to the `properties`
  */
 data class VariableTransaction(
-        val initializerEdit: String?
+        val initializerEdit: String?,
+        val propertyEdits: List<MapEdit<String, String>> = emptyList()
 ) : Transaction<Variable> {
     companion object {
         /**
@@ -38,12 +42,17 @@ data class VariableTransaction(
          */
         @JvmStatic fun Variable.diff(other: Variable): VariableTransaction? {
             require(identifier == other.identifier)
-            return if (initializer != other.initializer)
-                VariableTransaction(other.initializer)
+            val propertyEdits = properties.diff(other.properties)
+            val isChanged = initializer != other.initializer
+                    || propertyEdits.isNotEmpty()
+            return if (isChanged)
+                VariableTransaction(other.initializer, propertyEdits)
             else null
         }
     }
 
-    override fun applyOn(subject: Variable): Variable =
-            subject.copy(initializer = initializerEdit)
+    override fun applyOn(subject: Variable): Variable = subject.copy(
+            initializer = initializerEdit,
+            properties = subject.properties.apply(propertyEdits)
+    )
 }

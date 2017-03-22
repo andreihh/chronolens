@@ -7,6 +7,8 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
 }
 
 dependencies {
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
     testCompile project(':chronos-test')
     testCompile project(':chronos-java')
 }

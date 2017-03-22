@@ -23,6 +23,9 @@ sealed class Node {
     /** A unique identifier among other nodes of the same type. */
     abstract val identifier: String
 
+    /** The properties of this node. */
+    abstract val properties: Map<String, String>
+
     /**
      * Two nodes are equal if and only if they have the same [identifier] and
      * belong to the same node subtype.
@@ -48,7 +51,8 @@ sealed class Node {
     data class Type(
             val name: String,
             val supertypes: Set<String> = emptySet(),
-            val members: Set<Node> = emptySet()
+            val members: Set<Node> = emptySet(),
+            override val properties: Map<String, String> = emptyMap()
     ) : Node() {
         override val identifier: String
             get() = name
@@ -90,7 +94,8 @@ sealed class Node {
      */
     data class Variable(
             val name: String,
-            val initializer: String? = null
+            val initializer: String? = null,
+            override val properties: Map<String, String> = emptyMap()
     ) : Node() {
         override val identifier: String
             get() = name
@@ -118,7 +123,8 @@ sealed class Node {
     data class Function(
             val signature: String,
             val parameters: List<Variable>,
-            val body: String? = null
+            val body: String? = null,
+            override val properties: Map<String, String> = emptyMap()
     ) : Node() {
         override val identifier: String
             get() = signature

@@ -7,7 +7,7 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
 }
 
 dependencies {
-    compile "org.eclipse.jdt:org.eclipse.jdt.core:$jdt_version"
+    compile "org.eclipse.jdt:org.eclipse.jdt.core:$jdtVersion"
     compile project(':chronos-core')
     testCompile project(':chronos-test')
 }

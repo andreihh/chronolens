@@ -15,7 +15,9 @@ This product uses a series of third-party software libraries.
 The Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 applies to the following third-party libraries:
 - kotlin-stdlib, Copyright JetBrains s.r.o.
+- kotlin-reflect, Copyright JetBrains s.r.o.
 - kotlin-test, Copyright JetBrains s.r.o.
+- jackson-module-kotlin, Copyright FasterXML
 
 The Eclipse Public License, Version 1.0
 (https://www.eclipse.org/legal/epl-v10.html) applies to the following

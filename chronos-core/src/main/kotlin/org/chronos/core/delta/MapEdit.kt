@@ -22,7 +22,7 @@ package org.chronos.core.delta
  * @param K the type of the keys in the edited map
  * @param V the type of the values in the edited map
  */
-sealed class MapEdit<K, V : Any> {
+sealed class MapEdit<K, V : Any> : Edit<Map<K, V>> {
     companion object {
         /**
          * Applies the given `edits` on this map and returns the result.

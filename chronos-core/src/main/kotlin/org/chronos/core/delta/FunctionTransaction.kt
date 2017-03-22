@@ -22,6 +22,8 @@ import org.chronos.core.delta.BlockEdit.Companion.apply
 import org.chronos.core.delta.BlockEdit.Companion.diff
 import org.chronos.core.delta.ListEdit.Companion.apply
 import org.chronos.core.delta.ListEdit.Companion.diff
+import org.chronos.core.delta.MapEdit.Companion.apply
+import org.chronos.core.delta.MapEdit.Companion.diff
 
 /**
  * A transaction which should be applied on a [Function].
@@ -30,10 +32,12 @@ import org.chronos.core.delta.ListEdit.Companion.diff
  * `parameters`
  * @property bodyEdit the edit which should be applied to the `body`, or `null`
  * if the `body` shouldn't be changed
+ * @property propertyEdits the edits which should be applied to the `properties`
  */
 data class FunctionTransaction(
         val parameterEdits: List<ListEdit<Variable>> = emptyList(),
-        val bodyEdit: BlockEdit? = null
+        val bodyEdit: BlockEdit? = null,
+        val propertyEdits: List<MapEdit<String, String>> = emptyList()
 ) : Transaction<Function> {
     companion object {
         /**
@@ -49,14 +53,19 @@ data class FunctionTransaction(
             require(identifier == other.identifier)
             val parameterEdits = parameters.diff(other.parameters)
             val bodyEdit = body.diff(other.body)
-            return if (parameterEdits.isNotEmpty() || bodyEdit != null)
-                FunctionTransaction(parameterEdits, bodyEdit)
+            val propertyEdits = properties.diff(other.properties)
+            val isChanged = parameterEdits.isNotEmpty()
+                    || bodyEdit != null
+                    || propertyEdits.isNotEmpty()
+            return if (isChanged)
+                FunctionTransaction(parameterEdits, bodyEdit, propertyEdits)
             else null
         }
     }
 
     override fun applyOn(subject: Function): Function = subject.copy(
             parameters = subject.parameters.apply(parameterEdits),
-            body = subject.body.apply(bodyEdit)
+            body = subject.body.apply(bodyEdit),
+            properties = subject.properties.apply(propertyEdits)
     )
 }

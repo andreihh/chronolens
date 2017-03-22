@@ -28,7 +28,7 @@ import org.chronos.core.delta.VariableTransaction.Companion.diff
 import kotlin.reflect.KClass
 
 /** An atomic change which should be applied to a set of nodes. */
-sealed class NodeSetEdit {
+sealed class NodeSetEdit : Edit<Set<Node>> {
     companion object {
         private val Node.key: NodeKey
             get() = NodeKey(this::class, identifier)
@@ -90,7 +90,7 @@ sealed class NodeSetEdit {
             val identifier: String
     )
 
-    /** They key of the node affected by this edit. */
+    /** The key of the node affected by this edit. */
     protected abstract val key: NodeKey
 
     /**

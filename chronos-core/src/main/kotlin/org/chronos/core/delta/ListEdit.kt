@@ -21,7 +21,7 @@ package org.chronos.core.delta
  *
  * @param T the type of the elements of the edited list
  */
-sealed class ListEdit<T> {
+sealed class ListEdit<T> : Edit<List<T>> {
     companion object {
         /**
          * Applies the given `edits` on this list and returns the result.

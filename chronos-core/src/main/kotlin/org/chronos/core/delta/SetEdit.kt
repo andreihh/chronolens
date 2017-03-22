@@ -21,7 +21,7 @@ package org.chronos.core.delta
  *
  * @param T the type of the elements of the edited set
  */
-sealed class SetEdit<T> {
+sealed class SetEdit<T> : Edit<Set<T>> {
     companion object {
         /**
          * Applies the given `edits` on this set and returns the result.
