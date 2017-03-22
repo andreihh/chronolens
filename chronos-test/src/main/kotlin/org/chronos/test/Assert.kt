@@ -23,12 +23,6 @@ import org.chronos.core.Node.Function
 import org.chronos.core.Node.Type
 import org.chronos.core.Node.Variable
 import org.chronos.core.SourceFile
-import org.chronos.core.delta.FunctionTransaction
-import org.chronos.core.delta.FunctionTransaction.Companion.diff
-import org.chronos.core.delta.SourceFileTransaction.Companion.diff
-import org.chronos.core.delta.Transaction.Companion.apply
-import org.chronos.core.delta.TypeTransaction.Companion.diff
-import org.chronos.core.delta.VariableTransaction.Companion.diff
 
 import kotlin.test.assertEquals as assertEqualsKt
 import kotlin.test.assertNotNull
