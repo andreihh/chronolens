@@ -1,4 +1,4 @@
-rootProject.name = 'chronos'
+rootProject.name = 'metanalysis'
 
 include 'metanalysis-core'
 include 'metanalysis-test'
