@@ -79,12 +79,11 @@ subprojects {
 
 task codeCoverageReport(type: JacocoReport) {
     dependsOn {
-        subprojects*.test
+        subprojects*.jacocoTestReport
     }
-    /*sourceDirectories = files()
-    classDirectories = files()
-    executionData = files()*/
-    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+    executionData fileTree(project.rootDir.absolutePath)
+            .include("**/build/jacoco/*.exec")
 
     subprojects.each {
         sourceSets it.sourceSets.main
@@ -92,26 +91,7 @@ task codeCoverageReport(type: JacocoReport) {
 
     reports {
         html.enabled = true
-        html.destination "${buildDir}/reports/jacoco"
         xml.enabled = true
         csv.enabled = false
     }
-
-    /*onlyIf = { true }
-
-    doFirst {
-        subprojects.findAll { subProject ->
-            subProject.pluginManager.hasPlugin('jacoco')
-        }.each { subProject ->
-            additionalSourceDirs files((Set<File>) subProject.sourceSets.main.allSource.srcDirs)
-            additionalClassDirs files((FileCollection) subProject.sourceSets.main.output)
-            executionData subProject.tasks.jacocoTestReport.executionData
-        }
-
-        executionData = files(executionData.findAll { it.exists() })
-    }*/
 }
-
-/*codeCoverageReport.dependsOn {
-    subprojects*.test
-}*/
