@@ -16,6 +16,14 @@ allprojects {
             jcenter()
         }
     }
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    apply plugin: 'jacoco'
+
 }
 
 subprojects {
@@ -26,12 +34,8 @@ subprojects {
         }
     }
 
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
-
     apply plugin: 'java'
+    apply plugin: 'maven'
 
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -41,4 +45,73 @@ subprojects {
         testCompile "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
         testCompile "junit:junit:$junitVersion"
     }
+
+    jar {
+        from rootProject.file('LICENSE')
+        from rootProject.file('NOTICE')
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives sourcesJar
+        archives javadocJar
+    }
+
+    jacocoTestReport {
+        dependsOn test
+
+        reports {
+            html.enabled = true
+            xml.enabled = true
+            csv.enabled = false
+        }
+    }
 }
+
+task codeCoverageReport(type: JacocoReport) {
+    dependsOn {
+        subprojects*.test
+    }
+    /*sourceDirectories = files()
+    classDirectories = files()
+    executionData = files()*/
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+    subprojects.each {
+        sourceSets it.sourceSets.main
+    }
+
+    reports {
+        html.enabled = true
+        html.destination "${buildDir}/reports/jacoco"
+        xml.enabled = true
+        csv.enabled = false
+    }
+
+    /*onlyIf = { true }
+
+    doFirst {
+        subprojects.findAll { subProject ->
+            subProject.pluginManager.hasPlugin('jacoco')
+        }.each { subProject ->
+            additionalSourceDirs files((Set<File>) subProject.sourceSets.main.allSource.srcDirs)
+            additionalClassDirs files((FileCollection) subProject.sourceSets.main.output)
+            executionData subProject.tasks.jacocoTestReport.executionData
+        }
+
+        executionData = files(executionData.findAll { it.exists() })
+    }*/
+}
+
+/*codeCoverageReport.dependsOn {
+    subprojects*.test
+}*/

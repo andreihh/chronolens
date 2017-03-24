@@ -6,6 +6,8 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
     outputDirectory = javadoc.destinationDir
 }
 
+javadocJar.dependsOn dokkaJavadoc
+
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     compile "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
