@@ -1,4 +1,4 @@
-## Chronos
+## Metanalysis
 
 ### Features
 
@@ -7,7 +7,7 @@
 - JSON serialization utilities for code metadata and diffs
 - a Java source file parser which extracts Java code metadata
 
-### Using Chronos
+### Using Metanalysis
 
 Example `java` usage:
 

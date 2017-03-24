@@ -1,0 +1,13 @@
+apply plugin: 'kotlin'
+apply plugin: 'org.jetbrains.dokka'
+
+task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+    outputFormat = 'javadoc'
+    outputDirectory = javadoc.destinationDir
+}
+
+dependencies {
+    compile "org.eclipse.jdt:org.eclipse.jdt.core:$jdtVersion"
+    compile project(':metanalysis-core')
+    testCompile project(':metanalysis-test')
+}

@@ -1,6 +1,6 @@
 rootProject.name = 'chronos'
 
-include 'chronos-core'
-include 'chronos-test'
-include 'chronos-java'
+include 'metanalysis-core'
+include 'metanalysis-test'
+include 'metanalysis-java'
 
