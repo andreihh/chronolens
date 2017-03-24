@@ -29,31 +29,35 @@ class VariableTransactionTest {
         assertEquals(dst.apply(dst.diff(src)), src)
     }
 
-    @Test fun `test variable change initializer from null to not-null`() {
+    @Test fun `test variable change initializer from empty to non-empty`() {
         val name = "version"
         val initializer = "1"
         val expected = Variable(name, initializer)
-        val actual = Variable(name, null)
-                .apply(VariableTransaction(initializer))
+        val actual = Variable(name).apply(
+                VariableTransaction(listOf(ListEdit.Add(0, initializer)))
+        )
         assertEquals(expected, actual)
     }
 
-    @Test fun `test variable change initializer from not-null to null`() {
+    @Test fun `test variable change initializer from non-empty to empty`() {
         val name = "version"
         val initializer = "1"
-        val expected = Variable(name, null)
+        val expected = Variable(name)
         val actual = Variable(name, initializer)
-                .apply(VariableTransaction(null))
+                .apply(VariableTransaction(listOf(ListEdit.Remove(0))))
         assertEquals(expected, actual)
     }
 
-    @Test fun `test variable change initializer from not-null to not-null`() {
+    @Test fun `test variable change initializer`() {
         val name = "version"
         val initializer = "1"
         val expectedInitializer = "2"
         val expected = Variable(name, expectedInitializer)
-        val actual = Variable(name, initializer)
-                .apply(VariableTransaction(expectedInitializer))
+        val actual = Variable(name, initializer).apply(VariableTransaction(
+                initializerEdits = listOf(
+                        ListEdit.Replace(0, expectedInitializer)
+                )
+        ))
         assertEquals(expected, actual)
     }
 }

@@ -89,16 +89,21 @@ sealed class Node {
      * The [identifier] of a variable is its [name].
      *
      * @property name the name of this variable
-     * @property initializer the canonical string representation of the
-     * initializer of this variable, or `null` if it doesn't have an initializer
+     * @property initializer the initializer lines of this variable, or an empty
+     * list if it doesn't have an initializer
      */
     data class Variable(
             val name: String,
-            val initializer: String? = null,
+            val initializer: List<String> = emptyList(),
             override val properties: Map<String, String> = emptyMap()
     ) : Node() {
         override val identifier: String
             get() = name
+
+        constructor(name: String, initializer: String?) : this(
+                name = name,
+                initializer = initializer?.split("\n") ?: emptyList()
+        )
     }
 
     /**
@@ -115,15 +120,15 @@ sealed class Node {
      *
      * @property signature the signature of this function
      * @property parameters the parameters of this function
-     * @property body the canonical string representation of the body of this
-     * function, or `null` if it doesn't have a body
+     * @property body the body lines of this function, or an empty list if it
+     * doesn't have a body
      * @throws IllegalArgumentException if multiple `parameters` have the same
      * `name`
      */
     data class Function(
             val signature: String,
             val parameters: List<Variable>,
-            val body: String? = null,
+            val body: List<String> = emptyList(),
             override val properties: Map<String, String> = emptyMap()
     ) : Node() {
         override val identifier: String
@@ -134,5 +139,11 @@ sealed class Node {
                 "$parameters contains duplicated parameters!"
             }
         }
+
+        constructor(
+                signature: String,
+                parameters: List<Variable>,
+                body: String?
+        ) : this(signature, parameters, body?.split("\n") ?: emptyList())
     }
 }

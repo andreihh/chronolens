@@ -35,13 +35,13 @@ class PrettyPrinterVisitor : NodeVisitor() {
     }
 
     override fun visit(variable: Variable) {
-        val initializer = variable.initializer?.replace("\n", "\n$indent")
-        val append = if (initializer != null) " = $initializer" else ""
+        val initializer = variable.initializer.map { "$indent$it" }
+        val append = if (initializer.isNotEmpty()) " = $initializer" else ""
         println("${indent}Variable(${variable.name})$append")
     }
 
     override fun visit(function: Function) {
-        val body = function.body?.replace("\n", "\n$indent")
-        println("${indent}Function(${function.signature}) " + (body ?: ""))
+        val body = function.body.map { "$indent$it" }.joinToString("\n")
+        println("${indent}Function(${function.signature}) $body")
     }
 }

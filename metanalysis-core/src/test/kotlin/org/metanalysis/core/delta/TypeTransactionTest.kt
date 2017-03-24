@@ -156,7 +156,9 @@ class TypeTransactionTest {
         ).apply(TypeTransaction(
                 memberEdits = listOf(NodeSetEdit.Change<Variable>(
                         identifier = changedName,
-                        transaction = VariableTransaction(null)
+                        transaction = VariableTransaction(
+                                initializerEdits = listOf(ListEdit.Remove(0))
+                        )
                 ))
         ))
         assertEquals(expected, actual)
@@ -176,7 +178,7 @@ class TypeTransactionTest {
                 memberEdits = listOf(NodeSetEdit.Change<Function>(
                         identifier = changedSignature,
                         transaction = FunctionTransaction(
-                                bodyEdit = BlockEdit.Set(null)
+                                bodyEdits = listOf(ListEdit.Remove(0))
                         )
                 ))
         ))

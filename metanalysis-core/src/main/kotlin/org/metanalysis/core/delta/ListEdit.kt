@@ -71,18 +71,20 @@ sealed class ListEdit<T> : Edit<List<T>> {
             var i = n
             var j = m
             while (i > 0 || j > 0) {
-                if (dp[i][j] == dp[i - 1][j] + 1) {
+                if (i > 0 && dp[i][j] == dp[i - 1][j] + 1) {
                     edits.add(Remove(i - 1))
                     i--
-                } else if (dp[i][j] == dp[i][j - 1] + 1) {
+                } else if (j > 0 && dp[i][j] == dp[i][j - 1] + 1) {
                     edits.add(Add(i, other[j - 1]))
                     j--
-                } else {
+                } else if (i > 0 && j > 0) {
                     if (dp[i][j] == dp[i - 1][j - 1] + 1) {
                         edits.add(Replace(i - 1, other[j - 1]))
                     }
                     i--
                     j--
+                } else {
+                    throw AssertionError()
                 }
             }
             return edits

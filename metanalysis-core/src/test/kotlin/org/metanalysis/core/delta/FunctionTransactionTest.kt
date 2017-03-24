@@ -44,7 +44,7 @@ class FunctionTransactionTest {
         val signature = "println()"
         val expected = Function(signature, emptyList())
         val actual = Function(signature, listOf(Variable("s"))).apply(
-                FunctionTransaction(listOf(ListEdit.Remove(0)), null)
+                FunctionTransaction(listOf(ListEdit.Remove(0)))
         )
         assertEquals(expected, actual)
     }
@@ -67,7 +67,9 @@ class FunctionTransactionTest {
         val body = "{\n  i = 1;\n}\n"
         val expected = Function(signature, emptyList(), body)
         val actual = Function(signature, emptyList(), "{\n  j = 2;\n}\n").apply(
-                FunctionTransaction(emptyList(), BlockEdit.Set(body))
+                FunctionTransaction(
+                        bodyEdits = listOf(ListEdit.Replace(1, "  i = 1;"))
+                )
         )
         assertEquals(expected, actual)
     }
@@ -85,7 +87,7 @@ class FunctionTransactionTest {
                 parameterEdits = listOf(
                         ListEdit.Add(1, parameter),
                         ListEdit.Remove(0)),
-                bodyEdit = BlockEdit.Set(body)
+                bodyEdits = listOf(ListEdit.Replace(1, "  i = 1;"))
         ))
         assertEquals(expected, actual)
     }

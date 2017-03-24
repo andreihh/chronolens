@@ -18,8 +18,6 @@ package org.metanalysis.core.delta
 
 import org.metanalysis.core.Node.Function
 import org.metanalysis.core.Node.Variable
-import org.metanalysis.core.delta.BlockEdit.Companion.apply
-import org.metanalysis.core.delta.BlockEdit.Companion.diff
 import org.metanalysis.core.delta.ListEdit.Companion.apply
 import org.metanalysis.core.delta.ListEdit.Companion.diff
 import org.metanalysis.core.delta.MapEdit.Companion.apply
@@ -30,13 +28,12 @@ import org.metanalysis.core.delta.MapEdit.Companion.diff
  *
  * @property parameterEdits the edits which should be applied to the
  * `parameters`
- * @property bodyEdit the edit which should be applied to the `body`, or `null`
- * if the `body` shouldn't be changed
+ * @property bodyEdits the edits which should be applied to the `body`
  * @property propertyEdits the edits which should be applied to the `properties`
  */
 data class FunctionTransaction(
         val parameterEdits: List<ListEdit<Variable>> = emptyList(),
-        val bodyEdit: BlockEdit? = null,
+        val bodyEdits: List<ListEdit<String>> = emptyList(),
         val propertyEdits: List<MapEdit<String, String>> = emptyList()
 ) : Transaction<Function> {
     companion object {
@@ -52,20 +49,20 @@ data class FunctionTransaction(
         @JvmStatic fun Function.diff(other: Function): FunctionTransaction? {
             require(identifier == other.identifier)
             val parameterEdits = parameters.diff(other.parameters)
-            val bodyEdit = body.diff(other.body)
+            val bodyEdits = body.diff(other.body)
             val propertyEdits = properties.diff(other.properties)
             val isChanged = parameterEdits.isNotEmpty()
-                    || bodyEdit != null
+                    || bodyEdits.isNotEmpty()
                     || propertyEdits.isNotEmpty()
             return if (isChanged)
-                FunctionTransaction(parameterEdits, bodyEdit, propertyEdits)
+                FunctionTransaction(parameterEdits, bodyEdits, propertyEdits)
             else null
         }
     }
 
     override fun applyOn(subject: Function): Function = subject.copy(
             parameters = subject.parameters.apply(parameterEdits),
-            body = subject.body.apply(bodyEdit),
+            body = subject.body.apply(bodyEdits),
             properties = subject.properties.apply(propertyEdits)
     )
 }

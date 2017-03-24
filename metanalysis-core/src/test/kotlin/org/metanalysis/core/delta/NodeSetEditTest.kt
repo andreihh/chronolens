@@ -114,7 +114,9 @@ class NodeSetEditTest {
         val actual = setOf(Type(name), Variable(name))
                 .apply(NodeSetEdit.Change<Variable>(
                         identifier = name,
-                        transaction = VariableTransaction("1")
+                        transaction = VariableTransaction(
+                                initializerEdits = listOf(ListEdit.Add(0, "1"))
+                        )
                 ))
         assertEquals(expected, actual)
     }
@@ -123,7 +125,7 @@ class NodeSetEditTest {
     fun `test change non-existing variable throws`() {
         emptySet<Node>().apply(NodeSetEdit.Change<Variable>(
                 identifier = "field",
-                transaction = VariableTransaction(null)
+                transaction = VariableTransaction()
         ))
     }
 
@@ -161,12 +163,12 @@ class NodeSetEditTest {
         )
         val actual = setOf(
                 Type(signature),
-                Function(signature, listOf(Variable("name")), null)
+                Function(signature, listOf(Variable("name")))
         ).apply(NodeSetEdit.Change<Function>(
                 identifier = signature,
                 transaction = FunctionTransaction(
                         parameterEdits = listOf(ListEdit.Remove(0)),
-                        bodyEdit = BlockEdit.Set("{}")
+                        bodyEdits = listOf(ListEdit.Add(0, "{}"))
                 )
         ))
         assertEquals(expected, actual)
