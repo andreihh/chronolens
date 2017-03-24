@@ -26,9 +26,6 @@ import org.metanalysis.core.delta.NodeSetEdit.Companion.apply
 import org.metanalysis.test.assertEquals
 
 class NodeSetEditTest {
-    private fun Set<Node>.apply(vararg edits: NodeSetEdit): Set<Node> =
-            apply(edits.asList())
-
     @Test fun `test add type`() {
         val type = Type("IClass")
         val expected = setOf(type)

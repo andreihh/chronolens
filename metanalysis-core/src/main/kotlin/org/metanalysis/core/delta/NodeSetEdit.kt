@@ -68,7 +68,7 @@ sealed class NodeSetEdit : Edit<Set<Node>> {
             }
             val changed = this.intersect(other).map { node ->
                 val identifier = node.identifier
-                val otherNode = checkNotNull(map[node.key])
+                val otherNode = map[node.key] ?: throw AssertionError()
                 when (node) {
                     is Type -> node.diff(otherNode as Type)?.let { t ->
                         Change<Type>(identifier, t)

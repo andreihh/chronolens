@@ -24,9 +24,6 @@ import org.metanalysis.core.delta.SetEdit.Companion.diff
 import kotlin.test.assertEquals
 
 class SetEditTest {
-    private fun <T> Set<T>.apply(vararg edits: SetEdit<T>): Set<T> =
-            apply(edits.asList())
-
     private fun <T> assertDiff(src: Set<T>, dst: Set<T>) {
         assertEquals(dst, src.apply(src.diff(dst)))
         assertEquals(src, dst.apply(dst.diff(src)))
