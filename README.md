@@ -14,6 +14,10 @@
 
 ### Using Metanalysis
 
+Command line usage:
+
+```java -jar metanalysis-cli-$version-all file_v1 file_v2 diff_output_file```
+
 Example `java` usage:
 
 ```java

@@ -1,0 +1,30 @@
+apply plugin: 'kotlin'
+apply plugin: 'org.jetbrains.dokka'
+
+task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+    outputFormat = 'javadoc'
+    outputDirectory = javadoc.destinationDir
+}
+
+javadocJar.dependsOn dokkaJavadoc
+
+task fatJar(type: Jar) {
+    classifier = 'all'
+
+    manifest {
+        attributes 'Main-Class': 'org.metanalysis.cli.Main'
+    }
+
+    from {
+        configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    }
+
+    with jar
+}
+
+dependencies {
+    compile project(':metanalysis-core')
+    compile project(':metanalysis-java')
+}
