@@ -14,6 +14,10 @@
 
 ### Using Metanalysis
 
+#### Environment requirements
+
+In order to use `metanalysis` you need to have `JDK 1.8` or newer.
+
 #### Using the command line
 
 Download the most recently released `cli` artifact from
@@ -30,6 +34,7 @@ repositories {
 
 dependencies {
     compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-core:$version"
+    compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-git:$version"
     compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-java:$version"
     testCompile "com.github.andrei-heidelbacher.metanalysis:metanalysis-test:$version"
 }
