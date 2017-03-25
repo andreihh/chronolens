@@ -29,6 +29,8 @@ import org.metanalysis.test.assertEquals
 
 import java.net.URL
 
+import kotlin.test.assertNull
+
 class SourceFileTransactionTest {
     private fun assertDiff(src: SourceFile, dst: SourceFile) {
         assertEquals(src.apply(src.diff(dst)), dst)
@@ -105,5 +107,19 @@ class SourceFileTransactionTest {
         val src = parser.parse(srcUrl)
         val dst = parser.parse(dstUrl)
         assertDiff(src, dst)
+    }
+
+    @Test fun `test apply null transaction returns equal source file`() {
+        val sourceFile = SourceFile(setOf(Variable("version", "1")))
+        assertEquals(sourceFile, sourceFile.apply(transaction = null))
+    }
+
+    @Test fun `test diff equal source files returns null`() {
+        val sourceFile = SourceFile(setOf(
+                Variable("version"),
+                Type("IClass"),
+                Function("getVersion()", emptyList())
+        ))
+        assertNull(sourceFile.diff(sourceFile))
     }
 }

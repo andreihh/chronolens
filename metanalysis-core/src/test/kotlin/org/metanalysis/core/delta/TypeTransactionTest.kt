@@ -25,6 +25,8 @@ import org.metanalysis.core.delta.Transaction.Companion.apply
 import org.metanalysis.core.delta.TypeTransaction.Companion.diff
 import org.metanalysis.test.assertEquals
 
+import kotlin.test.assertNull
+
 class TypeTransactionTest {
     private fun assertDiff(src: Type, dst: Type) {
         assertEquals(src.apply(src.diff(dst)), dst)
@@ -183,5 +185,20 @@ class TypeTransactionTest {
                 ))
         ))
         assertEquals(expected, actual)
+    }
+
+    @Test fun `test apply null transaction returns equal type`() {
+        val type = Type("IClass", setOf("IInterface"))
+        assertEquals(type, type.apply(transaction = null))
+    }
+
+    @Test fun `test diff equal types returns null`() {
+        val type = Type("IClass", setOf("IInterface"))
+        assertNull(type.diff(type))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test diff types with different identifiers throws`() {
+        Type("IClass").diff(Type("IInterface"))
     }
 }

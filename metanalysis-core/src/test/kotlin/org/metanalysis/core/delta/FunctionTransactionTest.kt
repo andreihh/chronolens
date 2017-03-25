@@ -24,6 +24,8 @@ import org.metanalysis.core.delta.FunctionTransaction.Companion.diff
 import org.metanalysis.core.delta.Transaction.Companion.apply
 import org.metanalysis.test.assertEquals
 
+import kotlin.test.assertNull
+
 class FunctionTransactionTest {
     private fun assertDiff(src: Function, dst: Function) {
         assertEquals(src.apply(src.diff(dst)), dst)
@@ -90,5 +92,21 @@ class FunctionTransactionTest {
                 bodyEdits = listOf(ListEdit.Replace(1, "  i = 1;"))
         ))
         assertEquals(expected, actual)
+    }
+
+    @Test fun `test apply null transaction returns equal function`() {
+        val function = Function("getVersion()", emptyList())
+        assertEquals(function, function.apply(transaction = null))
+    }
+
+    @Test fun `test diff equal function returns null`() {
+        val function = Function("getVersion()", emptyList())
+        assertNull(function.diff(function))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test diff function with different identifiers throws`() {
+        Function("getVersion()", emptyList())
+                .diff(Function("get_version()", emptyList()))
     }
 }

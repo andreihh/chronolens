@@ -23,6 +23,8 @@ import org.metanalysis.core.delta.Transaction.Companion.apply
 import org.metanalysis.core.delta.VariableTransaction.Companion.diff
 import org.metanalysis.test.assertEquals
 
+import kotlin.test.assertNull
+
 class VariableTransactionTest {
     private fun assertDiff(src: Variable, dst: Variable) {
         assertEquals(src.apply(src.diff(dst)), dst)
@@ -59,5 +61,20 @@ class VariableTransactionTest {
                 )
         ))
         assertEquals(expected, actual)
+    }
+
+    @Test fun `test apply null transaction returns equal variable`() {
+        val variable = Variable("version", "1")
+        assertEquals(variable, variable.apply(transaction = null))
+    }
+
+    @Test fun `test diff equal variables returns null`() {
+        val variable = Variable("version", "1")
+        assertNull(variable.diff(variable))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test diff variables with different identifiers throws`() {
+        Variable("version").diff(Variable("version2"))
     }
 }

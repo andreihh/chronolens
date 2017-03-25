@@ -30,7 +30,9 @@ import org.metanalysis.core.delta.TypeTransaction
 import org.metanalysis.core.delta.VariableTransaction
 
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 
+import kotlin.reflect.KClass
 import kotlin.test.assertEquals
 
 class JsonDriverTest {
@@ -63,6 +65,13 @@ class JsonDriverTest {
                     ))
             ))
     ))
+
+    @Test(expected = IOException::class)
+    fun `test deserialize invalid KClass throws`() {
+        JsonDriver.deserialize<KClass<*>>(
+                src = "\"java.lang.String$\"".byteInputStream()
+        )
+    }
 
     @Test fun `test serialize source file transaction`() {
         val bos = ByteArrayOutputStream()
