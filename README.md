@@ -14,9 +14,22 @@
 
 ### Using Metanalysis
 
-Command line usage:
+#### Using the command line
 
 ```java -jar metanalysis-cli-$version-all file_v1 file_v2 diff_output_file```
+
+#### Using Gradle
+
+```groovy
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-core:$version"
+    testCompile "com.github.andrei-heidelbacher.metanalysis:metanalysis-test:$version"
+}
+```
 
 Example `java` usage:
 

@@ -16,12 +16,6 @@
 
 package org.metanalysis.java
 
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Type
-import org.metanalysis.core.Node.Variable
-import org.metanalysis.core.Parser
-import org.metanalysis.core.SourceFile
-
 import org.eclipse.jdt.core.JavaCore
 import org.eclipse.jdt.core.dom.AST
 import org.eclipse.jdt.core.dom.ASTParser
@@ -39,6 +33,12 @@ import org.eclipse.jdt.core.dom.MethodDeclaration
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration
 import org.eclipse.jdt.core.dom.TypeDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
+
+import org.metanalysis.core.Node.Function
+import org.metanalysis.core.Node.Type
+import org.metanalysis.core.Node.Variable
+import org.metanalysis.core.Parser
+import org.metanalysis.core.SourceFile
 
 /** Java 8 language parser. */
 class JavaParser : Parser() {
@@ -89,7 +89,7 @@ class JavaParser : Parser() {
                 is EnumConstantDeclaration -> visit(member)
                 is VariableDeclaration -> visit(member)
                 is MethodDeclaration -> visit(member)
-                is Initializer -> TODO()
+                is Initializer -> throw IllegalStateException("Parse error!")
                 else -> throw AssertionError("Unknown declaration $member!")
             }
         }

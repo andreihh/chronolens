@@ -60,6 +60,6 @@ abstract class Parser {
      * @throws IOException if an error occurs trying to read the content at the
      * specified `url`
      */
-    @Throws(SyntaxError::class)
+    @Throws(SyntaxError::class, IOException::class)
     fun parse(url: URL): SourceFile = parse(url.readText())
 }

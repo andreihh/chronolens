@@ -21,14 +21,32 @@ import org.junit.Test
 import org.metanalysis.core.Node.Function
 import org.metanalysis.core.Node.Type
 import org.metanalysis.core.Node.Variable
+import org.metanalysis.core.Parser.SyntaxError
 import org.metanalysis.core.SourceFile
 import org.metanalysis.test.PrettyPrinterVisitor
 import org.metanalysis.test.assertEquals
 
+import java.io.File
+import java.io.IOException
 import java.net.URL
 
 class JavaParserTest {
-    val parser = JavaParser()
+    private val parser = JavaParser()
+
+    @Test(expected = IOException::class)
+    fun `test parse non-existent file throws`() {
+        parser.parse(File("non-existing-file"))
+    }
+
+    @Test(expected = IOException::class)
+    fun `test parse non-existing URL throws`() {
+        parser.parse(URL("file:///non-existing-url"))
+    }
+
+    @Test(expected = SyntaxError::class)
+    fun `test parse invalid source throws`() {
+        parser.parse("cla Main { int i = &@*; { class K; interface {}")
+    }
 
     @Test fun `test annotation`() {
         val source = """
@@ -267,6 +285,11 @@ class JavaParserTest {
 
     @Test fun `test integration`() {
         val source = javaClass.getResource("/IntegrationTest.java")
+        PrettyPrinterVisitor().visit(parser.parse(source))
+    }
+
+    @Test fun `test file integration`() {
+        val source = File("src/test/resources/IntegrationTest.java")
         PrettyPrinterVisitor().visit(parser.parse(source))
     }
 
