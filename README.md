@@ -16,7 +16,10 @@
 
 #### Using the command line
 
-```java -jar metanalysis-cli-$version-all file_v1 file_v2 diff_output_file```
+Download the most recently released `cli` artifact from
+[here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run it:
+
+```java -jar metanalysis-cli-$version file_v1 file_v2 diff_output_file```
 
 #### Using Gradle
 
@@ -27,39 +30,8 @@ repositories {
 
 dependencies {
     compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-core:$version"
+    compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-java:$version"
     testCompile "com.github.andrei-heidelbacher.metanalysis:metanalysis-test:$version"
-}
-```
-
-Example `java` usage:
-
-```java
-class PrinterVisitor extends NodeVisitor {
-    @Override
-    void visit(Node.Type type) {
-        System.out.println(
-                "Type(" + type.getName() + ") : " + type.getSupertypes());
-        System.out.println("{\n");
-    }
-
-    @Override
-    void endVisit(Node.Type type) {
-        System.out.println("\n}");
-    }
-
-    @Override
-    void visit(Node.Variable variable) {
-        String init = variable.initializer != null
-                ? (" = " + variable.initializer)
-                : "";
-        System.out.println("Variable(" + variable.getName() + ")" + init);
-    }
-
-    @Override
-    void visit(Node.Function function) {
-        String body = function.body != null ? function.body : "";
-        println("Function(" + function.signature + ")" + body);
-    }
 }
 ```
 
