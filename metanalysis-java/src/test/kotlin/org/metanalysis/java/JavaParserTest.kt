@@ -21,6 +21,7 @@ import org.junit.Test
 import org.metanalysis.core.Node.Function
 import org.metanalysis.core.Node.Type
 import org.metanalysis.core.Node.Variable
+import org.metanalysis.core.Parser
 import org.metanalysis.core.Parser.SyntaxError
 import org.metanalysis.core.SourceFile
 import org.metanalysis.test.PrettyPrinterVisitor
@@ -29,9 +30,10 @@ import org.metanalysis.test.assertEquals
 import java.io.File
 import java.io.IOException
 import java.net.URL
+import kotlin.test.assertNotNull
 
 class JavaParserTest {
-    private val parser = JavaParser()
+    private val parser = checkNotNull(Parser.getByExtension("java"))
 
     @Test(expected = IOException::class)
     fun `test parse non-existent file throws`() {
@@ -290,11 +292,14 @@ class JavaParserTest {
 
     @Test fun `test file integration`() {
         val source = File("src/test/resources/IntegrationTest.java")
-        PrettyPrinterVisitor().visit(parser.parse(source))
+        PrettyPrinterVisitor().visit(assertNotNull(Parser.parseFile(source)))
     }
 
     @Test fun `test network`() {
         val source = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/master/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
-        PrettyPrinterVisitor().visit(parser.parse(source))
+        val sourceFile = assertNotNull(
+                Parser.getByLanguage(JavaParser.LANGUAGE)?.parse(source)
+        )
+        PrettyPrinterVisitor().visit(sourceFile)
     }
 }

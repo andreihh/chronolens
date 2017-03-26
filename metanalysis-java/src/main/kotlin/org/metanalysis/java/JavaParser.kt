@@ -42,6 +42,11 @@ import org.metanalysis.core.SourceFile
 
 /** Java 8 language parser. */
 class JavaParser : Parser() {
+    companion object {
+        /** The `Java` programming language supported by this parser. */
+        const val LANGUAGE: String = "Java"
+    }
+
     private fun <T> Collection<T>.requireDistinct(): Set<T> = toSet().let {
         require(size == it.size) { "$this contains duplicated elements!" }
         it
@@ -127,6 +132,11 @@ class JavaParser : Parser() {
     private fun visit(node: CompilationUnit): SourceFile =
             node.types().filterIsInstance<AbstractTypeDeclaration>()
                     .map(this::visit).requireDistinct().let(::SourceFile)
+
+    override val language: String
+        get() = LANGUAGE
+
+    override val extensions: Set<String> = setOf("java")
 
     @Throws(SyntaxError::class)
     override fun parse(source: String): SourceFile {

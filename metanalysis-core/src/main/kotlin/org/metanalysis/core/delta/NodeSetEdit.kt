@@ -112,7 +112,9 @@ sealed class NodeSetEdit : Edit<Set<Node>> {
             get() = NodeKey(node::class, node.identifier)
 
         override fun applyOn(subject: MutableMap<NodeKey, Node>) {
-            check(subject.put(key, node) == null)
+            check(subject.put(key, node) == null) {
+                "Can't add $key because it already exists in $subject!"
+            }
         }
     }
 
@@ -137,7 +139,9 @@ sealed class NodeSetEdit : Edit<Set<Node>> {
             get() = NodeKey(nodeType, identifier)
 
         override fun applyOn(subject: MutableMap<NodeKey, Node>) {
-            checkNotNull(subject.remove(key))
+            checkNotNull(subject.remove(key)) {
+                "Can't remove $key because it doesn't exist in $subject!"
+            }
         }
     }
 
@@ -167,8 +171,9 @@ sealed class NodeSetEdit : Edit<Set<Node>> {
             get() = NodeKey(nodeType, identifier)
 
         override fun applyOn(subject: MutableMap<NodeKey, Node>) {
-            subject[key] = checkNotNull(nodeType.java.cast(subject[key]))
-                    .apply(transaction)
+            subject[key] = checkNotNull(nodeType.java.cast(subject[key])) {
+                "Can't change $key because it doesn't exist in $subject!"
+            }.apply(transaction)
         }
     }
 }

@@ -23,7 +23,7 @@ In order to use `metanalysis` you need to have `JDK 1.8` or newer.
 Download the most recently released `cli` artifact from
 [here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run it:
 
-```java -jar metanalysis-cli-$version file_v1 file_v2 diff_output_file```
+```java -jar metanalysis-cli-$version-all file_v1 file_v2 diff_output_file```
 
 #### Using Gradle
 
@@ -34,11 +34,14 @@ repositories {
 
 dependencies {
     compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-core:$version"
-    compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-git:$version"
-    compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-java:$version"
+    runtime "com.github.andrei-heidelbacher.metanalysis:metanalysis-git:$version"
+    runtime "com.github.andrei-heidelbacher.metanalysis:metanalysis-java:$version"
     testCompile "com.github.andrei-heidelbacher.metanalysis:metanalysis-test:$version"
 }
 ```
+
+Additionally, you must provide the service configuration file
+`META-INF/services/org.metanalysis.core.Parser`.
 
 ### Documentation
 

@@ -8,7 +8,9 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
 
 javadocJar.dependsOn dokkaJavadoc
 
-jar {
+task fatJar(type: Jar) {
+    classifier = 'all'
+
     manifest {
         attributes 'Main-Class': 'org.metanalysis.cli.Main'
     }
@@ -18,9 +20,11 @@ jar {
     } {
         exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
     }
+
+    with jar
 }
 
 dependencies {
     compile project(':metanalysis-core')
-    compile project(':metanalysis-java')
+    runtime project(':metanalysis-java')
 }

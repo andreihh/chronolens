@@ -87,7 +87,9 @@ sealed class MapEdit<K, V : Any> : Edit<Map<K, V>> {
      */
     data class Add<K, V : Any>(val key: K, val value: V) : MapEdit<K, V>() {
         override fun applyOn(subject: MutableMap<K, V>) {
-            check(subject.put(key, value) == null)
+            check(subject.put(key, value) == null) {
+                "Can't add $key because it already exists in $subject!"
+            }
         }
     }
 
@@ -100,7 +102,9 @@ sealed class MapEdit<K, V : Any> : Edit<Map<K, V>> {
      */
     data class Remove<K, V : Any>(val key: K) : MapEdit<K, V>() {
         override fun applyOn(subject: MutableMap<K, V>) {
-            checkNotNull(subject.remove(key))
+            checkNotNull(subject.remove(key)) {
+                "Can't remove $key because it doesn't exist in $subject!"
+            }
         }
     }
 
@@ -114,7 +118,9 @@ sealed class MapEdit<K, V : Any> : Edit<Map<K, V>> {
      */
     data class Replace<K, V : Any>(val key: K, val value: V) : MapEdit<K, V>() {
         override fun applyOn(subject: MutableMap<K, V>) {
-            checkNotNull(subject.put(key, value))
+            checkNotNull(subject.put(key, value)) {
+                "Can't replace $key because it doesn't exist in $subject!"
+            }
         }
     }
 }

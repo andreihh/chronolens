@@ -72,7 +72,9 @@ sealed class SetEdit<T> : Edit<Set<T>> {
      */
     data class Add<T>(val value: T) : SetEdit<T>() {
         override fun applyOn(subject: MutableSet<T>) {
-            check(subject.add(value))
+            check(subject.add(value)) {
+                "Can't add $value because it already exists in $subject!"
+            }
         }
     }
 
@@ -84,7 +86,9 @@ sealed class SetEdit<T> : Edit<Set<T>> {
      */
     data class Remove<T>(val value: T) : SetEdit<T>() {
         override fun applyOn(subject: MutableSet<T>) {
-            check(subject.remove(value))
+            check(subject.remove(value)) {
+                "Can't remove $value because it doesn't exist in $subject!"
+            }
         }
     }
 }

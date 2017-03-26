@@ -18,9 +18,9 @@
 
 package org.metanalysis.cli
 
+import org.metanalysis.core.Parser
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.serialization.JsonDriver
-import org.metanalysis.java.JavaParser
 
 import java.io.File
 import java.io.FileOutputStream
@@ -30,7 +30,7 @@ fun main(args: Array<String>) {
         println("Usage: file_v1 file_v2 output_file")
         return
     }
-    val parser = JavaParser()
+    val parser = checkNotNull(Parser.getByExtension("java"))
     val file1 = File(args[0])
     val file2 = File(args[1])
     val sourceFile1 = parser.parse(file1)

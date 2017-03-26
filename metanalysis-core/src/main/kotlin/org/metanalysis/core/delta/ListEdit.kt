@@ -84,12 +84,11 @@ sealed class ListEdit<T> : Edit<List<T>> {
                     i--
                     j--
                 } else {
-                    throw AssertionError()
+                    throw AssertionError("Can't diff $this and $other!")
                 }
             }
             return edits
         }
-
     }
 
     /**
@@ -110,7 +109,9 @@ sealed class ListEdit<T> : Edit<List<T>> {
      */
     data class Add<T>(val index: Int, val value: T) : ListEdit<T>() {
         override fun applyOn(subject: MutableList<T>) {
-            check(index in 0..subject.size)
+            check(index in 0..subject.size) {
+                "$index is out of bounds for $subject!"
+            }
             subject.add(index, value)
         }
     }
@@ -123,7 +124,9 @@ sealed class ListEdit<T> : Edit<List<T>> {
      */
     data class Remove<T>(val index: Int) : ListEdit<T>() {
         override fun applyOn(subject: MutableList<T>) {
-            check(index in 0 until subject.size)
+            check(index in 0 until subject.size) {
+                "$index is out of bounds for $subject!"
+            }
             subject.removeAt(index)
         }
     }
@@ -137,7 +140,9 @@ sealed class ListEdit<T> : Edit<List<T>> {
      */
     data class Replace<T>(val index: Int, val value: T) : ListEdit<T>() {
         override fun applyOn(subject: MutableList<T>) {
-            check(index in 0 until subject.size)
+            check(index in 0 until subject.size) {
+                "$index is out of bounds for $subject!"
+            }
             subject[index] = value
         }
     }
