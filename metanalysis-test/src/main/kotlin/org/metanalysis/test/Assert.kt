@@ -18,11 +18,11 @@
 
 package org.metanalysis.test
 
-import org.metanalysis.core.Node
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Type
-import org.metanalysis.core.Node.Variable
-import org.metanalysis.core.SourceFile
+import org.metanalysis.core.model.Node
+import org.metanalysis.core.model.Node.Function
+import org.metanalysis.core.model.Node.Type
+import org.metanalysis.core.model.Node.Variable
+import org.metanalysis.core.model.SourceFile
 
 import kotlin.test.assertEquals as assertEqualsKt
 import kotlin.test.assertNotNull

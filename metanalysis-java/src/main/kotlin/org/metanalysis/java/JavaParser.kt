@@ -34,17 +34,22 @@ import org.eclipse.jdt.core.dom.SingleVariableDeclaration
 import org.eclipse.jdt.core.dom.TypeDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
 
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Type
-import org.metanalysis.core.Node.Variable
-import org.metanalysis.core.Parser
-import org.metanalysis.core.SourceFile
+import org.metanalysis.core.model.Node.Function
+import org.metanalysis.core.model.Node.Type
+import org.metanalysis.core.model.Node.Variable
+import org.metanalysis.core.model.Parser
+import org.metanalysis.core.model.SourceFile
+
+import java.io.IOException
 
 /** Java 8 language parser. */
 class JavaParser : Parser() {
     companion object {
         /** The `Java` programming language supported by this parser. */
         const val LANGUAGE: String = "Java"
+
+        /** The Java file extensions. */
+        val EXTENSIONS: Set<String> = setOf("java")
     }
 
     private fun <T> Collection<T>.requireDistinct(): Set<T> = toSet().let {
@@ -136,9 +141,10 @@ class JavaParser : Parser() {
     override val language: String
         get() = LANGUAGE
 
-    override val extensions: Set<String> = setOf("java")
+    override val extensions: Set<String>
+        get() = EXTENSIONS
 
-    @Throws(SyntaxError::class)
+    @Throws(IOException::class)
     override fun parse(source: String): SourceFile {
         try {
             val jdtParser = ASTParser.newParser(AST.JLS8)
@@ -151,7 +157,7 @@ class JavaParser : Parser() {
             val compilationUnit = jdtParser.createAST(null) as CompilationUnit
             return visit(compilationUnit)
         } catch (e: Exception) {
-            throw SyntaxError(cause = e)
+            throw IOException(e)
         }
     }
 }

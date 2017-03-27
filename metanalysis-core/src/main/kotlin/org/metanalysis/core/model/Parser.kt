@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core
+package org.metanalysis.core.model
 
 import java.io.File
 import java.io.IOException
@@ -27,8 +27,8 @@ import java.util.ServiceLoader
  *
  * Parsers must have a public no-arg constructor.
  *
- * The file `META-INF/services/org.metanalysis.core.Parser` must be provided and
- * must contain the list of all provided parsers.
+ * The file `META-INF/services/org.metanalysis.core.model.Parser` must be
+ * provided and must contain the list of all provided parsers.
  */
 abstract class Parser {
     companion object {
@@ -69,20 +69,13 @@ abstract class Parser {
          * @param file the file which should be parsed
          * @return the source file metadata, or `null` if none of the provided
          * parsers can interpret the given `file` extension
-         * @throws SyntaxError if the given `file` contains invalid source code
          * @throws IOException if an error occurs trying to read the `file`
-         * content
+         * content or if it contains invalid source code
          */
-        @Throws(SyntaxError::class, IOException::class)
+        @Throws(IOException::class)
         @JvmStatic fun parseFile(file: File): SourceFile? =
                 getByExtension(file.extension)?.parse(file)
     }
-
-    /** Indicates a syntax error detected in a source file. */
-    class SyntaxError(
-            message: String? = null,
-            cause: Throwable? = null
-    ) : IOException(message, cause)
 
     /** The programming language which can be interpreted by this parser. */
     abstract val language: String
@@ -95,9 +88,9 @@ abstract class Parser {
      *
      * @param source the source code which should be parsed
      * @return the source file metadata
-     * @throws SyntaxError if the given `source` is not valid source code
+     * @throws IOException if the given `source` is not valid source code
      */
-    @Throws(SyntaxError::class)
+    @Throws(IOException::class)
     abstract fun parse(source: String): SourceFile
 
     /**
@@ -105,12 +98,10 @@ abstract class Parser {
      *
      * @param inputStream the input stream which should be parsed
      * @return the source file metadata
-     * @throws SyntaxError if the given `inputStream` contains invalid source
-     * code
      * @throws IOException if an error occurs trying to read the `inputStream`
-     * content
+     * content or if it contains invalid source code
      */
-    @Throws(SyntaxError::class, IOException::class)
+    @Throws(IOException::class)
     fun parse(inputStream: InputStream): SourceFile =
             parse(inputStream.reader().readText())
 
@@ -119,10 +110,10 @@ abstract class Parser {
      *
      * @param file the file which should be parsed
      * @return the source file metadata
-     * @throws SyntaxError if the given `file` contains invalid source code
      * @throws IOException if an error occurs trying to read the `file` content
+     * or if it contains invalid source code
      */
-    @Throws(SyntaxError::class, IOException::class)
+    @Throws(IOException::class)
     fun parse(file: File): SourceFile = parse(file.readText())
 
     /**
@@ -131,11 +122,9 @@ abstract class Parser {
      *
      * @param url the location of the content which should be parsed
      * @return the source file metadata
-     * @throws SyntaxError if the content at the specified `url` contains
-     * invalid source code
      * @throws IOException if an error occurs trying to read the content at the
-     * specified `url`
+     * specified `url` or if it contains invalid source code
      */
-    @Throws(SyntaxError::class, IOException::class)
+    @Throws(IOException::class)
     fun parse(url: URL): SourceFile = parse(url.readText())
 }

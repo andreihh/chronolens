@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core
+package org.metanalysis.core.model
 
 import kotlin.reflect.KClass
 
@@ -23,7 +23,7 @@ import kotlin.reflect.KClass
  *
  * @property nodes the nodes contained by this source file
  */
-data class SourceFile(val nodes: Set<Node>) {
+data class SourceFile(val nodes: Set<Node> = emptySet()) {
     @Transient private val nodeMap =
             nodes.associateBy { it::class to it.identifier }
 

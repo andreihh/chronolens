@@ -14,27 +14,33 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core
+package org.metanalysis.core.model
 
 import org.junit.Test
 
-import kotlin.test.assertNotNull
+import org.metanalysis.core.model.Parser.Companion.getByExtension
+import org.metanalysis.core.model.Parser.Companion.getByLanguage
+import org.metanalysis.test.core.model.ParserMock
+
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class ParserTest {
     @Test fun `test get provided parser by language returns non-null`() {
-        assertNotNull(Parser.getByLanguage("Java"))
+        assertTrue(getByLanguage(ParserMock.LANGUAGE) is ParserMock)
     }
 
     @Test fun `test get provided parser by extension returns non-null`() {
-        assertNotNull(Parser.getByExtension("java"))
+        ParserMock.EXTENSIONS.forEach {
+            assertTrue(getByExtension(it) is ParserMock)
+        }
     }
 
     @Test fun `test get unprovided parser by language returns null`() {
-        assertNull(Parser.getByLanguage("C++"))
+        assertNull(getByLanguage("Java"))
     }
 
     @Test fun `test get unprovided parser by extension returns null`() {
-        assertNull(Parser.getByExtension("cpp"))
+        assertNull(getByExtension("java"))
     }
 }

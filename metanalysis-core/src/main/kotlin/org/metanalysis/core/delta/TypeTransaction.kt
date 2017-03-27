@@ -16,13 +16,13 @@
 
 package org.metanalysis.core.delta
 
-import org.metanalysis.core.Node.Type
 import org.metanalysis.core.delta.MapEdit.Companion.apply
 import org.metanalysis.core.delta.MapEdit.Companion.diff
 import org.metanalysis.core.delta.NodeSetEdit.Companion.apply
 import org.metanalysis.core.delta.NodeSetEdit.Companion.diff
 import org.metanalysis.core.delta.SetEdit.Companion.apply
 import org.metanalysis.core.delta.SetEdit.Companion.diff
+import org.metanalysis.core.model.Node.Type
 
 /**
  * A transaction which should be applied to a [Type].

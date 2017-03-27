@@ -18,9 +18,6 @@ package org.metanalysis.core.serialization
 
 import org.junit.Test
 
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Type
-import org.metanalysis.core.Node.Variable
 import org.metanalysis.core.delta.FunctionTransaction
 import org.metanalysis.core.delta.ListEdit
 import org.metanalysis.core.delta.NodeSetEdit
@@ -28,6 +25,9 @@ import org.metanalysis.core.delta.SetEdit
 import org.metanalysis.core.delta.SourceFileTransaction
 import org.metanalysis.core.delta.TypeTransaction
 import org.metanalysis.core.delta.VariableTransaction
+import org.metanalysis.core.model.Node.Function
+import org.metanalysis.core.model.Node.Type
+import org.metanalysis.core.model.Node.Variable
 
 import java.io.ByteArrayOutputStream
 import java.io.IOException

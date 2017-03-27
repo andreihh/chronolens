@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core
+package org.metanalysis.core.model
 
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Type
-import org.metanalysis.core.Node.Variable
+import org.metanalysis.core.model.Node.Function
+import org.metanalysis.core.model.Node.Type
+import org.metanalysis.core.model.Node.Variable
 
 /** An abstract node and source file metadata processor. */
 abstract class NodeVisitor {

@@ -18,18 +18,19 @@ package org.metanalysis.core.delta
 
 import org.junit.Test
 
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Type
-import org.metanalysis.core.Node.Variable
-import org.metanalysis.core.Parser
-import org.metanalysis.core.SourceFile
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.delta.Transaction.Companion.apply
+import org.metanalysis.core.model.Node.Function
+import org.metanalysis.core.model.Node.Type
+import org.metanalysis.core.model.Node.Variable
+import org.metanalysis.core.model.Parser
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.test.assertEquals
+import java.io.File
 
 import java.net.URL
-import kotlin.test.assertNotNull
 
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class SourceFileTransactionTest {
@@ -59,7 +60,7 @@ class SourceFileTransactionTest {
         assertDiff(src, dst)
     }
 
-    @Test fun `test diff integration`() {
+    /*@Test fun `test diff integration`() {
         val src = SourceFile(setOf(
                 Type(
                         name = "IClass",
@@ -99,14 +100,15 @@ class SourceFileTransactionTest {
                 Function("main(String[])", listOf(Variable("args")), "{}")
         ))
         assertDiff(src, dst)
-    }
+    }*/
 
-    @Test fun `test diff network`() {
-        val srcUrl = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/826e565b7cfba8de05f9f652c1541df8e8e7efe2/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
-        val dstUrl = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/5e946c270018c71bf25778bc2dc25e5a9dd809b0/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
-        val parser = assertNotNull(Parser.getByExtension("java"))
-        val src = parser.parse(srcUrl)
-        val dst = parser.parse(dstUrl)
+    @Test fun `test diff integration`() {
+        // the original file can be found at: https://raw.githubusercontent.com/spring-projects/spring-framework/826e565b7cfba8de05f9f652c1541df8e8e7efe2/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java
+        val srcFile = File("src/test/resources/GenericTypeResolver-v1.mock")
+        // the original file can be found at: https://raw.githubusercontent.com/spring-projects/spring-framework/5e946c270018c71bf25778bc2dc25e5a9dd809b0/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java
+        val dstFile = File("src/test/resources/GenericTypeResolver-v2.mock")
+        val src = assertNotNull(Parser.parseFile(srcFile))
+        val dst = assertNotNull(Parser.parseFile(dstFile))
         assertDiff(src, dst)
     }
 

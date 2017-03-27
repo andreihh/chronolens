@@ -18,7 +18,7 @@
 
 package org.metanalysis.cli
 
-import org.metanalysis.core.Parser
+import org.metanalysis.core.model.Parser
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.serialization.JsonDriver
 

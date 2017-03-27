@@ -41,7 +41,7 @@ dependencies {
 ```
 
 Additionally, you must provide the service configuration file
-`META-INF/services/org.metanalysis.core.Parser`.
+`META-INF/services/org.metanalysis.core.model.Parser`.
 
 ### Documentation
 

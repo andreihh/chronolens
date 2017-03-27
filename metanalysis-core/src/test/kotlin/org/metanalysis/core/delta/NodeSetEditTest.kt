@@ -18,11 +18,11 @@ package org.metanalysis.core.delta
 
 import org.junit.Test
 
-import org.metanalysis.core.Node
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Type
-import org.metanalysis.core.Node.Variable
 import org.metanalysis.core.delta.NodeSetEdit.Companion.apply
+import org.metanalysis.core.model.Node
+import org.metanalysis.core.model.Node.Function
+import org.metanalysis.core.model.Node.Type
+import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.test.assertEquals
 
 class NodeSetEditTest {

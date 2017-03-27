@@ -14,19 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core
+package org.metanalysis.core.versioning
 
-import org.junit.Test
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Variable
-
-class FunctionTest {
-    @Test(expected = IllegalArgumentException::class)
-    fun `test duplicated parameters throws`() {
-        Function(
-                signature = "getVersion(int, int)",
-                parameters = listOf(Variable("name"), Variable("name", null)),
-                body = null
-        )
-    }
+data class Branch(val name: String, val parentCommit: Commit?) {
 }

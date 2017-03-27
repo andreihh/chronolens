@@ -32,9 +32,9 @@ import com.fasterxml.jackson.databind.SerializerProvider
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
-import org.metanalysis.core.Node
 import org.metanalysis.core.delta.Edit
 import org.metanalysis.core.delta.Transaction
+import org.metanalysis.core.model.Node
 
 import java.io.IOException
 import java.io.InputStream
@@ -113,7 +113,7 @@ object JsonDriver {
      *
      * @param out the stream to which the object is serialized
      * @param value the object which should be serialized
-     * @throws IOException if there are any input-related or serialization
+     * @throws IOException if there are any output-related or serialization
      * errors
      */
     @Throws(IOException::class)

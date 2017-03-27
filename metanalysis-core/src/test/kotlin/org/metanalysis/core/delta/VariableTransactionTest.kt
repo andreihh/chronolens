@@ -18,9 +18,9 @@ package org.metanalysis.core.delta
 
 import org.junit.Test
 
-import org.metanalysis.core.Node.Variable
 import org.metanalysis.core.delta.Transaction.Companion.apply
 import org.metanalysis.core.delta.VariableTransaction.Companion.diff
+import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.test.assertEquals
 
 import kotlin.test.assertNull

@@ -48,11 +48,27 @@ abstract class VersionControlSystem {
     /** The name of this version control system. */
     abstract val name: String
 
-    abstract fun getCommit(id: String): Commit
+    abstract fun getBranches(): List<Branch>
 
-    abstract fun getCommitHistory(): List<Commit>
+    abstract fun getBranch(name: String): Branch?
 
-    abstract fun getFile(file: String, commitId: String): InputStream
+    /**
+     * @throws IllegalStateException if the `head` is detached
+     */
+    abstract fun getCurrentBranch(): Branch
 
-    abstract fun getFileHistory(file: String): List<String>
+    abstract fun getCommits(branch: Branch): List<Commit>
+
+    abstract fun getCommit(id: String): Commit?
+
+    /**
+     * @throws IllegalStateException if the repository doesn't have any commits
+     */
+    abstract fun getHead(): Commit
+
+    abstract fun getFiles(commit: Commit): List<String>
+
+    abstract fun getFile(path: String, commit: Commit): InputStream?
+
+    abstract fun getFileHistory(path: String, branch: Branch): List<Commit>
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core
+package org.metanalysis.core.model
 
 import kotlin.reflect.KClass
 

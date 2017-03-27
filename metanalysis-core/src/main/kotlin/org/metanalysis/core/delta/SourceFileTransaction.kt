@@ -16,9 +16,9 @@
 
 package org.metanalysis.core.delta
 
-import org.metanalysis.core.SourceFile
 import org.metanalysis.core.delta.NodeSetEdit.Companion.apply
 import org.metanalysis.core.delta.NodeSetEdit.Companion.diff
+import org.metanalysis.core.model.SourceFile
 
 /**
  * A transaction which should be applied to a [SourceFile].

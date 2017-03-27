@@ -18,18 +18,20 @@ package org.metanalysis.java
 
 import org.junit.Test
 
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Type
-import org.metanalysis.core.Node.Variable
-import org.metanalysis.core.Parser
-import org.metanalysis.core.Parser.SyntaxError
-import org.metanalysis.core.SourceFile
+import org.metanalysis.core.model.Node.Function
+import org.metanalysis.core.model.Node.Type
+import org.metanalysis.core.model.Node.Variable
+import org.metanalysis.core.model.Parser
+import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.serialization.JsonDriver
 import org.metanalysis.test.PrettyPrinterVisitor
 import org.metanalysis.test.assertEquals
 
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
+
 import kotlin.test.assertNotNull
 
 class JavaParserTest {
@@ -45,7 +47,7 @@ class JavaParserTest {
         parser.parse(URL("file:///non-existing-url"))
     }
 
-    @Test(expected = SyntaxError::class)
+    @Test(expected = IOException::class)
     fun `test parse invalid source throws`() {
         parser.parse("cla Main { int i = &@*; { class K; interface {}")
     }

@@ -16,12 +16,12 @@
 
 package org.metanalysis.core.delta
 
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Variable
 import org.metanalysis.core.delta.ListEdit.Companion.apply
 import org.metanalysis.core.delta.ListEdit.Companion.diff
 import org.metanalysis.core.delta.MapEdit.Companion.apply
 import org.metanalysis.core.delta.MapEdit.Companion.diff
+import org.metanalysis.core.model.Node.Function
+import org.metanalysis.core.model.Node.Variable
 
 /**
  * A transaction which should be applied on a [Function].

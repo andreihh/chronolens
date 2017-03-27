@@ -16,10 +16,10 @@
 
 package org.metanalysis.test
 
-import org.metanalysis.core.Node.Function
-import org.metanalysis.core.Node.Type
-import org.metanalysis.core.Node.Variable
-import org.metanalysis.core.NodeVisitor
+import org.metanalysis.core.model.Node.Function
+import org.metanalysis.core.model.Node.Type
+import org.metanalysis.core.model.Node.Variable
+import org.metanalysis.core.model.NodeVisitor
 
 class PrettyPrinterVisitor : NodeVisitor() {
     var indent = ""

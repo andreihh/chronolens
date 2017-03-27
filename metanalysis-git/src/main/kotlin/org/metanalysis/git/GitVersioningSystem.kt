@@ -16,6 +16,7 @@
 
 package org.metanalysis.git
 
+import org.metanalysis.core.versioning.Branch
 import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.VersionControlSystem
 
@@ -29,9 +30,20 @@ class GitVersioningSystem : VersionControlSystem() {
     override val name: String
         get() = NAME
 
-    override fun getFile(file: String, commitId: String): InputStream {
+    override fun getBranches(): List<Branch> {
         TODO("not implemented")
-        // git show commitId:file
+    }
+
+    override fun getBranch(name: String): Branch? {
+        TODO("not implemented")
+    }
+
+    override fun getCurrentBranch(): Branch {
+        TODO("not implemented")
+    }
+
+    override fun getCommits(branch: Branch): List<Commit> {
+        TODO("not implemented")
     }
 
     override fun getCommit(id: String): Commit {
@@ -40,12 +52,22 @@ class GitVersioningSystem : VersionControlSystem() {
         // git show --name-status commitId
     }
 
-    override fun getCommitHistory(): List<Commit> {
-        TODO()
-        // git log
+    override fun getHead(): Commit {
+        TODO("not implemented")
+        // git rev-parse HEAD
     }
 
-    override fun getFileHistory(file: String): List<String> {
+    override fun getFiles(commit: Commit): List<String> {
+        TODO("not implemented")
+    }
+
+    override fun getFile(path: String, commit: Commit): InputStream? {
+        TODO("not implemented")
+        // git show commitId:file
+        // if commit or file doesn't exist, exits with non-zero status
+    }
+
+    override fun getFileHistory(path: String, branch: Branch): List<Commit> {
         TODO("not implemented")
         // git log file
     }
