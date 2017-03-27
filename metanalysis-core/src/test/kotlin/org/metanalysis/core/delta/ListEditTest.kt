@@ -76,29 +76,6 @@ class ListEditTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test replace first element`() {
-        val expected = "02345"
-        val actual = "12345".apply(ListEdit.Replace(0, '0'))
-        assertEquals(expected, actual)
-    }
-
-    @Test fun `test replace last element`() {
-        val expected = "12340"
-        val actual = "12345".apply(ListEdit.Replace(4, '0'))
-        assertEquals(expected, actual)
-    }
-
-    @Test fun `test replace middle element`() {
-        val expected = "12045"
-        val actual = "12345".apply(ListEdit.Replace(2, '0'))
-        assertEquals(expected, actual)
-    }
-
-    @Test(expected = IllegalStateException::class)
-    fun `test replace element out of bounds throws`() {
-        "1234".apply(ListEdit.Replace(4, '5'))
-    }
-
     @Test(expected = IllegalStateException::class)
     fun `test remove element out of bounds throws`() {
         "1234".apply(ListEdit.Remove(4))
@@ -108,14 +85,20 @@ class ListEditTest {
         val expected = "republican"
         val actual = "democrats".apply(
                 ListEdit.Remove(8), // democrat
-                ListEdit.Replace(7, 'n'), // democran
-                ListEdit.Replace(5, 'c'), // democcan
-                ListEdit.Replace(4, 'i'), // demoican
-                ListEdit.Replace(3, 'l'), // demlican
-                ListEdit.Replace(2, 'b'), // deblican
+                ListEdit.Remove(7), // democra
+                ListEdit.Add(7, 'n'), // democran
+                ListEdit.Remove(5), // democan
+                ListEdit.Add(5, 'c'), // democcan
+                ListEdit.Remove(4), // democan
+                ListEdit.Add(4, 'i'), // demoican
+                ListEdit.Remove(3), // demican
+                ListEdit.Add(3, 'l'), // demlican
+                ListEdit.Remove(2), // delican
+                ListEdit.Add(2, 'b'), // deblican
                 ListEdit.Add(2, 'u'), // deublican
                 ListEdit.Add(2, 'p'), // depublican
-                ListEdit.Replace(0, 'r') // republican
+                ListEdit.Remove(0), // epublican
+                ListEdit.Add(0, 'r') // republican
         )
         assertEquals(expected, actual)
     }

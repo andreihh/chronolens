@@ -57,7 +57,8 @@ class VariableTransactionTest {
         val expected = Variable(name, expectedInitializer)
         val actual = Variable(name, initializer).apply(VariableTransaction(
                 initializerEdits = listOf(
-                        ListEdit.Replace(0, expectedInitializer)
+                        ListEdit.Remove(0),
+                        ListEdit.Add(0, expectedInitializer)
                 )
         ))
         assertEquals(expected, actual)

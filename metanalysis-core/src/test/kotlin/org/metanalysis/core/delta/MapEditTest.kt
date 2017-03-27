@@ -51,17 +51,6 @@ class MapEditTest {
         mapOf(1 to "a").apply(MapEdit.Remove(2))
     }
 
-    @Test fun `test replace key value`() {
-        val expected = mapOf(1 to "A", 2 to "b")
-        val actual = mapOf(1 to "a", 2 to "b").apply(MapEdit.Replace(1, "A"))
-        assertEquals(expected, actual)
-    }
-
-    @Test(expected = IllegalStateException::class)
-    fun `test replace non-existing key throws`() {
-        mapOf(2 to "b").apply(MapEdit.Replace(1, "A"))
-    }
-
     @Test fun `test chained edits`() {
         val expected = mapOf(1 to "a", 2 to "b", 4 to "d", 5 to "e")
         val actual = mapOf(1 to "a", 4 to "d").apply(

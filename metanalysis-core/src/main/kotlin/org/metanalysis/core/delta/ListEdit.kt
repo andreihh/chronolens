@@ -64,24 +64,21 @@ sealed class ListEdit<T> : Edit<List<T>> {
                 dp[i][0] = i
                 for (j in 1..m) {
                     dp[i][j] = if (a[i - 1] == b[j - 1]) dp[i - 1][j - 1]
-                    else 1 + minOf(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+                    else 1 + minOf(dp[i - 1][j], dp[i][j - 1])
                 }
             }
             val edits = arrayListOf<ListEdit<T>>()
             var i = n
             var j = m
             while (i > 0 || j > 0) {
-                if (i > 0 && dp[i][j] == dp[i - 1][j] + 1) {
+                if (i > 0 && j > 0 && a[i - 1] == b[j - 1]) {
+                    i--
+                    j--
+                } else if (i > 0 && dp[i][j] == dp[i - 1][j] + 1) {
                     edits.add(Remove(i - 1))
                     i--
                 } else if (j > 0 && dp[i][j] == dp[i][j - 1] + 1) {
                     edits.add(Add(i, other[j - 1]))
-                    j--
-                } else if (i > 0 && j > 0) {
-                    if (dp[i][j] == dp[i - 1][j - 1] + 1) {
-                        edits.add(Replace(i - 1, other[j - 1]))
-                    }
-                    i--
                     j--
                 } else {
                     throw AssertionError("Can't diff $this and $other!")
@@ -128,22 +125,6 @@ sealed class ListEdit<T> : Edit<List<T>> {
                 "$index is out of bounds for $subject!"
             }
             subject.removeAt(index)
-        }
-    }
-
-    /**
-     * Indicates that an element should be replaced in the edited list.
-     *
-     * @param T the type of the elements of the edited list
-     * @property index the index of the element which should be replaced
-     * @property value the new value of the replaced element
-     */
-    data class Replace<T>(val index: Int, val value: T) : ListEdit<T>() {
-        override fun applyOn(subject: MutableList<T>) {
-            check(index in 0 until subject.size) {
-                "$index is out of bounds for $subject!"
-            }
-            subject[index] = value
         }
     }
 }

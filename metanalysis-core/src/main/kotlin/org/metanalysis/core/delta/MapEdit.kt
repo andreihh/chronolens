@@ -61,8 +61,10 @@ sealed class MapEdit<K, V : Any> : Edit<Map<K, V>> {
             val added = (other.keys - this.keys).map { key ->
                 Add(key, other.getValue(key))
             }
-            val replaced = (this.keys.intersect(other.keys)).map { key ->
-                Replace(key, other.getValue(key))
+            val replaced = (this.keys.intersect(other.keys)).flatMap { key ->
+                if (getValue(key) != other.getValue(key))
+                    listOf(Remove<K, V>(key), Add(key, other.getValue(key)))
+                else emptyList()
             }
             return added + removed + replaced
         }
@@ -104,22 +106,6 @@ sealed class MapEdit<K, V : Any> : Edit<Map<K, V>> {
         override fun applyOn(subject: MutableMap<K, V>) {
             checkNotNull(subject.remove(key)) {
                 "Can't remove $key because it doesn't exist in $subject!"
-            }
-        }
-    }
-
-    /**
-     * Indicates that the value of a key should be replaced in the edited map.
-     *
-     * @param K the type of the keys in the edited map
-     * @param V the type of the values in the edited map
-     * @property key the key whose value should be replaced
-     * @property value the new value of the key
-     */
-    data class Replace<K, V : Any>(val key: K, val value: V) : MapEdit<K, V>() {
-        override fun applyOn(subject: MutableMap<K, V>) {
-            checkNotNull(subject.put(key, value)) {
-                "Can't replace $key because it doesn't exist in $subject!"
             }
         }
     }

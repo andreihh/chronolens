@@ -19,13 +19,21 @@ package org.metanalysis.core.delta
 import org.junit.Test
 
 import org.metanalysis.core.delta.NodeSetEdit.Companion.apply
+import org.metanalysis.core.delta.NodeSetEdit.Companion.diff
 import org.metanalysis.core.model.Node
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.test.assertEquals
 
+import kotlin.test.assertTrue
+
 class NodeSetEditTest {
+    private fun assertDiff(src: Set<Node>, dst: Set<Node>) {
+        assertEquals(dst, src.apply(src.diff(dst)))
+        assertEquals(src, dst.apply(dst.diff(src)))
+    }
+
     @Test fun `test add type`() {
         val type = Type("IClass")
         val expected = setOf(type)
@@ -177,5 +185,28 @@ class NodeSetEditTest {
                 identifier = "getField()",
                 transaction = FunctionTransaction()
         ))
+    }
+
+    @Test fun `test diff equal node sets returns empty list`() {
+        val nodeSet = setOf(
+                Variable("version"),
+                Function("getVersion()", emptyList()),
+                Type("IClass")
+        )
+        assertTrue(nodeSet.diff(nodeSet).isEmpty())
+    }
+
+    @Test fun `test diff`() {
+        val src = setOf(
+                Function("getVersion()", listOf(Variable("version"))),
+                Type("IClass", setOf("IInterface")),
+                Type("IInterface")
+        )
+        val dst = setOf(
+                Variable("version"),
+                Function("getVersion()", emptyList()),
+                Type("IClass")
+        )
+        assertDiff(src, dst)
     }
 }
