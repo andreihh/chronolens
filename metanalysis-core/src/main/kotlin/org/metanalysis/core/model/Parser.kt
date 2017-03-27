@@ -94,16 +94,16 @@ abstract class Parser {
     abstract fun parse(source: String): SourceFile
 
     /**
-     * Parses the given `inputStream` and returns the associated code meta-data.
+     * Parses the given input stream and returns the associated code meta-data.
      *
-     * @param inputStream the input stream which should be parsed
+     * @param src the input stream which should be parsed
      * @return the source file metadata
-     * @throws IOException if an error occurs trying to read the `inputStream`
+     * @throws IOException if an error occurs trying to read the input stream
      * content or if it contains invalid source code
      */
     @Throws(IOException::class)
-    fun parse(inputStream: InputStream): SourceFile =
-            parse(inputStream.reader().readText())
+    fun parse(src: InputStream): SourceFile =
+            parse(src.reader().readText())
 
     /**
      * Parses the given `file` and returns the associated code meta-data.

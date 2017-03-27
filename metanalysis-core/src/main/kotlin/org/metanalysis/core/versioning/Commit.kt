@@ -20,5 +20,4 @@ data class Commit(
         val id: String,
         val author: String,
         val date: String
-) {
-}
+)

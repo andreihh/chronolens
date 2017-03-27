@@ -100,9 +100,14 @@ sealed class Node {
         override val identifier: String
             get() = name
 
-        constructor(name: String, initializer: String?) : this(
+        constructor(
+                name: String,
+                initializer: String?,
+                properties: Map<String, String> = emptyMap()
+        ) : this(
                 name = name,
-                initializer = initializer?.split("\n") ?: emptyList()
+                initializer = initializer?.split("\n") ?: emptyList(),
+                properties = properties
         )
     }
 
@@ -143,7 +148,13 @@ sealed class Node {
         constructor(
                 signature: String,
                 parameters: List<Variable>,
-                body: String?
-        ) : this(signature, parameters, body?.split("\n") ?: emptyList())
+                body: String?,
+                properties: Map<String, String> = emptyMap()
+        ) : this(
+                signature = signature,
+                parameters = parameters,
+                body = body?.split("\n") ?: emptyList(),
+                properties = properties
+        )
     }
 }

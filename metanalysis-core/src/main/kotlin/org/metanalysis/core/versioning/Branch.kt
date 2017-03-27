@@ -16,5 +16,4 @@
 
 package org.metanalysis.core.versioning
 
-data class Branch(val name: String, val parentCommit: Commit?) {
-}
+data class Branch(val name: String)

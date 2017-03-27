@@ -27,8 +27,6 @@ import org.metanalysis.core.model.Node.Variable
 
 import kotlin.reflect.KClass
 
-//private typealias NodeKey = Pair<KClass<out Node>, String>
-
 /** An atomic change which should be applied to a set of nodes. */
 sealed class NodeSetEdit : Edit<Set<Node>> {
     companion object {

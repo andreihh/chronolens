@@ -26,9 +26,8 @@ import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.test.assertEquals
-import java.io.File
 
-import java.net.URL
+import java.io.File
 
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -39,6 +38,7 @@ class SourceFileTransactionTest {
         assertEquals(dst.apply(dst.diff(src)), src)
     }
 
+    // TODO: refactor to `test change nodes`
     @Test fun `test add type`() {
         val addedType = Type("IInterface")
         val expected = SourceFile(setOf(addedType))
@@ -59,48 +59,6 @@ class SourceFileTransactionTest {
         val dst = SourceFile(setOf(Type("IClass")))
         assertDiff(src, dst)
     }
-
-    /*@Test fun `test diff integration`() {
-        val src = SourceFile(setOf(
-                Type(
-                        name = "IClass",
-                        members = setOf(
-                                Variable("version"),
-                                Variable("name"),
-                                Function("getVersion()", emptyList()),
-                                Type("IInterface")
-                        )
-                ),
-                Variable("DEBUG_LEVEL")
-        ))
-        val dst = SourceFile(setOf(
-                Type(
-                        name = "IClass",
-                        supertypes = setOf("Comparable<IClass>"),
-                        members = setOf(
-                                Variable("version", "1"),
-                                Function(
-                                        signature = "getVersion()",
-                                        parameters = emptyList(),
-                                        body = "{\n  return version;\n}\n"
-                                ),
-                                Type(
-                                        name = "IInterface",
-                                        supertypes = setOf("IClass"),
-                                        members = setOf(Variable("name"))
-                                ),
-                                Function(
-                                        signature = "compare(IClass)",
-                                        parameters = listOf(Variable("other")),
-                                        body = "{return version-other.version;}"
-                                )
-                        )
-                ),
-                Variable("DEBUG", "true"),
-                Function("main(String[])", listOf(Variable("args")), "{}")
-        ))
-        assertDiff(src, dst)
-    }*/
 
     @Test fun `test diff integration`() {
         // the original file can be found at: https://raw.githubusercontent.com/spring-projects/spring-framework/826e565b7cfba8de05f9f652c1541df8e8e7efe2/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java

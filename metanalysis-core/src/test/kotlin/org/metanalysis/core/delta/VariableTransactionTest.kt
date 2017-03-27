@@ -31,35 +31,23 @@ class VariableTransactionTest {
         assertEquals(dst.apply(dst.diff(src)), src)
     }
 
-    @Test fun `test variable change initializer from empty to non-empty`() {
+    @Test fun `test change initializer`() {
         val name = "version"
-        val initializer = "1"
-        val expected = Variable(name, initializer)
-        val actual = Variable(name).apply(
-                VariableTransaction(listOf(ListEdit.Add(0, initializer)))
-        )
-        assertEquals(expected, actual)
-    }
-
-    @Test fun `test variable change initializer from non-empty to empty`() {
-        val name = "version"
-        val initializer = "1"
-        val expected = Variable(name)
-        val actual = Variable(name, initializer)
-                .apply(VariableTransaction(listOf(ListEdit.Remove(0))))
-        assertEquals(expected, actual)
-    }
-
-    @Test fun `test variable change initializer`() {
-        val name = "version"
-        val initializer = "1"
-        val expectedInitializer = "2"
-        val expected = Variable(name, expectedInitializer)
-        val actual = Variable(name, initializer).apply(VariableTransaction(
+        val expected = Variable(name, "1")
+        val actual = Variable(name, "2").apply(VariableTransaction(
                 initializerEdits = listOf(
                         ListEdit.Remove(0),
-                        ListEdit.Add(0, expectedInitializer)
+                        ListEdit.Add(0, "1")
                 )
+        ))
+        assertEquals(expected, actual)
+    }
+
+    @Test fun `test change properties`() {
+        val name = "version"
+        val expected = Variable(name, properties = mapOf("loc" to "1"))
+        val actual = Variable(name).apply(VariableTransaction(
+                propertyEdits = listOf(MapEdit.Add("loc", "1"))
         ))
         assertEquals(expected, actual)
     }
@@ -77,5 +65,12 @@ class VariableTransactionTest {
     @Test(expected = IllegalArgumentException::class)
     fun `test diff variables with different identifiers throws`() {
         Variable("version").diff(Variable("version2"))
+    }
+
+    @Test fun `test diff`() {
+        val name = "name"
+        val src = Variable(name, "1")
+        val dst = Variable(name, "2", mapOf("loc" to "1"))
+        assertDiff(src, dst)
     }
 }

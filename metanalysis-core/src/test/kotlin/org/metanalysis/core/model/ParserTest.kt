@@ -20,7 +20,10 @@ import org.junit.Test
 
 import org.metanalysis.core.model.Parser.Companion.getByExtension
 import org.metanalysis.core.model.Parser.Companion.getByLanguage
+import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.model.ParserMock
+
+import java.io.File
 
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -42,5 +45,48 @@ class ParserTest {
 
     @Test fun `test get unprovided parser by extension returns null`() {
         assertNull(getByExtension("java"))
+    }
+
+    @Test fun `test parse input stream`() {
+        assertEquals(
+                expected = SourceFile(),
+                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(
+                        src = javaClass.getResourceAsStream("/resource.mock")
+                )
+        )
+    }
+
+    @Test fun `test parse url`() {
+        assertEquals(
+                expected = SourceFile(),
+                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(
+                        url = javaClass.getResource("/resource.mock")
+                )
+        )
+    }
+
+    @Test fun `test parse file`() {
+        assertEquals(
+                expected = SourceFile(),
+                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(
+                        file = File("src/test/resources/resource.mock")
+                )
+        )
+    }
+
+    @Test fun `test static parse file`() {
+        assertEquals(
+                expected = SourceFile(),
+                actual = Parser.parseFile(
+                        file = File("src/test/resources/resource.mock")
+                )
+        )
+    }
+
+    @Test fun `test static parse file of unknown extension returns null`() {
+        val parser = Parser::class.qualifiedName
+        assertNull(Parser.parseFile(
+                file = File("src/test/resources/META-INF/services/$parser")
+        ))
     }
 }

@@ -32,6 +32,7 @@ class GitVersioningSystem : VersionControlSystem() {
 
     override fun getBranches(): Set<Branch> {
         TODO("not implemented")
+        // git branch
     }
 
     override fun getBranch(name: String): Branch? {
@@ -40,16 +41,18 @@ class GitVersioningSystem : VersionControlSystem() {
 
     override fun getCurrentBranch(): Branch {
         TODO("not implemented")
+        // git branch | grep "*"
     }
 
     override fun getCommits(branch: Branch): List<Commit> {
         TODO("not implemented")
+        // git log $branchName
     }
 
     override fun getCommit(id: String): Commit {
         TODO("not implemented")
-        // git show --name-only commitId
-        // git show --name-status commitId
+        // git show --name-only $commitId
+        // git show --name-status $commitId
     }
 
     override fun getHead(): Commit {
@@ -59,11 +62,15 @@ class GitVersioningSystem : VersionControlSystem() {
 
     override fun getFiles(commit: Commit): Set<String> {
         TODO("not implemented")
+        // list all files in commit:
+        // git ls-tree --name-only -r $commitId
+        // list only changed files in commit:
+        // git diff-tree --no-commit-id --name-only -r $commitId
     }
 
     override fun getFile(path: String, commit: Commit): InputStream? {
         TODO("not implemented")
-        // git show commitId:file
+        // git show $commitId:$file
         // if commit or file doesn't exist, exits with non-zero status
     }
 

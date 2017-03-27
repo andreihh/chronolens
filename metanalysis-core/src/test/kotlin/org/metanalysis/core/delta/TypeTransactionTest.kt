@@ -33,6 +33,7 @@ class TypeTransactionTest {
         assertEquals(dst.apply(dst.diff(src)), src)
     }
 
+    // TODO: refactor to `change supertypes`
     @Test fun `test add supertype`() {
         val typeName = "IClass"
         val supertype = "IInterface"
@@ -54,6 +55,7 @@ class TypeTransactionTest {
         assertEquals(expected, actual)
     }
 
+    // TODO: refactor to `change members`
     @Test fun `test add type`() {
         val typeName = "IClass"
         val addedType = Type("IInterface")

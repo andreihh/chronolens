@@ -27,7 +27,8 @@ class VersionControlSystemMock(
         private val commits: List<Commit>,
         private val head: Commit,
         private val currentBranch: Branch,
-        private val files: Map<Commit, Map<String, InputStream>>
+        private val files: Map<Commit, Map<String, InputStream>>,
+        private val filesChanged: Map<Commit, Set<String>>
 ) : VersionControlSystem() {
     companion object {
         val NAME: String = "mockfs"
@@ -36,6 +37,9 @@ class VersionControlSystemMock(
     init {
         require(currentBranch in branches)
         require(head in commits)
+        filesChanged.forEach { commit, changeSet ->
+            require(files[commit]?.keys?.containsAll(changeSet) ?: false)
+        }
     }
 
     override val name: String

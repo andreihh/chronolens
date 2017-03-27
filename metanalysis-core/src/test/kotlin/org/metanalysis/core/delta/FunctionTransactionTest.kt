@@ -43,28 +43,6 @@ class FunctionTransactionTest {
         assertEquals(expected, actual)
     }
 
-    /*@Test fun `test remove parameter`() {
-        val signature = "println()"
-        val expected = Function(signature, emptyList())
-        val actual = Function(signature, listOf(Variable("s"))).apply(
-                FunctionTransaction(listOf(ListEdit.Remove(0)))
-        )
-        assertEquals(expected, actual)
-    }
-
-    @Test fun `test rename parameter`() {
-        val signature = "println(String)"
-        val parameter = Variable("s")
-        val expected = Function(signature, listOf(parameter))
-        val actual = Function(signature, listOf(Variable("t"))).apply(
-                FunctionTransaction(listOf(
-                        ListEdit.Add(0, parameter),
-                        ListEdit.Remove(1)
-                ))
-        )
-        assertEquals(expected, actual)
-    }*/
-
     @Test fun `test change body`() {
         val signature = "println()"
         val body = "{\n  i = 1;\n}\n"
@@ -89,27 +67,6 @@ class FunctionTransactionTest {
         )
         assertEquals(expected, actual)
     }
-
-    /*@Test fun `test rename parameter and change body`() {
-        val signature = "println(String)"
-        val parameter = Variable("s")
-        val body = "{\n  i = 1;\n}\n"
-        val expected = Function(signature, listOf(parameter), body)
-        val actual = Function(
-                signature = signature,
-                parameters = listOf(Variable("t")),
-                body = "{\n  j = 2;\n}\n"
-        ).apply(FunctionTransaction(
-                parameterEdits = listOf(
-                        ListEdit.Add(1, parameter),
-                        ListEdit.Remove(0)),
-                bodyEdits = listOf(
-                        ListEdit.Remove(1),
-                        ListEdit.Add(1, "  i = 1;")
-                )
-        ))
-        assertEquals(expected, actual)
-    }*/
 
     @Test fun `test apply null transaction returns equal function`() {
         val function = Function("getVersion()", emptyList())

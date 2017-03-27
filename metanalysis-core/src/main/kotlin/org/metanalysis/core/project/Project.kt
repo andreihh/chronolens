@@ -20,6 +20,8 @@ import org.metanalysis.core.delta.SourceFileTransaction
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.versioning.Branch
+import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.VersionControlSystem
 
 import java.io.File
@@ -34,8 +36,14 @@ class Project(vcs: String) {
     )
 
     private val vcs = checkNotNull(VersionControlSystem.getByName(vcs))
-    private val head = this.vcs.getHead().id
-    private val currentBranch = this.vcs.getCurrentBranch().name
+    private val headId = this.vcs.getHead().id
+    private val currentBranchName = this.vcs.getCurrentBranch().name
+
+    private fun getCommit(id: String): Commit =
+            requireNotNull(vcs.getCommit(id)) { "Invalid commit $id!" }
+
+    private fun getBranch(name: String): Branch =
+            requireNotNull(vcs.getBranch(name)) { "Invalid branch $name!" }
 
     /**
      * @throws IllegalArgumentException if the given `branch` doesn't exist or
@@ -43,19 +51,19 @@ class Project(vcs: String) {
      */
     fun getFileHistory(
             path: String,
-            branchName: String = currentBranch
+            branchName: String = currentBranchName
     ): List<HistoryEntry> {
-        val branch = requireNotNull(vcs.getBranch(branchName)) {
-            "Branch $branchName doesn't exist!"
-        }
+        val branch = getBranch(branchName)
         val history = arrayListOf<HistoryEntry>()
-        var sourceFile = branch.parentCommit?.let { getFileModel(path, it.id) }
-                ?: SourceFile()
+        var sourceFile = SourceFile()
         vcs.getFileHistory(path, branch).forEach { (commitId, author, date) ->
             val newSourceFile = getFileModel(path, commitId) ?: SourceFile()
             val transaction = sourceFile.diff(newSourceFile)
             history += HistoryEntry(commitId, author, date, transaction)
             sourceFile = newSourceFile
+        }
+        require(history.isNotEmpty()) {
+            "File $path doesn't exist in branch $branchName!"
         }
         return history
     }
@@ -63,13 +71,11 @@ class Project(vcs: String) {
     /**
      * @return `null` if the given `path` doesn't exist in the given commit
      * @throws IllegalArgumentException if the given `commitId` doesn't exist
+     * @throws IOException
      */
     @Throws(IOException::class)
-    fun getFileModel(path: String, commitId: String = head): SourceFile? {
-        val commit = requireNotNull(vcs.getCommit(commitId)) {
-            "Commit $commitId doesn't exist!"
-        }
-        val file = vcs.getFile(path, commit) ?: return null
+    fun getFileModel(path: String, commitId: String = headId): SourceFile? {
+        val file = vcs.getFile(path, getCommit(commitId)) ?: return null
         val parser = Parser.getByExtension(File(path).extension)
                 ?: throw IOException("Provided parsers can't interpret $path!")
         return parser.parse(file)
@@ -84,7 +90,7 @@ class Project(vcs: String) {
     fun getFileDiff(
             path: String,
             srcCommitId: String,
-            dstCommitId: String = head
+            dstCommitId: String = headId
     ): SourceFileTransaction? {
         val srcSourceFile = getFileModel(path, srcCommitId)
         val dstSourceFile = getFileModel(path, dstCommitId)
@@ -99,5 +105,5 @@ class Project(vcs: String) {
      * @throws IllegalArgumentException if the given `commitId` doesn't exist
      */
     fun getFiles(commitId: String): Set<String> =
-            vcs.getFiles(requireNotNull(vcs.getCommit(commitId)))
+            vcs.getFiles(getCommit(commitId))
 }
