@@ -21,13 +21,14 @@ import org.junit.Test
 import org.metanalysis.core.Node.Function
 import org.metanalysis.core.Node.Type
 import org.metanalysis.core.Node.Variable
+import org.metanalysis.core.Parser
 import org.metanalysis.core.SourceFile
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.delta.Transaction.Companion.apply
-import org.metanalysis.java.JavaParser
 import org.metanalysis.test.assertEquals
 
 import java.net.URL
+import kotlin.test.assertNotNull
 
 import kotlin.test.assertNull
 
@@ -103,7 +104,7 @@ class SourceFileTransactionTest {
     @Test fun `test diff network`() {
         val srcUrl = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/826e565b7cfba8de05f9f652c1541df8e8e7efe2/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
         val dstUrl = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/5e946c270018c71bf25778bc2dc25e5a9dd809b0/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
-        val parser = JavaParser()
+        val parser = assertNotNull(Parser.getByExtension("java"))
         val src = parser.parse(srcUrl)
         val dst = parser.parse(dstUrl)
         assertDiff(src, dst)

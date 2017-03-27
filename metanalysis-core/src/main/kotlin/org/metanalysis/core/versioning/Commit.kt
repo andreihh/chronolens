@@ -16,4 +16,4 @@
 
 package org.metanalysis.core.versioning
 
-//data class Commit(val id: String, val files: Set<String>)
+data class Commit(val id: String, val files: Set<String>)

@@ -66,9 +66,11 @@ sealed class NodeSetEdit : Edit<Set<Node>> {
             val removed = (this - other).map { node ->
                 Remove(node::class, node.identifier)
             }
-            val changed = this.intersect(other).map { node ->
+            val changed = this.intersect(other).mapNotNull { node ->
+                val key = node.key
                 val identifier = node.identifier
-                val otherNode = map[node.key] ?: throw AssertionError()
+                val otherNode = map[key]
+                        ?: throw AssertionError("$key must exist in $map!")
                 when (node) {
                     is Type -> node.diff(otherNode as Type)?.let { t ->
                         Change<Type>(identifier, t)
@@ -80,7 +82,7 @@ sealed class NodeSetEdit : Edit<Set<Node>> {
                         Change<Function>(identifier, t)
                     }
                 }
-            }.filterNotNull()
+            }
             return added + removed + changed
         }
     }
@@ -130,7 +132,7 @@ sealed class NodeSetEdit : Edit<Set<Node>> {
     ) : NodeSetEdit() {
         companion object {
             /** Utility factory method. */
-            @JvmStatic inline operator fun <reified T : Node> invoke(
+            inline operator fun <reified T : Node> invoke(
                     identifier: String
             ): Remove = Remove(T::class, identifier)
         }
@@ -161,7 +163,7 @@ sealed class NodeSetEdit : Edit<Set<Node>> {
     ) : NodeSetEdit() {
         companion object {
             /** Utility factory method. */
-            @JvmStatic inline operator fun <reified T : Node> invoke(
+            inline operator fun <reified T : Node> invoke(
                     identifier: String,
                     transaction: Transaction<T>
             ): Change<T> = Change(T::class, identifier, transaction)

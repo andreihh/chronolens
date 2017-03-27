@@ -29,7 +29,7 @@ import java.util.ServiceLoader
  * be provided and must contain the list of all provided version control
  * systems.
  */
-/*abstract class VersionControlSystem {
+abstract class VersionControlSystem {
     companion object {
         private val vcss = ServiceLoader.load(VersionControlSystem::class.java)
         private val nameToVcs = vcss.associateBy(VersionControlSystem::name)
@@ -50,5 +50,9 @@ import java.util.ServiceLoader
 
     abstract fun getCommit(id: String): Commit
 
+    abstract fun getCommitHistory(): List<Commit>
+
     abstract fun getFile(file: String, commitId: String): InputStream
-}*/
+
+    abstract fun getFileHistory(file: String): List<String>
+}

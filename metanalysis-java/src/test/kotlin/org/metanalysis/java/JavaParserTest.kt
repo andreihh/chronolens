@@ -297,9 +297,6 @@ class JavaParserTest {
 
     @Test fun `test network`() {
         val source = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/master/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
-        val sourceFile = assertNotNull(
-                Parser.getByLanguage(JavaParser.LANGUAGE)?.parse(source)
-        )
-        PrettyPrinterVisitor().visit(sourceFile)
+        PrettyPrinterVisitor().visit(parser.parse(source))
     }
 }

@@ -19,7 +19,8 @@ package org.metanalysis.core.project
 import org.metanalysis.core.Parser
 import org.metanalysis.core.SourceFile
 import org.metanalysis.core.delta.SourceFileTransaction
-/*import org.metanalysis.core.versioning.Commit
+import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
+import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.VersionControlSystem
 
 import java.io.File
@@ -59,11 +60,11 @@ data class Project(
         TODO()
     }
 
+    @Throws(IOException::class)
     fun getFileDiff(
             file: String,
             srcCommitId: String,
             dstCommitId: String = head
-    ): SourceFileTransaction {
-        TODO()
-    }
-}*/
+    ): SourceFileTransaction? =
+            getFile(file, srcCommitId).diff(getFile(file, dstCommitId))
+}

@@ -137,6 +137,6 @@ object JsonDriver {
 
     /** Utility deserialization method. */
     @Throws(IOException::class)
-    @JvmStatic inline fun <reified T : Any> deserialize(src: InputStream): T =
+    inline fun <reified T : Any> deserialize(src: InputStream): T =
             deserialize(src, T::class)
 }

@@ -30,9 +30,9 @@ sealed class Node {
      * Two nodes are equal if and only if they have the same [identifier] and
      * belong to the same node subtype.
      */
-    final override fun equals(other: Any?): Boolean =
-            other is Node && identifier == other.identifier
-                    && javaClass == other.javaClass
+    final override fun equals(other: Any?): Boolean = other is Node
+            && javaClass == other.javaClass
+            && identifier == other.identifier
 
     final override fun hashCode(): Int = identifier.hashCode()
 

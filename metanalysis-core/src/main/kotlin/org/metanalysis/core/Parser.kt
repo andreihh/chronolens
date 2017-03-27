@@ -82,7 +82,7 @@ abstract class Parser {
     class SyntaxError(
             message: String? = null,
             cause: Throwable? = null
-    ) : Exception(message, cause)
+    ) : IOException(message, cause)
 
     /** The programming language which can be interpreted by this parser. */
     abstract val language: String

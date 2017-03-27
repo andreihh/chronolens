@@ -16,7 +16,7 @@
 
 package org.metanalysis.git
 
-/*import org.metanalysis.core.versioning.Commit
+import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.VersionControlSystem
 
 import java.io.InputStream
@@ -31,9 +31,22 @@ class GitVersioningSystem : VersionControlSystem() {
 
     override fun getFile(file: String, commitId: String): InputStream {
         TODO("not implemented")
+        // git show commitId:file
     }
 
     override fun getCommit(id: String): Commit {
         TODO("not implemented")
+        // git show --name-only commitId
+        // git show --name-status commitId
     }
-}*/
+
+    override fun getCommitHistory(): List<Commit> {
+        TODO()
+        // git log
+    }
+
+    override fun getFileHistory(file: String): List<String> {
+        TODO("not implemented")
+        // git log file
+    }
+}
