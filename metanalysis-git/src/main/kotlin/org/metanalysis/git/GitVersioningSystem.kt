@@ -30,7 +30,7 @@ class GitVersioningSystem : VersionControlSystem() {
     override val name: String
         get() = NAME
 
-    override fun getBranches(): List<Branch> {
+    override fun getBranches(): Set<Branch> {
         TODO("not implemented")
     }
 
@@ -57,7 +57,7 @@ class GitVersioningSystem : VersionControlSystem() {
         // git rev-parse HEAD
     }
 
-    override fun getFiles(commit: Commit): List<String> {
+    override fun getFiles(commit: Commit): Set<String> {
         TODO("not implemented")
     }
 

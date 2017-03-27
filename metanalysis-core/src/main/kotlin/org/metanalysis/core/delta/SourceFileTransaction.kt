@@ -26,7 +26,7 @@ import org.metanalysis.core.model.SourceFile
  * @property nodeEdits the edits which should be applied to the set of `nodes`
  */
 data class SourceFileTransaction(
-        val nodeEdits: List<NodeSetEdit>
+        val nodeEdits: List<NodeSetEdit> = emptyList()
 ) : Transaction<SourceFile> {
     companion object {
         /**

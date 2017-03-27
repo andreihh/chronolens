@@ -48,7 +48,7 @@ abstract class VersionControlSystem {
     /** The name of this version control system. */
     abstract val name: String
 
-    abstract fun getBranches(): List<Branch>
+    abstract fun getBranches(): Set<Branch>
 
     abstract fun getBranch(name: String): Branch?
 
@@ -66,7 +66,7 @@ abstract class VersionControlSystem {
      */
     abstract fun getHead(): Commit
 
-    abstract fun getFiles(commit: Commit): List<String>
+    abstract fun getFiles(commit: Commit): Set<String>
 
     abstract fun getFile(path: String, commit: Commit): InputStream?
 

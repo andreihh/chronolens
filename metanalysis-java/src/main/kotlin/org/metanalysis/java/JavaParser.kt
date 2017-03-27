@@ -99,7 +99,7 @@ class JavaParser : Parser() {
                 is EnumConstantDeclaration -> visit(member)
                 is VariableDeclaration -> visit(member)
                 is MethodDeclaration -> visit(member)
-                is Initializer -> throw IllegalStateException("Parse error!")
+                is Initializer -> throw IOException("Can't parse initializers!")
                 else -> throw AssertionError("Unknown declaration $member!")
             }
         }

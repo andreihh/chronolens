@@ -27,6 +27,8 @@ import org.metanalysis.core.model.Node.Variable
 
 import kotlin.reflect.KClass
 
+//private typealias NodeKey = Pair<KClass<out Node>, String>
+
 /** An atomic change which should be applied to a set of nodes. */
 sealed class NodeSetEdit : Edit<Set<Node>> {
     companion object {
@@ -67,10 +69,8 @@ sealed class NodeSetEdit : Edit<Set<Node>> {
                 Remove(node::class, node.identifier)
             }
             val changed = this.intersect(other).mapNotNull { node ->
-                val key = node.key
                 val identifier = node.identifier
-                val otherNode = map[key]
-                        ?: throw AssertionError("$key must exist in $map!")
+                val otherNode = map[node.key] ?: throw AssertionError()
                 when (node) {
                     is Type -> node.diff(otherNode as Type)?.let { t ->
                         Change<Type>(identifier, t)
@@ -88,8 +88,8 @@ sealed class NodeSetEdit : Edit<Set<Node>> {
     }
 
     protected data class NodeKey(
-            val nodeType: KClass<out Node>,
-            val identifier: String
+            private val nodeType: KClass<out Node>,
+            private val identifier: String
     )
 
     /** The key of the node affected by this edit. */

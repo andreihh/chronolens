@@ -80,8 +80,6 @@ sealed class ListEdit<T> : Edit<List<T>> {
                 } else if (j > 0 && dp[i][j] == dp[i][j - 1] + 1) {
                     edits.add(Add(i, other[j - 1]))
                     j--
-                } else {
-                    throw AssertionError("Can't diff $this and $other!")
                 }
             }
             return edits

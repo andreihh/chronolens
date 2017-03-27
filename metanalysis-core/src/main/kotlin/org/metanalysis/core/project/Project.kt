@@ -16,10 +16,10 @@
 
 package org.metanalysis.core.project
 
-import org.metanalysis.core.model.Parser
-import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.delta.SourceFileTransaction
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
+import org.metanalysis.core.model.Parser
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.versioning.VersionControlSystem
 
 import java.io.File
@@ -98,6 +98,6 @@ class Project(vcs: String) {
     /**
      * @throws IllegalArgumentException if the given `commitId` doesn't exist
      */
-    fun getFiles(commitId: String): List<String> =
+    fun getFiles(commitId: String): Set<String> =
             vcs.getFiles(requireNotNull(vcs.getCommit(commitId)))
 }
