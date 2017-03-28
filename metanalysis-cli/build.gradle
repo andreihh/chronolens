@@ -26,5 +26,6 @@ task fatJar(type: Jar) {
 
 dependencies {
     compile project(':metanalysis-core')
+    runtime project(':metanalysis-git')
     runtime project(':metanalysis-java')
 }

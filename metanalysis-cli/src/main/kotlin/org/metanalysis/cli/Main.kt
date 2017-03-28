@@ -18,28 +18,20 @@
 
 package org.metanalysis.cli
 
-import org.metanalysis.core.model.Parser
-import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
+import org.metanalysis.core.project.Project
 import org.metanalysis.core.serialization.JsonDriver
 
-import java.io.File
 import java.io.FileOutputStream
 
 fun main(args: Array<String>) {
     if (args.size != 3) {
-        println("Usage: file_v1 file_v2 output_file")
+        println("Usage: vcs file output")
         return
     }
-    val parser = checkNotNull(Parser.getByExtension("java"))
-    val file1 = File(args[0])
-    val file2 = File(args[1])
-    val sourceFile1 = parser.parse(file1)
-    val sourceFile2 = parser.parse(file2)
-    val diff = sourceFile1.diff(sourceFile2)
-    val file3 = File(args[2])
-    if (diff == null) {
-        println("The two files have the same code metadata!")
-        return
-    }
-    JsonDriver.serialize(FileOutputStream(file3), diff)
+    val vcs = args[0]
+    val path = args[1]
+    val outputPath = args[2]
+    val project = Project(vcs)
+    val history = project.getFileHistory(path)
+    JsonDriver.serialize(FileOutputStream(outputPath), history)
 }

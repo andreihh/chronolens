@@ -20,7 +20,8 @@ import java.io.InputStream
 import java.util.ServiceLoader
 
 /**
- * An abstract version control system.
+ * An abstract version control system which interacts with the repository found
+ * in the current working directory.
  *
  * Version control systems must have a public no-arg constructor.
  *
@@ -48,27 +49,32 @@ abstract class VersionControlSystem {
     /** The name of this version control system. */
     abstract val name: String
 
-    abstract fun getBranches(): Set<Branch>
-
-    abstract fun getBranch(name: String): Branch?
-
     /**
-     * @throws IllegalStateException if the `head` is detached
+     * @throws IllegalArgumentException if the given `commitId` is invalid
      */
-    abstract fun getCurrentBranch(): Branch
-
-    abstract fun getCommits(branch: Branch): List<Commit>
-
-    abstract fun getCommit(id: String): Commit?
+    abstract fun getCommit(commitId: String): Commit
 
     /**
      * @throws IllegalStateException if the repository doesn't have any commits
      */
-    abstract fun getHead(): Commit
+    abstract fun getHead(): String
 
-    abstract fun getFiles(commit: Commit): Set<String>
+    /**
+     *
+     * @throws IllegalArgumentException if the given `commitId` is invalid
+     */
+    abstract fun listFiles(commitId: String): Set<String>
 
-    abstract fun getFile(path: String, commit: Commit): InputStream?
+    /**
+     *
+     * @throws IllegalArgumentException if the given `commitId` is invalid
+     */
+    abstract fun getFile(path: String, commitId: String): InputStream?
 
-    abstract fun getFileHistory(path: String, branch: Branch): List<Commit>
+    /**
+     *
+     * @throws IllegalArgumentException if the given `commitId` is invalid or if
+     * the given file doesn't exist in the given commit
+     */
+    abstract fun getFileHistory(path: String, commitId: String): List<String>
 }

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.versioning
+package org.metanalysis.core.project
 
-data class Branch(val name: String)
+class ProjectTest {
+}
