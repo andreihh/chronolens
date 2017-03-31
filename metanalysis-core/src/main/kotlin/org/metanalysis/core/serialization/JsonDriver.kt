@@ -17,6 +17,7 @@
 package org.metanalysis.core.serialization
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.core.JsonGenerator
@@ -102,10 +103,11 @@ object JsonDriver {
             addSerializer(KClass::class.java, kClassSerializer)
             addDeserializer(KClass::class.java, kClassDeserializer)
         })
-        setDefaultTyping(typeResolver)
-        enable(SerializationFeature.INDENT_OUTPUT)
         setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
         setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+        setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+        setDefaultTyping(typeResolver)
+        enable(SerializationFeature.INDENT_OUTPUT)
     }
 
     /**

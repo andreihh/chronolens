@@ -50,7 +50,7 @@ class FunctionTransactionTest {
         val actual = Function(signature, emptyList(), "{\n  j = 2;\n}\n").apply(
                 FunctionTransaction(bodyEdits = listOf(
                         ListEdit.Remove(1),
-                        ListEdit.Add(1, "  i = 1;")
+                        ListEdit.Add(1, "i = 1;")
                 ))
         )
         assertEquals(expected, actual)

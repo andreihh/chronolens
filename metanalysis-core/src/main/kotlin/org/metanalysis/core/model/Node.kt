@@ -106,7 +106,10 @@ sealed class Node {
                 properties: Map<String, String> = emptyMap()
         ) : this(
                 name = name,
-                initializer = initializer?.split("\n") ?: emptyList(),
+                initializer = initializer?.split("\n")
+                        ?.filter(String::isNotBlank)
+                        ?.map(String::trim)
+                        ?: emptyList(),
                 properties = properties
         )
     }
@@ -132,7 +135,7 @@ sealed class Node {
      */
     data class Function(
             val signature: String,
-            val parameters: List<Variable>,
+            val parameters: List<Variable> = emptyList(),
             val body: List<String> = emptyList(),
             override val properties: Map<String, String> = emptyMap()
     ) : Node() {
@@ -153,7 +156,10 @@ sealed class Node {
         ) : this(
                 signature = signature,
                 parameters = parameters,
-                body = body?.split("\n") ?: emptyList(),
+                body = body?.split("\n")
+                        ?.filter(String::isNotBlank)
+                        ?.map(String::trim)
+                        ?: emptyList(),
                 properties = properties
         )
     }

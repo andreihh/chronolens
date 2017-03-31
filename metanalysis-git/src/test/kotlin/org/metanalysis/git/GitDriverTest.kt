@@ -18,8 +18,8 @@ package org.metanalysis.git
 
 import org.junit.Test
 
-class GitVersionControlSystemTest {
-    private val git = GitVersionControlSystem()
+class GitDriverTest {
+    private val git = GitDriver()
 
     @Test(timeout = 500) fun `test get head`() {
         val head = git.getHead()

@@ -22,7 +22,7 @@ import java.io.IOException
 
 import java.io.InputStream
 
-class GitVersionControlSystem : VersionControlSystem() {
+class GitDriver : VersionControlSystem() {
     companion object {
         const val NAME: String = "git"
     }

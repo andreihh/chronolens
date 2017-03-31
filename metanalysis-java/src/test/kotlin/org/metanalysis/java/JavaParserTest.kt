@@ -109,9 +109,9 @@ class JavaParserTest {
         val expected = SourceFile(setOf(Type(
                 name = "Color",
                 members = setOf(
-                        Variable("RED", "RED() {}"),
-                        Variable("GREEN", "GREEN() {}"),
-                        Variable("BLUE", "BLUE() {}")
+                        Variable("RED", "RED"),
+                        Variable("GREEN", "GREEN"),
+                        Variable("BLUE", "BLUE")
                 )
         )))
         assertEquals(expected, parser.parse(source))
@@ -131,9 +131,9 @@ class JavaParserTest {
         val expected = SourceFile(setOf(Type(
                 name = "Color",
                 members = setOf(
-                        Variable("RED", "RED() {}"),
-                        Variable("GREEN", "GREEN() {}"),
-                        Variable("BLUE", "BLUE() {}"),
+                        Variable("RED", "RED"),
+                        Variable("GREEN", "GREEN"),
+                        Variable("BLUE", "BLUE"),
                         Variable("format", "\"hex\""),
                         Variable("i")
                 )
@@ -145,20 +145,17 @@ class JavaParserTest {
         val source = """
         enum Color {
             RED() {
-                @Override
-                String getCode() {
+                @Override String getCode() {
                     return "#FF0000";
                 }
             },
             GREEN() {
-                @Override
-                String getCode() {
+                @Override String getCode() {
                     return "#00FF00";
                 }
             },
             BLUE() {
-                @Override
-                String getCode() {
+                @Override String getCode() {
                     return "#0000FF";
                 }
             };
@@ -171,33 +168,27 @@ class JavaParserTest {
                 members = setOf(
                         Variable(
                                 name = "RED",
-                                initializer =
-"""RED() {
-  @Override String getCode(){
-    return "#FF0000";
-  }
-}
-"""
+                                initializer = """RED() {
+                                    @Override String getCode() {
+                                        return "#FF0000";
+                                    }
+                                }"""
                         ),
                         Variable(
                                 name = "GREEN",
-                                initializer =
-"""GREEN() {
-  @Override String getCode(){
-    return "#00FF00";
-  }
-}
-"""
+                                initializer = """GREEN() {
+                                    @Override String getCode() {
+                                        return "#00FF00";
+                                    }
+                                }"""
                         ),
                         Variable(
                                 name = "BLUE",
-                                initializer =
-"""BLUE() {
-  @Override String getCode(){
-    return "#0000FF";
-  }
-}
-"""
+                                initializer = """BLUE() {
+                                    @Override String getCode() {
+                                        return "#0000FF";
+                                    }
+                                }"""
                         ),
                         Function("getCode()", emptyList())
                 )
@@ -264,11 +255,9 @@ class JavaParserTest {
                         Function(
                                 signature = "getVersion()",
                                 parameters = emptyList(),
-                                body =
-"""{
-  return 1;
-}
-"""
+                                body = """{
+                return 1;
+            }"""
                         )
                 )
         )))

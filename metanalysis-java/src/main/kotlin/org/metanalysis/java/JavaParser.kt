@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeMemberDeclaration
+import org.eclipse.jdt.core.dom.AnonymousClassDeclaration
 import org.eclipse.jdt.core.dom.BodyDeclaration
 import org.eclipse.jdt.core.dom.CompilationUnit
 import org.eclipse.jdt.core.dom.EnumConstantDeclaration
@@ -50,6 +51,30 @@ class JavaParser : Parser() {
 
         /** The Java file extensions. */
         val EXTENSIONS: Set<String> = setOf("java")
+    }
+
+    private data class Context(private val source: String) {
+        fun getBody(method: MethodDeclaration): String? = source.substring(
+                method.startPosition,
+                method.startPosition + method.length
+        ).dropWhile { it != '{' }.takeIf(String::isNotBlank)
+
+        fun getInitializer(variable: VariableDeclaration): String? =
+                source.substring(
+                        variable.startPosition,
+                        variable.startPosition + variable.length
+                ).dropWhile { it != '=' }.let {
+                    if (it.firstOrNull() == '=')
+                        it.drop(1).dropWhile(Char::isWhitespace)
+                    else it
+                }.takeIf(String::isNotBlank)
+
+        fun getEnumInitializer(
+                enumConstant: EnumConstantDeclaration
+        ): String? = source.substring(
+                enumConstant.startPosition,
+                enumConstant.startPosition + enumConstant.length
+        ).takeIf(String::isNotBlank)
     }
 
     private fun <T> Collection<T>.requireDistinct(): Set<T> = toSet().let {
@@ -91,7 +116,7 @@ class JavaParser : Parser() {
         else listOf(member)
     }
 
-    private fun visit(node: AbstractTypeDeclaration): Type {
+    private fun Context.visit(node: AbstractTypeDeclaration): Type {
         val members = node.members().map { member ->
             when (member) {
                 is AbstractTypeDeclaration -> visit(member)
@@ -113,30 +138,26 @@ class JavaParser : Parser() {
     private fun visit(node: AnnotationTypeMemberDeclaration): Variable =
             Variable(node.name(), node.default?.toString())
 
-    private fun visit(node: EnumConstantDeclaration): Variable = Variable(
-            name = node.name(),
-            initializer = node.name()
-                    + "(${node.arguments().joinToString()}) "
-                    + (node.anonymousClassDeclaration ?: "{}")
-    )
+    private fun Context.visit(node: EnumConstantDeclaration): Variable =
+            Variable(node.name(), getEnumInitializer(node))
 
-    private fun visit(node: VariableDeclaration): Variable =
-            Variable(node.name(), node.initializer?.toString())
+    private fun Context.visit(node: VariableDeclaration): Variable =
+            Variable(node.name(), getInitializer(node))
 
-    private fun visit(node: MethodDeclaration): Function {
+    private fun Context.visit(node: MethodDeclaration): Function {
         val parameters = node.parameters()
                 .filterIsInstance<SingleVariableDeclaration>()
         val parameterTypes = parameters.map(SingleVariableDeclaration::getType)
         return Function(
                 signature = node.name() + "(${parameterTypes.joinToString()})",
-                parameters = parameters.map(this::visit),
-                body = node.body?.toString()
+                parameters = parameters.map { visit(it) },
+                body = getBody(node)
         )
     }
 
-    private fun visit(node: CompilationUnit): SourceFile =
+    private fun Context.visit(node: CompilationUnit): SourceFile =
             node.types().filterIsInstance<AbstractTypeDeclaration>()
-                    .map(this::visit).requireDistinct().let(::SourceFile)
+                    .map { visit(it) }.requireDistinct().let(::SourceFile)
 
     override val language: String
         get() = LANGUAGE
@@ -153,9 +174,9 @@ class JavaParser : Parser() {
             val options = JavaCore.getOptions()
             JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
             jdtParser.setCompilerOptions(options)
-            //jdtParser.setIgnoreMethodBodies(true)
+            jdtParser.setIgnoreMethodBodies(true)
             val compilationUnit = jdtParser.createAST(null) as CompilationUnit
-            return visit(compilationUnit)
+            return Context(source).visit(compilationUnit)
         } catch (e: Exception) {
             throw IOException(e)
         }
