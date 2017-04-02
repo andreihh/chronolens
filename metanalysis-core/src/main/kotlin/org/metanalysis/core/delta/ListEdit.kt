@@ -101,8 +101,13 @@ sealed class ListEdit<T> : Edit<List<T>> {
      * @param T the type of the elements of the edited list
      * @property index the index at which the element should be inserted
      * @property value the element which should be added
+     * @throws IllegalArgumentException if `index` is negative
      */
     data class Add<T>(val index: Int, val value: T) : ListEdit<T>() {
+        init {
+            require(index >= 0) { "Can't add $value at negative index $index!" }
+        }
+
         override fun applyOn(subject: MutableList<T>) {
             check(index in 0..subject.size) {
                 "$index is out of bounds for $subject!"
@@ -116,8 +121,13 @@ sealed class ListEdit<T> : Edit<List<T>> {
      *
      * @param T the type of the elements of the edited list
      * @property index the index of the element which should be removed
+     * @throws IllegalArgumentException if `index` is negative
      */
     data class Remove<T>(val index: Int) : ListEdit<T>() {
+        init {
+            require(index >= 0) { "Can't remove negative index $index!" }
+        }
+
         override fun applyOn(subject: MutableList<T>) {
             check(index in 0 until subject.size) {
                 "$index is out of bounds for $subject!"

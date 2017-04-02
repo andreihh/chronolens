@@ -10,6 +10,7 @@
 - an abstract model which contains code metadata
 - an abstract transaction model to represent diffs between code metadata models
 - JSON serialization utilities for code metadata and diffs
+- a Git integration module
 - a Java source file parser which extracts Java code metadata
 
 ### Using Metanalysis
@@ -23,15 +24,19 @@ In order to use `metanalysis` you need to have `JDK 1.8` or newer.
 Download the most recently released `cli` artifact from
 [here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run it:
 
-```java -jar metanalysis-cli-$version-all file_v1 file_v2 diff_output_file```
+```java -jar metanalysis-cli-$version-all $vcs $path $output```
 
 #### Using Gradle
 
+Add the `JitPack` repository to your build file:
 ```groovy
 repositories {
     maven { url 'https://jitpack.io' }
 }
+```
 
+Add the dependencies:
+```groovy
 dependencies {
     compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-core:$version"
     runtime "com.github.andrei-heidelbacher.metanalysis:metanalysis-git:$version"
@@ -40,8 +45,62 @@ dependencies {
 }
 ```
 
-Additionally, you must provide the service configuration file
-`META-INF/services/org.metanalysis.core.model.Parser`.
+#### Using Maven
+
+Add the `JitPack` repository to your build file:
+```xml
+<repositories>
+  <repository>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
+  </repository>
+</repositories>
+```
+
+Add the dependencies:
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.github.andrei-heidelbacher.metanalysis</groupId>
+    <artifactId>metanalysis-core</artifactId>
+    <version>$version</version>
+    <scope>compile</scope>
+  </dependency>
+  <dependency>
+    <groupId>com.github.andrei-heidelbacher.metanalysis</groupId>
+    <artifactId>metanalysis-git</artifactId>
+    <version>$version</version>
+    <scope>runtime</scope>
+  </dependency>
+  <dependency>
+    <groupId>com.github.andrei-heidelbacher.metanalysis</groupId>
+    <artifactId>metanalysis-java</artifactId>
+    <version>$version</version>
+    <scope>runtime</scope>
+  </dependency>
+  <dependency>
+    <groupId>com.github.andrei-heidelbacher.metanalysis</groupId>
+    <artifactId>metanalysis-java</artifactId>
+    <version>$version</version>
+    <scope>test</scope>
+  </dependency>
+</dependencies>
+```
+
+#### Configuration
+
+If using the various modules as dependencies, you must provide the service
+configuration files:
+- `META-INF/services/org.metanalysis.core.model.Parser`
+- `META-INF/services/org.metanalysis.core.version.VersionControlSystem`
+
+### Building
+
+To build this project, run ```./gradlew build```.
+
+To build the `cli` artifact, run the following command after building the
+project: ```./gradlew :metanalysis-cli:fatJar```. This will create the
+`metanalysis-cli-$version-all.jar` artifact in `metanalysis-cli/build/libs/`.
 
 ### Documentation
 

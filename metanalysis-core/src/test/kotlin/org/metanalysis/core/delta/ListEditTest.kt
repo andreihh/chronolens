@@ -35,6 +35,11 @@ class ListEditTest {
         assertEquals(src, dst.apply(dst.toList().diff(src.toList())))
     }
 
+    @Test(expected = IllegalArgumentException::class)
+    fun `test add element at negative position throws`() {
+        ListEdit.Add(-1, '0')
+    }
+
     @Test fun `test add element at end`() {
         val expected = "12345"
         val actual = "1234".apply(ListEdit.Add(4, '5'))
@@ -56,6 +61,11 @@ class ListEditTest {
     @Test(expected = IllegalStateException::class)
     fun `test add element out of bounds throws`() {
         "1234".apply(ListEdit.Add(5, '6'))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test remove element at negative index throws`() {
+        ListEdit.Remove<Char>(-1)
     }
 
     @Test fun `test remove first element`() {

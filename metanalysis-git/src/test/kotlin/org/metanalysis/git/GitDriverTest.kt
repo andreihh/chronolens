@@ -17,6 +17,7 @@
 package org.metanalysis.git
 
 import org.junit.Test
+import kotlin.test.assertEquals
 
 class GitDriverTest {
     private val git = GitDriver()
@@ -31,6 +32,18 @@ class GitDriverTest {
         println(files)
     }
 
+    @Test fun `test parse commit`() {
+        val expectedId = "48274d"
+        val expectedDate = "Fri 31 Mar"
+        val expectedAuthor = "Name;with;invalid;separators"
+        val (actualId, actualDate, actualAuthor) =
+                "$expectedId;$expectedDate;$expectedAuthor"
+                        .split(';', limit = 3)
+        assertEquals(expectedId, actualId)
+        assertEquals(expectedDate, actualDate)
+        assertEquals(expectedAuthor, actualAuthor)
+    }
+
     @Test(timeout = 500) fun `test get commit`() {
         val commit = git.getCommit(git.getHead())
         println(commit)
@@ -39,8 +52,7 @@ class GitDriverTest {
     @Test(timeout = 500) fun `test get file`() {
         val fileContent = git.getFile("build.gradle", git.getHead())
                 ?.bufferedReader()
-                ?.readLines()
-                ?.joinToString(separator = "\n")
+                ?.readText()
         println(fileContent)
     }
 

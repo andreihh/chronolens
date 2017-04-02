@@ -102,8 +102,7 @@ abstract class Parser {
      * content or if it contains invalid source code
      */
     @Throws(IOException::class)
-    fun parse(src: InputStream): SourceFile =
-            parse(src.reader().readText())
+    fun parse(src: InputStream): SourceFile = parse(src.reader().readText())
 
     /**
      * Parses the given `file` and returns the associated code meta-data.

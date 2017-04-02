@@ -106,7 +106,7 @@ sealed class Node {
                 properties: Map<String, String> = emptyMap()
         ) : this(
                 name = name,
-                initializer = initializer?.split("\n")
+                initializer = initializer?.split('\n')
                         ?.filter(String::isNotBlank)
                         ?.map(String::trim)
                         ?: emptyList(),
@@ -156,7 +156,7 @@ sealed class Node {
         ) : this(
                 signature = signature,
                 parameters = parameters,
-                body = body?.split("\n")
+                body = body?.split('\n')
                         ?.filter(String::isNotBlank)
                         ?.map(String::trim)
                         ?: emptyList(),

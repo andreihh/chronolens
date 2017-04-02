@@ -38,7 +38,7 @@ class Project(vcs: String) {
     )
 
     private val vcs = checkNotNull(VersionControlSystem.getByName(vcs)) {
-        "$vcs is not supported!"
+        "'$vcs' is not supported!"
     }
     private val head = this.vcs.getHead()
 
@@ -76,7 +76,7 @@ class Project(vcs: String) {
     fun getFileModel(path: String, commit: String = head): SourceFile? {
         val file = vcs.getFile(path, commit) ?: return null
         val parser = Parser.getByExtension(File(path).extension)
-                ?: throw IOException("Provided parsers can't interpret $path!")
+                ?: throw IOException("No parser can interpret '$path'!")
         return parser.parse(file)
     }
 
@@ -97,7 +97,7 @@ class Project(vcs: String) {
         val srcSourceFile = getFileModel(path, srcCommit)
         val dstSourceFile = getFileModel(path, dstCommit)
         require(srcSourceFile != null || dstSourceFile != null) {
-            "File $path doesn't exist in $srcCommit or $dstCommit!"
+            "File '$path' doesn't exist in '$srcCommit' or '$dstCommit'!"
         }
         return (srcSourceFile ?: SourceFile())
                 .diff(dstSourceFile ?: SourceFile())
@@ -106,6 +106,5 @@ class Project(vcs: String) {
     /**
      * @throws IllegalArgumentException if the given `commit` is invalid
      */
-    fun listFiles(commit: String = head): Set<String> =
-            vcs.listFiles(commit)
+    fun listFiles(commit: String = head): Set<String> = vcs.listFiles(commit)
 }

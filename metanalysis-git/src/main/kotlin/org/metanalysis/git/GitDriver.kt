@@ -18,9 +18,10 @@ package org.metanalysis.git
 
 import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.VersionControlSystem
-import java.io.IOException
 
+import java.io.IOException
 import java.io.InputStream
+import java.nio.charset.Charset
 
 class GitDriver : VersionControlSystem() {
     companion object {
@@ -36,48 +37,51 @@ class GitDriver : VersionControlSystem() {
                     .redirectError(ProcessBuilder.Redirect.INHERIT)
                     .start()
 
+    private fun String.trimQuotes(): String =
+            if (length > 1 && startsWith("\"") && endsWith("\""))
+                drop(1).dropLast(1)
+            else this
+
     @Throws(IOException::class)
     private fun InputStream.readLines(): List<String> = use {
-        readBytes().map(Byte::toChar)
-                .joinToString(separator = "")
-                .split("\n")
+        readBytes().toString(charset = Charset.defaultCharset()).split('\n')
     }
 
     override fun getCommit(commitId: String): Commit {
-        val process = execute("git", "show", "--name-only", commitId)
-        val lines = process.inputStream.readLines()
-        if (lines.size < 3) {
-            throw IOException("")
-        }
-        val (id, author, date) = lines
+        val process = execute(
+                "git",
+                "show",
+                "--format=\"%H;%ad;%an\"",
+                commitId
+        )
+        val line = process.inputStream.readLines().firstOrNull()
+                ?: throw IOException("Invalid commit '$commitId'!")
+        val (id, date, author) = line.trimQuotes().split(';', limit = 3)
         return Commit(id, author, date)
     }
 
     override fun getHead(): String {
         val process = execute("git", "rev-parse", "HEAD")
         return process.inputStream.readLines().firstOrNull()
-                ?: throw IOException("")
+                ?: throw IOException("Error retrieving repository head commit!")
     }
 
     override fun listFiles(commitId: String): Set<String> {
         val process = execute("git", "ls-tree", "--name-only", "-r", commitId)
-        return process.inputStream.readLines()
-                .filter(String::isNotBlank)
+        return process.inputStream.readLines().filter(String::isNotBlank)
                 .toSet()
     }
 
     override fun getFile(path: String, commitId: String): InputStream? {
         val process = execute("git", "show", "$commitId:$path")
         process.waitFor()
-        return if (process.exitValue() != 0) {
-            val error = process.errorStream.bufferedReader().readLine()
-                    ?: throw IOException()
-            if (error.contains("Path .* does not exist ")) {
-                throw IOException(error)
-            }
-            null
+        if (process.exitValue() != 0) {
+            val error = process.errorStream.readLines().firstOrNull()
+                    ?: throw IOException("Error parsing git error message!")
+            return if (!error.contains("Path .* does not exist")) null
+            else throw IOException(error)
         } else {
-            process.inputStream
+            return process.inputStream
         }
     }
 
@@ -86,11 +90,11 @@ class GitDriver : VersionControlSystem() {
                 "git",
                 "log",
                 "--first-parent",
-                "--pretty=format:\"%H\"",
+                "--format=\"%H\"",
                 commitId,
                 path
         )
-        return process.inputStream.readLines()
-                .map { it.drop(1).dropLast(1) }.asReversed()
+        return process.inputStream.readLines().map { it.trimQuotes() }
+                .asReversed()
     }
 }

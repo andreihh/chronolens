@@ -16,6 +16,7 @@
 
 package org.metanalysis.core.versioning
 
+import java.io.IOException
 import java.io.InputStream
 import java.util.ServiceLoader
 
@@ -50,31 +51,36 @@ abstract class VersionControlSystem {
     abstract val name: String
 
     /**
-     * @throws IllegalArgumentException if the given `commitId` is invalid
+     * @throws IOException if the given `commitId` is invalid
      */
+    @Throws(IOException::class)
     abstract fun getCommit(commitId: String): Commit
 
     /**
-     * @throws IllegalStateException if the repository doesn't have any commits
+     * @throws IOException if the head commit couldn't be retrieved
      */
+    @Throws(IOException::class)
     abstract fun getHead(): String
 
     /**
      *
-     * @throws IllegalArgumentException if the given `commitId` is invalid
+     * @throws IOException if the given `commitId` is invalid
      */
+    @Throws(IOException::class)
     abstract fun listFiles(commitId: String): Set<String>
 
     /**
      *
-     * @throws IllegalArgumentException if the given `commitId` is invalid
+     * @throws IOException if the given `commitId` is invalid
      */
+    @Throws(IOException::class)
     abstract fun getFile(path: String, commitId: String): InputStream?
 
     /**
      *
-     * @throws IllegalArgumentException if the given `commitId` is invalid or if
-     * the given file doesn't exist in the given commit
+     * @throws IOException if the given `commitId` is invalid or if the given
+     * file doesn't exist in the given commit
      */
+    @Throws(IOException::class)
     abstract fun getFileHistory(path: String, commitId: String): List<String>
 }
