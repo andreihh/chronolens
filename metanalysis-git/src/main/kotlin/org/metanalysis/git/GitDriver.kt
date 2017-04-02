@@ -68,7 +68,8 @@ class GitDriver : VersionControlSystem() {
 
     override fun listFiles(commitId: String): Set<String> {
         val process = execute("git", "ls-tree", "--name-only", "-r", commitId)
-        return process.inputStream.readLines().filter(String::isNotBlank)
+        return process.inputStream.readLines()
+                .filter(String::isNotBlank)
                 .toSet()
     }
 
@@ -94,7 +95,9 @@ class GitDriver : VersionControlSystem() {
                 commitId,
                 path
         )
-        return process.inputStream.readLines().map { it.trimQuotes() }
+        return process.inputStream.readLines()
+                .filter(String::isNotBlank)
+                .map { it.trimQuotes() }
                 .asReversed()
     }
 }
