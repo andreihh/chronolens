@@ -16,8 +16,6 @@
 
 package org.metanalysis.core.delta
 
-import org.metanalysis.core.delta.MapEdit.Companion.apply
-import org.metanalysis.core.delta.MapEdit.Companion.diff
 import org.metanalysis.core.delta.NodeSetEdit.Companion.apply
 import org.metanalysis.core.delta.NodeSetEdit.Companion.diff
 import org.metanalysis.core.delta.SetEdit.Companion.apply
@@ -30,12 +28,10 @@ import org.metanalysis.core.model.Node.Type
  * @property supertypeEdits the edits which should be applied to the
  * `supertypes`
  * @property memberEdits the edits which should be applied to the `members`
- * @property propertyEdits the edits which should be applied to the `properties`
  */
 data class TypeTransaction(
         val supertypeEdits: List<SetEdit<String>> = emptyList(),
-        val memberEdits: List<NodeSetEdit> = emptyList(),
-        val propertyEdits: List<MapEdit<String, String>> = emptyList()
+        val memberEdits: List<NodeSetEdit> = emptyList()
 ) : Transaction<Type> {
     companion object {
         /**
@@ -51,19 +47,15 @@ data class TypeTransaction(
             require(identifier == other.identifier)
             val supertypeEdits = supertypes.diff(other.supertypes)
             val memberEdits = members.diff(other.members)
-            val propertyEdits = properties.diff(other.properties)
             val isChanged = supertypeEdits.isNotEmpty()
                     || memberEdits.isNotEmpty()
-                    || propertyEdits.isNotEmpty()
-            return if (isChanged)
-                TypeTransaction(supertypeEdits, memberEdits, propertyEdits)
+            return if (isChanged) TypeTransaction(supertypeEdits, memberEdits)
             else null
         }
     }
 
     override fun applyOn(subject: Type): Type = subject.copy(
             supertypes = subject.supertypes.apply(supertypeEdits),
-            members = subject.members.apply(memberEdits),
-            properties = subject.properties.apply(propertyEdits)
+            members = subject.members.apply(memberEdits)
     )
 }

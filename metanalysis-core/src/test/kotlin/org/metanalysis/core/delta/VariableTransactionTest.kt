@@ -33,8 +33,8 @@ class VariableTransactionTest {
 
     @Test fun `test change initializer`() {
         val name = "version"
-        val expected = Variable(name, "1")
-        val actual = Variable(name, "2").apply(VariableTransaction(
+        val expected = Variable(name, listOf("1"))
+        val actual = Variable(name, listOf("2")).apply(VariableTransaction(
                 initializerEdits = listOf(
                         ListEdit.Remove(0),
                         ListEdit.Add(0, "1")
@@ -43,22 +43,13 @@ class VariableTransactionTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test change properties`() {
-        val name = "version"
-        val expected = Variable(name, properties = mapOf("loc" to "1"))
-        val actual = Variable(name).apply(VariableTransaction(
-                propertyEdits = listOf(MapEdit.Add("loc", "1"))
-        ))
-        assertEquals(expected, actual)
-    }
-
     @Test fun `test apply null transaction returns equal variable`() {
-        val variable = Variable("version", "1")
+        val variable = Variable("version", listOf("1"))
         assertEquals(variable, variable.apply(transaction = null))
     }
 
     @Test fun `test diff equal variables returns null`() {
-        val variable = Variable("version", "1")
+        val variable = Variable("version", listOf("1"))
         assertNull(variable.diff(variable))
     }
 
@@ -69,8 +60,8 @@ class VariableTransactionTest {
 
     @Test fun `test diff`() {
         val name = "name"
-        val src = Variable(name, "1")
-        val dst = Variable(name, "2", mapOf("loc" to "1"))
+        val src = Variable(name, listOf("1"))
+        val dst = Variable(name, listOf("2"))
         assertDiff(src, dst)
     }
 }

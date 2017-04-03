@@ -38,7 +38,11 @@ class SourceFileTest {
 
     @Test fun `test find function`() {
         val name = "version"
-        val expected = Function(name, emptyList(), "{\n  return 1;\n}")
+        val expected = Function(
+                signature = name,
+                parameters = emptyList(),
+                body = listOf("{", "  return 1;", "}")
+        )
         val sourceFile = SourceFile(setOf(
                 Type(name),
                 Variable(name),

@@ -26,8 +26,11 @@ class FunctionTest {
     fun `test duplicated parameters throws`() {
         Function(
                 signature = "getVersion(int, int)",
-                parameters = listOf(Variable("name"), Variable("name", null)),
-                body = null
+                parameters = listOf(
+                        Variable("name"),
+                        Variable("name", emptyList())
+                ),
+                body = emptyList()
         )
     }
 }

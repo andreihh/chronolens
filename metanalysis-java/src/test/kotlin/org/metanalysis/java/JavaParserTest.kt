@@ -23,12 +23,11 @@ import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
-import org.metanalysis.core.serialization.JsonDriver
+import org.metanalysis.java.JavaParser.Companion.toBlock
 import org.metanalysis.test.PrettyPrinterVisitor
 import org.metanalysis.test.assertEquals
 
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
 
@@ -84,7 +83,10 @@ class JavaParserTest {
         """
         val expected = SourceFile(setOf(Type(
                 name = "AnnotationClass",
-                members = setOf(Variable("name"), Variable("version", "1"))
+                members = setOf(
+                        Variable("name"),
+                        Variable("version", listOf("1"))
+                )
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -109,9 +111,9 @@ class JavaParserTest {
         val expected = SourceFile(setOf(Type(
                 name = "Color",
                 members = setOf(
-                        Variable("RED", "RED"),
-                        Variable("GREEN", "GREEN"),
-                        Variable("BLUE", "BLUE")
+                        Variable("RED", listOf("RED")),
+                        Variable("GREEN", listOf("GREEN")),
+                        Variable("BLUE", listOf("BLUE"))
                 )
         )))
         assertEquals(expected, parser.parse(source))
@@ -131,10 +133,10 @@ class JavaParserTest {
         val expected = SourceFile(setOf(Type(
                 name = "Color",
                 members = setOf(
-                        Variable("RED", "RED"),
-                        Variable("GREEN", "GREEN"),
-                        Variable("BLUE", "BLUE"),
-                        Variable("format", "\"hex\""),
+                        Variable("RED", listOf("RED")),
+                        Variable("GREEN", listOf("GREEN")),
+                        Variable("BLUE", listOf("BLUE")),
+                        Variable("format", listOf("\"hex\"")),
                         Variable("i")
                 )
         )))
@@ -172,7 +174,7 @@ class JavaParserTest {
                                     @Override String getCode() {
                                         return "#FF0000";
                                     }
-                                }"""
+                                }""".toBlock()
                         ),
                         Variable(
                                 name = "GREEN",
@@ -180,7 +182,7 @@ class JavaParserTest {
                                     @Override String getCode() {
                                         return "#00FF00";
                                     }
-                                }"""
+                                }""".toBlock()
                         ),
                         Variable(
                                 name = "BLUE",
@@ -188,7 +190,7 @@ class JavaParserTest {
                                     @Override String getCode() {
                                         return "#0000FF";
                                     }
-                                }"""
+                                }""".toBlock()
                         ),
                         Function("getCode()", emptyList())
                 )
@@ -215,8 +217,8 @@ class JavaParserTest {
         val expected = SourceFile(setOf(Type(
                 name = "IInterface",
                 members = setOf(
-                        Variable("name", "null"),
-                        Variable("version", "1")
+                        Variable("name", listOf("null")),
+                        Variable("version", listOf("1"))
                 )
         )))
         assertEquals(expected, parser.parse(source))
@@ -256,8 +258,8 @@ class JavaParserTest {
                                 signature = "getVersion()",
                                 parameters = emptyList(),
                                 body = """{
-                return 1;
-            }"""
+                                    return 1;
+                                }""".toBlock()
                         )
                 )
         )))

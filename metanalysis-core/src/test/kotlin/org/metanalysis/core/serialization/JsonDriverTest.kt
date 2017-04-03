@@ -31,6 +31,7 @@ import org.metanalysis.core.model.Node.Variable
 
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.net.URL
 
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals
@@ -42,8 +43,12 @@ class JsonDriverTest {
                     supertypes = setOf("Interface", "Object"),
                     members = setOf(
                             Type("InnerClass"),
-                            Variable("version", "1"),
-                            Function("getVersion()", emptyList(), "{return 1;}")
+                            Variable("version", listOf("1")),
+                            Function(
+                                    signature = "getVersion()",
+                                    parameters = emptyList(),
+                                    body = listOf("{return 1;}")
+                            )
                     )
             )),
             NodeSetEdit.Remove<Function>("createIClass()"),
@@ -88,4 +93,9 @@ class JsonDriverTest {
         assertEquals(data, actualData)
         println(actualData)
     }
+
+    /*@Test fun gen() {
+        val url1 = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/826e565b7cfba8de05f9f652c1541df8e8e7efe2/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
+        val url2 = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/5e946c270018c71bf25778bc2dc25e5a9dd809b0/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
+    }*/
 }

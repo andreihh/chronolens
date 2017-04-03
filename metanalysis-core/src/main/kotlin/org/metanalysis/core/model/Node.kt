@@ -23,9 +23,6 @@ sealed class Node {
     /** A unique identifier among other nodes of the same type. */
     abstract val identifier: String
 
-    /** The properties of this node. */
-    abstract val properties: Map<String, String>
-
     /**
      * Two nodes are equal if and only if they have the same [identifier] and
      * belong to the same node subtype.
@@ -51,8 +48,7 @@ sealed class Node {
     data class Type(
             val name: String,
             val supertypes: Set<String> = emptySet(),
-            val members: Set<Node> = emptySet(),
-            override val properties: Map<String, String> = emptyMap()
+            val members: Set<Node> = emptySet()
     ) : Node() {
         override val identifier: String
             get() = name
@@ -94,24 +90,10 @@ sealed class Node {
      */
     data class Variable(
             val name: String,
-            val initializer: List<String> = emptyList(),
-            override val properties: Map<String, String> = emptyMap()
+            val initializer: List<String> = emptyList()
     ) : Node() {
         override val identifier: String
             get() = name
-
-        constructor(
-                name: String,
-                initializer: String?,
-                properties: Map<String, String> = emptyMap()
-        ) : this(
-                name = name,
-                initializer = initializer?.split('\n')
-                        ?.filter(String::isNotBlank)
-                        ?.map(String::trim)
-                        ?: emptyList(),
-                properties = properties
-        )
     }
 
     /**
@@ -136,8 +118,7 @@ sealed class Node {
     data class Function(
             val signature: String,
             val parameters: List<Variable> = emptyList(),
-            val body: List<String> = emptyList(),
-            override val properties: Map<String, String> = emptyMap()
+            val body: List<String> = emptyList()
     ) : Node() {
         override val identifier: String
             get() = signature
@@ -147,20 +128,5 @@ sealed class Node {
                 "$parameters contains duplicated parameters!"
             }
         }
-
-        constructor(
-                signature: String,
-                parameters: List<Variable>,
-                body: String?,
-                properties: Map<String, String> = emptyMap()
-        ) : this(
-                signature = signature,
-                parameters = parameters,
-                body = body?.split('\n')
-                        ?.filter(String::isNotBlank)
-                        ?.map(String::trim)
-                        ?: emptyList(),
-                properties = properties
-        )
     }
 }

@@ -18,8 +18,6 @@ package org.metanalysis.core.delta
 
 import org.metanalysis.core.delta.ListEdit.Companion.apply
 import org.metanalysis.core.delta.ListEdit.Companion.diff
-import org.metanalysis.core.delta.MapEdit.Companion.apply
-import org.metanalysis.core.delta.MapEdit.Companion.diff
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Variable
 
@@ -29,12 +27,10 @@ import org.metanalysis.core.model.Node.Variable
  * @property parameterEdits the edits which should be applied to the
  * `parameters`
  * @property bodyEdits the edits which should be applied to the `body`
- * @property propertyEdits the edits which should be applied to the `properties`
  */
 data class FunctionTransaction(
         val parameterEdits: List<ListEdit<Variable>> = emptyList(),
-        val bodyEdits: List<ListEdit<String>> = emptyList(),
-        val propertyEdits: List<MapEdit<String, String>> = emptyList()
+        val bodyEdits: List<ListEdit<String>> = emptyList()
 ) : Transaction<Function> {
     companion object {
         /**
@@ -50,19 +46,15 @@ data class FunctionTransaction(
             require(identifier == other.identifier)
             val parameterEdits = parameters.diff(other.parameters)
             val bodyEdits = body.diff(other.body)
-            val propertyEdits = properties.diff(other.properties)
             val isChanged = parameterEdits.isNotEmpty()
                     || bodyEdits.isNotEmpty()
-                    || propertyEdits.isNotEmpty()
-            return if (isChanged)
-                FunctionTransaction(parameterEdits, bodyEdits, propertyEdits)
+            return if (isChanged) FunctionTransaction(parameterEdits, bodyEdits)
             else null
         }
     }
 
     override fun applyOn(subject: Function): Function = subject.copy(
             parameters = subject.parameters.apply(parameterEdits),
-            body = subject.body.apply(bodyEdits),
-            properties = subject.properties.apply(propertyEdits)
+            body = subject.body.apply(bodyEdits)
     )
 }

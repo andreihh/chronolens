@@ -156,7 +156,7 @@ class TypeTransactionTest {
         )
         val actual = Type(
                 name = typeName,
-                members = setOf(Variable(changedName, "1"))
+                members = setOf(Variable(changedName, listOf("1")))
         ).apply(TypeTransaction(
                 memberEdits = listOf(NodeSetEdit.Change<Variable>(
                         identifier = changedName,
@@ -177,7 +177,11 @@ class TypeTransactionTest {
         )
         val actual = Type(
                 name = typeName,
-                members = setOf(Function(changedSignature, emptyList(), "{}"))
+                members = setOf(Function(
+                        signature = changedSignature,
+                        parameters = emptyList(),
+                        body = listOf("{}")
+                ))
         ).apply(TypeTransaction(
                 memberEdits = listOf(NodeSetEdit.Change<Function>(
                         identifier = changedSignature,

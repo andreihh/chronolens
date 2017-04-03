@@ -115,7 +115,7 @@ class NodeSetEditTest {
 
     @Test fun `test change variable`() {
         val name = "field"
-        val expected = setOf(Type(name), Variable(name, "1"))
+        val expected = setOf(Type(name), Variable(name, listOf("1")))
         val actual = setOf(Type(name), Variable(name))
                 .apply(NodeSetEdit.Change<Variable>(
                         identifier = name,
@@ -164,7 +164,7 @@ class NodeSetEditTest {
         val signature = "getField()"
         val expected = setOf(
                 Type(signature),
-                Function(signature, emptyList(), "{}")
+                Function(signature, emptyList(), listOf("{}"))
         )
         val actual = setOf(
                 Type(signature),

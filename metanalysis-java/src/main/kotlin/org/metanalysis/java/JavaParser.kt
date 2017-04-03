@@ -23,7 +23,6 @@ import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeMemberDeclaration
-import org.eclipse.jdt.core.dom.AnonymousClassDeclaration
 import org.eclipse.jdt.core.dom.BodyDeclaration
 import org.eclipse.jdt.core.dom.CompilationUnit
 import org.eclipse.jdt.core.dom.EnumConstantDeclaration
@@ -51,30 +50,46 @@ class JavaParser : Parser() {
 
         /** The Java file extensions. */
         val EXTENSIONS: Set<String> = setOf("java")
+
+        /**
+         * Formats this string to a block of code by splitting it into lines
+         * (delimited by `\n`), removing blank lines (those which consist only
+         * of whitespaces) and trims leading and trailing whitespaces from all
+         * lines.
+         */
+        @JvmStatic fun String.toBlock(): List<String> = this.split('\n')
+                .filter(String::isNotBlank)
+                .map(String::trim)
     }
 
     private data class Context(private val source: String) {
-        fun getBody(method: MethodDeclaration): String? = source.substring(
-                method.startPosition,
-                method.startPosition + method.length
-        ).dropWhile { it != '{' }.takeIf(String::isNotBlank)
+        private fun substring(startPosition: Int, length: Int): String =
+                source.substring(startPosition, startPosition + length)
 
-        fun getInitializer(variable: VariableDeclaration): String? =
-                source.substring(
-                        variable.startPosition,
-                        variable.startPosition + variable.length
-                ).dropWhile { it != '=' }.let {
-                    if (it.firstOrNull() == '=')
-                        it.drop(1).dropWhile(Char::isWhitespace)
-                    else it
-                }.takeIf(String::isNotBlank)
+        fun getBody(method: MethodDeclaration): List<String> =
+                substring(method.startPosition, method.length)
+                        .dropWhile { it != '{' }.toBlock()
 
-        fun getEnumInitializer(
+        fun getInitializer(variable: VariableDeclaration): List<String> =
+                substring(variable.startPosition, variable.length)
+                        .dropWhile { it != '=' }
+                        .let {
+                            if (it.firstOrNull() == '=') it.drop(1)
+                            else it
+                        }.toBlock()
+
+        fun getInitializer(
                 enumConstant: EnumConstantDeclaration
-        ): String? = source.substring(
+        ): List<String> = substring(
                 enumConstant.startPosition,
-                enumConstant.startPosition + enumConstant.length
-        ).takeIf(String::isNotBlank)
+                enumConstant.length
+        ).toBlock()
+
+        fun getDefaultValue(
+                annotationMember: AnnotationTypeMemberDeclaration
+        ): List<String> = annotationMember.default?.let { value ->
+            substring(value.startPosition, value.length).toBlock()
+        } ?: emptyList()
     }
 
     private fun <T> Collection<T>.requireDistinct(): Set<T> = toSet().let {
@@ -135,11 +150,11 @@ class JavaParser : Parser() {
         )
     }
 
-    private fun visit(node: AnnotationTypeMemberDeclaration): Variable =
-            Variable(node.name(), node.default?.toString())
+    private fun Context.visit(node: AnnotationTypeMemberDeclaration): Variable =
+            Variable(node.name(), getDefaultValue(node))
 
     private fun Context.visit(node: EnumConstantDeclaration): Variable =
-            Variable(node.name(), getEnumInitializer(node))
+            Variable(node.name(), getInitializer(node))
 
     private fun Context.visit(node: VariableDeclaration): Variable =
             Variable(node.name(), getInitializer(node))

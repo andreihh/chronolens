@@ -34,10 +34,10 @@ class FunctionTransactionTest {
 
     @Test fun `test change parameters`() {
         val signature = "println(String)"
-        val expected = Function(signature, listOf(Variable("s", "\"\"")))
+        val expected = Function(signature, listOf(Variable("s", listOf("''"))))
         val actual = Function(signature, listOf(Variable("o")))
                 .apply(FunctionTransaction(parameterEdits = listOf(
-                        ListEdit.Add(0, Variable("s", "\"\"")),
+                        ListEdit.Add(0, Variable("s", listOf("''"))),
                         ListEdit.Remove(1)
                 )))
         assertEquals(expected, actual)
@@ -45,26 +45,16 @@ class FunctionTransactionTest {
 
     @Test fun `test change body`() {
         val signature = "println()"
-        val body = "{\n  i = 1;\n}\n"
+        val body = listOf("{", "  i = 1;", "}")
         val expected = Function(signature, emptyList(), body)
-        val actual = Function(signature, emptyList(), "{\n  j = 2;\n}\n").apply(
-                FunctionTransaction(bodyEdits = listOf(
-                        ListEdit.Remove(1),
-                        ListEdit.Add(1, "i = 1;")
-                ))
-        )
-        assertEquals(expected, actual)
-    }
-
-    @Test fun `test change properties`() {
-        val signature = "println()"
-        val properties = mapOf("loc" to "5")
-        val expected = Function(signature, emptyList(), emptyList(), properties)
-        val actual = Function(signature, emptyList()).apply(
-                FunctionTransaction(propertyEdits = listOf(
-                        MapEdit.Add("loc", "5")
-                ))
-        )
+        val actual = Function(
+                signature = signature,
+                parameters = emptyList(),
+                body = listOf("{", "  j = 2;", "}")
+        ).apply(FunctionTransaction(bodyEdits = listOf(
+                ListEdit.Remove(1),
+                ListEdit.Add(1, "  i = 1;")
+        )))
         assertEquals(expected, actual)
     }
 

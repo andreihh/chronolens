@@ -71,7 +71,7 @@ class SourceFileTransactionTest {
     }
 
     @Test fun `test apply null transaction returns equal source file`() {
-        val sourceFile = SourceFile(setOf(Variable("version", "1")))
+        val sourceFile = SourceFile(setOf(Variable("version", listOf("1"))))
         assertEquals(sourceFile, sourceFile.apply(transaction = null))
     }
 
