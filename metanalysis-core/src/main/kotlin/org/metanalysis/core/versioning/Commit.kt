@@ -16,8 +16,10 @@
 
 package org.metanalysis.core.versioning
 
+import java.util.Date
+
 data class Commit(
         val id: String,
         val author: String,
-        val date: String
+        val date: Date
 )

@@ -16,12 +16,13 @@
 
 package org.metanalysis.git
 
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.IO
 import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.VersionControlSystem
 
+import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.InputStream
-import java.nio.charset.Charset
+import java.util.Date
 
 class GitDriver : VersionControlSystem() {
     companion object {
@@ -31,73 +32,131 @@ class GitDriver : VersionControlSystem() {
     override val name: String
         get() = NAME
 
-    private fun execute(vararg command: String): Process =
-            ProcessBuilder()
-                    .command(*command)
-                    .redirectError(ProcessBuilder.Redirect.INHERIT)
-                    .start()
+    @Throws(IOException::class)
+    private fun execute(vararg command: String): Int = try {
+        ProcessBuilder().command(*command).start().waitFor()
+    } catch (e: InterruptedException) {
+        throw IOException(e)
+    }
 
     private fun String.trimQuotes(): String =
             if (length > 1 && startsWith("\"") && endsWith("\""))
                 drop(1).dropLast(1)
             else this
 
+    private fun String.split(delimiter: Char): Array<String> =
+            split(delimiters = delimiter).toTypedArray()
+
+    private val formatOpt: String
+        get() = "--format=\"%H;%at;%an\""
+
     @Throws(IOException::class)
-    private fun InputStream.readLines(): List<String> = use {
-        readBytes().toString(charset = Charset.defaultCharset()).split('\n')
+    private fun parseCommit(line: String): Commit = try {
+        val (id, date, author) = line.split(';', limit = 3)
+        Commit(id, author, Date(1000L * date.toLong()))
+    } catch (e: IndexOutOfBoundsException) {
+        throw IOException("Error parsing commit from '$line'!")
     }
 
-    override fun getCommit(commitId: String): Commit {
-        val process = execute(
-                "git",
-                "show",
-                "--format=\"%H;%ad;%an\"",
-                commitId
-        )
-        val line = process.inputStream.readLines().firstOrNull()
-                ?: throw IOException("Invalid commit '$commitId'!")
-        val (id, date, author) = line.trimQuotes().split(';', limit = 3)
-        return Commit(id, author, date)
+    @Throws(IOException::class)
+    private fun validateRevisionId(revisionId: String) {
+        val exitCode = execute("git", "cat-file", "-e", "$revisionId^{commit}")
+        require(exitCode == 0) { "Invalid revision id '$revisionId'!" }
     }
 
-    override fun getHead(): String {
-        val process = execute("git", "rev-parse", "HEAD")
-        return process.inputStream.readLines().firstOrNull()
-                ?: throw IOException("Error retrieving repository head commit!")
-    }
+    @Throws(IOException::class)
+    override fun isSupported(): Boolean = execute("git", "--version") == 0
 
-    override fun listFiles(commitId: String): Set<String> {
-        val process = execute("git", "ls-tree", "--name-only", "-r", commitId)
-        return process.inputStream.readLines()
-                .filter(String::isNotBlank)
-                .toSet()
-    }
+    @Throws(IOException::class)
+    override fun detectRepository(): Boolean =
+            execute("git", "status", "--porcelain") == 0
 
-    override fun getFile(path: String, commitId: String): InputStream? {
-        val process = execute("git", "show", "$commitId:$path")
-        process.waitFor()
-        if (process.exitValue() != 0) {
-            val error = process.errorStream.readLines().firstOrNull()
-                    ?: throw IOException("Error parsing git error message!")
-            return if (!error.contains("Path .* does not exist")) null
-            else throw IOException(error)
-        } else {
-            return process.inputStream
+    @Throws(IOException::class)
+    override fun getHead(): Commit = getCommit("HEAD")
+
+    @Throws(IOException::class)
+    override fun getCommit(
+            revisionId: String
+    ): Commit = object : Subprocess<Commit>() {
+        init {
+            validateRevisionId(revisionId)
         }
-    }
 
-    override fun getFileHistory(path: String, commitId: String): List<String> {
-        val process = execute(
-                "git",
-                "log",
-                "--first-parent",
-                "--format=\"%H\"",
-                commitId,
-                path
-        )
-        return process.inputStream.readLines()
-                .filter(String::isNotBlank)
-                .map { it.trimQuotes() }
-                .asReversed()
-    }
+        override val command: List<String>
+            get() = listOf("git", "show", "--no-patch", formatOpt, revisionId)
+
+        @Throws(IOException::class)
+        override fun onSuccess(input: String): Commit {
+            val line = input.split('\n').firstOrNull()
+                    ?: throw IOException("Error parsing commit!")
+            return parseCommit(line.trimQuotes())
+        }
+    }.run()
+
+    @Throws(IOException::class)
+    override fun listFiles(
+            revisionId: String
+    ): Set<String> = object : Subprocess<Set<String>>() {
+        init {
+            validateRevisionId(revisionId)
+        }
+
+        override val command: List<String>
+            get() = listOf("git", "ls-tree", "--name-only", "-r", revisionId)
+
+        override fun onSuccess(input: String): Set<String> =
+                input.split('\n').filter(String::isNotBlank).toSet()
+    }.run()
+
+    @Throws(FileNotFoundException::class, IOException::class)
+    override fun getFile(
+            revisionId: String,
+            path: String
+    ): String = object : Subprocess<String>() {
+        init {
+            validateRevisionId(revisionId)
+        }
+
+        override val command: List<String>
+            get() = listOf("git", "show", "$revisionId:$path")
+
+        override fun onSuccess(input: String): String = input
+
+        @Throws(FileNotFoundException::class, IOException::class)
+        override fun onError(error: String): Nothing = when {
+            "Path '$path' does not exist in '$revisionId'" in error ->
+                throw FileNotFoundException(error)
+            else -> super.onError(error)
+        }
+    }.run()
+
+    @Throws(FileNotFoundException::class, IOException::class)
+    override fun getFileHistory(
+            revisionId: String,
+            path: String
+    ): List<Commit> = object : Subprocess<List<Commit>>() {
+        init {
+            validateRevisionId(revisionId)
+        }
+
+        override val command: List<String>
+            get() = listOf(
+                    *"git log --first-parent $formatOpt --reverse".split(' '),
+                    revisionId,
+                    "--",
+                    path
+            )
+
+        @Throws(FileNotFoundException::class, IOException::class)
+        override fun onSuccess(input: String): List<Commit> {
+            val commits = input.split('\n')
+                    .filter(String::isNotBlank)
+                    .map { it.trimQuotes() }
+                    .map(this@GitDriver::parseCommit)
+            return if (commits.isNotEmpty()) commits
+            else throw FileNotFoundException(
+                    "Path '$path' doesn't exist in '$revisionId'!"
+            )
+        }
+    }.run()
 }

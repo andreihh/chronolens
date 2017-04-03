@@ -22,16 +22,22 @@ import org.metanalysis.core.project.Project
 import org.metanalysis.core.serialization.JsonDriver
 
 import java.io.FileOutputStream
+import java.io.IOException
 
+@Throws(IOException::class)
 fun main(args: Array<String>) {
-    if (args.size != 3) {
-        println("Usage: vcs file output")
+    if (args.size !in 1..3) {
+        println("Usage: [--vcs=\$vcs] [--output=\$output] \$path")
         return
     }
-    val vcs = args[0]
-    val path = args[1]
-    val outputPath = args[2]
+    val options = args.filter { it.startsWith("--") }.associate {
+        val (option, value) = it.split('=')
+        option to value
+    }
+    val vcs = options["--vcs"]
+    val path = args.filter { !it.startsWith("--") }.single()
+    val output = options["--output"] ?: ".metanalysis/$path-history.json"
     val project = Project(vcs)
     val history = project.getFileHistory(path)
-    JsonDriver.serialize(FileOutputStream(outputPath), history)
+    JsonDriver.serialize(FileOutputStream(output), history)
 }

@@ -17,19 +17,17 @@
 package org.metanalysis.git
 
 import org.junit.Test
+
+import java.io.FileNotFoundException
+
 import kotlin.test.assertEquals
 
 class GitDriverTest {
     private val git = GitDriver()
 
-    @Test(timeout = 500) fun `test get head`() {
+    @Test fun `test get head`() {
         val head = git.getHead()
         println(head)
-    }
-
-    @Test(timeout = 500) fun `test list files`() {
-        val files = git.listFiles(git.getHead())
-        println(files)
     }
 
     @Test fun `test parse commit`() {
@@ -44,20 +42,113 @@ class GitDriverTest {
         assertEquals(expectedAuthor, actualAuthor)
     }
 
-    @Test(timeout = 500) fun `test get commit`() {
-        val commit = git.getCommit(git.getHead())
+    @Test fun `test get commit`() {
+        val commit = git.getCommit("HEAD")
         println(commit)
     }
 
-    @Test(timeout = 500) fun `test get file`() {
-        val fileContent = git.getFile("build.gradle", git.getHead())
-                ?.bufferedReader()
-                ?.readText()
+    @Test fun `test get branch`() {
+        val commit = git.getCommit("master")
+        println(commit)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test get invalid commit throws`() {
+        git.getCommit("00000000000")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test get invalid branch throws`() {
+        git.getCommit("master-non-existent")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test get file as commit throws`() {
+        println(git.getCommit("src"))
+    }
+
+    @Test fun `test list files from commit`() {
+        val files = git.listFiles("HEAD")
+        println(files)
+    }
+
+    @Test fun `test list files from branch`() {
+        val files = git.listFiles("master")
+        println(files)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test list files from invalid commit throws`() {
+        git.listFiles("0000000")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test list files from invalid branch throws`() {
+        git.listFiles("master-non-existent")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test list files from file as commit throws`() {
+        git.listFiles("src")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test list files from revision-directory throws`() {
+        git.listFiles("HEAD:src")
+    }
+
+    @Test fun `test get file from commit`() {
+        val fileContent = git.getFile("HEAD", "build.gradle")
         println(fileContent)
     }
 
-    @Test(timeout = 500) fun `test get file history`() {
-        val history = git.getFileHistory("../README.md", git.getHead())
+    @Test fun `test get file from branch`() {
+        val fileContent = git.getFile("master", "build.gradle")
+        println(fileContent)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test get file from invalid commit throws`() {
+        git.getFile("0000000", "build.gradle")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test get file from invalid branch throws`() {
+        git.getFile("master-non-existent", "build.gradle")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test get file from file as commit throws`() {
+        git.getFile("src", "build.gradle")
+    }
+
+    @Test fun `test get file history from commit`() {
+        val history = git.getFileHistory("HEAD", "../README.md")
         println(history.joinToString(separator = "\n"))
+    }
+
+    @Test fun `test get file history from branch`() {
+        val history = git.getFileHistory("master", "../README.md")
+        println(history.joinToString(separator = "\n"))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test get file history from invalid commit throws`() {
+        git.getFileHistory("000000", "build.gradle")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test get file history from invalid branch throws`() {
+        git.getFileHistory("master-non-existent", "build.gradle")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun `test get file history from file as commit throws`() {
+        git.getFileHistory("000000", "src")
+    }
+
+    @Test(expected = FileNotFoundException::class)
+    fun `test get non-existent file history throws`() {
+        git.getFileHistory("master", "non-existent.txt")
     }
 }

@@ -19,7 +19,8 @@ package org.metanalysis.test.core.versioning
 import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.VersionControlSystem
 
-import java.io.InputStream
+import java.io.FileNotFoundException
+import java.util.Date
 
 class VersionControlSystemMock(
         private val commits: List<CommitMock>
@@ -31,18 +32,18 @@ class VersionControlSystemMock(
     data class CommitMock(
             val id: String,
             val author: String,
-            val date: String,
-            val changedFiles: Map<String, InputStream?>
+            val date: Date,
+            val changedFiles: Map<String, String?>
     )
 
-    private val files: Map<String, Map<String, InputStream>>
-    private val commitsById = commits.associate { (id, author, date, _) ->
-        id to Commit(id, author, date)
-    }
+    private fun CommitMock.toCommit(): Commit = Commit(id, author, date)
+
+    private val files: Map<String, Map<String, String>>
+    private val commitsById = commits.associate { it.id to it.toCommit() }
 
     init {
-        val fileHistory = hashMapOf<String, Map<String, InputStream>>()
-        val currentFiles = hashMapOf<String, InputStream>()
+        val fileHistory = hashMapOf<String, Map<String, String>>()
+        val currentFiles = hashMapOf<String, String>()
         commits.forEach { (id, _, _, changedFiles) ->
             changedFiles.forEach { path, src ->
                 if (src == null) {
@@ -59,17 +60,31 @@ class VersionControlSystemMock(
     override val name: String
         get() = NAME
 
-    override fun getHead(): String = commits.last().id
+    override fun isSupported(): Boolean = true
 
-    override fun listFiles(commitId: String): Set<String> =
-            requireNotNull(files[commitId]).keys
+    override fun detectRepository(): Boolean = true
 
-    override fun getCommit(commitId: String): Commit =
-            requireNotNull(commitsById[commitId])
+    override fun getHead(): Commit = commits.last().toCommit()
 
-    override fun getFile(path: String, commitId: String): InputStream? =
-            requireNotNull(files[commitId])[path]
+    override fun listFiles(revisionId: String): Set<String> =
+            requireNotNull(files[revisionId]).keys
 
-    override fun getFileHistory(path: String, commitId: String): List<String> =
-            commits.filter { path in it.changedFiles }.map(CommitMock::id)
+    override fun getCommit(revisionId: String): Commit =
+            requireNotNull(commitsById[revisionId])
+
+    @Throws(FileNotFoundException::class)
+    override fun getFile(revisionId: String, path: String): String =
+            requireNotNull(files[revisionId])[path]
+                    ?: throw FileNotFoundException("File '$path' not found!")
+
+    override fun getFileHistory(
+            revisionId: String,
+            path: String
+    ): List<Commit> {
+        val history = commits
+                .filter { path in it.changedFiles }
+                .map { it.toCommit() }
+        return if (history.isNotEmpty()) history
+        else throw FileNotFoundException("File '$path' not found!")
+    }
 }

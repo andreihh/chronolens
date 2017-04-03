@@ -20,91 +20,101 @@ import org.metanalysis.core.delta.SourceFileTransaction
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
-import org.metanalysis.core.versioning.VersionControlSystem
+import org.metanalysis.core.versioning.VersionControlSystem.Companion.get
+import org.metanalysis.core.versioning.VersionControlSystem.Companion.getByName
 
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
+import java.util.Date
 
 /**
  * @throws IllegalStateException if the given version control system is not
  * supported or if the repository is in an invalid state
  */
-class Project(vcs: String) {
+class Project(vcs: String? = null) {
     data class HistoryEntry(
             val commit: String,
             val author: String,
-            val date: String,
+            val date: Date,
             val transaction: SourceFileTransaction?
     )
 
-    private val vcs = checkNotNull(VersionControlSystem.getByName(vcs)) {
-        "'$vcs' is not supported!"
-    }
-    private val head = this.vcs.getHead()
+    data class History(
+            private val entries: List<HistoryEntry>
+    ) : List<HistoryEntry> by entries
+
+    private val vcs = if (vcs != null)
+        checkNotNull(vcs.let(::getByName)) { "'$vcs' is not supported!" }
+    else checkNotNull(get()) { "VCS root could not be unambiguously detected!" }
+    private val head = this.vcs.getHead().id
 
     /**
-     * @throws IllegalArgumentException if the given `commit` is invalid
-     * @throws IOException if any input-related errors occur or if the given
+     * @throws IllegalArgumentException if the given `revision` is invalid
+     * @throws IOException if any input related errors occur or if the given
      * file contains invalid code at any point in time or if no provided parsers
      * can interpret the given file
      */
     @Throws(IOException::class)
-    fun getFileHistory(
-            path: String,
-            commit: String = head
-    ): List<HistoryEntry> {
+    fun getFileHistory(path: String, revision: String = head): History {
         val history = arrayListOf<HistoryEntry>()
         var sourceFile = SourceFile()
-        vcs.getFileHistory(path, commit).forEach { commitId ->
-            val (_, author, date) = vcs.getCommit(commitId)
-            val newSourceFile = getFileModel(path, commitId) ?: SourceFile()
+        vcs.getFileHistory(revision, path).forEach { (id, author, date) ->
+            val newSourceFile = getFileModel(path, id) ?: SourceFile()
             val transaction = sourceFile.diff(newSourceFile)
-            history += HistoryEntry(commitId, author, date, transaction)
+            history += HistoryEntry(id, author, date, transaction)
             sourceFile = newSourceFile
         }
-        return history
+        return History(history)
     }
 
     /**
-     * @return `null` if the given `path` doesn't exist in the given commit
-     * @throws IllegalArgumentException if the given `commit` is invalid
-     * @throws IOException if any input-related errors occur or if the given
+     * @return `null` if the given `path` doesn't exist in the given revision
+     * @throws IllegalArgumentException if the given `revision` is invalid
+     * @throws IOException if any input related errors occur or if the given
      * file contains invalid code or if no provided parsers can interpret the
      * given file
      */
     @Throws(IOException::class)
-    fun getFileModel(path: String, commit: String = head): SourceFile? {
-        val file = vcs.getFile(path, commit) ?: return null
+    fun getFileModel(path: String, revision: String = head): SourceFile? {
+        val source = try {
+            vcs.getFile(revision, path)
+        } catch (e: FileNotFoundException) {
+            return null
+        }
         val parser = Parser.getByExtension(File(path).extension)
                 ?: throw IOException("No parser can interpret '$path'!")
-        return parser.parse(file)
+        return parser.parse(source)
     }
 
     /**
-     * @throws IllegalArgumentException if the given `srcCommit` or `dstCommit`
-     * are invalid or if the file at the given `path` doesn't exist in either
-     * commits
-     * @throws IOException if any input-related errors occur or if the given
+     * @throws IllegalArgumentException if the given `srcRevision` or
+     * `dstRevision` are invalid or if the file at the given `path` doesn't
+     * exist in either revisions
+     * @throws IOException if any input related errors occur or if the given
      * file contains invalid code or if no provided parsers can interpret the
      * given file
      */
     @Throws(IOException::class)
     fun getFileDiff(
             path: String,
-            srcCommit: String,
-            dstCommit: String = head
+            srcRevision: String,
+            dstRevision: String = head
     ): SourceFileTransaction? {
-        val srcSourceFile = getFileModel(path, srcCommit)
-        val dstSourceFile = getFileModel(path, dstCommit)
+        val srcSourceFile = getFileModel(path, srcRevision)
+        val dstSourceFile = getFileModel(path, dstRevision)
         require(srcSourceFile != null || dstSourceFile != null) {
-            "File '$path' doesn't exist in '$srcCommit' or '$dstCommit'!"
+            "File '$path' doesn't exist in '$srcRevision' or '$dstRevision'!"
         }
         return (srcSourceFile ?: SourceFile())
                 .diff(dstSourceFile ?: SourceFile())
     }
 
     /**
-     * @throws IllegalArgumentException if the given `commit` is invalid
+     * @throws IllegalArgumentException if the given `revision` is invalid
+     * @throws IOException if any input related errors occur
      */
-    fun listFiles(commit: String = head): Set<String> = vcs.listFiles(commit)
+    @Throws(IOException::class)
+    fun listFiles(revision: String = head): Set<String> =
+            vcs.listFiles(revision)
 }

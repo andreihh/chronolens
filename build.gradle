@@ -1,6 +1,6 @@
 allprojects {
     group 'org.metanalysis'
-    version '0.1.2'
+    version '0.1.3'
 
     buildscript {
         ext {
