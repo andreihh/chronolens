@@ -25,11 +25,6 @@ import kotlin.test.assertEquals
 class GitDriverTest {
     private val git = GitDriver()
 
-    @Test fun `test get head`() {
-        val head = git.getHead()
-        println(head)
-    }
-
     @Test fun `test parse commit`() {
         val expectedId = "48274d"
         val expectedDate = "Fri 31 Mar"
@@ -40,6 +35,11 @@ class GitDriverTest {
         assertEquals(expectedId, actualId)
         assertEquals(expectedDate, actualDate)
         assertEquals(expectedAuthor, actualAuthor)
+    }
+
+    @Test fun `test get head`() {
+        val head = git.getHead()
+        println(head)
     }
 
     @Test fun `test get commit`() {
@@ -122,6 +122,16 @@ class GitDriverTest {
         git.getFile("src", "build.gradle")
     }
 
+    @Test(expected = FileNotFoundException::class)
+    fun `test get non-existent file from commit throws`() {
+        git.getFile("HEAD", "non-existent.txt")
+    }
+
+    @Test(expected = FileNotFoundException::class)
+    fun `test get non-existent file from branch throws`() {
+        git.getFile("HEAD", "non-existent.txt")
+    }
+
     @Test fun `test get file history from commit`() {
         val history = git.getFileHistory("HEAD", "../README.md")
         println(history.joinToString(separator = "\n"))
@@ -148,7 +158,12 @@ class GitDriverTest {
     }
 
     @Test(expected = FileNotFoundException::class)
-    fun `test get non-existent file history throws`() {
+    fun `test get non-existent file history from commit throws`() {
+        git.getFileHistory("HEAD", "non-existent.txt")
+    }
+
+    @Test(expected = FileNotFoundException::class)
+    fun `test get non-existent file history from branch throws`() {
         git.getFileHistory("master", "non-existent.txt")
     }
 }

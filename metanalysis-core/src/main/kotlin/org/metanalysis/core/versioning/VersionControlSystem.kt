@@ -118,7 +118,7 @@ abstract class VersionControlSystem {
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    protected abstract fun detectRepository(): Boolean
+    abstract fun detectRepository(): Boolean
 
     /**
      * @throws IOException if any input related errors occur

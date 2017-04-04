@@ -16,7 +16,6 @@
 
 package org.metanalysis.git
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.IO
 import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.VersionControlSystem
 
@@ -29,8 +28,7 @@ class GitDriver : VersionControlSystem() {
         const val NAME: String = "git"
     }
 
-    override val name: String
-        get() = NAME
+    override val name: String = NAME
 
     @Throws(IOException::class)
     private fun execute(vararg command: String): Int = try {
@@ -39,24 +37,22 @@ class GitDriver : VersionControlSystem() {
         throw IOException(e)
     }
 
-    private fun String.trimQuotes(): String =
-            if (length > 1 && startsWith("\"") && endsWith("\""))
-                drop(1).dropLast(1)
-            else this
+    private val formatOption: String = "--format=%at:%an"
 
-    private fun String.split(delimiter: Char): Array<String> =
-            split(delimiters = delimiter).toTypedArray()
-
-    private val formatOpt: String
-        get() = "--format=\"%H;%at;%an\""
-
-    @Throws(IOException::class)
-    private fun parseCommit(line: String): Commit = try {
-        val (id, date, author) = line.split(';', limit = 3)
-        Commit(id, author, Date(1000L * date.toLong()))
-    } catch (e: IndexOutOfBoundsException) {
-        throw IOException("Error parsing commit from '$line'!")
+    private fun parseCommit(lines: Pair<String, String>): Commit {
+        // "commit <sha1>"
+        // "seconds-since-epoch:author-name"
+        val (_, id) = lines.first.split(' ')
+        val (date, author) = lines.second.split(':', limit = 2)
+        return Commit(id, author, Date(1000L * date.toLong()))
     }
+
+    private fun fileNotFound(
+            revisionId: String,
+            path: String
+    ): FileNotFoundException = FileNotFoundException(
+            "Path '$path' doesn't exist in '$revisionId'!"
+    )
 
     @Throws(IOException::class)
     private fun validateRevisionId(revisionId: String) {
@@ -82,14 +78,12 @@ class GitDriver : VersionControlSystem() {
             validateRevisionId(revisionId)
         }
 
-        override val command: List<String>
-            get() = listOf("git", "show", "--no-patch", formatOpt, revisionId)
+        override val command: List<String> =
+                listOf("git", "rev-list", "-1", formatOption, revisionId)
 
-        @Throws(IOException::class)
         override fun onSuccess(input: String): Commit {
-            val line = input.split('\n').firstOrNull()
-                    ?: throw IOException("Error parsing commit!")
-            return parseCommit(line.trimQuotes())
+            val lines = input.split('\n')
+            return parseCommit(lines[0] to lines[1])
         }
     }.run()
 
@@ -101,8 +95,8 @@ class GitDriver : VersionControlSystem() {
             validateRevisionId(revisionId)
         }
 
-        override val command: List<String>
-            get() = listOf("git", "ls-tree", "--name-only", "-r", revisionId)
+        override val command: List<String> =
+                listOf("git", "ls-tree", "--name-only", "-r", revisionId)
 
         override fun onSuccess(input: String): Set<String> =
                 input.split('\n').filter(String::isNotBlank).toSet()
@@ -117,15 +111,15 @@ class GitDriver : VersionControlSystem() {
             validateRevisionId(revisionId)
         }
 
-        override val command: List<String>
-            get() = listOf("git", "show", "$revisionId:$path")
+        override val command: List<String> =
+                listOf("git", "cat-file", "blob", "$revisionId:$path")
 
         override fun onSuccess(input: String): String = input
 
         @Throws(FileNotFoundException::class, IOException::class)
         override fun onError(error: String): Nothing = when {
-            "Path '$path' does not exist in '$revisionId'" in error ->
-                throw FileNotFoundException(error)
+            "Not a valid object name $revisionId:$path" in error ->
+                throw fileNotFound(revisionId, path)
             else -> super.onError(error)
         }
     }.run()
@@ -139,24 +133,24 @@ class GitDriver : VersionControlSystem() {
             validateRevisionId(revisionId)
         }
 
-        override val command: List<String>
-            get() = listOf(
-                    *"git log --first-parent $formatOpt --reverse".split(' '),
-                    revisionId,
-                    "--",
-                    path
-            )
+        override val command: List<String> = listOf(
+                "git",
+                "rev-list",
+                "--first-parent",
+                formatOption,
+                revisionId,
+                "--",
+                path
+        )
 
-        @Throws(FileNotFoundException::class, IOException::class)
+        @Throws(FileNotFoundException::class)
         override fun onSuccess(input: String): List<Commit> {
-            val commits = input.split('\n')
-                    .filter(String::isNotBlank)
-                    .map { it.trimQuotes() }
-                    .map(this@GitDriver::parseCommit)
-            return if (commits.isNotEmpty()) commits
-            else throw FileNotFoundException(
-                    "Path '$path' doesn't exist in '$revisionId'!"
-            )
+            val lines = input.split('\n')
+            val commitLines = (0 until lines.size step 2).map(lines::get)
+                    .zip((1 until lines.size step 2).map(lines::get))
+            val commits = commitLines.map(this@GitDriver::parseCommit)
+            return if (commits.isNotEmpty()) commits.asReversed()
+            else throw fileNotFound(revisionId, path)
         }
     }.run()
 }

@@ -32,7 +32,7 @@ import java.util.Date
  * @throws IllegalStateException if the given version control system is not
  * supported or if the repository is in an invalid state
  */
-class Project(vcs: String? = null) {
+class Project @Throws(IOException::class) constructor(vcs: String? = null) {
     data class HistoryEntry(
             val commit: String,
             val author: String,
@@ -47,6 +47,13 @@ class Project(vcs: String? = null) {
     private val vcs = if (vcs != null)
         checkNotNull(vcs.let(::getByName)) { "'$vcs' is not supported!" }
     else checkNotNull(get()) { "VCS root could not be unambiguously detected!" }
+
+    init {
+        checkNotNull(this.vcs.detectRepository()) {
+            "No '$vcs' repository detected!"
+        }
+    }
+
     private val head = this.vcs.getHead().id
 
     /**

@@ -174,11 +174,8 @@ class JavaParser : Parser() {
             node.types().filterIsInstance<AbstractTypeDeclaration>()
                     .map { visit(it) }.requireDistinct().let(::SourceFile)
 
-    override val language: String
-        get() = LANGUAGE
-
-    override val extensions: Set<String>
-        get() = EXTENSIONS
+    override val language: String = LANGUAGE
+    override val extensions: Set<String> = EXTENSIONS
 
     @Throws(IOException::class)
     override fun parse(source: String): SourceFile {
