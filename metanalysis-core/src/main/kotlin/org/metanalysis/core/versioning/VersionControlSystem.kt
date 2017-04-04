@@ -21,15 +21,18 @@ import java.io.IOException
 import java.util.ServiceLoader
 
 /**
- * An abstract version control system which interacts with the repository found
- * in the current working directory.
+ * An abstract version control system which interacts with the repository
+ * detected in the current working directory.
+ *
+ * A version control system operates with the concept of `revision`, which are
+ * objects that can be dereferenced to commits (a commit, branch, tag etc.).
  *
  * Version control systems must have a public no-arg constructor.
  *
  * The file
  * `META-INF/services/org.metanalysis.core.versioning.VersionControlSystem` must
  * be provided and must contain the list of all provided version control
- * systems.
+ * system implementations.
  */
 abstract class VersionControlSystem {
     companion object {
@@ -63,6 +66,23 @@ abstract class VersionControlSystem {
      * @param T
      */
     protected abstract class Subprocess<out T : Any> {
+        companion object {
+            @Throws(IOException::class)
+            fun execute(vararg command: String): Boolean {
+                val process = ProcessBuilder().command(*command).start()
+                try {
+                    return process.waitFor() == 0
+                } catch (e: InterruptedException) {
+                    process.destroy()
+                    throw IOException(e)
+                } finally {
+                    process.inputStream.close()
+                    process.errorStream.close()
+                    process.outputStream.close()
+                }
+            }
+        }
+
         protected abstract val command: List<String>
 
         @Throws(IOException::class)
@@ -79,6 +99,7 @@ abstract class VersionControlSystem {
                 if (waitFor() == 0) onSuccess(text)
                 else onError(errorStream.bufferedReader().readText())
             } catch (e: InterruptedException) {
+                destroy()
                 throw IOException(e)
             } finally {
                 inputStream.close()
@@ -110,33 +131,42 @@ abstract class VersionControlSystem {
     abstract fun detectRepository(): Boolean
 
     /**
+     * Returns the currently checked out commit.
+     *
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
     abstract fun getHead(): Commit
 
     /**
-     * @throws RevisionNotFoundException if the given `revision` is invalid or
-     * doesn't exist
+     * Returns the commit which corresponds to the given `revision`.
+     *
+     * @param revision the inspected revision
+     * @return the corresponding commit
+     * @throws RevisionNotFoundException if the given `revision` doesn't exist
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
     abstract fun getCommit(revision: String): Commit
 
     /**
+     * Returns the all the existing files in the given `revision`.
      *
-     * @throws RevisionNotFoundException if the given `revision` is invalid or
-     * doesn't exist
+     * @param revision the inspected revision
+     * @return the set of files existing in the `revision`
+     * @throws RevisionNotFoundException if the given `revision` doesn't exist
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
     abstract fun listFiles(revision: String): Set<String>
 
     /**
+     * Returns the content of the file located at the given `path` as it is
+     * found in the given `revision`.
      *
-     * @return `null` if the given `path` doesn't exist in the given `revId`
-     * @throws RevisionNotFoundException if the given `revision` is invalid or
-     * doesn't exist
+     * @param revision the desired revision of the file
+     * @param path the relative path of the requested file
+     * @throws RevisionNotFoundException if the given `revision` doesn't exist
      * @throws FileNotFoundException if the given `path` doesn't exist in the
      * given `revision`
      * @throws IOException if any input related errors occur
@@ -145,9 +175,12 @@ abstract class VersionControlSystem {
     abstract fun getFile(revision: String, path: String): String
 
     /**
+     * Returns all the commits which modified the file at the given `path`, up
+     * to the given `revision`.
      *
-     * @throws RevisionNotFoundException if the given `revision` is invalid or
-     * doesn't exist
+     * The commits are given chronologically.
+     *
+     * @throws RevisionNotFoundException if the given `revision` doesn't exist
      * @throws FileNotFoundException if the given `path` never existed in the
      * given `revision` or any of its ancestor revisions
      * @throws IOException if any input related errors occur

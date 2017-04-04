@@ -19,24 +19,20 @@ package org.metanalysis.git
 import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VersionControlSystem
+import org.metanalysis.core.versioning.VersionControlSystem.Subprocess.Companion.execute
 
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.Date
 
+/** A module which integrates the `git` version control system. */
 class GitDriver : VersionControlSystem() {
     companion object {
+        /** The `git` version control system name. */
         const val NAME: String = "git"
     }
 
     override val name: String = NAME
-
-    @Throws(IOException::class)
-    private fun execute(vararg command: String): Int = try {
-        ProcessBuilder().command(*command).start().waitFor()
-    } catch (e: InterruptedException) {
-        throw IOException(e)
-    }
 
     private val formatOption: String = "--format=%at:%an"
 
@@ -56,18 +52,17 @@ class GitDriver : VersionControlSystem() {
 
     @Throws(IOException::class)
     private fun validateRevision(revision: String) {
-        val exitCode = execute("git", "cat-file", "-e", "$revision^{commit}")
-        if (exitCode == 0) {
-            throw RevisionNotFoundException("Invalid revision '$revision'!")
+        if (!execute("git", "cat-file", "-e", "$revision^{commit}")) {
+            throw RevisionNotFoundException(revision)
         }
     }
 
     @Throws(IOException::class)
-    override fun isSupported(): Boolean = execute("git", "--version") == 0
+    override fun isSupported(): Boolean = execute("git", "--version")
 
     @Throws(IOException::class)
     override fun detectRepository(): Boolean =
-            execute("git", "status", "--porcelain") == 0
+            execute("git", "status", "--porcelain")
 
     @Throws(IOException::class)
     override fun getHead(): Commit = getCommit("HEAD")

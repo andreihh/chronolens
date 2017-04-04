@@ -18,6 +18,13 @@ package org.metanalysis.core.versioning
 
 import java.util.Date
 
+/**
+ * A commit in a version control system.
+ *
+ * @property id the unique id of this commit
+ * @property author the author of this commit
+ * @property date the date at which this commit was created
+ */
 data class Commit(
         val id: String,
         val author: String,

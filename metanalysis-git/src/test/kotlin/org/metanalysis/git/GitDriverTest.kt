@@ -18,6 +18,8 @@ package org.metanalysis.git
 
 import org.junit.Test
 
+import org.metanalysis.core.versioning.RevisionNotFoundException
+
 import java.io.FileNotFoundException
 
 import kotlin.test.assertEquals
@@ -52,17 +54,17 @@ class GitDriverTest {
         println(commit)
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get invalid commit throws`() {
         git.getCommit("00000000000")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get invalid branch throws`() {
         git.getCommit("master-non-existent")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get file as commit throws`() {
         println(git.getCommit("src"))
     }
@@ -77,22 +79,22 @@ class GitDriverTest {
         println(files)
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test list files from invalid commit throws`() {
         git.listFiles("0000000")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test list files from invalid branch throws`() {
         git.listFiles("master-non-existent")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test list files from file as commit throws`() {
         git.listFiles("src")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test list files from revision-directory throws`() {
         git.listFiles("HEAD:src")
     }
@@ -107,17 +109,17 @@ class GitDriverTest {
         println(fileContent)
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get file from invalid commit throws`() {
         git.getFile("0000000", "build.gradle")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get file from invalid branch throws`() {
         git.getFile("master-non-existent", "build.gradle")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get file from file as commit throws`() {
         git.getFile("src", "build.gradle")
     }
@@ -142,17 +144,17 @@ class GitDriverTest {
         println(history.joinToString(separator = "\n"))
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get file history from invalid commit throws`() {
         git.getFileHistory("000000", "build.gradle")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get file history from invalid branch throws`() {
         git.getFileHistory("master-non-existent", "build.gradle")
     }
 
-    @Test(expected = IllegalArgumentException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get file history from file as commit throws`() {
         git.getFileHistory("000000", "src")
     }

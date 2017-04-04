@@ -25,12 +25,11 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 fun usage(): Nothing {
-    println("Usage: [ --vcs=\$vcs ] --out=\$path --file=\$path")
+    println("Usage: [--vcs=\$vcs] --out=\$path --file=\$path")
     System.exit(1)
     throw IllegalArgumentException()
 }
 
-@Throws(IOException::class)
 fun main(args: Array<String>) {
     val options = args.associate {
         if (!it.startsWith("--") || '=' !in it) {
@@ -42,7 +41,12 @@ fun main(args: Array<String>) {
     val vcs = options["vcs"]
     val output = options["out"] ?: usage()
     val path = options["file"] ?: usage()
-    val project = Project(vcs)
-    val history = project.getFileHistory(path)
-    JsonDriver.serialize(FileOutputStream(output), history)
+    try {
+        val project = Project(vcs)
+        val history = project.getFileHistory(path)
+        JsonDriver.serialize(FileOutputStream(output), history)
+    } catch (e: IOException) {
+        println(e.message)
+        System.exit(1)
+    }
 }

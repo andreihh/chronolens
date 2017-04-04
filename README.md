@@ -24,7 +24,7 @@ In order to use `metanalysis` you need to have `JDK 1.8` or newer.
 Download the most recently released `cli` artifact from
 [here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run it:
 
-```java -jar metanalysis-cli-$version-all $vcs $path $output```
+```java -jar metanalysis-cli-$version-all --out=$output --file=$path```
 
 #### Using Gradle
 
@@ -99,7 +99,7 @@ configuration files:
 To build this project, run ```./gradlew build```.
 
 To build the `cli` artifact, run the following command after building the
-project: ```./gradlew :metanalysis-cli:fatJar```. This will create the
+project: ```./gradlew fatJar```. This will create the
 `metanalysis-cli-$version-all.jar` artifact in `metanalysis-cli/build/libs/`.
 
 ### Documentation

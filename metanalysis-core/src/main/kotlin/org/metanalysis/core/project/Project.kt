@@ -58,9 +58,11 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
 
     /**
      * @throws IOException if the given `revision` is invalid
-     * @throws IOException if any input related errors occur or if the given
-     * file contains invalid code at any point in time or if no provided parsers
-     * can interpret the given file
+     * @throws IOException if the given `revision` doesn't exist or if the given
+     * `path` never existed in the given `revision` or any of its ancestors or
+     * if the given `path` contained invalid code at any point in time or if
+     * none of the provided parsers can interpret the file at the given `path`
+     * or if any input related errors occur
      */
     @Throws(IOException::class)
     fun getFileHistory(path: String, revision: String = head): History {
@@ -76,11 +78,13 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
     }
 
     /**
-     * @return `null` if the given `path` doesn't exist in the given revision
-     * @throws IOException if the given `revision` is invalid
-     * @throws IOException if any input related errors occur or if the given
-     * file contains invalid code or if no provided parsers can interpret the
-     * given file
+     * @param path the relative path of the file which should be interpreted
+     * @return the parsed code metadata, or `null` if the given `path` doesn't
+     * exist in the given `revision`
+     * @throws IOException if the given `revision` doesn't exist or the given
+     * `path` contains invalid code or if none of the provided parsers can
+     * interpret the file at the given `path` or if any input related errors
+     * occur
      */
     @Throws(IOException::class)
     fun getFileModel(path: String, revision: String = head): SourceFile? {
@@ -95,12 +99,11 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
     }
 
     /**
-     * @throws IOException if the given `srcRevision` or
-     * `dstRevision` are invalid or if the file at the given `path` doesn't
-     * exist in either revisions
-     * @throws IOException if any input related errors occur or if the given
-     * file contains invalid code or if no provided parsers can interpret the
-     * given file
+     * @throws IOException if the given `srcRevision` or `dstRevision` don't
+     * exist or if the given `path` doesn't exist in either revisions or if
+     * the given `path` contained invalid code in either revisions or if none of
+     * the provided parsers can interpreted the file at the given `path` or if
+     * any input related errors occur
      */
     @Throws(IOException::class)
     fun getFileDiff(
@@ -118,8 +121,8 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
     }
 
     /**
-     * @throws IOException if the given `revision` is invalid
-     * @throws IOException if any input related errors occur
+     * @throws IOException if the given `revision` doesn't exist or if any input
+     * related errors occur
      */
     @Throws(IOException::class)
     fun listFiles(revision: String = head): Set<String> =

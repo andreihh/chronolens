@@ -18,4 +18,11 @@ package org.metanalysis.core.versioning
 
 import java.io.IOException
 
-class RevisionNotFoundException(message: String): IOException(message)
+/**
+ * Signals that a specific revision doesn't exist.
+ *
+ * @param revision the revision which couldn't be found
+ */
+class RevisionNotFoundException(
+        revision: String
+) : IOException("Revision '$revision' doesn't exist!")
