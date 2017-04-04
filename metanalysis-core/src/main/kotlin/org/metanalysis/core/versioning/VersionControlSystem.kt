@@ -75,7 +75,7 @@ abstract class VersionControlSystem {
 
         @Throws(IOException::class)
         protected fun InputStream.readText(): String =
-                readBytes().toString(charset("UTF-8"))
+                bufferedReader().readText()
 
         @Throws(IOException::class)
         private fun Process.close() {
@@ -88,8 +88,8 @@ abstract class VersionControlSystem {
         fun run(): T {
             val process = ProcessBuilder().command(command).start()
             return try {
-                if (process.waitFor() == 0)
-                    onSuccess(process.inputStream.readText())
+                val text = process.inputStream.readText()
+                if (process.waitFor() == 0) onSuccess(text)
                 else onError(process.errorStream.readText())
             } catch (e: InterruptedException) {
                 throw IOException(e)
