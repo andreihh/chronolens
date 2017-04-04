@@ -18,7 +18,6 @@ package org.metanalysis.core.versioning
 
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.InputStream
 import java.util.ServiceLoader
 
 /**
@@ -74,27 +73,17 @@ abstract class VersionControlSystem {
                 throw IOException(error)
 
         @Throws(IOException::class)
-        protected fun InputStream.readText(): String =
-                bufferedReader().readText()
-
-        @Throws(IOException::class)
-        private fun Process.close() {
-            inputStream.close()
-            errorStream.close()
-            outputStream.close()
-        }
-
-        @Throws(IOException::class)
-        fun run(): T {
-            val process = ProcessBuilder().command(command).start()
-            return try {
-                val text = process.inputStream.readText()
-                if (process.waitFor() == 0) onSuccess(text)
-                else onError(process.errorStream.readText())
+        fun run(): T = with(ProcessBuilder().command(command).start()) {
+            try {
+                val text = inputStream.bufferedReader().readText()
+                if (waitFor() == 0) onSuccess(text)
+                else onError(errorStream.bufferedReader().readText())
             } catch (e: InterruptedException) {
                 throw IOException(e)
             } finally {
-                process.close()
+                inputStream.close()
+                errorStream.close()
+                outputStream.close()
             }
         }
     }
@@ -127,42 +116,42 @@ abstract class VersionControlSystem {
     abstract fun getHead(): Commit
 
     /**
-     * @throws IllegalArgumentException if the given `revisionId` is invalid or
+     * @throws RevisionNotFoundException if the given `revision` is invalid or
      * doesn't exist
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun getCommit(revisionId: String): Commit
+    abstract fun getCommit(revision: String): Commit
 
     /**
      *
-     * @throws IllegalArgumentException if the given `revisionId` is invalid or
+     * @throws RevisionNotFoundException if the given `revision` is invalid or
      * doesn't exist
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun listFiles(revisionId: String): Set<String>
+    abstract fun listFiles(revision: String): Set<String>
 
     /**
      *
      * @return `null` if the given `path` doesn't exist in the given `revId`
-     * @throws IllegalArgumentException if the given `revisionId` is invalid or
+     * @throws RevisionNotFoundException if the given `revision` is invalid or
      * doesn't exist
      * @throws FileNotFoundException if the given `path` doesn't exist in the
-     * given `revisionId`
+     * given `revision`
      * @throws IOException if any input related errors occur
      */
-    @Throws(FileNotFoundException::class, IOException::class)
-    abstract fun getFile(revisionId: String, path: String): String
+    @Throws(IOException::class)
+    abstract fun getFile(revision: String, path: String): String
 
     /**
      *
-     * @throws IllegalArgumentException if the given `revisionId` is invalid or
+     * @throws RevisionNotFoundException if the given `revision` is invalid or
      * doesn't exist
      * @throws FileNotFoundException if the given `path` never existed in the
-     * given `revisionId` or any of its ancestor revisions
+     * given `revision` or any of its ancestor revisions
      * @throws IOException if any input related errors occur
      */
-    @Throws(FileNotFoundException::class, IOException::class)
-    abstract fun getFileHistory(revisionId: String, path: String): List<Commit>
+    @Throws(IOException::class)
+    abstract fun getFileHistory(revision: String, path: String): List<Commit>
 }

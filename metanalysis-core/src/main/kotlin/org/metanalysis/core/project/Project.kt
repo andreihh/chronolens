@@ -49,15 +49,15 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
     else checkNotNull(get()) { "VCS root could not be unambiguously detected!" }
 
     init {
-        checkNotNull(this.vcs.detectRepository()) {
-            "No '$vcs' repository detected!"
+        check(this.vcs.detectRepository()) {
+            "No '${this.vcs.name}' repository detected!"
         }
     }
 
     private val head = this.vcs.getHead().id
 
     /**
-     * @throws IllegalArgumentException if the given `revision` is invalid
+     * @throws IOException if the given `revision` is invalid
      * @throws IOException if any input related errors occur or if the given
      * file contains invalid code at any point in time or if no provided parsers
      * can interpret the given file
@@ -77,7 +77,7 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
 
     /**
      * @return `null` if the given `path` doesn't exist in the given revision
-     * @throws IllegalArgumentException if the given `revision` is invalid
+     * @throws IOException if the given `revision` is invalid
      * @throws IOException if any input related errors occur or if the given
      * file contains invalid code or if no provided parsers can interpret the
      * given file
@@ -95,7 +95,7 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
     }
 
     /**
-     * @throws IllegalArgumentException if the given `srcRevision` or
+     * @throws IOException if the given `srcRevision` or
      * `dstRevision` are invalid or if the file at the given `path` doesn't
      * exist in either revisions
      * @throws IOException if any input related errors occur or if the given
@@ -118,7 +118,7 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
     }
 
     /**
-     * @throws IllegalArgumentException if the given `revision` is invalid
+     * @throws IOException if the given `revision` is invalid
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)

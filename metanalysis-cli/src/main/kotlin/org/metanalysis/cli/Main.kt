@@ -25,23 +25,23 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 fun usage(): Nothing {
-    println("Usage: [--vcs=\$vcs] --output=\$output --file=\$path")
+    println("Usage: [ --vcs=\$vcs ] --out=\$path --file=\$path")
     System.exit(1)
     throw IllegalArgumentException()
 }
 
 @Throws(IOException::class)
 fun main(args: Array<String>) {
-    if (args.size !in 1..3) {
-        usage()
-    }
-    val options = args.filter { it.startsWith("--") }.associate {
-        val (option, value) = it.split('=')
+    val options = args.associate {
+        if (!it.startsWith("--") || '=' !in it) {
+            usage()
+        }
+        val (option, value) = it.drop(2).split('=', limit = 2)
         option to value
     }
-    val vcs = options["--vcs"]
-    val output = options["--output"] ?: usage()
-    val path = options["--file"] ?: usage()
+    val vcs = options["vcs"]
+    val output = options["out"] ?: usage()
+    val path = options["file"] ?: usage()
     val project = Project(vcs)
     val history = project.getFileHistory(path)
     JsonDriver.serialize(FileOutputStream(output), history)

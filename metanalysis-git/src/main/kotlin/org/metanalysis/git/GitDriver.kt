@@ -17,6 +17,7 @@
 package org.metanalysis.git
 
 import org.metanalysis.core.versioning.Commit
+import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VersionControlSystem
 
 import java.io.FileNotFoundException
@@ -48,16 +49,17 @@ class GitDriver : VersionControlSystem() {
     }
 
     private fun fileNotFound(
-            revisionId: String,
+            revision: String,
             path: String
-    ): FileNotFoundException = FileNotFoundException(
-            "Path '$path' doesn't exist in '$revisionId'!"
-    )
+    ): FileNotFoundException =
+            FileNotFoundException("Path '$path' doesn't exist in '$revision'!")
 
     @Throws(IOException::class)
-    private fun validateRevisionId(revisionId: String) {
-        val exitCode = execute("git", "cat-file", "-e", "$revisionId^{commit}")
-        require(exitCode == 0) { "Invalid revision id '$revisionId'!" }
+    private fun validateRevision(revision: String) {
+        val exitCode = execute("git", "cat-file", "-e", "$revision^{commit}")
+        if (exitCode == 0) {
+            throw RevisionNotFoundException("Invalid revision '$revision'!")
+        }
     }
 
     @Throws(IOException::class)
@@ -72,14 +74,14 @@ class GitDriver : VersionControlSystem() {
 
     @Throws(IOException::class)
     override fun getCommit(
-            revisionId: String
+            revision: String
     ): Commit = object : Subprocess<Commit>() {
         init {
-            validateRevisionId(revisionId)
+            validateRevision(revision)
         }
 
         override val command: List<String> =
-                listOf("git", "rev-list", "-1", formatOption, revisionId)
+                listOf("git", "rev-list", "-1", formatOption, revision)
 
         override fun onSuccess(input: String): Commit {
             val lines = input.split('\n')
@@ -89,48 +91,48 @@ class GitDriver : VersionControlSystem() {
 
     @Throws(IOException::class)
     override fun listFiles(
-            revisionId: String
+            revision: String
     ): Set<String> = object : Subprocess<Set<String>>() {
         init {
-            validateRevisionId(revisionId)
+            validateRevision(revision)
         }
 
         override val command: List<String> =
-                listOf("git", "ls-tree", "--name-only", "-r", revisionId)
+                listOf("git", "ls-tree", "--name-only", "-r", revision)
 
         override fun onSuccess(input: String): Set<String> =
                 input.split('\n').filter(String::isNotBlank).toSet()
     }.run()
 
-    @Throws(FileNotFoundException::class, IOException::class)
+    @Throws(IOException::class)
     override fun getFile(
-            revisionId: String,
+            revision: String,
             path: String
     ): String = object : Subprocess<String>() {
         init {
-            validateRevisionId(revisionId)
+            validateRevision(revision)
         }
 
         override val command: List<String> =
-                listOf("git", "cat-file", "blob", "$revisionId:$path")
+                listOf("git", "cat-file", "blob", "$revision:$path")
 
         override fun onSuccess(input: String): String = input
 
-        @Throws(FileNotFoundException::class, IOException::class)
+        @Throws(IOException::class)
         override fun onError(error: String): Nothing = when {
-            "Not a valid object name $revisionId:$path" in error ->
-                throw fileNotFound(revisionId, path)
+            "Not a valid object name $revision:$path" in error ->
+                throw fileNotFound(revision, path)
             else -> super.onError(error)
         }
     }.run()
 
-    @Throws(FileNotFoundException::class, IOException::class)
+    @Throws(IOException::class)
     override fun getFileHistory(
-            revisionId: String,
+            revision: String,
             path: String
     ): List<Commit> = object : Subprocess<List<Commit>>() {
         init {
-            validateRevisionId(revisionId)
+            validateRevision(revision)
         }
 
         override val command: List<String> = listOf(
@@ -138,7 +140,8 @@ class GitDriver : VersionControlSystem() {
                 "rev-list",
                 "--first-parent",
                 formatOption,
-                revisionId,
+                "--reverse",
+                revision,
                 "--",
                 path
         )
@@ -149,8 +152,8 @@ class GitDriver : VersionControlSystem() {
             val commitLines = (0 until lines.size step 2).map(lines::get)
                     .zip((1 until lines.size step 2).map(lines::get))
             val commits = commitLines.map(this@GitDriver::parseCommit)
-            return if (commits.isNotEmpty()) commits.asReversed()
-            else throw fileNotFound(revisionId, path)
+            return if (commits.isNotEmpty()) commits
+            else throw fileNotFound(revision, path)
         }
     }.run()
 }
