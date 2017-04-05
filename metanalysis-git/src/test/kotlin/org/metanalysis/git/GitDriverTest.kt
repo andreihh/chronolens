@@ -29,11 +29,12 @@ import kotlin.test.assertNull
 class GitDriverTest {
     private val git = GitDriver()
 
-    private fun sleep() {
+    private fun sleep(): Int {
         var i = 0
-        repeat(1000000) {
-            i++
+        for (j in 1 until 1000000000) {
+            i += j * i - j
         }
+        return i
     }
 
     @Test fun `test get head`() {
