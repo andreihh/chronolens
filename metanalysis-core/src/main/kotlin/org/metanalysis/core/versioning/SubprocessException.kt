@@ -19,10 +19,10 @@ package org.metanalysis.core.versioning
 import java.io.IOException
 
 /**
- * Signals that a specific revision is invalid or doesn't exist.
- *
- * @param revision the revision which couldn't be found
+ * Signals that the current thread was interrupted while waiting for a
+ * subprocess to finish or that it terminated abnormally.
  */
-class RevisionNotFoundException(
-        revision: String
-) : IOException("Revision '$revision' not found!")
+class SubprocessException(
+        message: String? = null,
+        cause: Throwable? = null
+) : IOException(message, cause)

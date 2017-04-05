@@ -18,8 +18,8 @@ package org.metanalysis.git
 
 import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.RevisionNotFoundException
+import org.metanalysis.core.versioning.SubprocessException
 import org.metanalysis.core.versioning.VersionControlSystem
-import org.metanalysis.core.versioning.VersionControlSystem.Subprocess.Companion.execute
 
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -36,101 +36,69 @@ class GitDriver : VersionControlSystem() {
 
     private val formatOption: String = "--format=%at:%an"
 
-    private fun parseCommit(lines: Pair<String, String>): Commit {
-        // "commit <sha1>"
-        // "seconds-since-epoch:author-name"
-        val (_, id) = lines.first.split(' ')
-        val (date, author) = lines.second.split(':', limit = 2)
+    private operator fun String?.contains(other: String): Boolean =
+            this?.contains(other, ignoreCase = false) ?: false
+
+    /**
+     * Parse the commit from the following data format:
+     * ```
+     * commit <sha1>
+     * seconds-since-epoch:author-name
+     * ```
+     */
+    private fun parseCommit(firstLine: String, secondLine: String): Commit {
+        val (_, id) = firstLine.split(' ')
+        val (date, author) = secondLine.split(':', limit = 2)
         return Commit(id, author, Date(1000L * date.toLong()))
     }
 
-    private fun fileNotFound(
-            revision: String,
-            path: String
-    ): FileNotFoundException =
-            FileNotFoundException("Path '$path' doesn't exist in '$revision'!")
-
     @Throws(IOException::class)
     private fun validateRevision(revision: String) {
-        if (!execute("git", "cat-file", "-e", "$revision^{commit}")) {
+        if (!executeSuccessful("git", "cat-file", "-e", "$revision^{commit}")) {
             throw RevisionNotFoundException(revision)
         }
     }
 
     @Throws(IOException::class)
-    override fun isSupported(): Boolean = execute("git", "--version")
+    override fun isSupported(): Boolean = executeSuccessful("git", "--version")
 
     @Throws(IOException::class)
     override fun detectRepository(): Boolean =
-            execute("git", "status", "--porcelain")
+            executeSuccessful("git", "status", "--porcelain")
 
     @Throws(IOException::class)
     override fun getHead(): Commit = getCommit("HEAD")
 
     @Throws(IOException::class)
-    override fun getCommit(
-            revision: String
-    ): Commit = object : Subprocess<Commit>() {
-        init {
-            validateRevision(revision)
-        }
-
-        override val command: List<String> =
-                listOf("git", "rev-list", "-1", formatOption, revision)
-
-        override fun onSuccess(input: String): Commit {
-            val lines = input.split('\n')
-            return parseCommit(lines[0] to lines[1])
-        }
-    }.run()
+    override fun getCommit(revision: String): Commit {
+        validateRevision(revision)
+        val input = execute("git", "rev-list", "-1", formatOption, revision)
+        val lines = input.split('\n')
+        return parseCommit(lines[0], lines[1])
+    }
 
     @Throws(IOException::class)
-    override fun listFiles(
-            revision: String
-    ): Set<String> = object : Subprocess<Set<String>>() {
-        init {
-            validateRevision(revision)
-        }
-
-        override val command: List<String> =
-                listOf("git", "ls-tree", "--name-only", "-r", revision)
-
-        override fun onSuccess(input: String): Set<String> =
-                input.split('\n').filter(String::isNotBlank).toSet()
-    }.run()
+    override fun listFiles(revision: String): Set<String> {
+        validateRevision(revision)
+        val input = execute("git", "ls-tree", "--name-only", "-r", revision)
+        return input.split('\n').filter(String::isNotBlank).toSet()
+    }
 
     @Throws(IOException::class)
-    override fun getFile(
-            revision: String,
-            path: String
-    ): String = object : Subprocess<String>() {
-        init {
-            validateRevision(revision)
+    override fun getFile(revision: String, path: String): String? {
+        validateRevision(revision)
+        return try {
+            execute("git", "cat-file", "blob", "$revision:$path")
+        } catch (e: SubprocessException) {
+            if ("Not a valid object name" in e.message) null
+            else throw e
         }
-
-        override val command: List<String> =
-                listOf("git", "cat-file", "blob", "$revision:$path")
-
-        override fun onSuccess(input: String): String = input
-
-        @Throws(IOException::class)
-        override fun onError(error: String): Nothing = when {
-            "Not a valid object name $revision:$path" in error ->
-                throw fileNotFound(revision, path)
-            else -> super.onError(error)
-        }
-    }.run()
+    }
 
     @Throws(IOException::class)
-    override fun getFileHistory(
-            revision: String,
-            path: String
-    ): List<Commit> = object : Subprocess<List<Commit>>() {
-        init {
-            validateRevision(revision)
-        }
-
-        override val command: List<String> = listOf(
+    override fun getFileHistory(revision: String, path: String): List<Commit> {
+        validateRevision(revision)
+        val input = execute(
                 "git",
                 "rev-list",
                 "--first-parent",
@@ -140,15 +108,13 @@ class GitDriver : VersionControlSystem() {
                 "--",
                 path
         )
-
-        @Throws(FileNotFoundException::class)
-        override fun onSuccess(input: String): List<Commit> {
-            val lines = input.split('\n')
-            val commitLines = (0 until lines.size step 2).map(lines::get)
-                    .zip((1 until lines.size step 2).map(lines::get))
-            val commits = commitLines.map(this@GitDriver::parseCommit)
-            return if (commits.isNotEmpty()) commits
-            else throw fileNotFound(revision, path)
-        }
-    }.run()
+        val lines = input.split('\n')
+        val evenLines = (0 until lines.size step 2).map(lines::get)
+        val oddLines = (1 until lines.size step 2).map(lines::get)
+        val commits = evenLines.zip(oddLines, this::parseCommit)
+        return if (commits.isNotEmpty()) commits
+        else throw FileNotFoundException(
+                "'$path' doesn't exist in '$revision' or its ancestors!"
+        )
+    }
 }

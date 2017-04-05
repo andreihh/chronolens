@@ -115,7 +115,7 @@ object JsonDriver {
      *
      * @param out the stream to which the object is serialized
      * @param value the object which should be serialized
-     * @throws IOException if there are any output-related or serialization
+     * @throws IOException if there are any output related or serialization
      * errors
      */
     @Throws(IOException::class)
@@ -130,7 +130,7 @@ object JsonDriver {
      * @param src the stream from which the object is deserialized
      * @param type the class object of the deserialized object
      * @return the deserialized object
-     * @throws IOException if there are any input-related or deserialization
+     * @throws IOException if there are any input related or deserialization
      * errors
      */
     @Throws(IOException::class)

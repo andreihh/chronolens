@@ -19,24 +19,21 @@ package org.metanalysis.git
 import org.junit.Test
 
 import org.metanalysis.core.versioning.RevisionNotFoundException
+import org.metanalysis.core.versioning.SubprocessException
 
 import java.io.FileNotFoundException
+import kotlin.concurrent.thread
 
-import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class GitDriverTest {
     private val git = GitDriver()
 
-    @Test fun `test parse commit`() {
-        val expectedId = "48274d"
-        val expectedDate = "Fri 31 Mar"
-        val expectedAuthor = "Name;with;invalid;separators"
-        val (actualId, actualDate, actualAuthor) =
-                "$expectedId;$expectedDate;$expectedAuthor"
-                        .split(';', limit = 3)
-        assertEquals(expectedId, actualId)
-        assertEquals(expectedDate, actualDate)
-        assertEquals(expectedAuthor, actualAuthor)
+    private fun sleep() {
+        var i = 0
+        repeat(1000000) {
+            i++
+        }
     }
 
     @Test fun `test get head`() {
@@ -52,6 +49,14 @@ class GitDriverTest {
     @Test fun `test get branch`() {
         val commit = git.getCommit("master")
         println(commit)
+    }
+
+    @Test(expected = SubprocessException::class)
+    fun `test interrupt get commit throws`() {
+        val gitThread = Thread.currentThread()
+        thread { gitThread.interrupt() }
+        sleep()
+        git.getHead()
     }
 
     @Test(expected = RevisionNotFoundException::class)
@@ -124,14 +129,12 @@ class GitDriverTest {
         git.getFile("src", "build.gradle")
     }
 
-    @Test(expected = FileNotFoundException::class)
-    fun `test get non-existent file from commit throws`() {
-        git.getFile("HEAD", "non-existent.txt")
+    @Test fun `test get non-existent file from commit throws`() {
+        assertNull(git.getFile("HEAD", "non-existent.txt"))
     }
 
-    @Test(expected = FileNotFoundException::class)
-    fun `test get non-existent file from branch throws`() {
-        git.getFile("HEAD", "non-existent.txt")
+    @Test fun `test get non-existent file from branch throws`() {
+        assertNull(git.getFile("HEAD", "non-existent.txt"))
     }
 
     @Test fun `test get file history from commit`() {

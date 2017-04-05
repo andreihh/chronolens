@@ -18,21 +18,21 @@ package org.metanalysis.core.versioning
 
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.io.InputStream
 import java.util.ServiceLoader
 
 /**
- * An abstract version control system which interacts with the repository
+ * An abstract version control system (VCS) which interacts with the repository
  * detected in the current working directory.
  *
- * A version control system operates with the concept of `revision`, which are
- * objects that can be dereferenced to commits (a commit, branch, tag etc.).
+ * A VCS operates with the concept of `revision`, which are objects that can be
+ * dereferenced to commits (a commit, branch, tag etc.).
  *
  * Version control systems must have a public no-arg constructor.
  *
  * The file
  * `META-INF/services/org.metanalysis.core.versioning.VersionControlSystem` must
- * be provided and must contain the list of all provided version control
- * system implementations.
+ * be provided and must contain the list of all provided VCS implementations.
  */
 abstract class VersionControlSystem {
     companion object {
@@ -41,71 +41,78 @@ abstract class VersionControlSystem {
                 .filterValues(VersionControlSystem::isSupported)
 
         /**
-         * Returns the version control system with the given `name`.
+         * Returns the VCS with the given `name`.
          *
-         * @param name the name of the requested version control system
-         * @return the requested version control system, or `null` if no such
-         * system was provided or if it isn't supported in this environment
+         * @param name the name of the requested VCS
+         * @return the requested VCS, or `null` if no such system was provided
+         * or if it isn't supported in this environment
          */
         @JvmStatic fun getByName(name: String): VersionControlSystem? =
                 nameToVcs[name]
 
         /**
-         * Returns the version control system for the repository in the current
-         * working directory.
+         * Returns the VCS for the repository detected in the current working
+         * directory.
          *
-         * @return the requested version control system, or `null` if no such
-         * system could be identified or if multiple systems have been
-         * identified
+         * @return the requested VCS, or `null` if no such system could be
+         * identified or if multiple systems have been identified
          */
         @JvmStatic fun get(): VersionControlSystem? = nameToVcs.values
                 .filter(VersionControlSystem::detectRepository).singleOrNull()
     }
 
+    private fun buildProcess(vararg command: String): Process =
+            ProcessBuilder().command(*command).start()
+
+    @Throws(IOException::class)
+    private fun InputStream.readText(): String = reader().use { it.readText() }
+
     /**
-     * @param T
+     * Executes the given `command` and returns whether it was successful.
+     *
+     * @param command the command which should be executed
+     * @return `true` if the `command` terminated normally, or `false` if it
+     * terminated abnormally
+     * @throws SubprocessException if the `command` subprocess was interrupted
+     * @throws IOException if any input related errors occur
      */
-    protected abstract class Subprocess<out T : Any> {
-        companion object {
-            @Throws(IOException::class)
-            fun execute(vararg command: String): Boolean {
-                val process = ProcessBuilder().command(*command).start()
-                try {
-                    return process.waitFor() == 0
-                } catch (e: InterruptedException) {
-                    process.destroy()
-                    throw IOException(e)
-                } finally {
-                    process.inputStream.close()
-                    process.errorStream.close()
-                    process.outputStream.close()
-                }
-            }
+    @Throws(IOException::class)
+    protected fun executeSuccessful(vararg command: String): Boolean {
+        val process = buildProcess(*command)
+        try {
+            process.outputStream.close()
+            process.inputStream.readText()
+            process.errorStream.readText()
+            return process.waitFor() == 0
+        } catch (e: InterruptedException) {
+            throw SubprocessException(cause = e)
+        } finally {
+            process.destroy()
         }
+    }
 
-        protected abstract val command: List<String>
-
-        @Throws(IOException::class)
-        protected abstract fun onSuccess(input: String): T
-
-        @Throws(IOException::class)
-        protected open fun onError(error: String): Nothing =
-                throw IOException(error)
-
-        @Throws(IOException::class)
-        fun run(): T = with(ProcessBuilder().command(command).start()) {
-            try {
-                val text = inputStream.bufferedReader().readText()
-                if (waitFor() == 0) onSuccess(text)
-                else onError(errorStream.bufferedReader().readText())
-            } catch (e: InterruptedException) {
-                destroy()
-                throw IOException(e)
-            } finally {
-                inputStream.close()
-                errorStream.close()
-                outputStream.close()
-            }
+    /**
+     * Executes the given `command` and returns its resulting output.
+     *
+     * @param command the command which should be executed
+     * @return the parsed input from the subprocess standard output
+     * @throws SubprocessException if the `command` subprocess was interrupted
+     * or if it terminated abnormally
+     * @throws IOException if any input related errors occur
+     */
+    @Throws(IOException::class)
+    protected fun execute(vararg command: String): String {
+        val process = buildProcess(*command)
+        try {
+            process.outputStream.close()
+            val input = process.inputStream.readText()
+            val error = process.errorStream.readText()
+            return if (process.waitFor() == 0) input
+            else throw SubprocessException(message = error)
+        } catch (e: InterruptedException) {
+            throw SubprocessException(cause = e)
+        } finally {
+            process.destroy()
         }
     }
 
@@ -113,9 +120,9 @@ abstract class VersionControlSystem {
     abstract val name: String
 
     /**
-     * Returns whether this version control system is supported in this
-     * environment.
+     * Returns whether this VCS is supported in this environment.
      *
+     * @throws SubprocessException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -125,6 +132,7 @@ abstract class VersionControlSystem {
      * Returns whether a repository was detected in the current working
      * directory.
      *
+     * @throws SubprocessException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -133,6 +141,9 @@ abstract class VersionControlSystem {
     /**
      * Returns the currently checked out commit.
      *
+     * @return the currently checked out commit
+     * @throws SubprocessException if the VCS process is interrupted or
+     * terminates abnormally
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -143,18 +154,22 @@ abstract class VersionControlSystem {
      *
      * @param revision the inspected revision
      * @return the corresponding commit
-     * @throws RevisionNotFoundException if the given `revision` doesn't exist
+     * @throws RevisionNotFoundException if `revision` doesn't exist
+     * @throws SubprocessException if the VCS process is interrupted or
+     * terminates abnormally
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
     abstract fun getCommit(revision: String): Commit
 
     /**
-     * Returns the all the existing files in the given `revision`.
+     * Returns all the existing files in `revision`.
      *
      * @param revision the inspected revision
      * @return the set of files existing in the `revision`
-     * @throws RevisionNotFoundException if the given `revision` doesn't exist
+     * @throws RevisionNotFoundException if `revision` doesn't exist
+     * @throws SubprocessException if the VCS process is interrupted or
+     * terminates abnormally
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -162,17 +177,19 @@ abstract class VersionControlSystem {
 
     /**
      * Returns the content of the file located at the given `path` as it is
-     * found in the given `revision`.
+     * found in `revision`.
      *
      * @param revision the desired revision of the file
      * @param path the relative path of the requested file
-     * @throws RevisionNotFoundException if the given `revision` doesn't exist
-     * @throws FileNotFoundException if the given `path` doesn't exist in the
-     * given `revision`
+     * @return the content of the requested file, or `null` if the file doesn't
+     * exist in `revision`
+     * @throws RevisionNotFoundException if `revision` doesn't exist
+     * @throws SubprocessException if the VCS process is interrupted or
+     * terminates abnormally
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun getFile(revision: String, path: String): String
+    abstract fun getFile(revision: String, path: String): String?
 
     /**
      * Returns all the commits which modified the file at the given `path`, up
@@ -180,9 +197,11 @@ abstract class VersionControlSystem {
      *
      * The commits are given chronologically.
      *
-     * @throws RevisionNotFoundException if the given `revision` doesn't exist
-     * @throws FileNotFoundException if the given `path` never existed in the
-     * given `revision` or any of its ancestor revisions
+     * @throws RevisionNotFoundException if `revision` doesn't exist
+     * @throws FileNotFoundException if `path` never existed in `revision` or
+     * any of its ancestors
+     * @throws SubprocessException if the VCS process is interrupted or
+     * terminates abnormally
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)

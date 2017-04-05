@@ -66,21 +66,16 @@ class VersionControlSystemMock(
 
     override fun getHead(): Commit = commits.last().toCommit()
 
-    override fun listFiles(revisionId: String): Set<String> =
-            requireNotNull(files[revisionId]).keys
+    override fun listFiles(revision: String): Set<String> =
+            requireNotNull(files[revision]).keys
 
-    override fun getCommit(revisionId: String): Commit =
-            requireNotNull(commitsById[revisionId])
+    override fun getCommit(revision: String): Commit =
+            requireNotNull(commitsById[revision])
 
-    @Throws(FileNotFoundException::class)
-    override fun getFile(revisionId: String, path: String): String =
-            requireNotNull(files[revisionId])[path]
-                    ?: throw FileNotFoundException("File '$path' not found!")
+    override fun getFile(revision: String, path: String): String? =
+            requireNotNull(files[revision])[path]
 
-    override fun getFileHistory(
-            revisionId: String,
-            path: String
-    ): List<Commit> {
+    override fun getFileHistory(revision: String, path: String): List<Commit> {
         val history = commits
                 .filter { path in it.changedFiles }
                 .map { it.toCommit() }

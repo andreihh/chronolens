@@ -23,11 +23,17 @@ import org.metanalysis.core.serialization.JsonDriver
 
 import java.io.FileOutputStream
 import java.io.IOException
+import java.io.PrintStream
 
-fun usage(): Nothing {
-    println("Usage: [--vcs=\$vcs] --out=\$path --file=\$path")
-    System.exit(1)
-    throw IllegalArgumentException()
+import kotlin.system.exitProcess
+
+fun usage(stream: PrintStream = System.err): Nothing {
+    stream.println("Usage: [--vcs=\$vcs] --out=\$path --file=\$path")
+    exitProcess(1)
+}
+
+fun printlnError(line: String?) {
+    System.err.println("metanalysis: $line")
 }
 
 fun main(args: Array<String>) {
@@ -46,7 +52,7 @@ fun main(args: Array<String>) {
         val history = project.getFileHistory(path)
         JsonDriver.serialize(FileOutputStream(output), history)
     } catch (e: IOException) {
-        println(e.message)
-        System.exit(1)
+        printlnError(e.message)
+        exitProcess(1)
     }
 }

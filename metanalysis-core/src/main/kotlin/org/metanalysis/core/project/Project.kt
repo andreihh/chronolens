@@ -20,19 +20,47 @@ import org.metanalysis.core.delta.SourceFileTransaction
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.versioning.VersionControlSystem
 import org.metanalysis.core.versioning.VersionControlSystem.Companion.get
 import org.metanalysis.core.versioning.VersionControlSystem.Companion.getByName
 
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.Date
 
 /**
- * @throws IllegalStateException if the given version control system is not
- * supported or if the repository is in an invalid state
+ * An object which queries the repository in the current working directory for
+ * code metadata.
+ *
+ * @property vcs the VCS behind the repository
  */
-class Project @Throws(IOException::class) constructor(vcs: String? = null) {
+class Project @Throws(IOException::class) private constructor(
+        private val vcs: VersionControlSystem
+) {
+    companion object {
+        /**
+         * Utility factory method.
+         *
+         * @param vcs the name of the used VCS, or `null` if the VCS should be
+         * detected automatically
+         * @return the project instance which can query the detected repository
+         * for code metadata
+         * @throws IOException if any of the following situations appear:
+         * - `vcs` is not `null` and is not supported in the current environment
+         * - `vcs` is not `null` and no repository could be detected
+         * - `vcs` is `null` and no VCS root could be unambiguously detected
+         * - the VCS subprocess is interrupted
+         * - any input related errors occur
+         */
+        @Throws(IOException::class)
+        @JvmStatic operator fun invoke(vcs: String? = null): Project {
+            val vcsInstance = if (vcs != null) vcs.let(::getByName)
+                    ?: throw IOException("'$vcs' not supported!")
+            else get() ?: throw IOException("VCS root not found or ambiguous!")
+            return Project(vcsInstance)
+        }
+    }
+
     data class HistoryEntry(
             val commit: String,
             val author: String,
@@ -44,25 +72,22 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
             private val entries: List<HistoryEntry>
     ) : List<HistoryEntry> by entries
 
-    private val vcs = if (vcs != null)
-        checkNotNull(vcs.let(::getByName)) { "'$vcs' is not supported!" }
-    else checkNotNull(get()) { "VCS root could not be unambiguously detected!" }
-
     init {
-        check(this.vcs.detectRepository()) {
-            "No '${this.vcs.name}' repository detected!"
+        if (!vcs.detectRepository()) {
+            throw IOException("No '${vcs.name}' repository detected!")
         }
     }
 
-    private val head = this.vcs.getHead().id
+    private val head by lazy { vcs.getHead().id }
 
     /**
-     * @throws IOException if the given `revision` is invalid
-     * @throws IOException if the given `revision` doesn't exist or if the given
-     * `path` never existed in the given `revision` or any of its ancestors or
-     * if the given `path` contained invalid code at any point in time or if
-     * none of the provided parsers can interpret the file at the given `path`
-     * or if any input related errors occur
+     * @throws IOException if any of the following situations appear:
+     * - `revision` doesn't exist
+     * - `path` never existed in `revision` or any of its ancestors
+     * - `path` contained invalid code at any point in time
+     * - none of the provided parsers can interpret the file at the given `path`
+     * - the VCS subprocess is interrupted or terminates abnormally
+     * - any input related errors occur
      */
     @Throws(IOException::class)
     fun getFileHistory(path: String, revision: String = head): History {
@@ -79,31 +104,32 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
 
     /**
      * @param path the relative path of the file which should be interpreted
-     * @return the parsed code metadata, or `null` if the given `path` doesn't
-     * exist in the given `revision`
-     * @throws IOException if the given `revision` doesn't exist or the given
-     * `path` contains invalid code or if none of the provided parsers can
-     * interpret the file at the given `path` or if any input related errors
-     * occur
+     * @return the parsed code metadata, or `null` if `path` doesn't exist in
+     * `revision`
+     * @throws IOException if any of the following situations appear:
+     * - `revision` doesn't exist
+     * - `path` contains invalid code
+     * - none of the provided parsers can interpret the file at the given `path`
+     * - the VCS subprocess is interrupted or terminates abnormally
+     * - any input related errors occur
      */
     @Throws(IOException::class)
     fun getFileModel(path: String, revision: String = head): SourceFile? {
-        val source = try {
-            vcs.getFile(revision, path)
-        } catch (e: FileNotFoundException) {
-            return null
-        }
+        val source = vcs.getFile(revision, path) ?: return null
         val parser = Parser.getByExtension(File(path).extension)
                 ?: throw IOException("No parser can interpret '$path'!")
         return parser.parse(source)
     }
 
     /**
-     * @throws IOException if the given `srcRevision` or `dstRevision` don't
-     * exist or if the given `path` doesn't exist in either revisions or if
-     * the given `path` contained invalid code in either revisions or if none of
-     * the provided parsers can interpreted the file at the given `path` or if
-     * any input related errors occur
+     * @throws IOException if any of the following situations appear:
+     * - `srcRevision` doesn't exist
+     * - `dstRevision` doesn't exist
+     * - `path` doesn't exist in either revisions
+     * - `path` contained invalid code in either revisions
+     * - none of the provided parsers can interpret the file at the given `path`
+     * - the VCS subprocess is interrupted or terminates abnormally
+     * - any input related errors occur
      */
     @Throws(IOException::class)
     fun getFileDiff(
@@ -113,16 +139,18 @@ class Project @Throws(IOException::class) constructor(vcs: String? = null) {
     ): SourceFileTransaction? {
         val srcSourceFile = getFileModel(path, srcRevision)
         val dstSourceFile = getFileModel(path, dstRevision)
-        require(srcSourceFile != null || dstSourceFile != null) {
-            "File '$path' doesn't exist in '$srcRevision' or '$dstRevision'!"
-        }
+        srcSourceFile ?: dstSourceFile ?: throw IOException(
+                "'$path' doesn't exist in '$srcRevision' or '$dstRevision'!"
+        )
         return (srcSourceFile ?: SourceFile())
                 .diff(dstSourceFile ?: SourceFile())
     }
 
     /**
-     * @throws IOException if the given `revision` doesn't exist or if any input
-     * related errors occur
+     * @throws IOException if any of the following situations appear:
+     * - `revision` doesn't exist
+     * - the VCS subprocess is interrupted or terminates abnormally
+     * - any input related errors occur
      */
     @Throws(IOException::class)
     fun listFiles(revision: String = head): Set<String> =
