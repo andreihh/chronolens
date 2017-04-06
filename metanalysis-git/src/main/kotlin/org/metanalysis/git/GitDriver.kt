@@ -36,8 +36,11 @@ class GitDriver : VersionControlSystem() {
 
     private val formatOption: String = "--format=%at:%an"
 
-    private operator fun String?.contains(other: String): Boolean =
-            this?.contains(other, ignoreCase = false) ?: false
+    private val SubprocessException.invalidObjectName: Boolean
+        get() = message?.contains("Not a valid object name") ?: false
+
+    private val SubprocessException.invalidRepository: Boolean
+        get() = message?.contains("Not a git repository") ?: false
 
     /**
      * Parse the commit from the following data format:
@@ -54,17 +57,31 @@ class GitDriver : VersionControlSystem() {
 
     @Throws(IOException::class)
     private fun validateRevision(revision: String) {
-        if (!executeSuccessful("git", "cat-file", "-e", "$revision^{commit}")) {
-            throw RevisionNotFoundException(revision)
+        try {
+            execute("git", "cat-file", "-e", "$revision^{commit}")
+        } catch (e: SubprocessException) {
+            if (e.invalidObjectName) throw RevisionNotFoundException(revision)
+            else throw e
         }
     }
 
     @Throws(IOException::class)
-    override fun isSupported(): Boolean = executeSuccessful("git", "--version")
+    override fun isSupported(): Boolean = try {
+        execute("git", "--version")
+        true
+    } catch (e: SubprocessException) {
+        if (e.cause is InterruptedException) throw e
+        else false
+    }
 
     @Throws(IOException::class)
-    override fun detectRepository(): Boolean =
-            executeSuccessful("git", "status", "--porcelain")
+    override fun detectRepository(): Boolean = try {
+        execute("git", "cat-file", "-e", "HEAD")
+        true
+    } catch (e: SubprocessException) {
+        if (e.invalidRepository) false
+        else throw e
+    }
 
     @Throws(IOException::class)
     override fun getHead(): Commit = getCommit("HEAD")
@@ -90,7 +107,7 @@ class GitDriver : VersionControlSystem() {
         return try {
             execute("git", "cat-file", "blob", "$revision:$path")
         } catch (e: SubprocessException) {
-            if ("Not a valid object name" in e.message) null
+            if (e.invalidObjectName) null
             else throw e
         }
     }

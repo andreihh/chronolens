@@ -61,35 +61,8 @@ abstract class VersionControlSystem {
                 .filter(VersionControlSystem::detectRepository).singleOrNull()
     }
 
-    private fun buildProcess(vararg command: String): Process =
-            ProcessBuilder().command(*command).start()
-
     @Throws(IOException::class)
     private fun InputStream.readText(): String = reader().use { it.readText() }
-
-    /**
-     * Executes the given `command` and returns whether it was successful.
-     *
-     * @param command the command which should be executed
-     * @return `true` if the `command` terminated normally, or `false` if it
-     * terminated abnormally
-     * @throws SubprocessException if the `command` subprocess was interrupted
-     * @throws IOException if any input related errors occur
-     */
-    @Throws(IOException::class)
-    protected fun executeSuccessful(vararg command: String): Boolean {
-        val process = buildProcess(*command)
-        try {
-            process.outputStream.close()
-            process.inputStream.readText()
-            process.errorStream.readText()
-            return process.waitFor() == 0
-        } catch (e: InterruptedException) {
-            throw SubprocessException(cause = e)
-        } finally {
-            process.destroy()
-        }
-    }
 
     /**
      * Executes the given `command` and returns its resulting output.
@@ -102,7 +75,7 @@ abstract class VersionControlSystem {
      */
     @Throws(IOException::class)
     protected fun execute(vararg command: String): String {
-        val process = buildProcess(*command)
+        val process = ProcessBuilder().command(*command).start()
         try {
             process.outputStream.close()
             val input = process.inputStream.readText()
@@ -132,7 +105,8 @@ abstract class VersionControlSystem {
      * Returns whether a repository was detected in the current working
      * directory.
      *
-     * @throws SubprocessException if the VCS process is interrupted
+     * @throws SubprocessException if the VCS process is interrupted or
+     * terminates abnormally
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)

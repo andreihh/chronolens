@@ -89,8 +89,8 @@ Add the dependencies:
 
 #### Configuration
 
-If using the various modules as dependencies, you must provide the service
-configuration files:
+If using the various modules as dependencies, you must provide the following
+ service configuration files:
 - `META-INF/services/org.metanalysis.core.model.Parser`
 - `META-INF/services/org.metanalysis.core.version.VersionControlSystem`
 

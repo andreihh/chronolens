@@ -22,20 +22,11 @@ import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.SubprocessException
 
 import java.io.FileNotFoundException
-import kotlin.concurrent.thread
 
 import kotlin.test.assertNull
 
 class GitDriverTest {
     private val git = GitDriver()
-
-    private fun sleep(): Int {
-        var i = 0
-        for (j in 1 until 1000000000) {
-            i += j * i - j
-        }
-        return i
-    }
 
     @Test fun `test get head`() {
         val head = git.getHead()
@@ -54,9 +45,7 @@ class GitDriverTest {
 
     @Test(expected = SubprocessException::class)
     fun `test interrupt get commit throws`() {
-        val gitThread = Thread.currentThread()
-        thread { gitThread.interrupt() }
-        sleep()
+        Thread.currentThread().interrupt()
         git.getHead()
     }
 

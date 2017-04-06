@@ -37,7 +37,8 @@ fun printlnError(line: String?) {
 }
 
 fun main(args: Array<String>) {
-    val options = args.associate {
+    val command = args.getOrNull(0) ?: usage()
+    val options = args.drop(1).associate {
         if (!it.startsWith("--") || '=' !in it) {
             usage()
         }
@@ -45,12 +46,42 @@ fun main(args: Array<String>) {
         option to value
     }
     val vcs = options["vcs"]
-    val output = options["out"] ?: usage()
-    val path = options["file"] ?: usage()
     try {
         val project = Project(vcs)
-        val history = project.getFileHistory(path)
-        JsonDriver.serialize(FileOutputStream(output), history)
+        when (command) {
+            "help" -> usage(System.out)
+            "get" -> {
+                val path = options["file"] ?: usage()
+                val sourceFile = project.getFileModel(path)
+                if (sourceFile == null) {
+                    printlnError("'$path' doesn't exist!")
+                    exitProcess(1)
+                }
+                JsonDriver.serialize(System.out, sourceFile)
+            }
+            "history" -> {
+                val output = options["out"] ?: usage()
+                val path = options["file"] ?: usage()
+                val history = project.getFileHistory(path)
+                JsonDriver.serialize(FileOutputStream(output), history)
+            }
+            "all" -> {
+                val outputDir = options["out"] ?: usage()
+                project.listFiles().forEach { path ->
+                    try {
+                        val history = project.getFileHistory(path)
+                        val outputPath = "$outputDir/${path.replace('/', '.')}"
+                        JsonDriver.serialize(
+                                out = FileOutputStream(outputPath),
+                                value = history
+                        )
+                        printlnError("Analyzed '$path'!")
+                    } catch (e: IOException) {
+                        printlnError(e.message)
+                    }
+                }
+            }
+        }
     } catch (e: IOException) {
         printlnError(e.message)
         exitProcess(1)
