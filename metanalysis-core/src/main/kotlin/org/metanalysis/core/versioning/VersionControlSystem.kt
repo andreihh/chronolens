@@ -61,31 +61,39 @@ abstract class VersionControlSystem {
                 .filter(VersionControlSystem::detectRepository).singleOrNull()
     }
 
-    @Throws(IOException::class)
-    private fun InputStream.readText(): String = reader().use { it.readText() }
+    protected object Subprocess {
+        sealed class Result {
+            data class Success(val input: String) : Result()
+            data class Error(val message: String) : Result()
+        }
 
-    /**
-     * Executes the given `command` and returns its resulting output.
-     *
-     * @param command the command which should be executed
-     * @return the parsed input from the subprocess standard output
-     * @throws SubprocessException if the `command` subprocess was interrupted
-     * or if it terminated abnormally
-     * @throws IOException if any input related errors occur
-     */
-    @Throws(IOException::class)
-    protected fun execute(vararg command: String): String {
-        val process = ProcessBuilder().command(*command).start()
-        try {
-            process.outputStream.close()
-            val input = process.inputStream.readText()
-            val error = process.errorStream.readText()
-            return if (process.waitFor() == 0) input
-            else throw SubprocessException(message = error)
-        } catch (e: InterruptedException) {
-            throw SubprocessException(cause = e)
-        } finally {
-            process.destroy()
+        @Throws(IOException::class)
+        private fun InputStream.readText(): String =
+                reader().use { it.readText() }
+
+        /**
+         * Executes the given `command` and returns its resulting output.
+         *
+         * @param command the command which should be executed
+         * @return the parsed input from the subprocess standard output
+         * @throws InterruptedException if the `command` subprocess was
+         * interrupted
+         * @throws IOException if any input related errors occur
+         */
+        @Throws(InterruptedException::class, IOException::class)
+        @JvmStatic fun execute(vararg command: String): Result {
+            val process = ProcessBuilder().command(*command).start()
+            try {
+                process.outputStream.close()
+                val input = process.inputStream.readText()
+                val error = process.errorStream.readText()
+                return if (process.waitFor() == 0) Result.Success(input)
+                else Result.Error(error)
+            } catch (e: InterruptedException) {
+                throw SubprocessException(cause = e)
+            } finally {
+                process.destroy()
+            }
         }
     }
 
@@ -95,21 +103,20 @@ abstract class VersionControlSystem {
     /**
      * Returns whether this VCS is supported in this environment.
      *
-     * @throws SubprocessException if the VCS process is interrupted
+     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
+    @Throws(InterruptedException::class, IOException::class)
     protected abstract fun isSupported(): Boolean
 
     /**
      * Returns whether a repository was detected in the current working
      * directory.
      *
-     * @throws SubprocessException if the VCS process is interrupted or
-     * terminates abnormally
+     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
+    @Throws(InterruptedException::class, IOException::class)
     abstract fun detectRepository(): Boolean
 
     /**

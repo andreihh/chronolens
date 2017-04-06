@@ -20,6 +20,8 @@ import org.metanalysis.core.versioning.Commit
 import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.SubprocessException
 import org.metanalysis.core.versioning.VersionControlSystem
+import org.metanalysis.core.versioning.VersionControlSystem.Subprocess.Result
+import org.metanalysis.core.versioning.VersionControlSystem.Subprocess.execute
 
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -36,12 +38,6 @@ class GitDriver : VersionControlSystem() {
 
     private val formatOption: String = "--format=%at:%an"
 
-    private val SubprocessException.invalidObjectName: Boolean
-        get() = message?.contains("Not a valid object name") ?: false
-
-    private val SubprocessException.invalidRepository: Boolean
-        get() = message?.contains("Not a git repository") ?: false
-
     /**
      * Parse the commit from the following data format:
      * ```
@@ -50,37 +46,24 @@ class GitDriver : VersionControlSystem() {
      * ```
      */
     private fun parseCommit(firstLine: String, secondLine: String): Commit {
-        val (_, id) = firstLine.split(' ')
+        val (_, id) = firstLine.split(' ', limit = 2)
         val (date, author) = secondLine.split(':', limit = 2)
         return Commit(id, author, Date(1000L * date.toLong()))
     }
 
     @Throws(IOException::class)
-    private fun validateRevision(revision: String) {
-        try {
-            execute("git", "cat-file", "-e", "$revision^{commit}")
-        } catch (e: SubprocessException) {
-            if (e.invalidObjectName) throw RevisionNotFoundException(revision)
-            else throw e
+    override fun isSupported(): Boolean =
+        execute("git", "--version") is Result.Success
+
+    @Throws(IOException::class)
+    override fun detectRepository(): Boolean  {
+        val result = execute("git", "cat-file", "-e", "HEAD")
+        return when (result) {
+            is Result.Success -> true
+            is Result.Error ->
+                if ("Not a git repository" in result.message) false
+                else throw IOException(result.message)
         }
-    }
-
-    @Throws(IOException::class)
-    override fun isSupported(): Boolean = try {
-        execute("git", "--version")
-        true
-    } catch (e: SubprocessException) {
-        if (e.cause is InterruptedException) throw e
-        else false
-    }
-
-    @Throws(IOException::class)
-    override fun detectRepository(): Boolean = try {
-        execute("git", "cat-file", "-e", "HEAD")
-        true
-    } catch (e: SubprocessException) {
-        if (e.invalidRepository) false
-        else throw e
     }
 
     @Throws(IOException::class)
@@ -88,34 +71,42 @@ class GitDriver : VersionControlSystem() {
 
     @Throws(IOException::class)
     override fun getCommit(revision: String): Commit {
-        validateRevision(revision)
-        val input = execute("git", "rev-list", "-1", formatOption, revision)
-        val lines = input.split('\n')
-        return parseCommit(lines[0], lines[1])
+        val result = execute("git", "rev-list", "-1", formatOption, revision)
+        return when (result) {
+            is Result.Success -> try {
+                val (firstLine, secondLine) = result.input.split('\n')
+                parseCommit(firstLine, secondLine)
+            } catch (e: IndexOutOfBoundsException) {
+                throw IOException("Can't parse commit from '${result.input}'")
+            }
+            is Result.Error -> throw IOException(result.message)
+        }
     }
 
     @Throws(IOException::class)
     override fun listFiles(revision: String): Set<String> {
-        validateRevision(revision)
-        val input = execute("git", "ls-tree", "--name-only", "-r", revision)
-        return input.split('\n').filter(String::isNotBlank).toSet()
+        val result = execute("git", "ls-tree", "--name-only", "-r", revision)
+        return when (result) {
+            is Result.Success ->
+                result.input.split('\n').filter(String::isNotBlank).toSet()
+            is Result.Error -> throw IOException(result.message)
+        }
     }
 
     @Throws(IOException::class)
     override fun getFile(revision: String, path: String): String? {
-        validateRevision(revision)
-        return try {
-            execute("git", "cat-file", "blob", "$revision:$path")
-        } catch (e: SubprocessException) {
-            if (e.invalidObjectName) null
-            else throw e
+        val result = execute("git", "cat-file", "blob", "$revision:$path")
+        return when (result) {
+            is Result.Success -> result.input
+            is Result.Error ->
+                if ("Not a valid object name" in result.message) null
+                else throw IOException(result.message)
         }
     }
 
     @Throws(IOException::class)
     override fun getFileHistory(revision: String, path: String): List<Commit> {
-        validateRevision(revision)
-        val input = execute(
+        val result = execute(
                 "git",
                 "rev-list",
                 "--first-parent",
@@ -125,13 +116,19 @@ class GitDriver : VersionControlSystem() {
                 "--",
                 path
         )
-        val lines = input.split('\n')
-        val evenLines = (0 until lines.size step 2).map(lines::get)
-        val oddLines = (1 until lines.size step 2).map(lines::get)
-        val commits = evenLines.zip(oddLines, this::parseCommit)
-        return if (commits.isNotEmpty()) commits
-        else throw FileNotFoundException(
-                "'$path' doesn't exist in '$revision' or its ancestors!"
-        )
+        return when (result) {
+            is Result.Success -> {
+                val lines = result.input.split('\n')
+                val commits = arrayListOf<Commit>()
+                for (i in 0 until lines.size - 1 step 2) {
+                    commits += parseCommit(lines[i], lines[i + 1])
+                }
+                if (commits.isNotEmpty()) commits
+                else throw FileNotFoundException(
+                        "'$path' doesn't exist in '$revision' or its ancestors!"
+                )
+            }
+            is Result.Error -> throw IOException(result.message)
+        }
     }
 }

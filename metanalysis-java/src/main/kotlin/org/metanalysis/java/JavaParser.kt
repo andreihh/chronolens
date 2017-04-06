@@ -23,7 +23,6 @@ import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeMemberDeclaration
-import org.eclipse.jdt.core.dom.BodyDeclaration
 import org.eclipse.jdt.core.dom.CompilationUnit
 import org.eclipse.jdt.core.dom.EnumConstantDeclaration
 import org.eclipse.jdt.core.dom.EnumDeclaration
@@ -57,9 +56,8 @@ class JavaParser : Parser() {
          * of whitespaces) and trims leading and trailing whitespaces from all
          * lines.
          */
-        @JvmStatic fun String.toBlock(): List<String> = this.split('\n')
-                .filter(String::isNotBlank)
-                .map(String::trim)
+        @JvmStatic fun String.toBlock(): List<String> =
+                split('\n').filter(String::isNotBlank).map(String::trim)
     }
 
     private data class Context(private val source: String) {
@@ -92,9 +90,12 @@ class JavaParser : Parser() {
         } ?: emptyList()
     }
 
-    private fun <T> Collection<T>.requireDistinct(): Set<T> = toSet().let {
-        require(size == it.size) { "$this contains duplicated elements!" }
-        it
+    private fun <T> Collection<T>.requireDistinct(): Set<T> {
+        val unique = toHashSet()
+        if (size != unique.size) {
+            throw IOException("$this contains duplicated elements!")
+        }
+        return unique
     }
 
     /** Returns the name of this node. */
@@ -110,7 +111,7 @@ class JavaParser : Parser() {
         is EnumDeclaration -> superInterfaceTypes()
         is TypeDeclaration -> superInterfaceTypes() + superclassType
         else -> throw AssertionError("Unknown declaration $this!")
-    }.filterNotNull().map(Any::toString)
+    }.mapNotNull { it?.toString() }
 
     /**
      * Returns the list of all members of this type.
@@ -123,12 +124,16 @@ class JavaParser : Parser() {
      * - [MethodDeclaration]
      * - [Initializer]
      */
-    private fun AbstractTypeDeclaration.members() = (
-            if (this is EnumDeclaration) enumConstants()
-            else emptyList<BodyDeclaration>()
-    ) + bodyDeclarations().flatMap { member ->
-        if (member is FieldDeclaration) member.fragments()
-        else listOf(member)
+    private fun AbstractTypeDeclaration.members(): List<*> {
+        val declarations = arrayListOf<Any?>()
+        if (this is EnumDeclaration) {
+            declarations.addAll(enumConstants())
+        }
+        bodyDeclarations().flatMapTo(declarations) { member ->
+            if (member is FieldDeclaration) member.fragments()
+            else listOf(member)
+        }
+        return declarations
     }
 
     private fun Context.visit(node: AbstractTypeDeclaration): Type {
@@ -162,9 +167,11 @@ class JavaParser : Parser() {
     private fun Context.visit(node: MethodDeclaration): Function {
         val parameters = node.parameters()
                 .filterIsInstance<SingleVariableDeclaration>()
-        val parameterTypes = parameters.map(SingleVariableDeclaration::getType)
+        val parameterTypes = parameters.map {
+            "${it.type}${if (it.isVarargs) "..." else ""}"
+        }
         return Function(
-                signature = node.name() + "(${parameterTypes.joinToString()})",
+                signature = "${node.name()}(${parameterTypes.joinToString()})",
                 parameters = parameters.map { visit(it) },
                 body = getBody(node)
         )
@@ -177,20 +184,20 @@ class JavaParser : Parser() {
     override val language: String = LANGUAGE
     override val extensions: Set<String> = EXTENSIONS
 
+    private val jdtParser = ASTParser.newParser(AST.JLS8).apply {
+        setKind(K_COMPILATION_UNIT)
+        val options = JavaCore.getOptions()
+        JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
+        setCompilerOptions(options)
+        setIgnoreMethodBodies(true)
+    }
+
     @Throws(IOException::class)
-    override fun parse(source: String): SourceFile {
-        try {
-            val jdtParser = ASTParser.newParser(AST.JLS8)
-            jdtParser.setKind(K_COMPILATION_UNIT)
-            jdtParser.setSource(source.toCharArray())
-            val options = JavaCore.getOptions()
-            JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
-            jdtParser.setCompilerOptions(options)
-            jdtParser.setIgnoreMethodBodies(true)
-            val compilationUnit = jdtParser.createAST(null) as CompilationUnit
-            return Context(source).visit(compilationUnit)
-        } catch (e: Exception) {
-            throw IOException(e)
-        }
+    override fun parse(source: String): SourceFile = try {
+        jdtParser.setSource(source.toCharArray())
+        val compilationUnit = jdtParser.createAST(null) as CompilationUnit
+        Context(source).visit(compilationUnit)
+    } catch (e: Exception) {
+        throw IOException(e)
     }
 }

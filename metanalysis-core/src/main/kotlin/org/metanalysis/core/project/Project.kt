@@ -80,6 +80,10 @@ class Project @Throws(IOException::class) private constructor(
 
     private val head by lazy { vcs.getHead().id }
 
+    private fun getParser(path: String): Parser =
+            Parser.getByExtension(File(path).extension)
+                    ?: throw IOException("No parser can interpret '$path'!")
+
     /**
      * @throws IOException if any of the following situations appear:
      * - `revision` doesn't exist
@@ -91,10 +95,12 @@ class Project @Throws(IOException::class) private constructor(
      */
     @Throws(IOException::class)
     fun getFileHistory(path: String, revision: String = head): History {
+        val parser = getParser(path)
         val history = arrayListOf<HistoryEntry>()
         var sourceFile = SourceFile()
         vcs.getFileHistory(revision, path).forEach { (id, author, date) ->
-            val newSourceFile = getFileModel(path, id) ?: SourceFile()
+            val source = vcs.getFile(revision, path)
+            val newSourceFile = source?.let(parser::parse) ?: SourceFile()
             val transaction = sourceFile.diff(newSourceFile)
             history += HistoryEntry(id, author, date, transaction)
             sourceFile = newSourceFile
@@ -115,9 +121,8 @@ class Project @Throws(IOException::class) private constructor(
      */
     @Throws(IOException::class)
     fun getFileModel(path: String, revision: String = head): SourceFile? {
+        val parser = getParser(path)
         val source = vcs.getFile(revision, path) ?: return null
-        val parser = Parser.getByExtension(File(path).extension)
-                ?: throw IOException("No parser can interpret '$path'!")
         return parser.parse(source)
     }
 

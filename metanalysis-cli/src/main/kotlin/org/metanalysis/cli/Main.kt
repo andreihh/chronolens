@@ -75,9 +75,9 @@ fun main(args: Array<String>) {
                                 out = FileOutputStream(outputPath),
                                 value = history
                         )
-                        printlnError("Analyzed '$path'!")
+                        printlnError("SUCCESS analyzing '$path'!")
                     } catch (e: IOException) {
-                        printlnError(e.message)
+                        printlnError("ERROR analyzing '$path': ${e.message}")
                     }
                 }
             }
