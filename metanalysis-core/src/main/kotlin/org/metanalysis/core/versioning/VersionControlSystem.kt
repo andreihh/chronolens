@@ -51,7 +51,8 @@ abstract class VersionControlSystem {
          * was detected or if multiple repositories were detected
          * @throws SubprocessInterruptedException if the VCS process is
          * interrupted
-         * @throws IOException if any input related errors occur
+         * @throws IOException if the configuration file couldn't be parsed or
+         * if any input related errors occur
          */
         @Throws(IOException::class)
         @JvmStatic fun get(): VersionControlSystem? =

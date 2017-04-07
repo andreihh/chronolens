@@ -32,13 +32,18 @@ import java.util.ServiceLoader
  */
 abstract class Parser {
     companion object {
-        private val parsers = ServiceLoader.load(Parser::class.java)
-        private val languageToParser = parsers.associateBy(Parser::language)
-        private val extensionToParser = parsers.flatMap { parser ->
-            parser.extensions.map { extension ->
-                extension to parser
-            }
-        }.toMap()
+        private val parsers by lazy { ServiceLoader.load(Parser::class.java) }
+        private val languageToParser by lazy {
+            parsers.associateBy(Parser::language)
+        }
+
+        private val extensionToParser by lazy {
+            parsers.flatMap { parser ->
+                parser.extensions.map { extension ->
+                    extension to parser
+                }
+            }.toMap()
+        }
 
         /**
          * Returns a parser which can interpret the given programming
@@ -47,7 +52,9 @@ abstract class Parser {
          * @param language the language which must be supported by the parser
          * @return the parser which supports the given `language`, or `null` if
          * no such parser was provided
+         * @throws IOException if the configuration file couldn't be parsed
          */
+        @Throws(IOException::class)
         @JvmStatic fun getByLanguage(language: String): Parser? =
                 languageToParser[language]
 
