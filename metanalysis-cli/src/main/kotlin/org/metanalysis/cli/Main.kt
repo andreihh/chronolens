@@ -21,6 +21,7 @@ package org.metanalysis.cli
 import org.metanalysis.core.project.Project
 import org.metanalysis.core.serialization.JsonDriver
 
+import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.PrintStream
@@ -28,7 +29,12 @@ import java.io.PrintStream
 import kotlin.system.exitProcess
 
 fun usage(stream: PrintStream = System.err): Nothing {
-    stream.println("Usage: [--vcs=\$vcs] --out=\$path --file=\$path")
+    stream.println(
+    """Usage: (get [--out=<path>] --file=<path>)
+       | (history --out-dir=<path> [--file=<path> | --all])
+       | list
+       | help"""
+    )
     exitProcess(1)
 }
 
@@ -39,48 +45,47 @@ fun printlnError(line: String?) {
 fun main(args: Array<String>) {
     val command = args.getOrNull(0) ?: usage()
     val options = args.drop(1).associate {
-        if (!it.startsWith("--") || '=' !in it) {
+        if (!it.startsWith("--")) {
             usage()
         }
-        val (option, value) = it.drop(2).split('=', limit = 2)
+        val option = it.removePrefix("--").substringBefore('=')
+        val value = it.substringAfter('=', "")
         option to value
     }
-    val vcs = options["vcs"]
     try {
-        val project = Project(vcs)
+        val project = Project()
         when (command) {
             "help" -> usage(System.out)
             "get" -> {
                 val path = options["file"] ?: usage()
+                val out = options["out"]?.let(::FileOutputStream) ?: System.out
                 val sourceFile = project.getFileModel(path)
-                if (sourceFile == null) {
-                    printlnError("'$path' doesn't exist!")
-                    exitProcess(1)
-                }
-                JsonDriver.serialize(System.out, sourceFile)
+                JsonDriver.serialize(out, sourceFile)
             }
             "history" -> {
-                val output = options["out"] ?: usage()
-                val path = options["file"] ?: usage()
-                val history = project.getFileHistory(path)
-                JsonDriver.serialize(FileOutputStream(output), history)
-            }
-            "all" -> {
-                val outputDir = options["out"] ?: usage()
-                project.listFiles().forEach { path ->
-                    try {
-                        val history = project.getFileHistory(path)
-                        val outputPath = "$outputDir/${path.replace('/', '.')}"
-                        JsonDriver.serialize(
-                                out = FileOutputStream(outputPath),
-                                value = history
-                        )
-                        printlnError("SUCCESS analyzing '$path'!")
-                    } catch (e: IOException) {
-                        printlnError("ERROR analyzing '$path': ${e.message}")
+                val outDir = options["out-dir"] ?: usage()
+                if ("all" in options) {
+                    project.listFiles().forEach { path ->
+                        try {
+                            val outPath = path.replace('/', '.')
+                            val out = FileOutputStream(File(outDir, outPath))
+                            val history = project.getFileHistory(path)
+                            JsonDriver.serialize(out, history)
+                            printlnError("SUCCESS analyzing '$path'!")
+                        } catch (e: IOException) {
+                            printlnError("ERROR at '$path': ${e.message}")
+                        }
                     }
+                } else {
+                    val path = options["file"] ?: usage()
+                    val outPath = path.replace('/', '.')
+                    val out = FileOutputStream(File(outDir, outPath))
+                    val history = project.getFileHistory(path)
+                    JsonDriver.serialize(out, history)
                 }
             }
+            "list" -> project.listFiles().forEach(::println)
+            else -> usage()
         }
     } catch (e: IOException) {
         printlnError(e.message)

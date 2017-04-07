@@ -19,10 +19,10 @@ package org.metanalysis.core.versioning
 import java.io.IOException
 
 /**
- * Signals that a specific revision is invalid or doesn't exist.
- *
- * @param revision the revision which couldn't be found
+ * Signals that a specified revision or file doesn't exist in the VCS
+ * repository.
  */
-class RevisionNotFoundException(
-        revision: String
-) : IOException("Revision '$revision' not found!")
+class ObjectNotFoundException(
+        message: String? = null,
+        cause: Throwable? = null
+) : IOException(message, cause)

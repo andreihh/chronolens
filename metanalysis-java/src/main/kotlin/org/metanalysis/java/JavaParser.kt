@@ -66,14 +66,11 @@ class JavaParser : Parser() {
 
         fun getBody(method: MethodDeclaration) =
                 substring(method.startPosition, method.length)
-                        .dropWhile { it != '{' }
-                        .toBlock()
+                        .dropWhile { it != '{' }.toBlock()
 
         fun getInitializer(variable: VariableDeclaration) =
                 substring(variable.startPosition, variable.length)
-                        .dropWhile { it != '=' }
-                        .removePrefix("=")
-                        .toBlock()
+                        .substringAfter('=', "").toBlock()
 
         fun getInitializer(enumConstant: EnumConstantDeclaration) = substring(
                 enumConstant.startPosition,
@@ -127,6 +124,7 @@ class JavaParser : Parser() {
             if (member is FieldDeclaration) member.fragments()
             else listOf(member)
         }
+        println(declarations)
         return declarations
     }
 
@@ -138,7 +136,7 @@ class JavaParser : Parser() {
                 is EnumConstantDeclaration -> visit(member)
                 is VariableDeclaration -> visit(member)
                 is MethodDeclaration -> visit(member)
-                is Initializer -> throw IOException("Can't parse initializers!")
+                is Initializer -> throw TODO("Can't parse initializers!")
                 else -> throw AssertionError("Unknown declaration $member!")
             }
         }
@@ -178,20 +176,21 @@ class JavaParser : Parser() {
     override val language: String = LANGUAGE
     override val extensions: Set<String> = EXTENSIONS
 
-    private val jdtParser = ASTParser.newParser(AST.JLS8).apply {
-        setKind(K_COMPILATION_UNIT)
-        val options = JavaCore.getOptions()
-        JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
-        setCompilerOptions(options)
-        setIgnoreMethodBodies(true)
-    }
-
     @Throws(IOException::class)
     override fun parse(source: String): SourceFile = try {
-        jdtParser.setSource(source.toCharArray())
+        val options = JavaCore.getOptions()
+        JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
+        val jdtParser = ASTParser.newParser(AST.JLS8).apply {
+            setKind(K_COMPILATION_UNIT)
+            setCompilerOptions(options)
+            setIgnoreMethodBodies(true)
+            setSource(source.toCharArray())
+        }
         val compilationUnit = jdtParser.createAST(null) as CompilationUnit
         Context(source).visit(compilationUnit)
     } catch (e: Exception) {
+        throw IOException(e)
+    } catch (e: NotImplementedError) {
         throw IOException(e)
     }
 }

@@ -18,11 +18,23 @@ package org.metanalysis.core.versioning
 
 import java.io.IOException
 
-/**
- * Signals that the current thread was interrupted while waiting for a
- * subprocess to finish or that it terminated abnormally.
- */
-class SubprocessException(
-        message: String? = null,
-        cause: Throwable? = null
-) : IOException(message, cause)
+/** Signals that a VCS subprocess failed to complete successfully. */
+sealed class SubprocessException(
+        message: String?,
+        cause: Throwable?
+) : IOException(message, cause) {
+    /**
+     * Signals that the current thread was interrupted while waiting for the
+     * running VCS subprocess to finish.
+     */
+    class SubprocessInterruptedException(
+            message: String? = null,
+            cause: Throwable? = null
+    ) : SubprocessException(message, cause)
+
+    /** Signals that the running VCS subprocess terminated abnormally. */
+    class SubprocessTerminatedException(
+            message: String? = null,
+            cause: Throwable? = null
+    ) : SubprocessException(message, cause)
+}

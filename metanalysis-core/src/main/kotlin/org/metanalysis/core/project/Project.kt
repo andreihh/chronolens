@@ -22,7 +22,7 @@ import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.versioning.VersionControlSystem
 import org.metanalysis.core.versioning.VersionControlSystem.Companion.get
-import org.metanalysis.core.versioning.VersionControlSystem.Companion.getByName
+import org.metanalysis.core.versioning.ObjectNotFoundException
 
 import java.io.File
 import java.io.IOException
@@ -34,15 +34,11 @@ import java.util.Date
  *
  * @property vcs the VCS behind the repository
  */
-class Project @Throws(IOException::class) private constructor(
-        private val vcs: VersionControlSystem
-) {
+class Project private constructor(private val vcs: VersionControlSystem) {
     companion object {
         /**
          * Utility factory method.
          *
-         * @param vcs the name of the used VCS, or `null` if the VCS should be
-         * detected automatically
          * @return the project instance which can query the detected repository
          * for code metadata
          * @throws IOException if any of the following situations appear:
@@ -53,12 +49,9 @@ class Project @Throws(IOException::class) private constructor(
          * - any input related errors occur
          */
         @Throws(IOException::class)
-        @JvmStatic operator fun invoke(vcs: String? = null): Project {
-            val vcsInstance = if (vcs != null) vcs.let(::getByName)
-                    ?: throw IOException("'$vcs' not supported!")
-            else get() ?: throw IOException("VCS root not found or ambiguous!")
-            return Project(vcsInstance)
-        }
+        @JvmStatic operator fun invoke(): Project =
+                get()?.let(::Project) ?:
+                        throw IOException("VCS root not found or ambiguous!")
     }
 
     data class HistoryEntry(
@@ -72,12 +65,6 @@ class Project @Throws(IOException::class) private constructor(
             private val entries: List<HistoryEntry>
     ) : List<HistoryEntry> by entries
 
-    init {
-        if (!vcs.detectRepository()) {
-            throw IOException("No '${vcs.name}' repository detected!")
-        }
-    }
-
     private val head by lazy { vcs.getHead().id }
 
     private fun getParser(path: String): Parser =
@@ -88,20 +75,21 @@ class Project @Throws(IOException::class) private constructor(
      * @throws IOException if any of the following situations appear:
      * - `revision` doesn't exist
      * - `path` never existed in `revision` or any of its ancestors
-     * - `path` contained invalid code at any point in time
      * - none of the provided parsers can interpret the file at the given `path`
+     * - `path` contained invalid code at any point in time
      * - the VCS subprocess is interrupted or terminates abnormally
      * - any input related errors occur
      */
     @Throws(IOException::class)
     fun getFileHistory(path: String, revision: String = head): History {
         val parser = getParser(path)
+        val commits = vcs.getFileHistory(revision, path)
         val history = arrayListOf<HistoryEntry>()
         var sourceFile = SourceFile()
-        vcs.getFileHistory(revision, path).forEach { (id, author, date) ->
+        for ((id, author, date) in commits) {
             val source = try {
                 vcs.getFile(id, path)
-            } catch (e: IOException) {
+            } catch (e: ObjectNotFoundException) {
                 null
             }
             val newSourceFile = source?.let(parser::parse) ?: SourceFile()
@@ -114,12 +102,13 @@ class Project @Throws(IOException::class) private constructor(
 
     /**
      * @param path the relative path of the file which should be interpreted
-     * @return the parsed code metadata, or `null` if `path` doesn't exist in
-     * `revision`
+     * @param revision the desired revision of the file
+     * @return the parsed code metadata
      * @throws IOException if any of the following situations appear:
      * - `revision` doesn't exist
-     * - `path` contains invalid code
+     * - `path` doesn't exist in `revision`
      * - none of the provided parsers can interpret the file at the given `path`
+     * - `path` contains invalid code
      * - the VCS subprocess is interrupted or terminates abnormally
      * - any input related errors occur
      */

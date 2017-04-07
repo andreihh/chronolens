@@ -31,7 +31,6 @@ import org.metanalysis.core.model.Node.Variable
 
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.net.URL
 
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals

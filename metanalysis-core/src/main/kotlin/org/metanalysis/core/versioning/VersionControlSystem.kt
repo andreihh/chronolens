@@ -16,7 +16,9 @@
 
 package org.metanalysis.core.versioning
 
-import java.io.FileNotFoundException
+import org.metanalysis.core.versioning.SubprocessException.SubprocessInterruptedException
+import org.metanalysis.core.versioning.SubprocessException.SubprocessTerminatedException
+
 import java.io.IOException
 import java.io.InputStream
 import java.util.ServiceLoader
@@ -36,29 +38,25 @@ import java.util.ServiceLoader
  */
 abstract class VersionControlSystem {
     companion object {
-        private val vcss = ServiceLoader.load(VersionControlSystem::class.java)
-        private val nameToVcs = vcss.associateBy(VersionControlSystem::name)
-                .filterValues(VersionControlSystem::isSupported)
-
-        /**
-         * Returns the VCS with the given `name`.
-         *
-         * @param name the name of the requested VCS
-         * @return the requested VCS, or `null` if no such system was provided
-         * or if it isn't supported in this environment
-         */
-        @JvmStatic fun getByName(name: String): VersionControlSystem? =
-                nameToVcs[name]
+        private val vcsList by lazy {
+            ServiceLoader.load(VersionControlSystem::class.java)
+                    .filter(VersionControlSystem::isSupported)
+        }
 
         /**
          * Returns the VCS for the repository detected in the current working
          * directory.
          *
-         * @return the requested VCS, or `null` if no such system could be
-         * identified or if multiple systems have been identified
+         * @return the requested VCS, or `null` if no supported VCS repository
+         * was detected or if multiple repositories were detected
+         * @throws SubprocessInterruptedException if the VCS process is
+         * interrupted
+         * @throws IOException if any input related errors occur
          */
-        @JvmStatic fun get(): VersionControlSystem? = nameToVcs.values
-                .filter(VersionControlSystem::detectRepository).singleOrNull()
+        @Throws(IOException::class)
+        @JvmStatic fun get(): VersionControlSystem? =
+                vcsList.filter(VersionControlSystem::detectRepository)
+                        .singleOrNull()
     }
 
     protected object Subprocess {
@@ -72,15 +70,16 @@ abstract class VersionControlSystem {
                 reader().use { it.readText() }
 
         /**
-         * Executes the given `command` and returns its resulting output.
+         * Executes the given `command` in a subprocess and returns its result.
          *
          * @param command the command which should be executed
-         * @return the parsed input from the subprocess standard output
-         * @throws InterruptedException if the `command` subprocess was
+         * @return the parsed input from `stdout` (if the subprocess terminated
+         * normally) or from `stderr` (if the subprocess terminated abnormally)
+         * @throws SubprocessInterruptedException if the subprocess was
          * interrupted
          * @throws IOException if any input related errors occur
          */
-        @Throws(InterruptedException::class, IOException::class)
+        @Throws(IOException::class)
         @JvmStatic fun execute(vararg command: String): Result {
             val process = ProcessBuilder().command(*command).start()
             try {
@@ -91,41 +90,39 @@ abstract class VersionControlSystem {
                 return if (exitCode == 0) Result.Success(input)
                 else Result.Error(exitCode, error)
             } catch (e: InterruptedException) {
-                throw SubprocessException(cause = e)
+                throw SubprocessInterruptedException(cause = e)
             } finally {
                 process.destroy()
             }
         }
     }
 
-    /** The name of this version control system. */
-    abstract val name: String
-
     /**
      * Returns whether this VCS is supported in this environment.
      *
-     * @throws InterruptedException if the VCS process is interrupted
+     * @throws SubprocessInterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     protected abstract fun isSupported(): Boolean
 
     /**
      * Returns whether a repository was detected in the current working
      * directory.
      *
-     * @throws InterruptedException if the VCS process is interrupted
+     * @throws SubprocessInterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     abstract fun detectRepository(): Boolean
 
     /**
-     * Returns the currently checked out commit.
+     * Returns the `head` commit.
      *
-     * @return the currently checked out commit
-     * @throws SubprocessException if the VCS process is interrupted or
-     * terminates abnormally
+     * @return the `head` commit
+     * @throws SubprocessInterruptedException if the VCS process is interrupted
+     * @throws SubprocessTerminatedException if the VCS process terminates
+     * abnormally
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -136,9 +133,10 @@ abstract class VersionControlSystem {
      *
      * @param revision the inspected revision
      * @return the corresponding commit
-     * @throws RevisionNotFoundException if `revision` doesn't exist
-     * @throws SubprocessException if the VCS process is interrupted or
-     * terminates abnormally
+     * @throws SubprocessInterruptedException if the VCS process is interrupted
+     * @throws SubprocessTerminatedException if the VCS process terminates
+     * abnormally
+     * @throws ObjectNotFoundException if `revision` doesn't exist
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -149,9 +147,10 @@ abstract class VersionControlSystem {
      *
      * @param revision the inspected revision
      * @return the set of files existing in the `revision`
-     * @throws RevisionNotFoundException if `revision` doesn't exist
-     * @throws SubprocessException if the VCS process is interrupted or
-     * terminates abnormally
+     * @throws SubprocessInterruptedException if the VCS process is interrupted
+     * @throws SubprocessTerminatedException if the VCS process terminates
+     * abnormally
+     * @throws ObjectNotFoundException if `revision` doesn't exist
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -163,11 +162,12 @@ abstract class VersionControlSystem {
      *
      * @param revision the desired revision of the file
      * @param path the relative path of the requested file
-     * @return the content of the requested file, or `null` if the file doesn't
-     * exist in `revision`
-     * @throws RevisionNotFoundException if `revision` doesn't exist
-     * @throws SubprocessException if the VCS process is interrupted or
-     * terminates abnormally
+     * @return the content of the requested file
+     * @throws SubprocessInterruptedException if the VCS process is interrupted
+     * @throws SubprocessTerminatedException if the VCS process terminates
+     * abnormally
+     * @throws ObjectNotFoundException if `revision` doesn't exist or if `path`
+     * doesn't exist in `revision`
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -179,11 +179,11 @@ abstract class VersionControlSystem {
      *
      * The commits are given chronologically.
      *
-     * @throws RevisionNotFoundException if `revision` doesn't exist
-     * @throws FileNotFoundException if `path` never existed in `revision` or
-     * any of its ancestors
-     * @throws SubprocessException if the VCS process is interrupted or
-     * terminates abnormally
+     * @throws SubprocessInterruptedException if the VCS process is interrupted
+     * @throws SubprocessTerminatedException if the VCS process terminates
+     * abnormally
+     * @throws ObjectNotFoundException if `revision` doesn't exist or if `path`
+     * never existed in `revision` or any of its ancestors
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)

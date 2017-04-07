@@ -17,18 +17,14 @@
 package org.metanalysis.test.core.versioning
 
 import org.metanalysis.core.versioning.Commit
+import org.metanalysis.core.versioning.ObjectNotFoundException
 import org.metanalysis.core.versioning.VersionControlSystem
 
-import java.io.FileNotFoundException
 import java.util.Date
 
 class VersionControlSystemMock(
         private val commits: List<CommitMock>
 ) : VersionControlSystem() {
-    companion object {
-        val NAME: String = "mockfs"
-    }
-
     data class CommitMock(
             val id: String,
             val author: String,
@@ -57,9 +53,6 @@ class VersionControlSystemMock(
         files = fileHistory
     }
 
-    override val name: String
-        get() = NAME
-
     override fun isSupported(): Boolean = true
 
     override fun detectRepository(): Boolean = true
@@ -80,6 +73,6 @@ class VersionControlSystemMock(
                 .filter { path in it.changedFiles }
                 .map { it.toCommit() }
         return if (history.isNotEmpty()) history
-        else throw FileNotFoundException("File '$path' not found!")
+        else throw ObjectNotFoundException("File '$path' not found!")
     }
 }
