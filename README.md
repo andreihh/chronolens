@@ -24,7 +24,7 @@ In order to use `metanalysis` you need to have `JDK 1.8` or newer.
 Download the most recently released `cli` artifact from
 [here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run it:
 
-```java -jar metanalysis-cli-$version-all --out=$output --file=$path```
+```java -jar metanalysis-cli-$version-all help```
 
 #### Using Gradle
 
