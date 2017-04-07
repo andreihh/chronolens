@@ -99,7 +99,11 @@ class Project @Throws(IOException::class) private constructor(
         val history = arrayListOf<HistoryEntry>()
         var sourceFile = SourceFile()
         vcs.getFileHistory(revision, path).forEach { (id, author, date) ->
-            val source = vcs.getFile(revision, path)
+            val source = try {
+                vcs.getFile(id, path)
+            } catch (e: IOException) {
+                null
+            }
             val newSourceFile = source?.let(parser::parse) ?: SourceFile()
             val transaction = sourceFile.diff(newSourceFile)
             history += HistoryEntry(id, author, date, transaction)
@@ -120,9 +124,9 @@ class Project @Throws(IOException::class) private constructor(
      * - any input related errors occur
      */
     @Throws(IOException::class)
-    fun getFileModel(path: String, revision: String = head): SourceFile? {
+    fun getFileModel(path: String, revision: String = head): SourceFile {
         val parser = getParser(path)
-        val source = vcs.getFile(revision, path) ?: return null
+        val source = vcs.getFile(revision, path)
         return parser.parse(source)
     }
 
@@ -144,11 +148,7 @@ class Project @Throws(IOException::class) private constructor(
     ): SourceFileTransaction? {
         val srcSourceFile = getFileModel(path, srcRevision)
         val dstSourceFile = getFileModel(path, dstRevision)
-        srcSourceFile ?: dstSourceFile ?: throw IOException(
-                "'$path' doesn't exist in '$srcRevision' or '$dstRevision'!"
-        )
-        return (srcSourceFile ?: SourceFile())
-                .diff(dstSourceFile ?: SourceFile())
+        return srcSourceFile.diff(dstSourceFile)
     }
 
     /**

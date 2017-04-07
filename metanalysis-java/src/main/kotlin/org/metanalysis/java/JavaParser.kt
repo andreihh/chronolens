@@ -57,44 +57,38 @@ class JavaParser : Parser() {
          * lines.
          */
         @JvmStatic fun String.toBlock(): List<String> =
-                split('\n').filter(String::isNotBlank).map(String::trim)
+                lines().filter(String::isNotBlank).map(String::trim)
     }
 
     private data class Context(private val source: String) {
-        private fun substring(startPosition: Int, length: Int): String =
+        private fun substring(startPosition: Int, length: Int) =
                 source.substring(startPosition, startPosition + length)
 
-        fun getBody(method: MethodDeclaration): List<String> =
+        fun getBody(method: MethodDeclaration) =
                 substring(method.startPosition, method.length)
-                        .dropWhile { it != '{' }.toBlock()
+                        .dropWhile { it != '{' }
+                        .toBlock()
 
-        fun getInitializer(variable: VariableDeclaration): List<String> =
+        fun getInitializer(variable: VariableDeclaration) =
                 substring(variable.startPosition, variable.length)
                         .dropWhile { it != '=' }
-                        .let {
-                            if (it.firstOrNull() == '=') it.drop(1)
-                            else it
-                        }.toBlock()
+                        .removePrefix("=")
+                        .toBlock()
 
-        fun getInitializer(
-                enumConstant: EnumConstantDeclaration
-        ): List<String> = substring(
+        fun getInitializer(enumConstant: EnumConstantDeclaration) = substring(
                 enumConstant.startPosition,
                 enumConstant.length
         ).toBlock()
 
-        fun getDefaultValue(
-                annotationMember: AnnotationTypeMemberDeclaration
-        ): List<String> = annotationMember.default?.let { value ->
-            substring(value.startPosition, value.length).toBlock()
-        } ?: emptyList()
+        fun getDefaultValue(annotationMember: AnnotationTypeMemberDeclaration) =
+                annotationMember.default?.let { value ->
+                    substring(value.startPosition, value.length).toBlock()
+                } ?: emptyList()
     }
 
     private fun <T> Collection<T>.requireDistinct(): Set<T> {
-        val unique = toHashSet()
-        if (size != unique.size) {
-            throw IOException("$this contains duplicated elements!")
-        }
+        val unique = toSet()
+        require(size == unique.size) { "$this contains duplicated elements!" }
         return unique
     }
 

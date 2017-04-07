@@ -72,8 +72,8 @@ class VersionControlSystemMock(
     override fun getCommit(revision: String): Commit =
             requireNotNull(commitsById[revision])
 
-    override fun getFile(revision: String, path: String): String? =
-            requireNotNull(files[revision])[path]
+    override fun getFile(revision: String, path: String): String =
+            requireNotNull(requireNotNull(files[revision])[path])
 
     override fun getFileHistory(revision: String, path: String): List<Commit> {
         val history = commits

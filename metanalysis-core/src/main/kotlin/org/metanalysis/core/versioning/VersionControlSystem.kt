@@ -64,7 +64,7 @@ abstract class VersionControlSystem {
     protected object Subprocess {
         sealed class Result {
             data class Success(val input: String) : Result()
-            data class Error(val message: String) : Result()
+            data class Error(val exitCode: Int, val message: String) : Result()
         }
 
         @Throws(IOException::class)
@@ -87,8 +87,9 @@ abstract class VersionControlSystem {
                 process.outputStream.close()
                 val input = process.inputStream.readText()
                 val error = process.errorStream.readText()
-                return if (process.waitFor() == 0) Result.Success(input)
-                else Result.Error(error)
+                val exitCode = process.waitFor()
+                return if (exitCode == 0) Result.Success(input)
+                else Result.Error(exitCode, error)
             } catch (e: InterruptedException) {
                 throw SubprocessException(cause = e)
             } finally {
@@ -170,7 +171,7 @@ abstract class VersionControlSystem {
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun getFile(revision: String, path: String): String?
+    abstract fun getFile(revision: String, path: String): String
 
     /**
      * Returns all the commits which modified the file at the given `path`, up

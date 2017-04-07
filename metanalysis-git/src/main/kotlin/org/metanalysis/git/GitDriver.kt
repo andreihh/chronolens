@@ -38,6 +38,12 @@ class GitDriver : VersionControlSystem() {
 
     private val formatOption: String = "--format=%at:%an"
 
+    @Throws(IOException::class)
+    private fun Result.get(): String = when (this) {
+        is Result.Success -> input
+        is Result.Error -> throw IOException(message)
+    }
+
     /**
      * Parse the commit from the following data format:
      * ```
@@ -45,9 +51,9 @@ class GitDriver : VersionControlSystem() {
      * seconds-since-epoch:author-name
      * ```
      */
-    private fun parseCommit(firstLine: String, secondLine: String): Commit {
-        val (_, id) = firstLine.split(' ', limit = 2)
-        val (date, author) = secondLine.split(':', limit = 2)
+    private fun parseCommit(line: String): Commit {
+        val (id, date, author) = line.removePrefix("commit ")
+                .split(':', limit = 3)
         return Commit(id, author, Date(1000L * date.toLong()))
     }
 
@@ -70,43 +76,29 @@ class GitDriver : VersionControlSystem() {
     override fun getHead(): Commit = getCommit("HEAD")
 
     @Throws(IOException::class)
-    override fun getCommit(revision: String): Commit {
-        val result = execute("git", "rev-list", "-1", formatOption, revision)
-        return when (result) {
-            is Result.Success -> try {
-                val (firstLine, secondLine) = result.input.split('\n')
-                parseCommit(firstLine, secondLine)
-            } catch (e: IndexOutOfBoundsException) {
-                throw IOException("Can't parse commit from '${result.input}'")
-            }
-            is Result.Error -> throw IOException(result.message)
-        }
-    }
+    override fun getCommit(revision: String): Commit =
+            execute("git", "rev-list", "-1", formatOption, revision).get()
+                    .lines()
+                    .filter(String::isNotBlank)
+                    .joinToString(":")
+                    .takeIf(String::isNotBlank)
+                    ?.let(this::parseCommit)
+                    ?: throw IOException("'$revision' is not a valid revision!")
 
     @Throws(IOException::class)
-    override fun listFiles(revision: String): Set<String> {
-        val result = execute("git", "ls-tree", "--name-only", "-r", revision)
-        return when (result) {
-            is Result.Success ->
-                result.input.split('\n').filter(String::isNotBlank).toSet()
-            is Result.Error -> throw IOException(result.message)
-        }
-    }
+    override fun listFiles(revision: String): Set<String> =
+            execute("git", "ls-tree", "--name-only", "-r", revision).get()
+                    .lines()
+                    .filter(String::isNotBlank)
+                    .toSet()
 
     @Throws(IOException::class)
-    override fun getFile(revision: String, path: String): String? {
-        val result = execute("git", "cat-file", "blob", "$revision:$path")
-        return when (result) {
-            is Result.Success -> result.input
-            is Result.Error ->
-                if ("Not a valid object name" in result.message) null
-                else throw IOException(result.message)
-        }
-    }
+    override fun getFile(revision: String, path: String): String =
+            execute("git", "cat-file", "blob", "$revision:$path").get()
 
     @Throws(IOException::class)
     override fun getFileHistory(revision: String, path: String): List<Commit> {
-        val result = execute(
+        val lines = execute(
                 "git",
                 "rev-list",
                 "--first-parent",
@@ -115,20 +107,11 @@ class GitDriver : VersionControlSystem() {
                 revision,
                 "--",
                 path
-        )
-        return when (result) {
-            is Result.Success -> {
-                val lines = result.input.split('\n')
-                val commits = arrayListOf<Commit>()
-                for (i in 0 until lines.size - 1 step 2) {
-                    commits += parseCommit(lines[i], lines[i + 1])
-                }
-                if (commits.isNotEmpty()) commits
-                else throw FileNotFoundException(
-                        "'$path' doesn't exist in '$revision' or its ancestors!"
-                )
-            }
-            is Result.Error -> throw IOException(result.message)
+        ).get().lines()
+        val commits = (0 until lines.size - 1 step 2).map { i ->
+            parseCommit("${lines[i]}:${lines[i + 1]}")
         }
+        return commits.takeIf(List<Commit>::isNotEmpty)
+                ?: throw IOException("'$revision:$path' is not a valid object!")
     }
 }
