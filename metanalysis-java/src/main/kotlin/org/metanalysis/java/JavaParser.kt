@@ -124,7 +124,6 @@ class JavaParser : Parser() {
             if (member is FieldDeclaration) member.fragments()
             else listOf(member)
         }
-        println(declarations)
         return declarations
     }
 
