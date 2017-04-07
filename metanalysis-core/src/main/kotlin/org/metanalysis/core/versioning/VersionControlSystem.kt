@@ -21,6 +21,7 @@ import org.metanalysis.core.versioning.SubprocessException.SubprocessTerminatedE
 
 import java.io.IOException
 import java.io.InputStream
+import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 
 /**
@@ -51,8 +52,9 @@ abstract class VersionControlSystem {
          * was detected or if multiple repositories were detected
          * @throws SubprocessInterruptedException if the VCS process is
          * interrupted
-         * @throws IOException if the configuration file couldn't be parsed or
-         * if any input related errors occur
+         * @throws ServiceConfigurationError if the configuration file couldn't
+         * be loaded properly
+         * @throws IOException if any input related errors occur
          */
         @Throws(IOException::class)
         @JvmStatic fun get(): VersionControlSystem? =

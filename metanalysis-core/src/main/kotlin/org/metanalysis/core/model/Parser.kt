@@ -20,6 +20,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.URL
+import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 
 /**
@@ -52,9 +53,9 @@ abstract class Parser {
          * @param language the language which must be supported by the parser
          * @return the parser which supports the given `language`, or `null` if
          * no such parser was provided
-         * @throws IOException if the configuration file couldn't be parsed
+         * @throws ServiceConfigurationError if the configuration file couldn't
+         * be loaded properly
          */
-        @Throws(IOException::class)
         @JvmStatic fun getByLanguage(language: String): Parser? =
                 languageToParser[language]
 
