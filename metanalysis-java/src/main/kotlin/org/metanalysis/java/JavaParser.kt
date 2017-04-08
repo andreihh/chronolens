@@ -85,7 +85,9 @@ class JavaParser : Parser() {
 
     private fun <T> Collection<T>.requireDistinct(): Set<T> {
         val unique = toSet()
-        require(size == unique.size) { "$this contains duplicated elements!" }
+        if (size != unique.size) {
+            throw SyntaxError("$this contains duplicated elements!")
+        }
         return unique
     }
 
@@ -187,9 +189,7 @@ class JavaParser : Parser() {
         }
         val compilationUnit = jdtParser.createAST(null) as CompilationUnit
         Context(source).visit(compilationUnit)
-    } catch (e: Exception) {
-        throw IOException(e)
     } catch (e: NotImplementedError) {
-        throw IOException(e)
+        throw SyntaxError(cause = e)
     }
 }

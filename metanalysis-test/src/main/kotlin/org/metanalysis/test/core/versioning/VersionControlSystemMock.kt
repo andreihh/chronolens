@@ -16,8 +16,6 @@
 
 package org.metanalysis.test.core.versioning
 
-import org.metanalysis.core.versioning.Commit
-import org.metanalysis.core.versioning.ObjectNotFoundException
 import org.metanalysis.core.versioning.VersionControlSystem
 
 import java.util.Date

@@ -16,11 +16,9 @@
 
 package org.metanalysis.core.versioning
 
-import org.metanalysis.core.versioning.SubprocessException.SubprocessInterruptedException
-import org.metanalysis.core.versioning.SubprocessException.SubprocessTerminatedException
-
+import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.InputStream
+import java.util.Date
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 
@@ -50,114 +48,114 @@ abstract class VersionControlSystem {
          *
          * @return the requested VCS, or `null` if no supported VCS repository
          * was detected or if multiple repositories were detected
-         * @throws SubprocessInterruptedException if the VCS process is
-         * interrupted
          * @throws ServiceConfigurationError if the configuration file couldn't
          * be loaded properly
+         * @throws InterruptedException if the VCS process is interrupted
          * @throws IOException if any input related errors occur
          */
-        @Throws(IOException::class)
+        @Throws(InterruptedException::class, IOException::class)
         @JvmStatic fun get(): VersionControlSystem? =
                 vcsList.filter(VersionControlSystem::detectRepository)
                         .singleOrNull()
     }
 
-    protected object Subprocess {
-        sealed class Result {
-            data class Success(val input: String) : Result()
-            data class Error(val exitCode: Int, val message: String) : Result()
-        }
+    /** A revision in a version control system (commit, tag, branch etc.). */
+    inner class Revision {
+        /** The unique id of this revision. */
+        val id: String
 
-        @Throws(IOException::class)
-        private fun InputStream.readText(): String =
-                reader().use { it.readText() }
+        /** The date at which this revision was created. */
+        val date: Date
+
+        /** The author of this revision. */
+        val author: String
 
         /**
-         * Executes the given `command` in a subprocess and returns its result.
-         *
-         * @param command the command which should be executed
-         * @return the parsed input from `stdout` (if the subprocess terminated
-         * normally) or from `stderr` (if the subprocess terminated abnormally)
-         * @throws SubprocessInterruptedException if the subprocess was
-         * interrupted
+         * @param revisionId the id of this revision
+         * @throws RevisionNotFoundException if this revision doesn't exist
+         * @throws InterruptedException if the VCS process is interrupted
          * @throws IOException if any input related errors occur
          */
-        @Throws(IOException::class)
-        @JvmStatic fun execute(vararg command: String): Result {
-            val process = ProcessBuilder().command(*command).start()
-            try {
-                process.outputStream.close()
-                val input = process.inputStream.readText()
-                val error = process.errorStream.readText()
-                val exitCode = process.waitFor()
-                return if (exitCode == 0) Result.Success(input)
-                else Result.Error(exitCode, error)
-            } catch (e: InterruptedException) {
-                throw SubprocessInterruptedException(cause = e)
-            } finally {
-                process.destroy()
-            }
+        @Throws(InterruptedException::class, IOException::class)
+        internal constructor(revisionId: String) {
+            val line = getRawRevision(revisionId)
+            val (rawId, rawDate, rawAuthor) = line.split(':', limit = 3)
+            id = rawId
+            date = Date(rawDate.toLong() * 1000)
+            author = rawAuthor
         }
+
+        internal fun isContainedIn(vcs: VersionControlSystem): Boolean =
+                this@VersionControlSystem == vcs
+
+        override fun equals(other: Any?): Boolean =
+                other is Revision && id == other.id
+                        && other.isContainedIn(this@VersionControlSystem)
+
+        override fun hashCode(): Int = id.hashCode()
+
+        override fun toString(): String =
+                "Revision(id=$id, date=$date, author=$author)"
+    }
+
+    protected fun validateRevision(revision: Revision) {
+        require(revision.isContainedIn(this)) { "Invalid revision $revision!" }
     }
 
     /**
      * Returns whether this VCS is supported in this environment.
      *
-     * @throws SubprocessInterruptedException if the VCS process is interrupted
+     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
+    @Throws(InterruptedException::class, IOException::class)
     protected abstract fun isSupported(): Boolean
 
     /**
      * Returns whether a repository was detected in the current working
      * directory.
      *
-     * @throws SubprocessInterruptedException if the VCS process is interrupted
+     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
-    abstract fun detectRepository(): Boolean
+    @Throws(InterruptedException::class, IOException::class)
+    protected abstract fun detectRepository(): Boolean
 
     /**
-     * Returns the `head` commit.
+     * Returns the raw representation of a revision in the following format:
+     * `<id>:<seconds since epoch>:<author name>`.
      *
-     * @return the `head` commit
-     * @throws SubprocessInterruptedException if the VCS process is interrupted
-     * @throws SubprocessTerminatedException if the VCS process terminates
-     * abnormally
+     * @param revisionId the id of the requested revision
+     * @return the raw representation of the requested revision
+     * @throws RevisionNotFoundException if the requested revision doesn't exist
+     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
-    abstract fun getHead(): Commit
+    @Throws(InterruptedException::class, IOException::class)
+    protected abstract fun getRawRevision(revisionId: String): String
 
     /**
-     * Returns the commit which corresponds to the given `revision`.
+     * Returns the `head` revision.
      *
-     * @param revision the inspected revision
-     * @return the corresponding commit
-     * @throws SubprocessInterruptedException if the VCS process is interrupted
-     * @throws SubprocessTerminatedException if the VCS process terminates
-     * abnormally
-     * @throws ObjectNotFoundException if `revision` doesn't exist
+     * @return the `head` revision
+     * @throws IllegalStateException if the `head` revision doesn't exist
+     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
-    abstract fun getCommit(revision: String): Commit
+    @Throws(InterruptedException::class, IOException::class)
+    abstract fun getHead(): Revision
 
     /**
-     * Returns all the existing files in `revision`.
+     * Returns the revision with the given `revisionId`.
      *
-     * @param revision the inspected revision
-     * @return the set of files existing in the `revision`
-     * @throws SubprocessInterruptedException if the VCS process is interrupted
-     * @throws SubprocessTerminatedException if the VCS process terminates
-     * abnormally
-     * @throws ObjectNotFoundException if `revision` doesn't exist
+     * @param revisionId the id of the requested revision
+     * @return the requested revision
+     * @throws RevisionNotFoundException if the requested revision doesn't exist
+     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
-    abstract fun listFiles(revision: String): Set<String>
+    @Throws(InterruptedException::class, IOException::class)
+    fun getRevision(revisionId: String): Revision = Revision(revisionId)
 
     /**
      * Returns the content of the file located at the given `path` as it is
@@ -165,30 +163,45 @@ abstract class VersionControlSystem {
      *
      * @param revision the desired revision of the file
      * @param path the relative path of the requested file
-     * @return the content of the requested file
-     * @throws SubprocessInterruptedException if the VCS process is interrupted
-     * @throws SubprocessTerminatedException if the VCS process terminates
-     * abnormally
-     * @throws ObjectNotFoundException if `revision` doesn't exist or if `path`
-     * doesn't exist in `revision`
+     * @return the content of the requested file, or `null` if it doesn't exist
+     * in `revision`
+     * @throws IllegalArgumentException if `revision` wasn't created by this VCS
+     * @throws SubprocessException if the VCS process terminates abnormally
+     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
-    abstract fun getFile(revision: String, path: String): String
+    @Throws(InterruptedException::class, IOException::class)
+    abstract fun getFile(revision: Revision, path: String): String?
 
     /**
-     * Returns all the commits which modified the file at the given `path`, up
+     * Returns all the revisions which modified the file at the given `path` up
      * to the given `revision`.
      *
-     * The commits are given chronologically.
+     * The revisions are given chronologically.
      *
-     * @throws SubprocessInterruptedException if the VCS process is interrupted
-     * @throws SubprocessTerminatedException if the VCS process terminates
-     * abnormally
-     * @throws ObjectNotFoundException if `revision` doesn't exist or if `path`
-     * never existed in `revision` or any of its ancestors
+     * @throws IllegalArgumentException if `revision` wasn't created by this VCS
+     * @throws FileNotFoundException if `path` never existed in `revision` or
+     * any of its ancestors
+     * @throws SubprocessException if the VCS process terminates abnormally
+     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
-    abstract fun getFileHistory(revision: String, path: String): List<Commit>
+    @Throws(InterruptedException::class, IOException::class)
+    abstract fun getFileHistory(
+            revision: Revision,
+            path: String
+    ): List<Revision>
+
+    /**
+     * Returns all the existing files in `revision`.
+     *
+     * @param revision the inspected revision
+     * @return the set of existing files in `revision`
+     * @throws IllegalArgumentException if `revision` wasn't created by this VCS
+     * @throws SubprocessException if the VCS process terminates abnormally
+     * @throws InterruptedException if the VCS process is interrupted
+     * @throws IOException if any input related errors occur
+     */
+    @Throws(InterruptedException::class, IOException::class)
+    abstract fun listFiles(revision: Revision): Set<String>
 }

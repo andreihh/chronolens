@@ -19,12 +19,11 @@ package org.metanalysis.core.project
 import org.metanalysis.core.delta.SourceFileTransaction
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.model.Parser
+import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.versioning.VersionControlSystem
 import org.metanalysis.core.versioning.VersionControlSystem.Companion.get
-import org.metanalysis.core.versioning.ObjectNotFoundException
 
-import java.io.File
 import java.io.IOException
 import java.util.Date
 
@@ -40,24 +39,20 @@ class Project private constructor(private val vcs: VersionControlSystem) {
          * Utility factory method.
          *
          * @return the project instance which can query the detected repository
-         * for code metadata
-         * @throws IOException if any of the following situations appear:
-         * - `vcs` is not `null` and is not supported in the current environment
-         * - `vcs` is not `null` and no repository could be detected
-         * - `vcs` is `null` and no VCS root could be unambiguously detected
-         * - the VCS subprocess is interrupted
-         * - any input related errors occur
+         * for code metadata, or `null` if no supported VCS repository could be
+         * unambiguously detected
+         * @throws IllegalStateException if the `head` revision doesn't exist
+         * @throws InterruptedException if the VCS process is interrupted
+         * @throws IOException if any input related errors occur
          */
-        @Throws(IOException::class)
-        @JvmStatic operator fun invoke(): Project =
-                get()?.let(::Project) ?:
-                        throw IOException("VCS root not found or ambiguous!")
+        @Throws(InterruptedException::class, IOException::class)
+        @JvmStatic fun create(): Project? = get()?.let(::Project)
     }
 
     data class HistoryEntry(
-            val commit: String,
-            val author: String,
+            val revision: String,
             val date: Date,
+            val author: String,
             val transaction: SourceFileTransaction?
     )
 
@@ -65,58 +60,33 @@ class Project private constructor(private val vcs: VersionControlSystem) {
             private val entries: List<HistoryEntry>
     ) : List<HistoryEntry> by entries
 
-    private val head by lazy { vcs.getHead().id }
+    private val head = vcs.getHead().id
 
+    @Throws(IOException::class)
     private fun getParser(path: String): Parser =
-            Parser.getByExtension(File(path).extension)
+            Parser.getByExtension(path.substringAfterLast('.', ""))
                     ?: throw IOException("No parser can interpret '$path'!")
 
     /**
-     * @throws IOException if any of the following situations appear:
-     * - `revision` doesn't exist
-     * - `path` never existed in `revision` or any of its ancestors
-     * - none of the provided parsers can interpret the file at the given `path`
-     * - `path` contained invalid code at any point in time
-     * - the VCS subprocess is interrupted or terminates abnormally
-     * - any input related errors occur
-     */
-    @Throws(IOException::class)
-    fun getFileHistory(path: String, revision: String = head): History {
-        val parser = getParser(path)
-        val commits = vcs.getFileHistory(revision, path)
-        val history = arrayListOf<HistoryEntry>()
-        var sourceFile = SourceFile()
-        for ((id, author, date) in commits) {
-            val source = try {
-                vcs.getFile(id, path)
-            } catch (e: ObjectNotFoundException) {
-                null
-            }
-            val newSourceFile = source?.let(parser::parse) ?: SourceFile()
-            val transaction = sourceFile.diff(newSourceFile)
-            history += HistoryEntry(id, author, date, transaction)
-            sourceFile = newSourceFile
-        }
-        return History(history)
-    }
-
-    /**
+     * Returns the code metadata of the file at the given `path` as it is found
+     * in `revision`.
+     *
      * @param path the relative path of the file which should be interpreted
      * @param revision the desired revision of the file
-     * @return the parsed code metadata
+     * @return the parsed code metadata, or `null` if the given `path` doesn't
+     * exist in `revision`
+     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any of the following situations appear:
      * - `revision` doesn't exist
-     * - `path` doesn't exist in `revision`
      * - none of the provided parsers can interpret the file at the given `path`
-     * - `path` contains invalid code
-     * - the VCS subprocess is interrupted or terminates abnormally
+     * - the file at the given `path` contains invalid code
      * - any input related errors occur
      */
-    @Throws(IOException::class)
-    fun getFileModel(path: String, revision: String = head): SourceFile {
+    @Throws(InterruptedException::class, IOException::class)
+    fun getFileModel(path: String, revision: String = head): SourceFile? {
         val parser = getParser(path)
-        val source = vcs.getFile(revision, path)
-        return parser.parse(source)
+        val source = vcs.getFile(vcs.getRevision(revision), path)
+        return source?.let(parser::parse)
     }
 
     /**
@@ -135,18 +105,50 @@ class Project private constructor(private val vcs: VersionControlSystem) {
             srcRevision: String,
             dstRevision: String = head
     ): SourceFileTransaction? {
-        val srcSourceFile = getFileModel(path, srcRevision)
-        val dstSourceFile = getFileModel(path, dstRevision)
+        val srcSourceFile = getFileModel(path, srcRevision) ?: SourceFile()
+        val dstSourceFile = getFileModel(path, dstRevision) ?: SourceFile()
         return srcSourceFile.diff(dstSourceFile)
     }
 
     /**
      * @throws IOException if any of the following situations appear:
      * - `revision` doesn't exist
+     * - `path` never existed in `revision` or any of its ancestors
+     * - none of the provided parsers can interpret the file at the given `path`
+     * - `path` contained invalid code at any point in time
      * - the VCS subprocess is interrupted or terminates abnormally
      * - any input related errors occur
      */
     @Throws(IOException::class)
+    fun getFileHistory(path: String, revision: String = head): History {
+        val parser = getParser(path)
+        val revisions = vcs.getFileHistory(vcs.getRevision(revision), path)
+        val history = arrayListOf<HistoryEntry>()
+        var sourceFile = SourceFile()
+        for (rev in revisions) {
+            val source = vcs.getFile(rev, path)
+            val newSourceFile = try {
+                source?.let(parser::parse) ?: SourceFile()
+            } catch (e: SyntaxError) {
+                sourceFile
+            }
+            val transaction = sourceFile.diff(newSourceFile)
+            history += HistoryEntry(rev.id, rev.date, rev.author, transaction)
+            sourceFile = newSourceFile
+        }
+        return History(history)
+    }
+
+    /**
+     * Returns all the existing files in `revision`.
+     *
+     * @param revision the inspected revision
+     * @return the set of existing files in `revision`
+     * @throws InterruptedException if the VCS process is interrupted
+     * @throws IOException if `revision` doesn't exist or any input related
+     * errors occur
+     */
+    @Throws(InterruptedException::class, IOException::class)
     fun listFiles(revision: String = head): Set<String> =
-            vcs.listFiles(revision)
+            vcs.listFiles(vcs.getRevision(revision))
 }

@@ -85,6 +85,12 @@ abstract class Parser {
                 getByExtension(file.extension)?.parse(file)
     }
 
+    /** Indicates that a parsed file contains invalid code. */
+    class SyntaxError(
+            message: String? = null,
+            cause: Throwable? = null
+    ) : Exception(message, cause)
+
     /** The programming language which can be interpreted by this parser. */
     abstract val language: String
 
@@ -96,9 +102,9 @@ abstract class Parser {
      *
      * @param source the source code which should be parsed
      * @return the source file metadata
-     * @throws IOException if the given `source` is not valid source code
+     * @throws SyntaxError if the given `source` is not valid source code
      */
-    @Throws(IOException::class)
+    @Throws(SyntaxError::class)
     abstract fun parse(source: String): SourceFile
 
     /**

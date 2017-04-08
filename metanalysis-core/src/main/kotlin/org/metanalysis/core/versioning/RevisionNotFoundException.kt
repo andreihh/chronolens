@@ -18,11 +18,7 @@ package org.metanalysis.core.versioning
 
 import java.io.IOException
 
-/**
- * Signals that a specified revision or file doesn't exist in the VCS
- * repository.
- */
-class ObjectNotFoundException(
-        message: String? = null,
-        cause: Throwable? = null
-) : IOException(message, cause)
+/** Signals that a requested revision doesn't exist. */
+class RevisionNotFoundException(
+        revisionId: String
+) : IOException("Revision '$revisionId' doesn't exist!")

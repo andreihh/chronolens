@@ -19,7 +19,6 @@ package org.metanalysis.git
 import org.junit.Ignore
 import org.junit.Test
 
-import org.metanalysis.core.versioning.ObjectNotFoundException
 import org.metanalysis.core.versioning.SubprocessException.SubprocessInterruptedException
 
 @Ignore
