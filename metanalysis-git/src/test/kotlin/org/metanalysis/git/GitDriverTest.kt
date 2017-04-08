@@ -18,8 +18,11 @@ package org.metanalysis.git
 
 import org.junit.Ignore
 import org.junit.Test
+import org.metanalysis.core.versioning.RevisionNotFoundException
 
-import org.metanalysis.core.versioning.SubprocessException.SubprocessInterruptedException
+import java.io.FileNotFoundException
+
+import kotlin.test.assertNull
 
 @Ignore
 class GitDriverTest {
@@ -31,133 +34,62 @@ class GitDriverTest {
     }
 
     @Test fun `test get commit`() {
-        val commit = git.getCommit("HEAD")
+        val commit = git.getRevision("HEAD")
         println(commit)
     }
 
     @Test fun `test get branch`() {
-        val commit = git.getCommit("master")
+        val commit = git.getRevision("master")
         println(commit)
     }
 
-    @Test(expected = SubprocessInterruptedException::class)
+    @Test(expected = InterruptedException::class)
     fun `test interrupt get commit throws`() {
         Thread.currentThread().interrupt()
         git.getHead()
     }
 
-    @Test(expected = ObjectNotFoundException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get invalid commit throws`() {
-        git.getCommit("00000000000")
+        git.getRevision("00000000000")
     }
 
-    @Test(expected = ObjectNotFoundException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get invalid branch throws`() {
-        git.getCommit("master-non-existent")
+        git.getRevision("master-non-existent")
     }
 
-    @Test(expected = ObjectNotFoundException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test get file as commit throws`() {
-        println(git.getCommit("src"))
+        println(git.getRevision("src"))
     }
 
     @Test fun `test list files from commit`() {
-        val files = git.listFiles("HEAD")
+        val files = git.listFiles(git.getHead())
         println(files)
     }
 
-    @Test fun `test list files from branch`() {
-        val files = git.listFiles("master")
-        println(files)
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test list files from invalid commit throws`() {
-        git.listFiles("0000000")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test list files from invalid branch throws`() {
-        git.listFiles("master-non-existent")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test list files from file as commit throws`() {
-        git.listFiles("src")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
+    @Test(expected = RevisionNotFoundException::class)
     fun `test list files from revision-directory throws`() {
-        git.listFiles("HEAD:src")
+        git.listFiles(git.getRevision("HEAD:src"))
     }
 
     @Test fun `test get file from commit`() {
-        val fileContent = git.getFile("HEAD", "build.gradle")
+        val fileContent = git.getFile(git.getHead(), "build.gradle")
         println(fileContent)
     }
 
-    @Test fun `test get file from branch`() {
-        val fileContent = git.getFile("master", "build.gradle")
-        println(fileContent)
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test get file from invalid commit throws`() {
-        git.getFile("0000000", "build.gradle")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test get file from invalid branch throws`() {
-        git.getFile("master-non-existent", "build.gradle")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test get file from file as commit throws`() {
-        git.getFile("src", "build.gradle")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test get non-existent file from commit throws`() {
-        git.getFile("HEAD", "non-existent.txt")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test get non-existent file from branch throws`() {
-        git.getFile("HEAD", "non-existent.txt")
+    @Test fun `test get non-existent file from commit returns null`() {
+        assertNull(git.getFile(git.getHead(), "non-existent.txt"))
     }
 
     @Test fun `test get file history from commit`() {
-        val history = git.getFileHistory("HEAD", "../README.md")
+        val history = git.getFileHistory(git.getHead(), "../README.md")
         println(history.joinToString(separator = "\n"))
     }
 
-    @Test fun `test get file history from branch`() {
-        val history = git.getFileHistory("master", "../README.md")
-        println(history.joinToString(separator = "\n"))
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test get file history from invalid commit throws`() {
-        git.getFileHistory("000000", "build.gradle")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test get file history from invalid branch throws`() {
-        git.getFileHistory("master-non-existent", "build.gradle")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test get file history from file as commit throws`() {
-        git.getFileHistory("000000", "src")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
+    @Test(expected = FileNotFoundException::class)
     fun `test get non-existent file history from commit throws`() {
-        git.getFileHistory("HEAD", "non-existent.txt")
-    }
-
-    @Test(expected = ObjectNotFoundException::class)
-    fun `test get non-existent file history from branch throws`() {
-        git.getFileHistory("master", "non-existent.txt")
+        git.getFileHistory(git.getHead(), "non-existent.txt")
     }
 }

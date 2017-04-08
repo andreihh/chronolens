@@ -65,8 +65,8 @@ class SourceFileTransactionTest {
         val srcFile = File("src/test/resources/GenericTypeResolver-v1.mock")
         // the original file can be found at: https://raw.githubusercontent.com/spring-projects/spring-framework/5e946c270018c71bf25778bc2dc25e5a9dd809b0/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java
         val dstFile = File("src/test/resources/GenericTypeResolver-v2.mock")
-        val src = assertNotNull(Parser.parseFile(srcFile))
-        val dst = assertNotNull(Parser.parseFile(dstFile))
+        val src = assertNotNull(Parser.parse(srcFile))
+        val dst = assertNotNull(Parser.parse(dstFile))
         assertDiff(src, dst)
     }
 

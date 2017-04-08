@@ -18,8 +18,6 @@ package org.metanalysis.core.model
 
 import java.io.File
 import java.io.IOException
-import java.io.InputStream
-import java.net.URL
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 
@@ -37,7 +35,6 @@ abstract class Parser {
         private val languageToParser by lazy {
             parsers.associateBy(Parser::language)
         }
-
         private val extensionToParser by lazy {
             parsers.flatMap { parser ->
                 parser.extensions.map { extension ->
@@ -77,25 +74,26 @@ abstract class Parser {
          * @param file the file which should be parsed
          * @return the source file metadata, or `null` if none of the provided
          * parsers can interpret the given `file` extension
-         * @throws IOException if an error occurs trying to read the `file`
-         * content or if it contains invalid source code
+         * @throws SyntaxError if the `file` contains invalid source code
+         * @throws IOException if any input related errors occur
          */
-        @Throws(IOException::class)
-        @JvmStatic fun parseFile(file: File): SourceFile? =
-                getByExtension(file.extension)?.parse(file)
+        @Throws(SyntaxError::class, IOException::class)
+        @JvmStatic fun parse(file: File): SourceFile? =
+                getByExtension(file.extension)?.parse(file.readText())
     }
 
     /** Indicates that a parsed file contains invalid code. */
-    class SyntaxError(
-            message: String? = null,
-            cause: Throwable? = null
-    ) : Exception(message, cause)
+    class SyntaxError : IOException {
+        constructor(message: String?) : super(message)
+        constructor(cause: Throwable?) : super(cause)
+        constructor(message: String?, cause: Throwable?) : super(message, cause)
+    }
 
     /** The programming language which can be interpreted by this parser. */
-    abstract val language: String
+    protected abstract val language: String
 
     /** The file extensions which can be interpreted by this parser. */
-    abstract val extensions: Set<String>
+    protected abstract val extensions: Set<String>
 
     /**
      * Parses the given `source` code and returns the associated code metadata.
@@ -106,38 +104,4 @@ abstract class Parser {
      */
     @Throws(SyntaxError::class)
     abstract fun parse(source: String): SourceFile
-
-    /**
-     * Parses the given input stream and returns the associated code meta-data.
-     *
-     * @param src the input stream which should be parsed
-     * @return the source file metadata
-     * @throws IOException if an error occurs trying to read the input stream
-     * content or if it contains invalid source code
-     */
-    @Throws(IOException::class)
-    fun parse(src: InputStream): SourceFile = parse(src.reader().readText())
-
-    /**
-     * Parses the given `file` and returns the associated code meta-data.
-     *
-     * @param file the file which should be parsed
-     * @return the source file metadata
-     * @throws IOException if an error occurs trying to read the `file` content
-     * or if it contains invalid source code
-     */
-    @Throws(IOException::class)
-    fun parse(file: File): SourceFile = parse(file.readText())
-
-    /**
-     * Parses the content at the given `url` and returns the associated code
-     * meta-data.
-     *
-     * @param url the location of the content which should be parsed
-     * @return the source file metadata
-     * @throws IOException if an error occurs trying to read the content at the
-     * specified `url` or if it contains invalid source code
-     */
-    @Throws(IOException::class)
-    fun parse(url: URL): SourceFile = parse(url.readText())
 }

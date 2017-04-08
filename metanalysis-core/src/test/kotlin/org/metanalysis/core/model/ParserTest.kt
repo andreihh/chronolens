@@ -48,44 +48,40 @@ class ParserTest {
     }
 
     @Test fun `test parse input stream`() {
+        val source = javaClass.getResourceAsStream("/resource.mock")
+                .reader().readText()
         assertEquals(
                 expected = SourceFile(),
-                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(
-                        src = javaClass.getResourceAsStream("/resource.mock")
-                )
+                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(source)
         )
     }
 
     @Test fun `test parse url`() {
+        val source = javaClass.getResource("/resource.mock").readText()
         assertEquals(
                 expected = SourceFile(),
-                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(
-                        url = javaClass.getResource("/resource.mock")
-                )
+                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(source)
         )
     }
 
     @Test fun `test parse file`() {
+        val source = File("src/test/resources/resource.mock").readText()
         assertEquals(
                 expected = SourceFile(),
-                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(
-                        file = File("src/test/resources/resource.mock")
-                )
+                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(source)
         )
     }
 
     @Test fun `test static parse file`() {
         assertEquals(
                 expected = SourceFile(),
-                actual = Parser.parseFile(
-                        file = File("src/test/resources/resource.mock")
-                )
+                actual = Parser.parse(File("src/test/resources/resource.mock"))
         )
     }
 
     @Test fun `test static parse file of unknown extension returns null`() {
         val parser = Parser::class.qualifiedName
-        assertNull(Parser.parseFile(
+        assertNull(Parser.parse(
                 file = File("src/test/resources/META-INF/services/$parser")
         ))
     }

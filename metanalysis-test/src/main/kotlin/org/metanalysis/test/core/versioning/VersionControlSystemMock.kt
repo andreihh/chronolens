@@ -18,6 +18,7 @@ package org.metanalysis.test.core.versioning
 
 import org.metanalysis.core.versioning.VersionControlSystem
 
+import java.io.FileNotFoundException
 import java.util.Date
 
 class VersionControlSystemMock(
@@ -25,12 +26,12 @@ class VersionControlSystemMock(
 ) : VersionControlSystem() {
     data class CommitMock(
             val id: String,
-            val author: String,
             val date: Date,
+            val author: String,
             val changedFiles: Map<String, String?>
     )
 
-    private fun CommitMock.toCommit(): Commit = Commit(id, author, date)
+    private fun CommitMock.toCommit(): Revision = getRevision(id)
 
     private val files: Map<String, Map<String, String>>
     private val commitsById = commits.associate { it.id to it.toCommit() }
@@ -55,22 +56,26 @@ class VersionControlSystemMock(
 
     override fun detectRepository(): Boolean = true
 
-    override fun getHead(): Commit = commits.last().toCommit()
+    override fun getHead(): Revision = commits.last().toCommit()
 
-    override fun listFiles(revision: String): Set<String> =
-            requireNotNull(files[revision]).keys
+    override fun listFiles(revision: Revision): Set<String> =
+            requireNotNull(files[revision.id]).keys
 
-    override fun getCommit(revision: String): Commit =
-            requireNotNull(commitsById[revision])
+    override fun getRawRevision(revisionId: String): String =
+            requireNotNull(commitsById[revisionId]).toString() // TODO
+                    //.let { (id, date, author, _) -> "$id:$date:$author" }
 
-    override fun getFile(revision: String, path: String): String =
-            requireNotNull(requireNotNull(files[revision])[path])
+    override fun getFile(revision: Revision, path: String): String =
+            requireNotNull(requireNotNull(files[revision.id])[path])
 
-    override fun getFileHistory(revision: String, path: String): List<Commit> {
+    override fun getFileHistory(
+            revision: Revision,
+            path: String
+    ): List<Revision> {
         val history = commits
                 .filter { path in it.changedFiles }
                 .map { it.toCommit() }
         return if (history.isNotEmpty()) history
-        else throw ObjectNotFoundException("File '$path' not found!")
+        else throw FileNotFoundException("File '$path' not found!")
     }
 }

@@ -190,6 +190,6 @@ class JavaParser : Parser() {
         val compilationUnit = jdtParser.createAST(null) as CompilationUnit
         Context(source).visit(compilationUnit)
     } catch (e: NotImplementedError) {
-        throw SyntaxError(cause = e)
+        throw SyntaxError(e)
     }
 }

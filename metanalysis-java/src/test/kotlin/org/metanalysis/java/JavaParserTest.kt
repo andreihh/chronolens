@@ -22,6 +22,7 @@ import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.core.model.Parser
+import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.java.JavaParser.Companion.toBlock
 import org.metanalysis.test.PrettyPrinterVisitor
@@ -38,15 +39,15 @@ class JavaParserTest {
 
     @Test(expected = IOException::class)
     fun `test parse non-existent file throws`() {
-        parser.parse(File("non-existing-file"))
+        parser.parse(File("non-existing-file").readText())
     }
 
     @Test(expected = IOException::class)
     fun `test parse non-existing URL throws`() {
-        parser.parse(URL("file:///non-existing-url"))
+        parser.parse(URL("file:///non-existing-url").readText())
     }
 
-    @Test(expected = IOException::class)
+    @Test(expected = SyntaxError::class)
     fun `test parse invalid source throws`() {
         parser.parse("cla Main { int i = &@*; { class K; interface {}")
     }
@@ -279,17 +280,18 @@ class JavaParserTest {
     }
 
     @Test fun `test integration`() {
-        val source = javaClass.getResource("/IntegrationTest.java")
+        val source = javaClass.getResource("/IntegrationTest.java").readText()
         PrettyPrinterVisitor().visit(parser.parse(source))
     }
 
     @Test fun `test file integration`() {
         val source = File("src/test/resources/IntegrationTest.java")
-        PrettyPrinterVisitor().visit(assertNotNull(Parser.parseFile(source)))
+        PrettyPrinterVisitor().visit(assertNotNull(Parser.parse(source)))
     }
 
     @Test fun `test network`() {
         val source = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/master/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
+                .readText()
         PrettyPrinterVisitor().visit(parser.parse(source))
     }
 }

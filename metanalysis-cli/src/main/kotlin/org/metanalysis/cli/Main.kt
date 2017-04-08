@@ -42,6 +42,48 @@ fun printlnError(line: String?) {
     System.err.println("metanalysis: $line")
 }
 
+fun exitError(message: String?): Nothing {
+    printlnError(message)
+    exitProcess(1)
+}
+
+fun getCommand(project: Project, options: Map<String, String>) {
+    val path = options["file"] ?: usage()
+    val sourceFile = project.getFileModel(path)
+            ?: exitError("'$path' doesn't exist!")
+    val out = options["out"]?.let(::FileOutputStream)
+    if (out == null) {
+        JsonDriver.serialize(System.out, sourceFile)
+    } else {
+        out.use { JsonDriver.serialize(it, sourceFile) }
+    }
+}
+
+fun historyCommand(project: Project, options: Map<String, String>) {
+    val outDir = options["out-dir"] ?: usage()
+    if ("all" in options) {
+        project.listFiles().forEach { path ->
+            try {
+                val outPath = path.replace('/', '.')
+                FileOutputStream(File(outDir, outPath)).use { out ->
+                    val history = project.getFileHistory(path)
+                    JsonDriver.serialize(out, history)
+                    printlnError("SUCCESS analyzing '$path'!")
+                }
+            } catch (e: IOException) {
+                printlnError("ERROR at '$path': ${e.message}")
+            }
+        }
+    } else {
+        val path = options["file"] ?: usage()
+        val outPath = path.replace('/', '.')
+        FileOutputStream(File(outDir, outPath)).use { out ->
+            val history = project.getFileHistory(path)
+            JsonDriver.serialize(out, history)
+        }
+    }
+}
+
 fun main(args: Array<String>) {
     val command = args.getOrNull(0) ?: usage()
     val options = args.drop(1).associate {
@@ -52,43 +94,17 @@ fun main(args: Array<String>) {
         val value = it.substringAfter('=', "")
         option to value
     }
+    val project = Project.create()
+            ?: exitError("No supported VCS repository detected!")
     try {
-        val project = Project()
         when (command) {
             "help" -> usage(System.out)
-            "get" -> {
-                val path = options["file"] ?: usage()
-                val out = options["out"]?.let(::FileOutputStream) ?: System.out
-                val sourceFile = project.getFileModel(path)
-                JsonDriver.serialize(out, sourceFile)
-            }
-            "history" -> {
-                val outDir = options["out-dir"] ?: usage()
-                if ("all" in options) {
-                    project.listFiles().forEach { path ->
-                        try {
-                            val outPath = path.replace('/', '.')
-                            val out = FileOutputStream(File(outDir, outPath))
-                            val history = project.getFileHistory(path)
-                            JsonDriver.serialize(out, history)
-                            printlnError("SUCCESS analyzing '$path'!")
-                        } catch (e: IOException) {
-                            printlnError("ERROR at '$path': ${e.message}")
-                        }
-                    }
-                } else {
-                    val path = options["file"] ?: usage()
-                    val outPath = path.replace('/', '.')
-                    val out = FileOutputStream(File(outDir, outPath))
-                    val history = project.getFileHistory(path)
-                    JsonDriver.serialize(out, history)
-                }
-            }
+            "get" -> getCommand(project, options)
+            "history" -> historyCommand(project, options)
             "list" -> project.listFiles().forEach(::println)
             else -> usage()
         }
-    } catch (e: IOException) {
-        printlnError(e.message)
-        exitProcess(1)
+    } catch (e: Exception) {
+        exitError(e.message)
     }
 }
