@@ -22,6 +22,7 @@ import org.metanalysis.core.versioning.Subprocess.Result
 import org.metanalysis.core.versioning.Subprocess.execute
 
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class SubprocessTest {
     @Test fun `test get system date`() {
@@ -31,17 +32,12 @@ class SubprocessTest {
     }
 
     @Test fun `test system date with invalid argument returns error`() {
-        val expected = Result.Error(
-                exitCode = 1,
-                message = "date: unrecognized option '---'\n"
-                        + "Try 'date --help' for more information.\n"
-        )
-        val actual = execute("date", "---")
-        assertEquals(expected, actual)
+        val actual = execute("date", "invalid-date") as Result.Error
+        assertNotEquals(0, actual.exitCode)
     }
 
     @Test(expected = SubprocessException::class)
     fun `test get system date with invalid arguments throws`() {
-        execute("date", "%F").get()
+        execute("date", "invalid-date").get()
     }
 }
