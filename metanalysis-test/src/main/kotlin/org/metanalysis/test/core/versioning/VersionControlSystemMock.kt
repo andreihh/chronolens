@@ -16,14 +16,21 @@
 
 package org.metanalysis.test.core.versioning
 
+import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VersionControlSystem
 
 import java.io.FileNotFoundException
 import java.util.Date
 
-class VersionControlSystemMock(
-        private val commits: List<CommitMock>
-) : VersionControlSystem() {
+class VersionControlSystemMock : VersionControlSystem() {
+    companion object {
+        private var commits: List<CommitMock> = emptyList()
+
+        fun setRepository(commits: List<CommitMock>) {
+            this.commits = commits.toList()
+        }
+    }
+
     data class CommitMock(
             val id: String,
             val date: Date,
@@ -31,10 +38,10 @@ class VersionControlSystemMock(
             val changedFiles: Map<String, String?>
     )
 
-    private fun CommitMock.toCommit(): Revision = getRevision(id)
+    private fun CommitMock.toRevision(): Revision = getRevision(id)
 
     private val files: Map<String, Map<String, String>>
-    private val commitsById = commits.associate { it.id to it.toCommit() }
+    private val commitsById = commits.associateBy(CommitMock::id)
 
     init {
         val fileHistory = hashMapOf<String, Map<String, String>>()
@@ -56,25 +63,38 @@ class VersionControlSystemMock(
 
     override fun detectRepository(): Boolean = true
 
-    override fun getHead(): Revision = commits.last().toCommit()
+    override fun getHead(): Revision =
+            checkNotNull(commits.lastOrNull()).toRevision()
 
-    override fun listFiles(revision: Revision): Set<String> =
-            requireNotNull(files[revision.id]).keys
+    override fun listFiles(revision: Revision): Set<String> {
+        validateRevision(revision)
+        return checkNotNull(files[revision.id]).keys
+    }
 
-    override fun getRawRevision(revisionId: String): String =
-            requireNotNull(commitsById[revisionId]).toString() // TODO
-                    //.let { (id, date, author, _) -> "$id:$date:$author" }
+    @Throws(RevisionNotFoundException::class)
+    override fun getRawRevision(revisionId: String): String {
+        val commit = commitsById[revisionId]
+                ?: throw RevisionNotFoundException(revisionId)
+        val id = commit.id
+        val date = commit.date.time / 1000
+        val author = commit.author
+        return "$id:$date:$author"
+    }
 
-    override fun getFile(revision: Revision, path: String): String =
-            requireNotNull(requireNotNull(files[revision.id])[path])
+    override fun getFile(revision: Revision, path: String): String? {
+        validateRevision(revision)
+        return checkNotNull(files[revision.id])[path]
+    }
 
+    @Throws(FileNotFoundException::class)
     override fun getFileHistory(
             revision: Revision,
             path: String
     ): List<Revision> {
+        validateRevision(revision)
         val history = commits
                 .filter { path in it.changedFiles }
-                .map { it.toCommit() }
+                .map { it.toRevision() }
         return if (history.isNotEmpty()) history
         else throw FileNotFoundException("File '$path' not found!")
     }

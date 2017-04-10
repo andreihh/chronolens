@@ -16,5 +16,62 @@
 
 package org.metanalysis.core.project
 
+import org.junit.Test
+
+import org.metanalysis.core.model.SourceFile
+import org.metanalysis.test.assertEquals
+import org.metanalysis.test.core.versioning.VersionControlSystemMock
+import org.metanalysis.test.core.versioning.VersionControlSystemMock.CommitMock
+import java.io.IOException
+
+import java.util.Date
+
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+
 class ProjectTest {
+    private fun getResource(path: String): String? =
+            javaClass.getResourceAsStream(path)?.reader()?.readText()
+
+    init {
+        VersionControlSystemMock.setRepository(listOf(
+                CommitMock(
+                        id = "1",
+                        date = Date(192345),
+                        author = "name",
+                        changedFiles = mapOf(
+                                "resource.mock" to getResource("/resource.mock")
+                        )
+                ),
+                CommitMock(
+                        id = "2",
+                        date = Date(192346),
+                        author = "name",
+                        changedFiles = mapOf("resource.mock" to null)
+                ),
+                CommitMock(
+                        id = "3",
+                        date = Date(192347),
+                        author = "name",
+                        changedFiles = mapOf("resource.mock" to "{")
+                )
+        ))
+    }
+
+    private val project = assertNotNull(Project.create())
+
+    @Test fun `test get file model of non-existent file returns null`() {
+        assertNull(project.getFileModel("resource.mock", "2"))
+    }
+
+    @Test fun `test get file model of empty file returns empty source file`() {
+        val expected = SourceFile()
+        val actual = project.getFileModel("resource.mock", "1")
+        assertEquals(expected, actual)
+    }
+
+    @Test(expected = IOException::class)
+    fun `test get file model with syntax errors throws`() {
+        project.getFileModel("resource.mock")
+    }
 }
