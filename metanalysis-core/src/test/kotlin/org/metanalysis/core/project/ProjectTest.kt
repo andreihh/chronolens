@@ -79,4 +79,9 @@ class ProjectTest {
     fun `test get file model of unrecognized extension throws`() {
         project.getFileModel("resource.java")
     }
+
+    @Test(expected = IOException::class)
+    fun `test get file model from invalid revision throws`() {
+        project.getFileModel("resource.mock", "-1")
+    }
 }
