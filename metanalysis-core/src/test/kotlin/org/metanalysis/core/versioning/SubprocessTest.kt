@@ -24,13 +24,6 @@ import org.metanalysis.core.versioning.Subprocess.execute
 import kotlin.test.assertEquals
 
 class SubprocessTest {
-    fun delay() {
-        var i = 0
-        repeat(100000000) {
-            i += 1
-        }
-    }
-
     @Test fun `test get system date`() {
         val expected = "1970-01-01\n"
         val actual = execute("date", "--date=@0", "+%F").get()
@@ -50,12 +43,5 @@ class SubprocessTest {
     @Test(expected = SubprocessException::class)
     fun `test get system date with invalid arguments throws`() {
         execute("date", "%F").get()
-    }
-
-    @Test(expected = InterruptedException::class)
-    fun `test interrupted process throws`() {
-        Thread.currentThread().interrupt()
-        delay()
-        execute("date")
     }
 }
