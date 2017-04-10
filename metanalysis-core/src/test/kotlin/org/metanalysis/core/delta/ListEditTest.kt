@@ -46,6 +46,12 @@ class ListEditTest {
         assertEquals(expected, actual)
     }
 
+    @Test fun `test add element before end`() {
+        val expected = "12345"
+        val actual = "1235".apply(ListEdit.Add(3, '4'))
+        assertEquals(expected, actual)
+    }
+
     @Test fun `test add element at front`() {
         val expected = "12345"
         val actual = "2345".apply(ListEdit.Add(0, '1'))

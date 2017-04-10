@@ -33,24 +33,14 @@ class TypeTransactionTest {
         assertEquals(dst.apply(dst.diff(src)), src)
     }
 
-    // TODO: refactor to `change supertypes`
-    @Test fun `test add supertype`() {
+    @Test fun `test change supertypes`() {
         val typeName = "IClass"
-        val supertype = "IInterface"
-        val expected = Type(typeName, setOf(supertype))
-        val actual = Type(typeName).apply(TypeTransaction(
-                supertypeEdits = listOf(SetEdit.Add(supertype)),
-                memberEdits = emptyList()
-        ))
-        assertEquals(expected, actual)
-    }
-
-    @Test fun `test remove supertype`() {
-        val typeName = "IClass"
-        val supertype = "IInterface"
-        val expected = Type(typeName)
-        val actual = Type(typeName, setOf(supertype)).apply(TypeTransaction(
-                supertypeEdits = listOf(SetEdit.Remove(supertype))
+        val expected = Type(typeName, setOf("IInterface"))
+        val actual = Type(typeName, setOf("Object")).apply(TypeTransaction(
+                supertypeEdits = listOf(
+                        SetEdit.Add("IInterface"),
+                        SetEdit.Remove("Object")
+                )
         ))
         assertEquals(expected, actual)
     }

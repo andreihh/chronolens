@@ -111,6 +111,9 @@ class Project private constructor(private val vcs: VersionControlSystem) {
     }
 
     /**
+     * If the file contains invalid code in any revision, the changes applied in
+     * that revision are not analyzed and are dropped from the history.
+     *
      * @throws IOException if any of the following situations appear:
      * - `revision` doesn't exist
      * - `path` never existed in `revision` or any of its ancestors

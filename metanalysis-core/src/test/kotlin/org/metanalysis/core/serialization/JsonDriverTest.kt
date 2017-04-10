@@ -77,20 +77,13 @@ class JsonDriverTest {
         )
     }
 
-    @Test fun `test serialize source file transaction`() {
-        val bos = ByteArrayOutputStream()
-        JsonDriver.serialize(bos, data)
-        println(bos.toString())
-    }
-
-    @Test fun `test deserialize source file transaction`() {
+    @Test fun `test serialize and deserialize source file transaction`() {
         val bos = ByteArrayOutputStream()
         JsonDriver.serialize(bos, data)
         val actualData = JsonDriver.deserialize<SourceFileTransaction>(
                 src = bos.toByteArray().inputStream()
         )
         assertEquals(data, actualData)
-        println(actualData)
     }
 
     /*@Test fun gen() {

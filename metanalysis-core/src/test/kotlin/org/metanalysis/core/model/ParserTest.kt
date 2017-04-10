@@ -24,6 +24,7 @@ import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.model.ParserMock
 
 import java.io.File
+import java.io.IOException
 
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -47,42 +48,21 @@ class ParserTest {
         assertNull(getByExtension("java"))
     }
 
-    @Test fun `test parse input stream`() {
-        val source = javaClass.getResourceAsStream("/resource.mock")
-                .reader().readText()
-        assertEquals(
-                expected = SourceFile(),
-                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(source)
-        )
-    }
-
-    @Test fun `test parse url`() {
-        val source = javaClass.getResource("/resource.mock").readText()
-        assertEquals(
-                expected = SourceFile(),
-                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(source)
-        )
-    }
-
     @Test fun `test parse file`() {
-        val source = File("src/test/resources/resource.mock").readText()
-        assertEquals(
-                expected = SourceFile(),
-                actual = getByLanguage(ParserMock.LANGUAGE)?.parse(source)
-        )
+        val file = File("src/test/resources/resource.mock")
+        val expected = SourceFile()
+        val actual = Parser.parse(file)
+        assertEquals(expected, actual)
     }
 
-    @Test fun `test static parse file`() {
-        assertEquals(
-                expected = SourceFile(),
-                actual = Parser.parse(File("src/test/resources/resource.mock"))
-        )
-    }
-
-    @Test fun `test static parse file of unknown extension returns null`() {
+    @Test fun `test parse file of unknown extension returns null`() {
         val parser = Parser::class.qualifiedName
-        assertNull(Parser.parse(
-                file = File("src/test/resources/META-INF/services/$parser")
-        ))
+        val file = File("src/test/resources/META-INF/services/$parser")
+        assertNull(Parser.parse(file))
+    }
+
+    @Test(expected = IOException::class)
+    fun `test parse non-existent file throws`() {
+        Parser.parse(File("non-existing-file.mock"))
     }
 }

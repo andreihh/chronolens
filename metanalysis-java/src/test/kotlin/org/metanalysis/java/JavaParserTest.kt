@@ -21,35 +21,25 @@ import org.junit.Test
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
-import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.java.JavaParser.Companion.toBlock
 import org.metanalysis.test.PrettyPrinterVisitor
 import org.metanalysis.test.assertEquals
 
-import java.io.File
-import java.io.IOException
 import java.net.URL
 
-import kotlin.test.assertNotNull
-
 class JavaParserTest {
-    private val parser = checkNotNull(Parser.getByExtension("java"))
-
-    @Test(expected = IOException::class)
-    fun `test parse non-existent file throws`() {
-        parser.parse(File("non-existing-file").readText())
-    }
-
-    @Test(expected = IOException::class)
-    fun `test parse non-existing URL throws`() {
-        parser.parse(URL("file:///non-existing-url").readText())
-    }
+    private val parser = JavaParser()
 
     @Test(expected = SyntaxError::class)
     fun `test parse invalid source throws`() {
         parser.parse("cla Main { int i = &@*; { class K; interface {}")
+    }
+
+    @Test(expected = SyntaxError::class)
+    fun `test parse duplicated members in class throws`() {
+        parser.parse("class Main { int i = 2; int i = 3; }")
     }
 
     @Test fun `test annotation`() {
@@ -279,14 +269,50 @@ class JavaParserTest {
         assertEquals(expected, parser.parse(source))
     }
 
+    @Test fun `test class with supertypes`() {
+        val source = """
+        class IClass extends Object implements Comparable<IInterface> {
+        }
+        """
+        val expected = SourceFile(setOf(Type(
+                name = "IClass",
+                supertypes = setOf("Object", "Comparable<IInterface>")
+        )))
+        assertEquals(expected, parser.parse(source))
+    }
+
+    @Test fun `test class with vararg parameter method`() {
+        val source = """
+        abstract class IClass {
+            abstract void println(String... args);
+        }
+        """
+        val expected = SourceFile(setOf(Type(
+                name = "IClass",
+                members = setOf(Function(
+                        signature = "println(String...)",
+                        parameters = listOf(Variable("args"))
+                ))
+        )))
+        assertEquals(expected, parser.parse(source))
+    }
+
+    @Test(expected = SyntaxError::class)
+    fun `test initializers not supported`() {
+        val source = """
+        class Type {
+            int i;
+            {
+                i = 2;
+            }
+        }
+        """
+        parser.parse(source)
+    }
+
     @Test fun `test integration`() {
         val source = javaClass.getResource("/IntegrationTest.java").readText()
         PrettyPrinterVisitor().visit(parser.parse(source))
-    }
-
-    @Test fun `test file integration`() {
-        val source = File("src/test/resources/IntegrationTest.java")
-        PrettyPrinterVisitor().visit(assertNotNull(Parser.parse(source)))
     }
 
     @Test fun `test network`() {
