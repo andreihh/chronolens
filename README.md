@@ -1,11 +1,11 @@
-## Metanalysis
+# Metanalysis
 
 [![](https://jitpack.io/v/andrei-heidelbacher/metanalysis.svg)](https://jitpack.io/#andrei-heidelbacher/metanalysis)
 [![Build Status](https://travis-ci.org/andrei-heidelbacher/metanalysis.png)](https://travis-ci.org/andrei-heidelbacher/metanalysis)
 [![codecov](https://codecov.io/gh/andrei-heidelbacher/metanalysis/branch/master/graph/badge.svg)](https://codecov.io/gh/andrei-heidelbacher/metanalysis)
 [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
-### Features
+## Features
 
 - an abstract model which contains code metadata
 - an abstract transaction model to represent diffs between code metadata models
@@ -13,20 +13,20 @@
 - a Git integration module
 - a Java source file parser which extracts Java code metadata
 
-### Using Metanalysis
+## Using Metanalysis
 
-#### Environment requirements
+### Environment requirements
 
 In order to use `metanalysis` you need to have `JDK 1.8` or newer.
 
-#### Using the command line
+### Using the command line
 
 Download the most recently released `cli` artifact from
 [here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run it:
 
 ```java -jar metanalysis-cli-$version-all help```
 
-#### Using Gradle
+### Using Gradle
 
 Add the `JitPack` repository to your build file:
 ```groovy
@@ -45,7 +45,7 @@ dependencies {
 }
 ```
 
-#### Using Maven
+### Using Maven
 
 Add the `JitPack` repository to your build file:
 ```xml
@@ -87,14 +87,14 @@ Add the dependencies:
 </dependencies>
 ```
 
-#### Configuration
+### Configuration
 
 If using the various modules as dependencies, you must provide the following
  service configuration files:
 - `META-INF/services/org.metanalysis.core.model.Parser`
 - `META-INF/services/org.metanalysis.core.version.VersionControlSystem`
 
-### Building
+## Building
 
 To build this project, run ```./gradlew build```.
 
@@ -102,10 +102,10 @@ To build the `cli` artifact, run the following command after building the
 project: ```./gradlew fatJar```. This will create the
 `metanalysis-cli-$version-all.jar` artifact in `metanalysis-cli/build/libs/`.
 
-### Documentation
+## Documentation
 
 To generate the documentation, run ```./gradlew javadocJar```.
 
-### Licensing
+## Licensing
 
 The code is available under the Apache V2.0 License.
