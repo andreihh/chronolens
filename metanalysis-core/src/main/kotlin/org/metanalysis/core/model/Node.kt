@@ -48,7 +48,8 @@ sealed class Node {
     data class Type(
             val name: String,
             val supertypes: Set<String> = emptySet(),
-            val members: Set<Node> = emptySet()
+            val members: Set<Node> = emptySet(),
+            val modifiers: Set<String> = emptySet()
     ) : Node() {
         override val identifier: String
             get() = name
@@ -90,7 +91,8 @@ sealed class Node {
      */
     data class Variable(
             val name: String,
-            val initializer: List<String> = emptyList()
+            val initializer: List<String> = emptyList(),
+            val modifiers: Set<String> = emptySet()
     ) : Node() {
         override val identifier: String
             get() = name
@@ -118,7 +120,8 @@ sealed class Node {
     data class Function(
             val signature: String,
             val parameters: List<Variable> = emptyList(),
-            val body: List<String> = emptyList()
+            val body: List<String> = emptyList(),
+            val modifiers: Set<String> = emptySet()
     ) : Node() {
         override val identifier: String
             get() = signature
