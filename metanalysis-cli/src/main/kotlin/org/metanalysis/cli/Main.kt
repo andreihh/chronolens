@@ -59,28 +59,28 @@ fun getCommand(project: Project, options: Map<String, String>) {
     }
 }
 
+private fun Project.analyzeHistory(path: String, outDir: String) {
+    try {
+        val history = getFileHistory(path)
+        val outPath = path.replace('/', '.')
+        FileOutputStream(File(outDir, outPath)).use { out ->
+            JsonDriver.serialize(out, history)
+            printlnError("SUCCESS analyzing '$path'!")
+        }
+    } catch (e: IOException) {
+        printlnError("ERROR at '$path': ${e.message}")
+    }
+}
+
 fun historyCommand(project: Project, options: Map<String, String>) {
     val outDir = options["out-dir"] ?: usage()
     if ("all" in options) {
         project.listFiles().forEach { path ->
-            try {
-                val outPath = path.replace('/', '.')
-                FileOutputStream(File(outDir, outPath)).use { out ->
-                    val history = project.getFileHistory(path)
-                    JsonDriver.serialize(out, history)
-                    printlnError("SUCCESS analyzing '$path'!")
-                }
-            } catch (e: IOException) {
-                printlnError("ERROR at '$path': ${e.message}")
-            }
+            project.analyzeHistory(path, outDir)
         }
     } else {
         val path = options["file"] ?: usage()
-        val outPath = path.replace('/', '.')
-        FileOutputStream(File(outDir, outPath)).use { out ->
-            val history = project.getFileHistory(path)
-            JsonDriver.serialize(out, history)
-        }
+        project.analyzeHistory(path, outDir)
     }
 }
 
