@@ -56,7 +56,7 @@ class SourceFileTest {
         val name = "version"
         val expected = Type(name, setOf("Object"))
         val sourceFile = SourceFile(setOf(
-                Function(name, emptyList()),
+                Function(name),
                 Variable(name),
                 expected
         ))

@@ -112,7 +112,7 @@ class ProjectTest {
     @Test fun `test apply file diff transaction returns correct model`() {
         val transaction = project.getFileDiff(path, "4", "5")
         val expected = project.getFileModel(path, "5")
-        val actual = SourceFile().apply(transaction)
+        val actual = project.getFileModel(path, "4")?.apply(transaction)
         assertEquals(expected, actual)
     }
 
