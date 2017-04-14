@@ -18,13 +18,13 @@ package org.metanalysis.git
 
 import org.junit.Ignore
 import org.junit.Test
+
 import org.metanalysis.core.versioning.RevisionNotFoundException
 
 import java.io.FileNotFoundException
 
 import kotlin.test.assertNull
 
-@Ignore
 class GitDriverTest {
     private val git = GitDriver()
 
@@ -41,12 +41,6 @@ class GitDriverTest {
     @Test fun `test get branch`() {
         val commit = git.getRevision("master")
         println(commit)
-    }
-
-    @Test(expected = InterruptedException::class)
-    fun `test interrupt get commit throws`() {
-        Thread.currentThread().interrupt()
-        git.getHead()
     }
 
     @Test(expected = RevisionNotFoundException::class)
