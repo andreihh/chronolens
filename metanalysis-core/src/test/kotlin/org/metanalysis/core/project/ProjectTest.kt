@@ -18,7 +18,9 @@ package org.metanalysis.core.project
 
 import org.junit.Test
 
+import org.metanalysis.core.delta.Transaction.Companion.apply
 import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.project.Project.HistoryEntry
 import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.versioning.VersionControlSystemMock
 import org.metanalysis.test.core.versioning.VersionControlSystemMock.CommitMock
@@ -26,6 +28,7 @@ import org.metanalysis.test.core.versioning.VersionControlSystemMock.CommitMock
 import java.io.IOException
 import java.util.Date
 
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -33,27 +36,44 @@ class ProjectTest {
     private fun getResource(path: String): String? =
             javaClass.getResourceAsStream(path)?.reader()?.readText()
 
+    private val path = "resource.mock"
+    private val resourceMock = getResource("/resource.mock")
+    private val genericTypeResolver1 =
+            getResource("/GenericTypeResolver-v1.mock")
+    private val genericTypeResolver2 =
+            getResource("/GenericTypeResolver-v2.mock")
+
     init {
         VersionControlSystemMock.setRepository(listOf(
                 CommitMock(
                         id = "1",
                         date = Date(192345),
                         author = "name",
-                        changedFiles = mapOf(
-                                "resource.mock" to getResource("/resource.mock")
-                        )
+                        changedFiles = mapOf(path to resourceMock)
                 ),
                 CommitMock(
                         id = "2",
                         date = Date(192346),
                         author = "name",
-                        changedFiles = mapOf("resource.mock" to null)
+                        changedFiles = mapOf(path to null)
                 ),
                 CommitMock(
                         id = "3",
                         date = Date(192347),
                         author = "name",
-                        changedFiles = mapOf("resource.mock" to "{")
+                        changedFiles = mapOf(path to "{")
+                ),
+                CommitMock(
+                        id = "4",
+                        date = Date(192348),
+                        author = "name",
+                        changedFiles = mapOf(path to genericTypeResolver1)
+                ),
+                CommitMock(
+                        id = "5",
+                        date = Date(192349),
+                        author = "name",
+                        changedFiles = mapOf(path to genericTypeResolver2)
                 )
         ))
     }
@@ -61,18 +81,18 @@ class ProjectTest {
     private val project = assertNotNull(Project.create())
 
     @Test fun `test get file model of non-existent file returns null`() {
-        assertNull(project.getFileModel("resource.mock", "2"))
+        assertNull(project.getFileModel(path, "2"))
     }
 
     @Test fun `test get file model of empty file returns empty source file`() {
         val expected = SourceFile()
-        val actual = project.getFileModel("resource.mock", "1")
+        val actual = project.getFileModel(path, "1")
         assertEquals(expected, actual)
     }
 
     @Test(expected = IOException::class)
     fun `test get file model with syntax errors throws`() {
-        project.getFileModel("resource.mock")
+        project.getFileModel(path, "3")
     }
 
     @Test(expected = IOException::class)
@@ -82,6 +102,20 @@ class ProjectTest {
 
     @Test(expected = IOException::class)
     fun `test get file model from invalid revision throws`() {
-        project.getFileModel("resource.mock", "-1")
+        project.getFileModel(path, "-1")
+    }
+
+    @Test fun `test apply file history transactions returns correct model`() {
+        val history = project.getFileHistory(path)
+        val transactions = history.mapNotNull(HistoryEntry::transaction)
+        val expected = project.getFileModel(path)
+        val actual = SourceFile().apply(transactions)
+        assertEquals(expected, actual)
+    }
+
+    @Test fun `test list files returns correct set of files`() {
+        val expected = setOf(path)
+        val actual = project.listFiles()
+        assertEquals(expected, actual)
     }
 }
