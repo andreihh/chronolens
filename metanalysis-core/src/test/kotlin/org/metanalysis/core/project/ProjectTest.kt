@@ -36,6 +36,7 @@ class ProjectTest {
     private fun getResource(path: String): String? =
             javaClass.getResourceAsStream(path)?.reader()?.readText()
 
+    private val author = "name"
     private val path = "resource.mock"
     private val resourceMock = getResource("/resource.mock")
     private val genericTypeResolver1 =
@@ -47,33 +48,36 @@ class ProjectTest {
         VersionControlSystemMock.setRepository(listOf(
                 CommitMock(
                         id = "1",
-                        date = Date(192345),
-                        author = "name",
+                        date = Date(1),
+                        author = author,
                         changedFiles = mapOf(path to resourceMock)
                 ),
                 CommitMock(
                         id = "2",
-                        date = Date(192346),
-                        author = "name",
+                        date = Date(2),
+                        author = author,
                         changedFiles = mapOf(path to null)
                 ),
                 CommitMock(
                         id = "3",
-                        date = Date(192347),
-                        author = "name",
+                        date = Date(3),
+                        author = author,
                         changedFiles = mapOf(path to "{")
                 ),
                 CommitMock(
                         id = "4",
-                        date = Date(192348),
-                        author = "name",
+                        date = Date(4),
+                        author = author,
                         changedFiles = mapOf(path to genericTypeResolver1)
                 ),
                 CommitMock(
                         id = "5",
-                        date = Date(192349),
-                        author = "name",
-                        changedFiles = mapOf(path to genericTypeResolver2)
+                        date = Date(5),
+                        author = author,
+                        changedFiles = mapOf(
+                                path to genericTypeResolver2,
+                                "resource.txt" to "{}"
+                        )
                 )
         ))
     }
@@ -105,17 +109,24 @@ class ProjectTest {
         project.getFileModel(path, "-1")
     }
 
+    @Test fun `test apply file diff transaction returns correct model`() {
+        val transaction = project.getFileDiff(path, "4", "5")
+        val expected = project.getFileModel(path, "5")
+        val actual = SourceFile().apply(transaction)
+        assertEquals(expected, actual)
+    }
+
     @Test fun `test apply file history transactions returns correct model`() {
-        val history = project.getFileHistory(path)
+        val history = project.getFileHistory(path, "5")
         val transactions = history.mapNotNull(HistoryEntry::transaction)
-        val expected = project.getFileModel(path)
+        val expected = project.getFileModel(path, "5")
         val actual = SourceFile().apply(transactions)
         assertEquals(expected, actual)
     }
 
     @Test fun `test list files returns correct set of files`() {
-        val expected = setOf(path)
-        val actual = project.listFiles()
+        val expected = setOf(path, "resource.txt")
+        val actual = project.listFiles("5")
         assertEquals(expected, actual)
     }
 }
