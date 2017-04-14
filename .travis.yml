@@ -1,8 +1,5 @@
 language: java
 jdk: oraclejdk8
 sudo: false
-script:
-  - rm -rf ./*
-  - git clone https://github.com/andrei-heidelbacher/metanalysis.git ./
-  - ./gradlew check codeCoverageReport
+script: ./gradlew check codeCoverageReport
 after_success: bash <(curl -s https://codecov.io/bash)
