@@ -50,17 +50,26 @@ abstract class VersionControlSystem {
          * was detected or if multiple repositories were detected
          * @throws ServiceConfigurationError if the configuration file couldn't
          * be loaded properly
-         * @throws InterruptedException if the VCS process is interrupted
+         * @throws IllegalThreadStateException if the VCS process is interrupted
          * @throws IOException if any input related errors occur
          */
-        @Throws(InterruptedException::class, IOException::class)
+        @Throws(IOException::class)
         @JvmStatic fun get(): VersionControlSystem? =
                 vcsList.filter(VersionControlSystem::detectRepository)
                         .singleOrNull()
     }
 
-    /** A revision in a version control system (commit, tag, branch etc.). */
-    inner class Revision {
+    /**
+     * A revision in a version control system (commit, tag, branch etc.).
+     *
+     * @param revisionId the id of this revision
+     * @throws IllegalThreadStateException if the VCS process is interrupted
+     * @throws RevisionNotFoundException if this revision doesn't exist
+     * @throws IOException if any input related errors occur
+     */
+    inner class Revision @Throws(IOException::class) internal constructor(
+            revisionId: String
+    ) {
         /** The unique id of this revision. */
         val id: String
 
@@ -70,14 +79,7 @@ abstract class VersionControlSystem {
         /** The author of this revision. */
         val author: String
 
-        /**
-         * @param revisionId the id of this revision
-         * @throws RevisionNotFoundException if this revision doesn't exist
-         * @throws InterruptedException if the VCS process is interrupted
-         * @throws IOException if any input related errors occur
-         */
-        @Throws(InterruptedException::class, IOException::class)
-        internal constructor(revisionId: String) {
+        init {
             val line = getRawRevision(revisionId)
             val (rawId, rawDate, rawAuthor) = line.split(':', limit = 3)
             id = rawId
@@ -85,12 +87,12 @@ abstract class VersionControlSystem {
             author = rawAuthor
         }
 
-        internal fun isContainedIn(vcs: VersionControlSystem): Boolean =
+        internal fun isCreatedBy(vcs: VersionControlSystem): Boolean =
                 this@VersionControlSystem == vcs
 
         override fun equals(other: Any?): Boolean =
                 other is Revision && id == other.id
-                        && other.isContainedIn(this@VersionControlSystem)
+                        && other.isCreatedBy(this@VersionControlSystem)
 
         override fun hashCode(): Int = id.hashCode()
 
@@ -98,27 +100,33 @@ abstract class VersionControlSystem {
                 "Revision(id=$id, date=$date, author=$author)"
     }
 
+    /**
+     * Validates the given `revision`.
+     *
+     * @param revision the revision which should be validated
+     * @throws IllegalArgumentException if `revision` wasn't created by this VCS
+     */
     protected fun validateRevision(revision: Revision) {
-        require(revision.isContainedIn(this)) { "Invalid revision $revision!" }
+        require(revision.isCreatedBy(this)) { "Invalid revision $revision!" }
     }
 
     /**
      * Returns whether this VCS is supported in this environment.
      *
-     * @throws InterruptedException if the VCS process is interrupted
+     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     protected abstract fun isSupported(): Boolean
 
     /**
      * Returns whether a repository was detected in the current working
      * directory.
      *
-     * @throws InterruptedException if the VCS process is interrupted
+     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     protected abstract fun detectRepository(): Boolean
 
     /**
@@ -127,11 +135,11 @@ abstract class VersionControlSystem {
      *
      * @param revisionId the id of the requested revision
      * @return the raw representation of the requested revision
+     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws RevisionNotFoundException if the requested revision doesn't exist
-     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     protected abstract fun getRawRevision(revisionId: String): String
 
     /**
@@ -139,10 +147,10 @@ abstract class VersionControlSystem {
      *
      * @return the `head` revision
      * @throws IllegalStateException if the `head` revision doesn't exist
-     * @throws InterruptedException if the VCS process is interrupted
+     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     abstract fun getHead(): Revision
 
     /**
@@ -150,11 +158,11 @@ abstract class VersionControlSystem {
      *
      * @param revisionId the id of the requested revision
      * @return the requested revision
+     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws RevisionNotFoundException if the requested revision doesn't exist
-     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     fun getRevision(revisionId: String): Revision = Revision(revisionId)
 
     /**
@@ -166,11 +174,11 @@ abstract class VersionControlSystem {
      * @return the content of the requested file, or `null` if it doesn't exist
      * in `revision`
      * @throws IllegalArgumentException if `revision` wasn't created by this VCS
+     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws SubprocessException if the VCS process terminates abnormally
-     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     abstract fun getFile(revision: Revision, path: String): String?
 
     /**
@@ -180,13 +188,13 @@ abstract class VersionControlSystem {
      * The revisions are given chronologically.
      *
      * @throws IllegalArgumentException if `revision` wasn't created by this VCS
+     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws FileNotFoundException if `path` never existed in `revision` or
      * any of its ancestors
      * @throws SubprocessException if the VCS process terminates abnormally
-     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     abstract fun getFileHistory(
             revision: Revision,
             path: String
@@ -198,10 +206,10 @@ abstract class VersionControlSystem {
      * @param revision the inspected revision
      * @return the set of existing files in `revision`
      * @throws IllegalArgumentException if `revision` wasn't created by this VCS
+     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws SubprocessException if the VCS process terminates abnormally
-     * @throws InterruptedException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     abstract fun listFiles(revision: Revision): Set<String>
 }

@@ -24,7 +24,7 @@ import java.io.InputStream
 object Subprocess {
     sealed class Result {
         data class Success(val input: String) : Result()
-        data class Error(val exitCode: Int, val message: String) : Result()
+        data class Error(val exitValue: Int, val message: String) : Result()
 
         fun getOrNull(): String? = (this as? Success)?.input
 
@@ -33,7 +33,7 @@ object Subprocess {
          */
         fun get(): String = when (this) {
             is Success -> input
-            is Error -> throw SubprocessException(exitCode, message)
+            is Error -> throw SubprocessException(exitValue, message)
         }
 
         val isSuccess: Boolean
@@ -49,10 +49,11 @@ object Subprocess {
      * @param command the command which should be executed
      * @return the parsed input from `stdout` (if the subprocess terminated
      * normally) or from `stderr` (if the subprocess terminated abnormally)
-     * @throws InterruptedException if the subprocess was interrupted
      * @throws IOException if any input related errors occur
+     * @throws IllegalThreadStateException if the current thread is interrupted
+     * while waiting for the subprocess to terminate
      */
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     @JvmStatic fun execute(vararg command: String): Result {
         val process = ProcessBuilder().command(*command).start()
         try {
@@ -62,6 +63,8 @@ object Subprocess {
             val exitCode = process.waitFor()
             return if (exitCode == 0) Success(input)
             else Error(exitCode, error)
+        } catch (e: InterruptedException) {
+            throw IllegalThreadStateException(e.message)
         } finally {
             process.destroy()
         }

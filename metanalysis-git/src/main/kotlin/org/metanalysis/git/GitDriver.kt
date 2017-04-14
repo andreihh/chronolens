@@ -31,14 +31,14 @@ class GitDriver : VersionControlSystem() {
             if (size < 2) null
             else "${get(0)}:${get(1)}".removePrefix("commit ")
 
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     override fun isSupported(): Boolean = execute("git", "--version").isSuccess
 
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     override fun detectRepository(): Boolean =
             execute("git", "cat-file", "-e", "HEAD").isSuccess
 
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     override fun getRawRevision(revisionId: String): String = execute(
             *"git rev-list -1 --format=%at:%an".spread(),
             "$revisionId^{commit}"
@@ -47,14 +47,14 @@ class GitDriver : VersionControlSystem() {
             ?.formatCommit()
             ?: throw RevisionNotFoundException(revisionId)
 
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     override fun getHead(): Revision = try {
         getRevision("HEAD")
     } catch (e: RevisionNotFoundException) {
         throw IllegalStateException(e)
     }
 
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     override fun listFiles(revision: Revision): Set<String> {
         validateRevision(revision)
         return execute("git", "ls-tree", "--name-only", "-r", revision.id)
@@ -63,14 +63,14 @@ class GitDriver : VersionControlSystem() {
                 .toSet()
     }
 
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     override fun getFile(revision: Revision, path: String): String? {
         validateRevision(revision)
         return execute("git", "cat-file", "blob", "${revision.id}:$path")
                 .getOrNull()
     }
 
-    @Throws(InterruptedException::class, IOException::class)
+    @Throws(IOException::class)
     override fun getFileHistory(
             revision: Revision,
             path: String

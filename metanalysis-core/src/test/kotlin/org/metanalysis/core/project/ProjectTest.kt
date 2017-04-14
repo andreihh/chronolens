@@ -22,8 +22,8 @@ import org.metanalysis.core.model.SourceFile
 import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.versioning.VersionControlSystemMock
 import org.metanalysis.test.core.versioning.VersionControlSystemMock.CommitMock
-import java.io.IOException
 
+import java.io.IOException
 import java.util.Date
 
 import kotlin.test.assertNotNull

@@ -22,22 +22,56 @@ import org.metanalysis.core.versioning.Subprocess.Result
 import org.metanalysis.core.versioning.Subprocess.execute
 
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class SubprocessTest {
-    @Test fun `test get system date`() {
-        val expected = "1970-01-01\n"
-        val actual = execute("date", "--date=@0", "+%F").get()
+    @Test fun `test get echo message`() {
+        val message = "Hello, world!"
+        val expected = "$message\n"
+        val actual = execute("echo", message).get()
         assertEquals(expected, actual)
     }
 
-    @Test fun `test system date with invalid argument returns error`() {
+    @Test fun `test get or null echo returns message`() {
+        val message = "Hello, world!"
+        val expected = "$message\n"
+        val actual = execute("echo", message).getOrNull()
+        assertEquals(expected, actual)
+    }
+
+    @Test fun `test echo is success`() {
+        val result = execute("echo", "Hello, world!")
+        assertTrue(result.isSuccess)
+    }
+
+    @Test fun `test date with invalid argument returns error`() {
         val actual = execute("date", "invalid-date") as Result.Error
-        assertNotEquals(0, actual.exitCode)
+        assertNotEquals(0, actual.exitValue)
+    }
+
+    @Test fun `test get or null date with invalid argument returns null`() {
+        val result = execute("date", "invalid-date").getOrNull()
+        assertNull(result)
+    }
+
+    @Test fun `test date with invalid argument is not success`() {
+        val result = execute("date", "invalid-date")
+        assertFalse(result.isSuccess)
     }
 
     @Test(expected = SubprocessException::class)
-    fun `test get system date with invalid arguments throws`() {
+    fun `test get date with invalid arguments throws`() {
         execute("date", "invalid-date").get()
+    }
+
+    @Test(timeout = 1000, expected = IllegalThreadStateException::class)
+    fun `test interrupt find throws`() {
+        Thread.currentThread().interrupt()
+        while (true) {
+            execute("find").get()
+        }
     }
 }

@@ -139,19 +139,16 @@ class JavaParserTest {
         enum Color {
             RED() {
                 @Override String getCode() {
-
                     return "#FF0000";
                 }
             },
             GREEN() {
                 @Override String getCode() {
-
                     return "#00FF00";
                 }
             },
             BLUE() {
                 @Override String getCode() {
-
                     return "#0000FF";
                 }
             };
