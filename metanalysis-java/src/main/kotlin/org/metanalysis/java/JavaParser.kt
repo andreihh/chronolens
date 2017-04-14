@@ -41,8 +41,6 @@ import org.metanalysis.core.model.Node
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
 
-import java.io.IOException
-
 /** Java 8 language parser. */
 class JavaParser : Parser() {
     companion object {
@@ -203,7 +201,7 @@ class JavaParser : Parser() {
     override val language: String = LANGUAGE
     override val extensions: Set<String> = EXTENSIONS
 
-    @Throws(IOException::class)
+    @Throws(SyntaxError::class)
     override fun parse(source: String): SourceFile = try {
         val options = JavaCore.getOptions()
         JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
