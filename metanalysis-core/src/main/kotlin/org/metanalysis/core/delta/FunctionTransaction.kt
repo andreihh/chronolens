@@ -18,6 +18,8 @@ package org.metanalysis.core.delta
 
 import org.metanalysis.core.delta.ListEdit.Companion.apply
 import org.metanalysis.core.delta.ListEdit.Companion.diff
+import org.metanalysis.core.delta.SetEdit.Companion.apply
+import org.metanalysis.core.delta.SetEdit.Companion.diff
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Variable
 
@@ -26,10 +28,12 @@ import org.metanalysis.core.model.Node.Variable
  *
  * @property parameterEdits the edits which should be applied to the
  * `parameters`
+ * @property modifierEdits the edits which should be applied to the `modifiers`
  * @property bodyEdits the edits which should be applied to the `body`
  */
 data class FunctionTransaction(
         val parameterEdits: List<ListEdit<Variable>> = emptyList(),
+        val modifierEdits: List<SetEdit<String>> = emptyList(),
         val bodyEdits: List<ListEdit<String>> = emptyList()
 ) : Transaction<Function> {
     companion object {
@@ -45,16 +49,19 @@ data class FunctionTransaction(
         @JvmStatic fun Function.diff(other: Function): FunctionTransaction? {
             require(identifier == other.identifier)
             val parameterEdits = parameters.diff(other.parameters)
+            val modifierEdits = modifiers.diff(other.modifiers)
             val bodyEdits = body.diff(other.body)
             val isChanged = parameterEdits.isNotEmpty()
+                    || modifierEdits.isNotEmpty()
                     || bodyEdits.isNotEmpty()
-            return if (isChanged) FunctionTransaction(parameterEdits, bodyEdits)
-            else null
+            return FunctionTransaction(parameterEdits, modifierEdits, bodyEdits)
+                    .takeIf { isChanged }
         }
     }
 
     override fun applyOn(subject: Function): Function = subject.copy(
             parameters = subject.parameters.apply(parameterEdits),
+            modifiers = subject.modifiers.apply(modifierEdits),
             body = subject.body.apply(bodyEdits)
     )
 }

@@ -28,7 +28,7 @@ class NodePrettyPrinterTest {
         val sourceFile = SourceFile(setOf(
                 Function(name),
                 Variable(name),
-                Type(name, emptySet(), setOf(Function(name)))
+                Type(name, emptySet(), emptySet(), setOf(Function(name)))
         ))
         NodePrettyPrinter().visit(sourceFile)
     }

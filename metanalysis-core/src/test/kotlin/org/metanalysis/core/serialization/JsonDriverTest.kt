@@ -42,7 +42,7 @@ class JsonDriverTest {
                     supertypes = setOf("Interface", "Object"),
                     members = setOf(
                             Type("InnerClass"),
-                            Variable("version", listOf("1")),
+                            Variable("version", emptySet(), listOf("1")),
                             Function(
                                     signature = "getVersion()",
                                     parameters = emptyList(),
@@ -53,7 +53,7 @@ class JsonDriverTest {
             NodeSetEdit.Remove<Function>("createIClass()"),
             NodeSetEdit.Change<Variable>(
                     identifier = "DEBUG",
-                    transaction = VariableTransaction(listOf(
+                    transaction = VariableTransaction(initializerEdits = listOf(
                             ListEdit.Add(0, "true")
                     ))
             ),

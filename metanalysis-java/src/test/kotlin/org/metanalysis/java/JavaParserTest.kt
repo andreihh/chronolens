@@ -76,7 +76,7 @@ class JavaParserTest {
                 name = "AnnotationClass",
                 members = setOf(
                         Variable("name"),
-                        Variable("version", listOf("1"))
+                        Variable("version", emptySet(), listOf("1"))
                 )
         )))
         assertEquals(expected, parser.parse(source))
@@ -102,9 +102,9 @@ class JavaParserTest {
         val expected = SourceFile(setOf(Type(
                 name = "Color",
                 members = setOf(
-                        Variable("RED", listOf("RED")),
-                        Variable("GREEN", listOf("GREEN")),
-                        Variable("BLUE", listOf("BLUE"))
+                        Variable("RED", emptySet(), listOf("RED")),
+                        Variable("GREEN", emptySet(), listOf("GREEN")),
+                        Variable("BLUE", emptySet(), listOf("BLUE"))
                 )
         )))
         assertEquals(expected, parser.parse(source))
@@ -124,11 +124,15 @@ class JavaParserTest {
         val expected = SourceFile(setOf(Type(
                 name = "Color",
                 members = setOf(
-                        Variable("RED", listOf("RED")),
-                        Variable("GREEN", listOf("GREEN")),
-                        Variable("BLUE", listOf("BLUE")),
-                        Variable("format", listOf("\"hex\"")),
-                        Variable("i")
+                        Variable("RED", emptySet(), listOf("RED")),
+                        Variable("GREEN", emptySet(), listOf("GREEN")),
+                        Variable("BLUE", emptySet(), listOf("BLUE")),
+                        Variable(
+                                name = "format",
+                                modifiers = setOf("public", "final"),
+                                initializer = listOf("\"hex\"")
+                        ),
+                        Variable("i", setOf("public", "static"))
                 )
         )))
         assertEquals(expected, parser.parse(source))
@@ -183,7 +187,7 @@ class JavaParserTest {
                                     }
                                 }""".toBlock()
                         ),
-                        Function("getCode()", emptyList())
+                        Function("getCode()", emptyList(), setOf("abstract"))
                 )
         )))
         assertEquals(expected, parser.parse(source))
@@ -208,8 +212,8 @@ class JavaParserTest {
         val expected = SourceFile(setOf(Type(
                 name = "IInterface",
                 members = setOf(
-                        Variable("name", listOf("null")),
-                        Variable("version", listOf("1"))
+                        Variable("name", emptySet(), listOf("null")),
+                        Variable("version", emptySet(), listOf("1"))
                 )
         )))
         assertEquals(expected, parser.parse(source))
@@ -248,6 +252,7 @@ class JavaParserTest {
                         Function(
                                 signature = "getVersion()",
                                 parameters = emptyList(),
+                                modifiers = setOf("default"),
                                 body = """{
                                     return 1;
                                 }""".toBlock()
@@ -284,14 +289,17 @@ class JavaParserTest {
     @Test fun `test class with vararg parameter method`() {
         val source = """
         abstract class IClass {
+            @Override
             abstract void println(String... args);
         }
         """
         val expected = SourceFile(setOf(Type(
                 name = "IClass",
+                modifiers = setOf("abstract"),
                 members = setOf(Function(
                         signature = "println(String...)",
-                        parameters = listOf(Variable("args"))
+                        parameters = listOf(Variable("args")),
+                        modifiers = setOf("abstract", "@Override")
                 ))
         )))
         assertEquals(expected, parser.parse(source))

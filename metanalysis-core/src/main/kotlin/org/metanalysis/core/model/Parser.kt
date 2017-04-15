@@ -33,19 +33,19 @@ abstract class Parser {
     companion object {
         private val parsers by lazy { ServiceLoader.load(Parser::class.java) }
         private val languageToParser by lazy {
-            parsers.associateBy(Parser::language)
+            parsers.associateBy { parser -> parser.language.toLowerCase() }
         }
         private val extensionToParser by lazy {
             parsers.flatMap { parser ->
                 parser.extensions.map { extension ->
-                    extension to parser
+                    extension.toLowerCase() to parser
                 }
             }.toMap()
         }
 
         /**
-         * Returns a parser which can interpret the given programming
-         * `language`.
+         * Returns a parser which can interpret the given case-insensitive
+         * programming `language`.
          *
          * @param language the language which must be supported by the parser
          * @return the parser which supports the given `language`, or `null` if
@@ -54,11 +54,11 @@ abstract class Parser {
          * be loaded properly
          */
         @JvmStatic fun getByLanguage(language: String): Parser? =
-                languageToParser[language]
+                languageToParser[language.toLowerCase()]
 
         /**
          * Returns a parser which can interpret files with the given
-         * `extension`.
+         * case-insensitive `extension`.
          *
          * @param extension the file extension which must be supported by the
          * parser
@@ -66,7 +66,7 @@ abstract class Parser {
          * `null` if no such parser was provided
          */
         @JvmStatic fun getByExtension(extension: String): Parser? =
-                extensionToParser[extension]
+                extensionToParser[extension.toLowerCase()]
 
         /**
          * Parses the given `file` and returns the associated code meta-data.

@@ -42,14 +42,15 @@ sealed class Node {
      *
      * @property name the name of this type
      * @property supertypes the supertypes of this type
+     * @property modifiers the modifiers of this type
      * @property members the members of this type (variables, functions and
      * contained types)
      */
     data class Type(
             val name: String,
             val supertypes: Set<String> = emptySet(),
-            val members: Set<Node> = emptySet(),
-            val modifiers: Set<String> = emptySet()
+            val modifiers: Set<String> = emptySet(),
+            val members: Set<Node> = emptySet()
     ) : Node() {
         override val identifier: String
             get() = name
@@ -86,13 +87,14 @@ sealed class Node {
      * The [identifier] of a variable is its [name].
      *
      * @property name the name of this variable
+     * @property modifiers the modifiers of this variable
      * @property initializer the initializer lines of this variable, or an empty
      * list if it doesn't have an initializer
      */
     data class Variable(
             val name: String,
-            val initializer: List<String> = emptyList(),
-            val modifiers: Set<String> = emptySet()
+            val modifiers: Set<String> = emptySet(),
+            val initializer: List<String> = emptyList()
     ) : Node() {
         override val identifier: String
             get() = name
@@ -112,6 +114,7 @@ sealed class Node {
      *
      * @property signature the signature of this function
      * @property parameters the parameters of this function
+     * @property modifiers the modifiers of this function
      * @property body the body lines of this function, or an empty list if it
      * doesn't have a body
      * @throws IllegalArgumentException if multiple `parameters` have the same
@@ -120,8 +123,8 @@ sealed class Node {
     data class Function(
             val signature: String,
             val parameters: List<Variable> = emptyList(),
-            val body: List<String> = emptyList(),
-            val modifiers: Set<String> = emptySet()
+            val modifiers: Set<String> = emptySet(),
+            val body: List<String> = emptyList()
     ) : Node() {
         override val identifier: String
             get() = signature

@@ -109,6 +109,11 @@ class ProjectTest {
         project.getFileModel(path, "-1")
     }
 
+    @Test fun `test diff between absent file in both revisions returns null`() {
+        val transaction = project.getFileDiff(path, "2", "2")
+        assertNull(transaction)
+    }
+
     @Test fun `test apply file diff transaction returns correct model`() {
         val transaction = project.getFileDiff(path, "4", "5")
         val expected = project.getFileModel(path, "5")

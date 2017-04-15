@@ -26,7 +26,7 @@ import org.metanalysis.test.assertEquals
 class SourceFileTest {
     @Test fun `test find variable`() {
         val name = "version"
-        val expected = Variable(name, listOf("1"))
+        val expected = Variable(name, emptySet(), listOf("1"))
         val sourceFile = SourceFile(setOf(
                 Type(name),
                 Function(name, emptyList()),

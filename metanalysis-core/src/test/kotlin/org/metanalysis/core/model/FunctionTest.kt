@@ -28,7 +28,7 @@ class FunctionTest {
                 signature = "getVersion(int, int)",
                 parameters = listOf(
                         Variable("name"),
-                        Variable("name", emptyList())
+                        Variable("name", emptySet(), emptyList())
                 ),
                 body = emptyList()
         )

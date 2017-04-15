@@ -166,19 +166,19 @@ class JavaParser : Parser() {
         return Node.Type(
                 name = node.name(),
                 supertypes = node.supertypes().requireDistinct(),
-                members = members.requireDistinct(),
-                modifiers = getModifiers(node)
+                modifiers = getModifiers(node),
+                members = members.requireDistinct()
         )
     }
 
     private fun Context.visit(node: AnnotationTypeMemberDeclaration) =
-            Node.Variable(node.name(), getDefaultValue(node))
+            Node.Variable(node.name(), emptySet(), getDefaultValue(node))
 
     private fun Context.visit(node: EnumConstantDeclaration) =
-            Node.Variable(node.name(), getInitializer(node))
+            Node.Variable(node.name(), emptySet(), getInitializer(node))
 
     private fun Context.visit(node: VariableDeclaration) =
-            Node.Variable(node.name(), getInitializer(node), getModifiers(node))
+            Node.Variable(node.name(), getModifiers(node), getInitializer(node))
 
     private fun Context.visit(node: MethodDeclaration): Node.Function {
         val parameters =
@@ -189,8 +189,8 @@ class JavaParser : Parser() {
         return Node.Function(
                 signature = "${node.name()}(${parameterTypes.joinToString()})",
                 parameters = parameters.map { visit(it) },
-                body = getBody(node),
-                modifiers = getModifiers(node)
+                modifiers = getModifiers(node),
+                body = getBody(node)
         )
     }
 

@@ -33,23 +33,22 @@ class VariableTransactionTest {
 
     @Test fun `test change initializer`() {
         val name = "version"
-        val expected = Variable(name, listOf("1"))
-        val actual = Variable(name, listOf("2")).apply(VariableTransaction(
-                initializerEdits = listOf(
+        val expected = Variable(name, emptySet(), listOf("1"))
+        val actual = Variable(name, emptySet(), listOf("2"))
+                .apply(VariableTransaction(initializerEdits = listOf(
                         ListEdit.Remove(0),
                         ListEdit.Add(0, "1")
-                )
-        ))
+                )))
         assertEquals(expected, actual)
     }
 
     @Test fun `test apply null transaction returns equal variable`() {
-        val variable = Variable("version", listOf("1"))
+        val variable = Variable("version", emptySet(), listOf("1"))
         assertEquals(variable, variable.apply(transaction = null))
     }
 
     @Test fun `test diff equal variables returns null`() {
-        val variable = Variable("version", listOf("1"))
+        val variable = Variable("version", emptySet(), listOf("1"))
         assertNull(variable.diff(variable))
     }
 
@@ -60,8 +59,8 @@ class VariableTransactionTest {
 
     @Test fun `test diff`() {
         val name = "name"
-        val src = Variable(name, listOf("1"))
-        val dst = Variable(name, listOf("2"))
+        val src = Variable(name, emptySet(), listOf("1"))
+        val dst = Variable(name, emptySet(), listOf("2"))
         assertDiff(src, dst)
     }
 }

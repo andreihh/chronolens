@@ -20,6 +20,7 @@ import org.junit.Test
 
 import org.metanalysis.core.model.Parser.Companion.getByExtension
 import org.metanalysis.core.model.Parser.Companion.getByLanguage
+import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.model.ParserMock
 
@@ -64,5 +65,11 @@ class ParserTest {
     @Test(expected = IOException::class)
     fun `test parse non-existent file throws`() {
         Parser.parse(File("non-existing-file.mock"))
+    }
+
+    @Test(expected = SyntaxError::class)
+    fun `test parse source with errors throws`() {
+        val parser = requireNotNull(Parser.getByLanguage(ParserMock.LANGUAGE))
+        parser.parse("{ \"invalid property\":2")
     }
 }

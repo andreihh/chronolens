@@ -27,10 +27,12 @@ import org.metanalysis.core.model.Node.Type
  *
  * @property supertypeEdits the edits which should be applied to the
  * `supertypes`
+ * @property modifierEdits the edits which should be applied to the `modifiers`
  * @property memberEdits the edits which should be applied to the `members`
  */
 data class TypeTransaction(
         val supertypeEdits: List<SetEdit<String>> = emptyList(),
+        val modifierEdits: List<SetEdit<String>> = emptyList(),
         val memberEdits: List<NodeSetEdit> = emptyList()
 ) : Transaction<Type> {
     companion object {
@@ -46,16 +48,19 @@ data class TypeTransaction(
         @JvmStatic fun Type.diff(other: Type): TypeTransaction? {
             require(identifier == other.identifier)
             val supertypeEdits = supertypes.diff(other.supertypes)
+            val modifierEdits = modifiers.diff(other.modifiers)
             val memberEdits = members.diff(other.members)
             val isChanged = supertypeEdits.isNotEmpty()
+                    || modifierEdits.isNotEmpty()
                     || memberEdits.isNotEmpty()
-            return if (isChanged) TypeTransaction(supertypeEdits, memberEdits)
-            else null
+            return TypeTransaction(supertypeEdits, modifierEdits, memberEdits)
+                    .takeIf { isChanged }
         }
     }
 
     override fun applyOn(subject: Type): Type = subject.copy(
             supertypes = subject.supertypes.apply(supertypeEdits),
+            modifiers = subject.modifiers.apply(modifierEdits),
             members = subject.members.apply(memberEdits)
     )
 }

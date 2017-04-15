@@ -34,10 +34,11 @@ class FunctionTransactionTest {
 
     @Test fun `test change parameters`() {
         val signature = "println(String)"
-        val expected = Function(signature, listOf(Variable("s", listOf("''"))))
+        val variable = Variable("s", emptySet(), listOf("''"))
+        val expected = Function(signature, listOf(variable))
         val actual = Function(signature, listOf(Variable("o")))
                 .apply(FunctionTransaction(parameterEdits = listOf(
-                        ListEdit.Add(0, Variable("s", listOf("''"))),
+                        ListEdit.Add(0, variable),
                         ListEdit.Remove(1)
                 )))
         assertEquals(expected, actual)
@@ -46,7 +47,7 @@ class FunctionTransactionTest {
     @Test fun `test change body`() {
         val signature = "println()"
         val body = listOf("{", "  i = 1;", "}")
-        val expected = Function(signature, emptyList(), body)
+        val expected = Function(signature, emptyList(), emptySet(), body)
         val actual = Function(
                 signature = signature,
                 parameters = emptyList(),

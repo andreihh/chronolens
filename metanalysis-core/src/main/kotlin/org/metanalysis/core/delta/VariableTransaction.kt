@@ -18,15 +18,19 @@ package org.metanalysis.core.delta
 
 import org.metanalysis.core.delta.ListEdit.Companion.apply
 import org.metanalysis.core.delta.ListEdit.Companion.diff
+import org.metanalysis.core.delta.SetEdit.Companion.apply
+import org.metanalysis.core.delta.SetEdit.Companion.diff
 import org.metanalysis.core.model.Node.Variable
 
 /**
  * A transaction which should be applied to a [Variable].
  *
+ * @property modifierEdits the edits which should be applied to the `modifiers`
  * @property initializerEdits the edits which should be applied to the
  * `initializer`
  */
 data class VariableTransaction(
+        val modifierEdits: List<SetEdit<String>> = emptyList(),
         val initializerEdits: List<ListEdit<String>> = emptyList()
 ) : Transaction<Variable> {
     companion object {
@@ -42,13 +46,16 @@ data class VariableTransaction(
         @JvmStatic fun Variable.diff(other: Variable): VariableTransaction? {
             require(identifier == other.identifier)
             val initializerEdits = initializer.diff(other.initializer)
-            val isChanged = initializerEdits.isNotEmpty()
-            return if (isChanged) VariableTransaction(initializerEdits)
-            else null
+            val modifierEdits = modifiers.diff(other.modifiers)
+            val isChanged = modifierEdits.isNotEmpty()
+                    || initializerEdits.isNotEmpty()
+            return VariableTransaction(modifierEdits, initializerEdits)
+                    .takeIf { isChanged }
         }
     }
 
     override fun applyOn(subject: Variable): Variable = subject.copy(
+            modifiers = subject.modifiers.apply(modifierEdits),
             initializer = subject.initializer.apply(initializerEdits)
     )
 }

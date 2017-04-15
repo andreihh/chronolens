@@ -30,6 +30,7 @@ import kotlin.test.assertNotNull
 fun assertEquals(expected: Type?, actual: Type?, message: String? = null) {
     assertEqualsKt(expected?.name, actual?.name, message)
     assertEqualsKt(expected?.supertypes, actual?.supertypes, message)
+    assertEqualsKt(expected?.modifiers, actual?.modifiers, message)
     assertEquals(expected?.members, actual?.members, message)
 }
 
@@ -40,6 +41,7 @@ fun assertEquals(
 ) {
     assertEqualsKt(expected, actual, message)
     assertEqualsKt(expected?.name, actual?.name, message)
+    assertEqualsKt(expected?.modifiers, actual?.modifiers, message)
     assertEqualsKt(expected?.initializer, actual?.initializer, message)
 }
 
@@ -56,6 +58,7 @@ fun assertEquals(
         parameters.forEach { (expectedParameter, actualParameter) ->
             assertEquals(expectedParameter, actualParameter, message)
         }
+        assertEqualsKt(expected.modifiers, actual.modifiers, message)
         assertEqualsKt(expected.body, actual.body, message)
     }
 }

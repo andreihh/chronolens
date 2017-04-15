@@ -101,7 +101,6 @@ class Project private constructor(private val vcs: VersionControlSystem) {
      * @throws IOException if any of the following situations appear:
      * - `srcRevision` doesn't exist
      * - `dstRevision` doesn't exist
-     * - `path` doesn't exist in either revisions
      * - `path` contained invalid code in either revisions
      * - none of the provided parsers can interpret the file at the given `path`
      * - any input related errors occur
