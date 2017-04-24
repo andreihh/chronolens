@@ -24,7 +24,6 @@ import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.java.JavaParser.Companion.toBlock
-import org.metanalysis.test.PrettyPrinterVisitor
 import org.metanalysis.test.assertEquals
 
 import java.net.URL
@@ -320,12 +319,12 @@ class JavaParserTest {
 
     @Test fun `test integration`() {
         val source = javaClass.getResource("/IntegrationTest.java").readText()
-        PrettyPrinterVisitor().visit(parser.parse(source))
+        println(parser.parse(source))
     }
 
     @Test fun `test network`() {
         val source = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/master/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
                 .readText()
-        PrettyPrinterVisitor().visit(parser.parse(source))
+        println(parser.parse(source))
     }
 }
