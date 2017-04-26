@@ -85,4 +85,11 @@ class FunctionTransactionTest {
         Function("getVersion()", emptyList())
                 .diff(Function("get_version()", emptyList()))
     }
+
+    @Test fun `test diff modifiers`() {
+        val signature = "getVersion()"
+        val src = Function(signature, emptyList(), setOf("public"))
+        val dst = Function(signature, emptyList(), setOf("private"))
+        assertDiff(src, dst)
+    }
 }

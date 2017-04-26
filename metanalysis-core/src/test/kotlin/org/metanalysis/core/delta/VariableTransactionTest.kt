@@ -68,7 +68,14 @@ class VariableTransactionTest {
         Variable("version").diff(Variable("version2"))
     }
 
-    @Test fun `test diff`() {
+    @Test fun `test diff modifiers`() {
+        val name = "name"
+        val src = Variable(name, setOf("public"))
+        val dst = Variable(name, setOf("private"))
+        assertDiff(src, dst)
+    }
+
+    @Test fun `test diff initializer`() {
         val name = "name"
         val src = Variable(name, emptySet(), listOf("1"))
         val dst = Variable(name, emptySet(), listOf("2"))

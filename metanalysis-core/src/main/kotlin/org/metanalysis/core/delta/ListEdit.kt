@@ -52,11 +52,13 @@ sealed class ListEdit<T> : Edit<List<T>> {
             var maxValue = 0
             val values = hashMapOf<T, Int>()
             (this + other).forEach {
-                if (it !in values) values[it] = maxValue++
+                if (it !in values) {
+                    values[it] = maxValue++
+                }
             }
-            val a = map(values::get).toTypedArray().requireNoNulls()
+            val a = map(values::getValue).toTypedArray()
             val n = a.size
-            val b = other.map(values::get).toTypedArray().requireNoNulls()
+            val b = other.map(values::getValue).toTypedArray()
             val m = b.size
             val dp = Array(n + 1) { IntArray(m + 1) { Int.MAX_VALUE } }
             dp[0] = IntArray(m + 1) { it }
@@ -77,7 +79,7 @@ sealed class ListEdit<T> : Edit<List<T>> {
                 } else if (i > 0 && dp[i][j] == dp[i - 1][j] + 1) {
                     edits.add(Remove(i - 1))
                     i--
-                } else if (j > 0 && dp[i][j] == dp[i][j - 1] + 1) {
+                } else {
                     edits.add(Add(i, other[j - 1]))
                     j--
                 }
@@ -109,7 +111,7 @@ sealed class ListEdit<T> : Edit<List<T>> {
         }
 
         override fun applyOn(subject: MutableList<T>) {
-            check(index in 0..subject.size) {
+            check(index <= subject.size) {
                 "$index is out of bounds for $subject!"
             }
             subject.add(index, value)
@@ -129,7 +131,7 @@ sealed class ListEdit<T> : Edit<List<T>> {
         }
 
         override fun applyOn(subject: MutableList<T>) {
-            check(index in 0 until subject.size) {
+            check(index < subject.size) {
                 "$index is out of bounds for $subject!"
             }
             subject.removeAt(index)

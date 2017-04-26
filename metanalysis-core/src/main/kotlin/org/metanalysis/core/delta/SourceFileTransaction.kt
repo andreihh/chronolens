@@ -40,8 +40,8 @@ data class SourceFileTransaction(
                 other: SourceFile
         ): SourceFileTransaction? {
             val nodeEdits = nodes.diff(other.nodes)
-            return if (nodeEdits.isNotEmpty()) SourceFileTransaction(nodeEdits)
-            else null
+            val isChanged = nodeEdits.isNotEmpty()
+            return SourceFileTransaction(nodeEdits).takeIf { isChanged }
         }
     }
 

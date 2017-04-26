@@ -207,4 +207,11 @@ class TypeTransactionTest {
     fun `test diff types with different identifiers throws`() {
         Type("IClass").diff(Type("IInterface"))
     }
+
+    @Test fun `test diff modifiers`() {
+        val name = "IClass"
+        val src = Type(name, emptySet(), setOf("public"))
+        val dst = Type(name, emptySet(), setOf("private"))
+        assertDiff(src, dst)
+    }
 }
