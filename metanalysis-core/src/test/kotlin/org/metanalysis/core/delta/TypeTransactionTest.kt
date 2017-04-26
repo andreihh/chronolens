@@ -34,14 +34,24 @@ class TypeTransactionTest {
     }
 
     @Test fun `test change supertypes`() {
-        val typeName = "IClass"
-        val expected = Type(typeName, setOf("IInterface"))
-        val actual = Type(typeName, setOf("Object")).apply(TypeTransaction(
-                supertypeEdits = listOf(
+        val name = "IClass"
+        val expected = Type(name, setOf("IInterface"))
+        val actual = Type(name, setOf("Object"))
+                .apply(TypeTransaction(supertypeEdits = listOf(
                         SetEdit.Add("IInterface"),
                         SetEdit.Remove("Object")
-                )
-        ))
+                )))
+        assertEquals(expected, actual)
+    }
+
+    @Test fun `test change modifiers`() {
+        val name = "IClass"
+        val expected = Type(name, emptySet(), setOf("public"))
+        val actual = Type(name, emptySet(), setOf("private"))
+                .apply(TypeTransaction(modifierEdits = listOf(
+                        SetEdit.Remove("private"),
+                        SetEdit.Add("public")
+                )))
         assertEquals(expected, actual)
     }
 

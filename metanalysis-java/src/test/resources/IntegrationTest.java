@@ -44,6 +44,7 @@ class SampleClass extends IClass implements IEnumeration {
                     );}
         return
                 0;
+
     }
     public class InnerClass {}
     public interface InnerInterface {}

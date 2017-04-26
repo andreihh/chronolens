@@ -119,7 +119,19 @@ class ListEditTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test diff`() {
+    @Test fun `test diff add`() {
+        val src = "hello"
+        val dst = "hello world"
+        assertDiff(src, dst)
+    }
+
+    @Test fun `test diff remove`() {
+        val src = "hello world"
+        val dst = "hello"
+        assertDiff(src, dst)
+    }
+
+    @Test fun `test diff integration`() {
         val src = "democrats"
         val dst = "republican"
         assertDiff(src, dst)

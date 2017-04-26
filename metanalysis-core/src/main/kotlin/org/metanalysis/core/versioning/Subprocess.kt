@@ -18,8 +18,10 @@ package org.metanalysis.core.versioning
 
 import org.metanalysis.core.versioning.Subprocess.Result.Error
 import org.metanalysis.core.versioning.Subprocess.Result.Success
+
 import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
 
 object Subprocess {
     sealed class Result {
@@ -41,7 +43,8 @@ object Subprocess {
     }
 
     @Throws(IOException::class)
-    private fun InputStream.readText(): String = reader().use { it.readText() }
+    private fun InputStream.readText(): String =
+            reader().use(InputStreamReader::readText)
 
     /**
      * Executes the given `command` in a subprocess and returns its result.

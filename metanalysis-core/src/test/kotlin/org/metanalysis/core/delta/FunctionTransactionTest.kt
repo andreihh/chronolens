@@ -44,6 +44,17 @@ class FunctionTransactionTest {
         assertEquals(expected, actual)
     }
 
+    @Test fun `test change modifiers`() {
+        val signature = "println()"
+        val expected = Function(signature, emptyList(), setOf("public"))
+        val actual = Function(signature, emptyList(), setOf("private"))
+                .apply(FunctionTransaction(modifierEdits = listOf(
+                        SetEdit.Remove("private"),
+                        SetEdit.Add("public")
+                )))
+        assertEquals(expected, actual)
+    }
+
     @Test fun `test change body`() {
         val signature = "println()"
         val body = listOf("{", "  i = 1;", "}")

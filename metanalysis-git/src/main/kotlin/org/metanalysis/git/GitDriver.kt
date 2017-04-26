@@ -25,11 +25,8 @@ import java.io.IOException
 
 /** A module which integrates the `git` version control system. */
 class GitDriver : VersionControlSystem() {
-    private fun String.spread(): Array<String> = split(' ').toTypedArray()
-
     private fun List<String>.formatCommit(): String? =
-            if (size < 2) null
-            else "${get(0)}:${get(1)}".removePrefix("commit ")
+            "${get(0)}:${get(1)}".removePrefix("commit ")
 
     @Throws(IOException::class)
     override fun isSupported(): Boolean = execute("git", "--version").isSuccess
@@ -40,8 +37,7 @@ class GitDriver : VersionControlSystem() {
 
     @Throws(IOException::class)
     override fun getRawRevision(revisionId: String): String = execute(
-            *"git rev-list -1 --format=%at:%an".spread(),
-            "$revisionId^{commit}"
+            "git", "rev-list", "-1", "--format=%at:%an", "$revisionId^{commit}"
     ).getOrNull()
             ?.lines()
             ?.formatCommit()
@@ -58,7 +54,8 @@ class GitDriver : VersionControlSystem() {
     override fun listFiles(revision: Revision): Set<String> {
         validateRevision(revision)
         return execute("git", "ls-tree", "--name-only", "-r", revision.id)
-                .get().lines()
+                .get()
+                .lines()
                 .filter(String::isNotBlank)
                 .toSet()
     }
@@ -77,10 +74,8 @@ class GitDriver : VersionControlSystem() {
     ): List<Revision> {
         validateRevision(revision)
         return execute(
-                *"git rev-list --first-parent --reverse".spread(),
-                revision.id,
-                "--",
-                path
+                "git", "rev-list", "--first-parent", "--reverse",
+                revision.id, "--", path
         ).get().lines()
                 .filter(String::isNotBlank)
                 .map(this::getRevision)

@@ -31,6 +31,17 @@ class VariableTransactionTest {
         assertEquals(dst.apply(dst.diff(src)), src)
     }
 
+    @Test fun `test change modifiers`() {
+        val name = "version"
+        val expected = Variable(name, setOf("public"))
+        val actual = Variable(name, setOf("private"))
+                .apply(VariableTransaction(modifierEdits = listOf(
+                        SetEdit.Remove("private"),
+                        SetEdit.Add("public")
+                )))
+        assertEquals(expected, actual)
+    }
+
     @Test fun `test change initializer`() {
         val name = "version"
         val expected = Variable(name, emptySet(), listOf("1"))
