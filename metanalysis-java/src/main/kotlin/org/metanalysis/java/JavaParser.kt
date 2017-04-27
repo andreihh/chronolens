@@ -59,7 +59,6 @@ class JavaParser : Parser() {
         @JvmStatic fun String.toBlock(): List<String> =
                 lines().filter(String::isNotBlank).map(String::trim)
 
-        @Throws(SyntaxError::class)
         private fun <T> Collection<T>.requireDistinct(): Set<T> {
             val unique = toSet()
             if (size != unique.size) {
@@ -68,7 +67,6 @@ class JavaParser : Parser() {
             return unique
         }
 
-        @Throws(SyntaxError::class)
         private inline fun <reified T> List<*>.requireIsInstance(): List<T> =
                 map {
                     if (it is T) it

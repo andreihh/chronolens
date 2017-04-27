@@ -14,35 +14,16 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.versioning
+package org.metanalysis.core.subprocess
 
-import org.metanalysis.core.versioning.Subprocess.Result.Error
-import org.metanalysis.core.versioning.Subprocess.Result.Success
+import org.metanalysis.core.subprocess.Result.Error
+import org.metanalysis.core.subprocess.Result.Success
 
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 
 object Subprocess {
-    sealed class Result {
-        data class Success(val input: String) : Result()
-        data class Error(val exitValue: Int, val message: String) : Result()
-
-        fun getOrNull(): String? = (this as? Success)?.input
-
-        /**
-         * @throws SubprocessException if the subprocess terminated abnormally
-         */
-        fun get(): String = when (this) {
-            is Success -> input
-            is Error -> throw SubprocessException(exitValue, message)
-        }
-
-        val isSuccess: Boolean
-            get() = this is Success
-    }
-
-    @Throws(IOException::class)
     private fun InputStream.readText(): String =
             reader().use(InputStreamReader::readText)
 

@@ -19,7 +19,7 @@ package org.metanalysis.git
 import org.junit.Test
 
 import org.metanalysis.core.versioning.RevisionNotFoundException
-import org.metanalysis.core.versioning.Subprocess.execute
+import org.metanalysis.core.subprocess.Subprocess.execute
 import org.metanalysis.core.versioning.VersionControlSystem
 
 import java.io.File

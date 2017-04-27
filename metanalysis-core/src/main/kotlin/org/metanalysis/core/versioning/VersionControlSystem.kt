@@ -46,6 +46,10 @@ abstract class VersionControlSystem {
          * Returns the VCS for the repository detected in the current working
          * directory.
          *
+         * This method is the only safe way of getting VCS instances. Calling
+         * methods on a VCS instance which is not supported or detected will
+         * lead to undefined results.
+         *
          * @return the requested VCS, or `null` if no supported VCS repository
          * was detected or if multiple repositories were detected
          * @throws ServiceConfigurationError if the configuration file couldn't
@@ -59,17 +63,8 @@ abstract class VersionControlSystem {
                         .singleOrNull()
     }
 
-    /**
-     * A revision in a version control system (commit, tag, branch etc.).
-     *
-     * @param revisionId the id of this revision
-     * @throws IllegalThreadStateException if the VCS process is interrupted
-     * @throws RevisionNotFoundException if this revision doesn't exist
-     * @throws IOException if any input related errors occur
-     */
-    inner class Revision @Throws(IOException::class) internal constructor(
-            revisionId: String
-    ) {
+    /** A revision in a version control system (commit, tag, branch etc.). */
+    inner class Revision internal constructor(revisionId: String) {
         /** The unique id of this revision. */
         val id: String
 
@@ -175,7 +170,6 @@ abstract class VersionControlSystem {
      * in `revision`
      * @throws IllegalArgumentException if `revision` wasn't created by this VCS
      * @throws IllegalThreadStateException if the VCS process is interrupted
-     * @throws SubprocessException if the VCS process terminates abnormally
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -191,7 +185,6 @@ abstract class VersionControlSystem {
      * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws FileNotFoundException if `path` never existed in `revision` or
      * any of its ancestors
-     * @throws SubprocessException if the VCS process terminates abnormally
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -207,7 +200,6 @@ abstract class VersionControlSystem {
      * @return the set of existing files in `revision`
      * @throws IllegalArgumentException if `revision` wasn't created by this VCS
      * @throws IllegalThreadStateException if the VCS process is interrupted
-     * @throws SubprocessException if the VCS process terminates abnormally
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)

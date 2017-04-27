@@ -33,8 +33,6 @@ sealed class Node {
 
     final override fun hashCode(): Int = identifier.hashCode()
 
-    override abstract fun toString(): String
-
     /**
      * A type declared within a source file.
      *

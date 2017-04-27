@@ -61,7 +61,6 @@ class Project private constructor(private val vcs: VersionControlSystem) {
 
     private val head = vcs.getHead().id
 
-    @Throws(IOException::class)
     private fun getParser(path: String): Parser =
             Parser.getByExtension(path.substringAfterLast('.', ""))
                     ?: throw IOException("No parser can interpret '$path'!")

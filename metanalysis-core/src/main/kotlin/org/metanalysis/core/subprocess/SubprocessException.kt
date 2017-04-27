@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.versioning
+package org.metanalysis.core.subprocess
 
 /** Signals that a subprocess terminated abnormally. */
 class SubprocessException(

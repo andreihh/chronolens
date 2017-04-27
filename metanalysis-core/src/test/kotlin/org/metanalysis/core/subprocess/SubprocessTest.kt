@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.versioning
+package org.metanalysis.core.subprocess
 
 import org.junit.Test
-import org.metanalysis.core.versioning.Subprocess.Result
 
-import org.metanalysis.core.versioning.Subprocess.execute
+import org.metanalysis.core.subprocess.Result.Error
+import org.metanalysis.core.subprocess.Subprocess.execute
 
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class SubprocessTest {
     @Test fun `test get echo message`() {
@@ -35,36 +32,9 @@ class SubprocessTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test get or null echo returns message`() {
-        val message = "Hello, world!"
-        val expected = "$message\n"
-        val actual = execute("echo", message).getOrNull()
-        assertEquals(expected, actual)
-    }
-
-    @Test fun `test echo is success`() {
-        val result = execute("echo", "Hello, world!")
-        assertTrue(result.isSuccess)
-    }
-
     @Test fun `test date with invalid argument returns error`() {
-        val actual = execute("date", "invalid-date") as Result.Error
+        val actual = execute("date", "invalid-date") as Error
         assertNotEquals(0, actual.exitValue)
-    }
-
-    @Test fun `test get or null date with invalid argument returns null`() {
-        val result = execute("date", "invalid-date").getOrNull()
-        assertNull(result)
-    }
-
-    @Test fun `test date with invalid argument is not success`() {
-        val result = execute("date", "invalid-date")
-        assertFalse(result.isSuccess)
-    }
-
-    @Test(expected = SubprocessException::class)
-    fun `test get date with invalid arguments throws`() {
-        execute("date", "invalid-date").get()
     }
 
     @Test(timeout = 1000, expected = IllegalThreadStateException::class)
