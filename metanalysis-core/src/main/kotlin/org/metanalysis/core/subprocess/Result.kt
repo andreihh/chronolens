@@ -17,12 +17,9 @@
 package org.metanalysis.core.subprocess
 
 sealed class Result {
-    data class Success internal constructor(val input: String) : Result()
+    data class Success(val input: String) : Result()
 
-    data class Error internal constructor(
-            val exitValue: Int,
-            val message: String
-    ) : Result()
+    data class Error(val exitValue: Int, val message: String) : Result()
 
     fun getOrNull(): String? = (this as? Success)?.input
 
