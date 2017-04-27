@@ -1,1 +1,3 @@
+org.metanalysis.core.versioning.VersionControlSystemTest$UnsupportedVersionControlSystem
+org.metanalysis.core.versioning.VersionControlSystemTest$UndetectedVersionControlSystem
 org.metanalysis.test.core.versioning.VersionControlSystemMock

@@ -96,15 +96,15 @@ If using the various modules as dependencies, you must provide the following
 
 ## Building
 
-To build this project, run ```./gradlew build```.
+To build this project, run `./gradlew build`.
 
 To build the `cli` artifact, run the following command after building the
-project: ```./gradlew fatJar```. This will create the
+project: `./gradlew fatJar`. This will create the
 `metanalysis-cli-$version-all.jar` artifact in `metanalysis-cli/build/libs/`.
 
 ## Documentation
 
-To generate the documentation, run ```./gradlew javadocJar```.
+To generate the documentation, run `./gradlew javadocJar`.
 
 ## Licensing
 
