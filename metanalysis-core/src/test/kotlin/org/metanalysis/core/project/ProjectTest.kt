@@ -29,7 +29,6 @@ import java.io.IOException
 import java.util.Date
 
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class ProjectTest {
@@ -43,8 +42,12 @@ class ProjectTest {
             getResource("/GenericTypeResolver-v1.mock")
     private val genericTypeResolver2 =
             getResource("/GenericTypeResolver-v2.mock")
+    private val project by lazy {
+        initializeRepository()
+        Project(VersionControlSystemMock())
+    }
 
-    init {
+    private fun initializeRepository() {
         VersionControlSystemMock.setRepository(listOf(
                 CommitMock(
                         id = "1",
@@ -82,7 +85,16 @@ class ProjectTest {
         ))
     }
 
-    private val project = assertNotNull(Project.create())
+    @Test fun `test create with uninitialized repository returns null`() {
+        VersionControlSystemMock.resetRepository()
+        assertNull(Project.create())
+    }
+
+    @Test(expected = IllegalStateException::class)
+    fun `test create with empty repository throws`() {
+        VersionControlSystemMock.setRepository(emptyList())
+        Project.create()
+    }
 
     @Test fun `test get file model of non-existent file returns null`() {
         assertNull(project.getFileModel(path, "2"))

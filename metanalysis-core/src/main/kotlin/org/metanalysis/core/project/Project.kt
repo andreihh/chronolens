@@ -33,7 +33,7 @@ import java.util.Date
  *
  * @property vcs the VCS behind the repository
  */
-class Project private constructor(private val vcs: VersionControlSystem) {
+class Project internal constructor(private val vcs: VersionControlSystem) {
     companion object {
         /**
          * Utility factory method.

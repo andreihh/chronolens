@@ -24,10 +24,32 @@ import java.util.Date
 
 class VersionControlSystemMock : VersionControlSystem() {
     companion object {
-        private var commits: List<CommitMock> = emptyList()
+        private var isInitialized = false
+        private var commits = emptyList<CommitMock>()
+        private var commitsById = emptyMap<String, CommitMock>()
+        private var files = emptyMap<String, Map<String, String>>()
 
-        fun setRepository(commits: List<CommitMock>) {
-            this.commits = commits.toList()
+        fun resetRepository() {
+            isInitialized = false
+        }
+
+        fun setRepository(revisions: List<CommitMock>) {
+            isInitialized = true
+            commits = revisions
+            commitsById = commits.associateBy(CommitMock::id)
+            val fileHistory = hashMapOf<String, Map<String, String>>()
+            val currentFiles = hashMapOf<String, String>()
+            commits.forEach { (id, _, _, changedFiles) ->
+                changedFiles.forEach { path, src ->
+                    if (src == null) {
+                        currentFiles -= path
+                    } else {
+                        currentFiles[path] = src
+                    }
+                }
+                fileHistory[id] = currentFiles.toMap()
+            }
+            files = fileHistory
         }
     }
 
@@ -40,28 +62,9 @@ class VersionControlSystemMock : VersionControlSystem() {
 
     private fun CommitMock.toRevision(): Revision = getRevision(id)
 
-    private val files: Map<String, Map<String, String>>
-    private val commitsById = commits.associateBy(CommitMock::id)
-
-    init {
-        val fileHistory = hashMapOf<String, Map<String, String>>()
-        val currentFiles = hashMapOf<String, String>()
-        commits.forEach { (id, _, _, changedFiles) ->
-            changedFiles.forEach { path, src ->
-                if (src == null) {
-                    currentFiles -= path
-                } else {
-                    currentFiles[path] = src
-                }
-            }
-            fileHistory[id] = currentFiles.toMap()
-        }
-        files = fileHistory
-    }
-
     override fun isSupported(): Boolean = true
 
-    override fun detectRepository(): Boolean = true
+    override fun detectRepository(): Boolean = isInitialized
 
     override fun getHead(): Revision =
             checkNotNull(commits.lastOrNull()).toRevision()

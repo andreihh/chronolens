@@ -20,7 +20,7 @@ import org.junit.Test
 
 import org.metanalysis.test.core.versioning.VersionControlSystemMock
 
-import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class VersionControlSystemTest {
@@ -46,29 +46,13 @@ class VersionControlSystemTest {
         ): List<Revision> = TODO("not implemented")
     }
 
-    class UndetectedVersionControlSystem : VersionControlSystem() {
-        override fun isSupported(): Boolean = true
-
-        override fun detectRepository(): Boolean = false
-
-        override fun getHead(): Revision = TODO("not implemented")
-
-        override fun getRawRevision(revisionId: String): String =
-                TODO("not implemented")
-
-        override fun listFiles(revision: Revision): Set<String> =
-                TODO("not implemented")
-
-        override fun getFile(revision: Revision, path: String): String? =
-                TODO("not implemented")
-
-        override fun getFileHistory(
-                revision: Revision,
-                path: String
-        ): List<Revision> = TODO("not implemented")
+    @Test fun `test get vcs ignores unsupported or undetected`() {
+        val vcs = VersionControlSystem.get()
+        assertNull(vcs)
     }
 
-    @Test fun `test get vcs ignores unsupported or undetected`() {
+    @Test fun `test get initialized vcs returns non-null`() {
+        VersionControlSystemMock.setRepository(emptyList())
         val vcs = VersionControlSystem.get()
         assertTrue(vcs is VersionControlSystemMock)
     }

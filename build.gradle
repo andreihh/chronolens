@@ -4,10 +4,10 @@ allprojects {
 
     buildscript {
         ext {
-            kotlinVersion = '1.1.1'
+            kotlinVersion = '1.1.2'
             dokkaVersion = '0.9.13'
             jacksonVersion = '2.8.7'
-            jdtVersion = '3.12.2'
+            jdtVersion = '3.12.3'
             junitVersion = '4.12'
         }
 
@@ -41,7 +41,7 @@ subprojects {
 
     dependencies {
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-        testCompile "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
+        testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
         testCompile "junit:junit:$junitVersion"
     }
 
