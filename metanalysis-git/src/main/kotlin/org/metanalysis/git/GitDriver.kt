@@ -20,68 +20,89 @@ import org.metanalysis.core.subprocess.Subprocess.execute
 import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VersionControlSystem
 
-import java.io.FileNotFoundException
 import java.io.IOException
+import java.util.Date
 
 /** A module which integrates the `git` version control system. */
 class GitDriver : VersionControlSystem() {
+    private val format = "--format=%at:%an"
+    private val headId = "HEAD"
+
     private fun List<String>.formatCommit(): String? =
             "${get(0)}:${get(1)}".removePrefix("commit ")
+
+    private fun validateRevision(revisionId: String) {
+        val result = execute("git", "cat-file", "-e", "$revisionId^{commit}")
+        if (!result.isSuccess) {
+            throw RevisionNotFoundException(revisionId)
+        }
+    }
+
+    private fun parseCommit(lines: Pair<String, String>): Revision {
+        val id = lines.first.removePrefix("commit ")
+        val (rawDate, author) = lines.second.split(':', limit = 2)
+        val date = Date(rawDate.toLong() * 1000)
+        return getRevision("")//Revision(id, date, author)
+    }
+
+    private fun String.pairUpLines(): List<Pair<String, String>> {
+        val lines = lines()
+        return (0 until lines.size - 1).map { i ->
+            Pair(lines[i], lines[i + 1])
+        }
+    }
 
     @Throws(IOException::class)
     override fun isSupported(): Boolean = execute("git", "--version").isSuccess
 
     @Throws(IOException::class)
     override fun detectRepository(): Boolean =
-            execute("git", "cat-file", "-e", "HEAD").isSuccess
+            execute("git", "cat-file", "-e", headId).isSuccess &&
+                    execute("git", "rev-parse", "--show-prefix").get().isBlank()
+
+    /*@Throws(IOException::class)
+    override fun getRevision(revisionId: String): Revision =
+            execute("git", "rev-list", "-1", format, "$revisionId^{commit}")
+                    .getOrNull()
+                    ?.pairUpLines()
+                    ?.singleOrNull()
+                    ?.let(this::parseCommit)
+                    ?: throw RevisionNotFoundException(revisionId)*/
 
     @Throws(IOException::class)
-    override fun getRawRevision(revisionId: String): String = execute(
-            "git", "rev-list", "-1", "--format=%at:%an", "$revisionId^{commit}"
-    ).getOrNull()
-            ?.lines()
-            ?.formatCommit()
-            ?: throw RevisionNotFoundException(revisionId)
+    override fun getRawRevision(revisionId: String): String =
+            execute("git", "rev-list", "-1", format, "$revisionId^{commit}")
+                    .getOrNull()
+                    ?.lines()
+                    ?.formatCommit()
+                    ?: throw RevisionNotFoundException(revisionId)
 
     @Throws(IOException::class)
     override fun getHead(): Revision = try {
-        getRevision("HEAD")
+        getRevision(headId)
     } catch (e: RevisionNotFoundException) {
         throw IllegalStateException(e)
     }
 
     @Throws(IOException::class)
-    override fun listFiles(revision: Revision): Set<String> {
-        validateRevision(revision)
-        return execute("git", "ls-tree", "--name-only", "-r", revision.id)
-                .get()
-                .lines()
-                .filter(String::isNotBlank)
-                .toSet()
-    }
+    override fun listFiles(): Set<String> =
+            execute("git", "ls-tree", "--name-only", "-r", headId)
+                    .get()
+                    .lines()
+                    .filter(String::isNotBlank)
+                    .toSet()
 
     @Throws(IOException::class)
-    override fun getFile(revision: Revision, path: String): String? {
-        validateRevision(revision)
-        return execute("git", "cat-file", "blob", "${revision.id}:$path")
+    override fun getFile(revisionId: String, path: String): String? {
+        validateRevision(revisionId)
+        return execute("git", "cat-file", "blob", "$revisionId:$path")
                 .getOrNull()
     }
 
     @Throws(IOException::class)
-    override fun getFileHistory(
-            revision: Revision,
-            path: String
-    ): List<Revision> {
-        validateRevision(revision)
-        return execute(
-                "git", "rev-list", "--first-parent", "--reverse",
-                revision.id, "--", path
-        ).get().lines()
-                .filter(String::isNotBlank)
-                .map(this::getRevision)
-                .takeIf(List<Revision>::isNotEmpty)
-                ?: throw FileNotFoundException(
-                        "'$path' doesn't exist in '${revision.id}'!"
-                )
-    }
+    override fun getFileHistory(path: String): List<Revision> = execute(
+            "git", "rev-list", "--first-parent", "--reverse", format,
+            headId, "--", path
+    ).get().pairUpLines()
+            .map(this::parseCommit)
 }

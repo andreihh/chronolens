@@ -33,7 +33,7 @@ class GitDriverTest {
     private val git = GitDriver()
 
     @Test fun `test detect repository`() {
-        assertTrue(VersionControlSystem.get() is GitDriver)
+        assertTrue(VersionControlSystem.detect() is GitDriver)
     }
 
     @Test fun `test get head`() {
@@ -88,7 +88,7 @@ class GitDriverTest {
     }
 
     @Test fun `test get file from commit`() {
-        val expected = File("build.gradle").readText()
+        val expected = File("metanalysis-git/build.gradle").readText()
         val actual = git.getFile(git.getHead(), "metanalysis-git/build.gradle")
         assertEquals(expected, actual)
     }
@@ -99,7 +99,7 @@ class GitDriverTest {
     }
 
     @Test fun `test get file history from commit`() {
-        val history = git.getFileHistory(git.getHead(), "../README.md")
+        val history = git.getFileHistory(git.getHead(), "README.md")
         println(history.joinToString(separator = "\n"))
     }
 

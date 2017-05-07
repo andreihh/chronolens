@@ -28,9 +28,11 @@ import org.metanalysis.core.delta.VariableTransaction
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
+import org.metanalysis.core.project.Project.HistoryEntry
 
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.util.Date
 
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals
@@ -84,6 +86,18 @@ class JsonDriverTest {
                 src = bos.toByteArray().inputStream()
         )
         assertEquals(data, actualData)
+    }
+
+    @Test fun `test serialize and deserialize history`() {
+        val history = (1 until 10).map { i ->
+            HistoryEntry("$i", Date(i.toLong()), "<author>", null)
+        }
+        val bos = ByteArrayOutputStream()
+        JsonDriver.serialize(bos, history)
+        val actualHistory = JsonDriver.deserialize<Array<HistoryEntry>>(
+                src = bos.toByteArray().inputStream()
+        ).asList()
+        assertEquals(history, actualHistory)
     }
 
     /*@Test fun gen() {

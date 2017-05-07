@@ -58,7 +58,7 @@ abstract class VersionControlSystem {
          * @throws IOException if any input related errors occur
          */
         @Throws(IOException::class)
-        @JvmStatic fun get(): VersionControlSystem? =
+        @JvmStatic fun detect(): VersionControlSystem? =
                 vcsList.filter(VersionControlSystem::detectRepository)
                         .singleOrNull()
     }
@@ -164,44 +164,40 @@ abstract class VersionControlSystem {
      * Returns the content of the file located at the given `path` as it is
      * found in `revision`.
      *
-     * @param revision the desired revision of the file
+     * @param revisionId the id of the desired revision of the file
      * @param path the relative path of the requested file
      * @return the content of the requested file, or `null` if it doesn't exist
      * in `revision`
-     * @throws IllegalArgumentException if `revision` wasn't created by this VCS
      * @throws IllegalThreadStateException if the VCS process is interrupted
+     * @throws RevisionNotFoundException if `revisionId` doesn't exist
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun getFile(revision: Revision, path: String): String?
+    abstract fun getFile(revisionId: String, path: String): String?
 
     /**
      * Returns all the revisions which modified the file at the given `path` up
-     * to the given `revision`.
+     * to the `head` revision.
      *
      * The revisions are given chronologically.
      *
-     * @throws IllegalArgumentException if `revision` wasn't created by this VCS
+     * @return the list of revisions which modified the file at the given
+     * `path`, or the empty list if `path` never existed in the `head` revision
+     * or any of its ancestors
      * @throws IllegalThreadStateException if the VCS process is interrupted
-     * @throws FileNotFoundException if `path` never existed in `revision` or
-     * any of its ancestors
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun getFileHistory(
-            revision: Revision,
-            path: String
-    ): List<Revision>
+    abstract fun getFileHistory(path: String): List<Revision>
 
     /**
-     * Returns all the existing files in `revision`.
+     * Returns all the existing files in the `head` revision.
      *
-     * @param revision the inspected revision
      * @return the set of existing files in `revision`
      * @throws IllegalArgumentException if `revision` wasn't created by this VCS
      * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun listFiles(revision: Revision): Set<String>
+    abstract fun listFiles(): Set<String>
 }

@@ -20,10 +20,11 @@ import org.metanalysis.core.delta.SourceFileTransaction
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.Parser.SyntaxError
+import org.metanalysis.core.model.Parser.UnsupportedExtensionException
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.versioning.VersionControlSystem
-import org.metanalysis.core.versioning.VersionControlSystem.Companion.get
 
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.Date
 
@@ -45,7 +46,8 @@ class Project internal constructor(private val vcs: VersionControlSystem) {
          * @throws IOException if any input related errors occur
          */
         @Throws(IOException::class)
-        @JvmStatic fun create(): Project? = get()?.let(::Project)
+        @JvmStatic fun connect(): Project? =
+                VersionControlSystem.detect()?.let(::Project)
     }
 
     data class HistoryEntry(
@@ -55,11 +57,10 @@ class Project internal constructor(private val vcs: VersionControlSystem) {
             val transaction: SourceFileTransaction?
     )
 
-    data class History(
-            private val entries: List<HistoryEntry>
-    ) : List<HistoryEntry> by entries
+    private val head = vcs.getHead()
 
-    private val head = vcs.getHead().id
+    /** The existing files in the `head` revision. */
+    val files: Set<String> = vcs.listFiles()
 
     private fun getParser(path: String): Parser =
             Parser.getByExtension(path.substringAfterLast('.', ""))
@@ -67,23 +68,24 @@ class Project internal constructor(private val vcs: VersionControlSystem) {
 
     /**
      * Returns the code metadata of the file at the given `path` as it is found
-     * in `revision`.
+     * in the `head` revision.
      *
      * @param path the relative path of the file which should be interpreted
-     * @param revision the desired revision of the file
      * @return the parsed code metadata, or `null` if the given `path` doesn't
      * exist in `revision`
-     * @throws IOException if any of the following situations appear:
-     * - `revision` doesn't exist
-     * - none of the provided parsers can interpret the file at the given `path`
-     * - the file at the given `path` contains invalid code
-     * - any input related errors occur
+     * @throws SyntaxError if the file at the given `path` contains invalid code
+     * @throws UnsupportedExtensionException if none of the provided parsers can
+     * interpret the file at the given `path`
+     * @throws FileNotFoundException if the given `path` doesn't exist in
+     * [files]
+     * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    fun getFileModel(path: String, revision: String = head): SourceFile? {
+    fun getFileModel(path: String): SourceFile {
         val parser = getParser(path)
-        val source = vcs.getFile(vcs.getRevision(revision), path)
+        val source = vcs.getFile(head.id, path)
         return source?.let(parser::parse)
+                ?: throw FileNotFoundException("'$path' doesn't exist!")
     }
 
     /**
@@ -104,7 +106,7 @@ class Project internal constructor(private val vcs: VersionControlSystem) {
      * - none of the provided parsers can interpret the file at the given `path`
      * - any input related errors occur
      */
-    @Throws(IOException::class)
+    /*@Throws(IOException::class)
     fun getFileDiff(
             path: String,
             srcRevision: String,
@@ -113,30 +115,31 @@ class Project internal constructor(private val vcs: VersionControlSystem) {
         val srcSourceFile = getFileModel(path, srcRevision) ?: SourceFile()
         val dstSourceFile = getFileModel(path, dstRevision) ?: SourceFile()
         return srcSourceFile.diff(dstSourceFile)
-    }
+    }*/
 
     /**
      * If the file contains invalid code in any revision, the changes applied in
      * that revision are replaced with a `null` transaction.
      *
      * @param path the relative path of the file which should be analyzed
-     * @param revision the last revision in the history of the file which should
-     * be analyzed
      * @return
+     * @throws FileNotFoundException if `path` doesn't exist in [files]
      * @throws IOException if any of the following situations appear:
-     * - `revision` doesn't exist
      * - `path` never existed in `revision` or any of its ancestors
      * - none of the provided parsers can interpret the file at the given `path`
      * - any input related errors occur
      */
     @Throws(IOException::class)
-    fun getFileHistory(path: String, revision: String = head): History {
+    fun getFileHistory(path: String): List<HistoryEntry> {
+        if (path !in files) {
+            throw FileNotFoundException("'$path' doesn't exist!")
+        }
         val parser = getParser(path)
-        val revisions = vcs.getFileHistory(vcs.getRevision(revision), path)
+        val revisions = vcs.getFileHistory(path)
         val history = arrayListOf<HistoryEntry>()
         var sourceFile = SourceFile()
         for (rev in revisions) {
-            val source = vcs.getFile(rev, path)
+            val source = vcs.getFile(rev.id, path)
             val newSourceFile = try {
                 source?.let(parser::parse) ?: SourceFile()
             } catch (e: SyntaxError) {
@@ -146,18 +149,16 @@ class Project internal constructor(private val vcs: VersionControlSystem) {
             history += HistoryEntry(rev.id, rev.date, rev.author, transaction)
             sourceFile = newSourceFile
         }
-        return History(history)
+        return history
     }
 
     /**
-     * Returns all the existing files in `revision`.
+     * Returns all the existing files in the `head` revision.
      *
-     * @param revision the inspected revision
      * @return the set of existing files in `revision`
      * @throws IOException if `revision` doesn't exist or any input related
      * errors occur
      */
     @Throws(IOException::class)
-    fun listFiles(revision: String = head): Set<String> =
-            vcs.listFiles(vcs.getRevision(revision))
+    fun listFiles(): Set<String> = files
 }

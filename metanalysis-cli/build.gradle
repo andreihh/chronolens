@@ -1,5 +1,15 @@
 apply plugin: 'kotlin'
 apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+dependencies {
+    compile project(':metanalysis-core')
+    runtime project(':metanalysis-git')
+    runtime project(':metanalysis-java')
+}
+
+ext.mainClassName = 'org.metanalysis.cli.Main'
+jar.manifest.attributes 'Main-Class': project.mainClassName
 
 task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
     outputFormat = 'javadoc'
@@ -8,24 +18,14 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
 
 javadocJar.dependsOn dokkaJavadoc
 
-task fatJar(type: Jar) {
-    classifier = 'all'
-
-    manifest {
-        attributes 'Main-Class': 'org.metanalysis.cli.Main'
+task releaseUnix(dependsOn: shadowJar) << {
+    def artifact = new File(rootProject.buildDir, rootProject.name)
+    delete(artifact)
+    files('unix-wrapper.sh', shadowJar.archivePath).forEach { f ->
+        artifact << f.bytes
     }
-
-    from {
-        configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
-    } {
-        exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+    exec {
+        ignoreExitValue = true
+        commandLine 'chmod', '+x', artifact.absolutePath
     }
-
-    with jar
-}
-
-dependencies {
-    compile project(':metanalysis-core')
-    runtime project(':metanalysis-git')
-    runtime project(':metanalysis-java')
 }

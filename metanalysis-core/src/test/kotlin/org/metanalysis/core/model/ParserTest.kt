@@ -50,7 +50,7 @@ class ParserTest {
     }
 
     @Test fun `test parse file`() {
-        val file = File("src/test/resources/resource.mock")
+        val file = File("metanalysis-core/src/test/resources/resource.mock")
         val expected = SourceFile()
         val actual = Parser.parse(file)
         assertEquals(expected, actual)

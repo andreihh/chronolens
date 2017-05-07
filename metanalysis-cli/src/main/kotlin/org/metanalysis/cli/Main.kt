@@ -94,7 +94,7 @@ fun main(args: Array<String>) {
         val value = it.substringAfter('=', "")
         option to value
     }
-    val project = Project.create()
+    val project = Project.connect()
             ?: exitError("No supported VCS repository detected!")
     try {
         when (command) {

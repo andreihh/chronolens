@@ -46,14 +46,14 @@ class VersionControlSystemTest {
         ): List<Revision> = TODO("not implemented")
     }
 
-    @Test fun `test get vcs ignores unsupported or undetected`() {
-        val vcs = VersionControlSystem.get()
+    @Test fun `test detect vcs ignores unsupported or undetected`() {
+        val vcs = VersionControlSystem.detect()
         assertNull(vcs)
     }
 
-    @Test fun `test get initialized vcs returns non-null`() {
+    @Test fun `test detect initialized vcs returns non-null`() {
         VersionControlSystemMock.setRepository(emptyList())
-        val vcs = VersionControlSystem.get()
+        val vcs = VersionControlSystem.detect()
         assertTrue(vcs is VersionControlSystemMock)
     }
 }
