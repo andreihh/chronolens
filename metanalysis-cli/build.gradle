@@ -24,6 +24,7 @@ task releaseUnix(dependsOn: shadowJar) << {
     files('unix-wrapper.sh', shadowJar.archivePath).forEach { f ->
         artifact << f.bytes
     }
+
     exec {
         ignoreExitValue = true
         commandLine 'chmod', '+x', artifact.absolutePath
