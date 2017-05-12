@@ -17,6 +17,7 @@
 package org.metanalysis.git
 
 import org.metanalysis.core.subprocess.Subprocess.execute
+import org.metanalysis.core.versioning.Revision
 import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VersionControlSystem
 
@@ -25,57 +26,39 @@ import java.util.Date
 
 /** A module which integrates the `git` version control system. */
 class GitDriver : VersionControlSystem() {
-    private val format = "--format=%at:%an"
+    private val vcs = "git"
     private val headId = "HEAD"
-
-    private fun List<String>.formatCommit(): String? =
-            "${get(0)}:${get(1)}".removePrefix("commit ")
+    private val format = "--format=%at:%an"
 
     private fun validateRevision(revisionId: String) {
-        val result = execute("git", "cat-file", "-e", "$revisionId^{commit}")
+        val result = execute(vcs, "cat-file", "-e", "$revisionId^{commit}")
         if (!result.isSuccess) {
             throw RevisionNotFoundException(revisionId)
         }
     }
 
-    private fun parseCommit(lines: Pair<String, String>): Revision {
-        val id = lines.first.removePrefix("commit ")
-        val (rawDate, author) = lines.second.split(':', limit = 2)
-        val date = Date(rawDate.toLong() * 1000)
-        return getRevision("")//Revision(id, date, author)
-    }
-
-    private fun String.pairUpLines(): List<Pair<String, String>> {
+    private fun String.formatCommits(): List<String> {
         val lines = lines()
-        return (0 until lines.size - 1).map { i ->
-            Pair(lines[i], lines[i + 1])
+        return (0 until lines.size - 1 step 2).map { i ->
+            "${lines[i]}:${lines[i + 1]}".removePrefix("commit ")
         }
     }
 
+    private fun String.formatCommit(): String? = formatCommits().singleOrNull()
+
+    private fun parseCommit(formattedLine: String): Revision {
+        val (id, rawDate, author) = formattedLine.split(':', limit = 3)
+        val date = Date(rawDate.toLong() * 1000)
+        return Revision(id, date, author)
+    }
+
     @Throws(IOException::class)
-    override fun isSupported(): Boolean = execute("git", "--version").isSuccess
+    override fun isSupported(): Boolean = execute(vcs, "--version").isSuccess
 
     @Throws(IOException::class)
     override fun detectRepository(): Boolean =
-            execute("git", "cat-file", "-e", headId).isSuccess &&
-                    execute("git", "rev-parse", "--show-prefix").get().isBlank()
-
-    /*@Throws(IOException::class)
-    override fun getRevision(revisionId: String): Revision =
-            execute("git", "rev-list", "-1", format, "$revisionId^{commit}")
-                    .getOrNull()
-                    ?.pairUpLines()
-                    ?.singleOrNull()
-                    ?.let(this::parseCommit)
-                    ?: throw RevisionNotFoundException(revisionId)*/
-
-    @Throws(IOException::class)
-    override fun getRawRevision(revisionId: String): String =
-            execute("git", "rev-list", "-1", format, "$revisionId^{commit}")
-                    .getOrNull()
-                    ?.lines()
-                    ?.formatCommit()
-                    ?: throw RevisionNotFoundException(revisionId)
+            execute(vcs, "cat-file", "-e", headId).isSuccess &&
+                    execute(vcs, "rev-parse", "--show-prefix").get().isBlank()
 
     @Throws(IOException::class)
     override fun getHead(): Revision = try {
@@ -85,8 +68,17 @@ class GitDriver : VersionControlSystem() {
     }
 
     @Throws(IOException::class)
+    override fun getRevision(revisionId: String): Revision =
+            execute(vcs, "rev-list", "-1", format, "$revisionId^{commit}")
+                    .getOrNull()
+                    ?.formatCommit()
+                    ?.let(this::parseCommit)
+                    ?: throw RevisionNotFoundException(revisionId)
+
+
+    @Throws(IOException::class)
     override fun listFiles(): Set<String> =
-            execute("git", "ls-tree", "--name-only", "-r", headId)
+            execute(vcs, "ls-tree", "--name-only", "-r", headId)
                     .get()
                     .lines()
                     .filter(String::isNotBlank)
@@ -95,14 +87,12 @@ class GitDriver : VersionControlSystem() {
     @Throws(IOException::class)
     override fun getFile(revisionId: String, path: String): String? {
         validateRevision(revisionId)
-        return execute("git", "cat-file", "blob", "$revisionId:$path")
-                .getOrNull()
+        return execute(vcs, "cat-file", "blob", "$revisionId:$path").getOrNull()
     }
 
     @Throws(IOException::class)
     override fun getFileHistory(path: String): List<Revision> = execute(
-            "git", "rev-list", "--first-parent", "--reverse", format,
+            vcs, "rev-list", "--first-parent", "--reverse", format,
             headId, "--", path
-    ).get().pairUpLines()
-            .map(this::parseCommit)
+    ).get().formatCommits().map(this::parseCommit)
 }

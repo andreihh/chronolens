@@ -16,23 +16,45 @@
 
 package org.metanalysis.core.project
 
+import org.junit.Ignore
 import org.junit.Test
 
 import org.metanalysis.core.delta.Transaction.Companion.apply
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.project.Project.HistoryEntry
 import org.metanalysis.test.assertEquals
+import org.metanalysis.test.core.project.ProjectMock
 import org.metanalysis.test.core.versioning.VersionControlSystemMock
 import org.metanalysis.test.core.versioning.VersionControlSystemMock.CommitMock
+import java.io.FileNotFoundException
 
 import java.io.IOException
 import java.util.Date
 
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
-class ProjectTest {
-    private fun getResource(path: String): String? =
+@Ignore
+abstract class ProjectTest {
+    protected abstract val expectedProject: ProjectMock
+    protected abstract val actualProject: Project
+
+    @Test fun `test equal projects`() {
+        assertEquals(expectedProject, actualProject)
+    }
+
+    @Test(expected = FileNotFoundException::class)
+    fun `test get non-existent file model throws`() {
+        actualProject.getFileModel("non-existent.txt")
+    }
+
+    @Test(expected = FileNotFoundException::class)
+    fun `test get non-existent file history throws`() {
+        actualProject.getFileHistory("non-existent.txt")
+    }
+
+    /*private fun getResource(path: String): String? =
             javaClass.getResourceAsStream(path)?.reader()?.readText()
 
     private val author = "name"
@@ -119,7 +141,7 @@ class ProjectTest {
     @Test(expected = IOException::class)
     fun `test get file model from invalid revision throws`() {
         project.getFileModel(path, "-1")
-    }
+    }*/
 
     /*@Test fun `test diff between absent file in both revisions returns null`() {
         val transaction = project.getFileDiff(path, "2", "2")
@@ -133,7 +155,7 @@ class ProjectTest {
         assertEquals(expected, actual)
     }*/
 
-    @Test fun `test apply file history transactions returns correct model`() {
+    /*@Test fun `test apply file history transactions returns correct model`() {
         val history = project.getFileHistory(path, "5")
         val transactions = history.mapNotNull(HistoryEntry::transaction)
         val expected = project.getFileModel(path, "5")
@@ -145,5 +167,5 @@ class ProjectTest {
         val expected = setOf(path, "resource.txt")
         val actual = project.listFiles("5")
         assertEquals(expected, actual)
-    }
+    }*/
 }

@@ -14,31 +14,6 @@
  * limitations under the License.
  */
 
-@file:JvmName("Main")
-
 package org.metanalysis.cli
 
-import java.io.IOException
-
-import kotlin.system.exitProcess
-
-fun printlnError(line: String?) {
-    System.err.println("metanalysis: $line")
-}
-
-fun exitError(message: String?): Nothing {
-    printlnError(message)
-    exitProcess(1)
-}
-
-fun main(args: Array<String>) {
-    try {
-        val command = args.getOrNull(0)
-                ?: throw IllegalUsageException("")
-        Command(command).execute(*args.drop(1).toTypedArray())
-    } catch (e: IOException) {
-        exitError(e.message)
-    } catch (e: IllegalUsageException) {
-        exitError(e.message)
-    }
-}
+class IllegalUsageException(message: String) : IllegalArgumentException(message)

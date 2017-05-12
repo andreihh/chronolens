@@ -76,8 +76,6 @@ subprojects {
             csv.enabled = false
         }
     }
-
-    test.workingDir = rootDir
 }
 
 task codeCoverageReport(type: JacocoReport) {

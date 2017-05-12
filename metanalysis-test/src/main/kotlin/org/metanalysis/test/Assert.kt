@@ -23,9 +23,11 @@ import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.project.Project
 
 import kotlin.test.assertEquals as assertEqualsKt
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 fun assertEquals(expected: Type?, actual: Type?, message: String? = null) {
     assertEqualsKt(expected?.name, actual?.name, message)
@@ -102,4 +104,31 @@ fun assertEquals(
 ) {
     assertEqualsKt(expected, actual, message)
     assertEquals(expected?.nodes, actual?.nodes, message)
+}
+
+fun assertEquals(
+        expected: Project?,
+        actual: Project?,
+        message: String? = null
+) {
+    if (expected == null) {
+        assertNull(actual, message)
+    }
+    if (expected != null && actual != null) {
+        val expectedFiles = expected.listFiles()
+        val actualFiles = actual.listFiles()
+        assertEqualsKt(expectedFiles, actualFiles, message)
+        expectedFiles.forEach { path ->
+            assertEquals(
+                    expected = expected.getFileModel(path),
+                    actual = actual.getFileModel(path),
+                    message = message
+            )
+            assertEqualsKt(
+                    expected = expected.getFileHistory(path),
+                    actual = actual.getFileHistory(path),
+                    message = message
+            )
+        }
+    }
 }

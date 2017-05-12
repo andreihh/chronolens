@@ -16,9 +16,7 @@
 
 package org.metanalysis.core.versioning
 
-import java.io.FileNotFoundException
 import java.io.IOException
-import java.util.Date
 import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 
@@ -63,48 +61,6 @@ abstract class VersionControlSystem {
                         .singleOrNull()
     }
 
-    /** A revision in a version control system (commit, tag, branch etc.). */
-    inner class Revision internal constructor(revisionId: String) {
-        /** The unique id of this revision. */
-        val id: String
-
-        /** The date at which this revision was created. */
-        val date: Date
-
-        /** The author of this revision. */
-        val author: String
-
-        init {
-            val line = getRawRevision(revisionId)
-            val (rawId, rawDate, rawAuthor) = line.split(':', limit = 3)
-            id = rawId
-            date = Date(rawDate.toLong() * 1000)
-            author = rawAuthor
-        }
-
-        internal fun isCreatedBy(vcs: VersionControlSystem): Boolean =
-                this@VersionControlSystem == vcs
-
-        override fun equals(other: Any?): Boolean =
-                other is Revision && id == other.id
-                        && other.isCreatedBy(this@VersionControlSystem)
-
-        override fun hashCode(): Int = id.hashCode()
-
-        override fun toString(): String =
-                "Revision(id=$id, date=$date, author=$author)"
-    }
-
-    /**
-     * Validates the given `revision`.
-     *
-     * @param revision the revision which should be validated
-     * @throws IllegalArgumentException if `revision` wasn't created by this VCS
-     */
-    protected fun validateRevision(revision: Revision) {
-        require(revision.isCreatedBy(this)) { "Invalid revision $revision!" }
-    }
-
     /**
      * Returns whether this VCS is supported in this environment.
      *
@@ -118,31 +74,16 @@ abstract class VersionControlSystem {
      * Returns whether a repository was detected in the current working
      * directory.
      *
-     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
     protected abstract fun detectRepository(): Boolean
 
     /**
-     * Returns the raw representation of a revision in the following format:
-     * `<id>:<seconds since epoch>:<author name>`.
-     *
-     * @param revisionId the id of the requested revision
-     * @return the raw representation of the requested revision
-     * @throws IllegalThreadStateException if the VCS process is interrupted
-     * @throws RevisionNotFoundException if the requested revision doesn't exist
-     * @throws IOException if any input related errors occur
-     */
-    @Throws(IOException::class)
-    protected abstract fun getRawRevision(revisionId: String): String
-
-    /**
      * Returns the `head` revision.
      *
      * @return the `head` revision
      * @throws IllegalStateException if the `head` revision doesn't exist
-     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -153,12 +94,21 @@ abstract class VersionControlSystem {
      *
      * @param revisionId the id of the requested revision
      * @return the requested revision
-     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws RevisionNotFoundException if the requested revision doesn't exist
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    fun getRevision(revisionId: String): Revision = Revision(revisionId)
+    abstract fun getRevision(revisionId: String): Revision
+
+    /**
+     * Returns all the existing files in the `head` revision.
+     *
+     * @return the set of existing files in `revision`
+     * @throws IllegalArgumentException if `revision` wasn't created by this VCS
+     * @throws IOException if any input related errors occur
+     */
+    @Throws(IOException::class)
+    abstract fun listFiles(): Set<String>
 
     /**
      * Returns the content of the file located at the given `path` as it is
@@ -168,7 +118,6 @@ abstract class VersionControlSystem {
      * @param path the relative path of the requested file
      * @return the content of the requested file, or `null` if it doesn't exist
      * in `revision`
-     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws RevisionNotFoundException if `revisionId` doesn't exist
      * @throws IOException if any input related errors occur
      */
@@ -184,20 +133,8 @@ abstract class VersionControlSystem {
      * @return the list of revisions which modified the file at the given
      * `path`, or the empty list if `path` never existed in the `head` revision
      * or any of its ancestors
-     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
     abstract fun getFileHistory(path: String): List<Revision>
-
-    /**
-     * Returns all the existing files in the `head` revision.
-     *
-     * @return the set of existing files in `revision`
-     * @throws IllegalArgumentException if `revision` wasn't created by this VCS
-     * @throws IllegalThreadStateException if the VCS process is interrupted
-     * @throws IOException if any input related errors occur
-     */
-    @Throws(IOException::class)
-    abstract fun listFiles(): Set<String>
 }

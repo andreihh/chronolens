@@ -22,6 +22,7 @@ import org.metanalysis.core.subprocess.Result.Success
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.InterruptedIOException
 
 object Subprocess {
     private fun InputStream.readText(): String =
@@ -33,9 +34,9 @@ object Subprocess {
      * @param command the command which should be executed
      * @return the parsed input from `stdout` (if the subprocess terminated
      * normally) or from `stderr` (if the subprocess terminated abnormally)
-     * @throws IOException if any input related errors occur
-     * @throws IllegalThreadStateException if the current thread is interrupted
+     * @throws InterruptedIOException if the current thread is interrupted
      * while waiting for the subprocess to terminate
+     * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
     @JvmStatic fun execute(vararg command: String): Result {
@@ -48,7 +49,7 @@ object Subprocess {
             return if (exitCode == 0) Success(input)
             else Error(exitCode, error)
         } catch (e: InterruptedException) {
-            throw IllegalThreadStateException(e.message)
+            throw InterruptedIOException(e.message)
         } finally {
             process.destroy()
         }

@@ -72,16 +72,14 @@ abstract class Parser {
          * Parses the given `file` and returns the associated code meta-data.
          *
          * @param file the file which should be parsed
-         * @return the source file metadata
+         * @return the source file metadata, or `null` if none of the provided
+         * parsers can interpret the given `file` extension
          * @throws SyntaxError if the `file` contains invalid source code
-         * @throws UnsupportedExtensionException if none of the provided parsers
-         * cant interpret the given `file` extensions
          * @throws IOException if any input related errors occur
          */
         @Throws(IOException::class)
-        @JvmStatic fun parse(file: File): SourceFile =
+        @JvmStatic fun parse(file: File): SourceFile? =
                 getByExtension(file.extension)?.parse(file.readText())
-                        ?: throw UnsupportedExtensionException(file.extension)
     }
 
     /** Indicates that a parsed file contains invalid code. */
@@ -89,10 +87,6 @@ abstract class Parser {
         constructor(message: String) : super(message)
         constructor(cause: Throwable) : super(cause)
     }
-
-    class UnsupportedExtensionException(extension: String) : IOException(
-            "Can't interpret extension '$extension'!"
-    )
 
     /** The programming language which can be interpreted by this parser. */
     protected abstract val language: String

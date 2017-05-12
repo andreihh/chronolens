@@ -14,31 +14,17 @@
  * limitations under the License.
  */
 
-@file:JvmName("Main")
+package org.metanalysis.core.project
 
-package org.metanalysis.cli
+import org.junit.Ignore
 
-import java.io.IOException
+import org.metanalysis.test.core.project.ProjectMock
 
-import kotlin.system.exitProcess
+@Ignore
+class InteractiveProjectTest : ProjectTest() {
+    override val expectedProject: ProjectMock
+        get() = TODO("not implemented")
 
-fun printlnError(line: String?) {
-    System.err.println("metanalysis: $line")
-}
-
-fun exitError(message: String?): Nothing {
-    printlnError(message)
-    exitProcess(1)
-}
-
-fun main(args: Array<String>) {
-    try {
-        val command = args.getOrNull(0)
-                ?: throw IllegalUsageException("")
-        Command(command).execute(*args.drop(1).toTypedArray())
-    } catch (e: IOException) {
-        exitError(e.message)
-    } catch (e: IllegalUsageException) {
-        exitError(e.message)
-    }
+    override val actualProject: Project
+        get() = TODO("not implemented")
 }

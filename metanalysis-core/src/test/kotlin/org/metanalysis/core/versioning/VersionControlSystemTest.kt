@@ -31,19 +31,16 @@ class VersionControlSystemTest {
 
         override fun getHead(): Revision = TODO("not implemented")
 
-        override fun getRawRevision(revisionId: String): String =
+        override fun getRevision(revisionId: String): Revision =
             TODO("not implemented")
 
-        override fun listFiles(revision: Revision): Set<String> =
+        override fun listFiles(): Set<String> = TODO("not implemented")
+
+        override fun getFile(revisionId: String, path: String): String? =
                 TODO("not implemented")
 
-        override fun getFile(revision: Revision, path: String): String? =
+        override fun getFileHistory(path: String): List<Revision> =
                 TODO("not implemented")
-
-        override fun getFileHistory(
-                revision: Revision,
-                path: String
-        ): List<Revision> = TODO("not implemented")
     }
 
     @Test fun `test detect vcs ignores unsupported or undetected`() {

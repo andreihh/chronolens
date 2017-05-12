@@ -14,31 +14,15 @@
  * limitations under the License.
  */
 
-@file:JvmName("Main")
+package org.metanalysis.core.versioning
 
-package org.metanalysis.cli
+import java.util.Date
 
-import java.io.IOException
-
-import kotlin.system.exitProcess
-
-fun printlnError(line: String?) {
-    System.err.println("metanalysis: $line")
-}
-
-fun exitError(message: String?): Nothing {
-    printlnError(message)
-    exitProcess(1)
-}
-
-fun main(args: Array<String>) {
-    try {
-        val command = args.getOrNull(0)
-                ?: throw IllegalUsageException("")
-        Command(command).execute(*args.drop(1).toTypedArray())
-    } catch (e: IOException) {
-        exitError(e.message)
-    } catch (e: IllegalUsageException) {
-        exitError(e.message)
-    }
-}
+/**
+ * A revision in a version control system (commit, tag, branch etc.).
+ *
+ * @property id the unique id of this revision
+ * @property date the date at which this revision was created
+ * @property author the author of this revision
+ */
+data class Revision(val id: String, val date: Date, val author: String)

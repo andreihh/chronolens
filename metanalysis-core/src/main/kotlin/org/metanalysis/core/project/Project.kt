@@ -17,10 +17,6 @@
 package org.metanalysis.core.project
 
 import org.metanalysis.core.delta.SourceFileTransaction
-import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
-import org.metanalysis.core.model.Parser
-import org.metanalysis.core.model.Parser.SyntaxError
-import org.metanalysis.core.model.Parser.UnsupportedExtensionException
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.versioning.VersionControlSystem
 
@@ -31,10 +27,8 @@ import java.util.Date
 /**
  * An object which queries the repository in the current working directory for
  * code metadata.
- *
- * @property vcs the VCS behind the repository
  */
-class Project internal constructor(private val vcs: VersionControlSystem) {
+abstract class Project {
     companion object {
         /**
          * Utility factory method.
@@ -46,8 +40,11 @@ class Project internal constructor(private val vcs: VersionControlSystem) {
          * @throws IOException if any input related errors occur
          */
         @Throws(IOException::class)
-        @JvmStatic fun connect(): Project? =
-                VersionControlSystem.detect()?.let(::Project)
+        @JvmStatic fun connect(): InteractiveProject? =
+                VersionControlSystem.detect()?.let(::InteractiveProject)
+
+        @Throws(IOException::class)
+        @JvmStatic fun load(): PersistentProject? = null
     }
 
     data class HistoryEntry(
@@ -57,14 +54,14 @@ class Project internal constructor(private val vcs: VersionControlSystem) {
             val transaction: SourceFileTransaction?
     )
 
-    private val head = vcs.getHead()
-
-    /** The existing files in the `head` revision. */
-    val files: Set<String> = vcs.listFiles()
-
-    private fun getParser(path: String): Parser =
-            Parser.getByExtension(path.substringAfterLast('.', ""))
-                    ?: throw IOException("No parser can interpret '$path'!")
+    /**
+     * Returns all the existing files in the `head` revision.
+     *
+     * @return the set of existing files in `revision`
+     * @throws IOException if any input related errors occur
+     */
+    @Throws(IOException::class)
+    abstract fun listFiles(): Set<String>
 
     /**
      * Returns the code metadata of the file at the given `path` as it is found
@@ -72,93 +69,24 @@ class Project internal constructor(private val vcs: VersionControlSystem) {
      *
      * @param path the relative path of the file which should be interpreted
      * @return the parsed code metadata, or `null` if the given `path` doesn't
-     * exist in `revision`
-     * @throws SyntaxError if the file at the given `path` contains invalid code
-     * @throws UnsupportedExtensionException if none of the provided parsers can
-     * interpret the file at the given `path`
-     * @throws FileNotFoundException if the given `path` doesn't exist in
-     * [files]
-     * @throws IOException if any input related errors occur
+     * exist
+     * @throws FileNotFoundException if the given `path` doesn't exist
+     * @throws IOException if the file at the given `path` couldn't be
+     * interpreted or if any input related errors occur
      */
     @Throws(IOException::class)
-    fun getFileModel(path: String): SourceFile {
-        val parser = getParser(path)
-        val source = vcs.getFile(head.id, path)
-        return source?.let(parser::parse)
-                ?: throw FileNotFoundException("'$path' doesn't exist!")
-    }
-
-    /**
-     * Returns the differences between the given revisions of the file at the
-     * given `path`.
-     *
-     * @param path the relative path of the file which should be inspected
-     * @param srcRevision the source revision
-     * @param dstRevision the destination revision
-     * @return the transaction which should be applied on the `path` contents as
-     * they appear in `srcRevision` in order to obtain the contents as they
-     * appear in `dstRevision`, or `null` if `path` is unchanged between the two
-     * revisions
-     * @throws IOException if any of the following situations appear:
-     * - `srcRevision` doesn't exist
-     * - `dstRevision` doesn't exist
-     * - `path` contained invalid code in either revisions
-     * - none of the provided parsers can interpret the file at the given `path`
-     * - any input related errors occur
-     */
-    /*@Throws(IOException::class)
-    fun getFileDiff(
-            path: String,
-            srcRevision: String,
-            dstRevision: String = head
-    ): SourceFileTransaction? {
-        val srcSourceFile = getFileModel(path, srcRevision) ?: SourceFile()
-        val dstSourceFile = getFileModel(path, dstRevision) ?: SourceFile()
-        return srcSourceFile.diff(dstSourceFile)
-    }*/
+    abstract fun getFileModel(path: String): SourceFile
 
     /**
      * If the file contains invalid code in any revision, the changes applied in
      * that revision are replaced with a `null` transaction.
      *
-     * @param path the relative path of the file which should be analyzed
+     * @param path the path of the file which should be analyzed
      * @return
-     * @throws FileNotFoundException if `path` doesn't exist in [files]
-     * @throws IOException if any of the following situations appear:
-     * - `path` never existed in `revision` or any of its ancestors
-     * - none of the provided parsers can interpret the file at the given `path`
-     * - any input related errors occur
+     * @throws FileNotFoundException if `path` doesn't exist
+     * @throws IOException if the file at the given `path` couldn't be
+     * interpreted or if any input related errors occur
      */
     @Throws(IOException::class)
-    fun getFileHistory(path: String): List<HistoryEntry> {
-        if (path !in files) {
-            throw FileNotFoundException("'$path' doesn't exist!")
-        }
-        val parser = getParser(path)
-        val revisions = vcs.getFileHistory(path)
-        val history = arrayListOf<HistoryEntry>()
-        var sourceFile = SourceFile()
-        for (rev in revisions) {
-            val source = vcs.getFile(rev.id, path)
-            val newSourceFile = try {
-                source?.let(parser::parse) ?: SourceFile()
-            } catch (e: SyntaxError) {
-                sourceFile
-            }
-            val transaction = sourceFile.diff(newSourceFile)
-            history += HistoryEntry(rev.id, rev.date, rev.author, transaction)
-            sourceFile = newSourceFile
-        }
-        return history
-    }
-
-    /**
-     * Returns all the existing files in the `head` revision.
-     *
-     * @return the set of existing files in `revision`
-     * @throws IOException if `revision` doesn't exist or any input related
-     * errors occur
-     */
-    @Throws(IOException::class)
-    fun listFiles(): Set<String> = files
+    abstract fun getFileHistory(path: String): List<HistoryEntry>
 }

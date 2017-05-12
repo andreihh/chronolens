@@ -23,88 +23,97 @@ import org.metanalysis.core.subprocess.Subprocess.execute
 import org.metanalysis.core.versioning.VersionControlSystem
 
 import java.io.File
-import java.io.FileNotFoundException
 
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GitDriverTest {
-    private val git = GitDriver()
+    private val url = "https://github.com/andrei-heidelbacher/metanalysis.git"
+
+    private fun withRepository(url: String, block: GitDriver.() -> Unit) {
+        val gitDir = ".git"
+        try {
+            execute("git", "clone", "--bare", url, gitDir)
+            GitDriver().block()
+        } finally {
+            File(gitDir).deleteRecursively()
+        }
+    }
 
     @Test fun `test detect repository`() {
-        assertTrue(VersionControlSystem.detect() is GitDriver)
+        assertNull(VersionControlSystem.detect())
+        withRepository(url) {
+            assertTrue(VersionControlSystem.detect() is GitDriver)
+        }
     }
 
-    @Test fun `test get head`() {
-        val head = git.getHead()
-        println(head)
+    @Test fun `test get revision`() {
+        withRepository(url) {
+            val head = getHead()
+            val commit = getRevision("HEAD")
+            val branch = getRevision("master")
+            assertEquals(head, commit)
+            assertEquals(head, branch)
+        }
     }
 
-    @Test fun `test get commit`() {
-        val commit = git.getRevision("HEAD")
-        println(commit)
+    @Test fun `test get invalid revision throws`() {
+        withRepository(url) {
+            val commit = "0123456789"
+            val branch = "master-invalid"
+            val tree = "gradle"
+            for (rev in listOf(commit, branch, tree)) {
+                assertFailsWith<RevisionNotFoundException> { getRevision(rev) }
+            }
+        }
     }
 
-    @Test fun `test get branch`() {
-        val commit = git.getRevision("master")
-        println(commit)
-    }
-
-    @Test(expected = RevisionNotFoundException::class)
-    fun `test get invalid commit throws`() {
-        git.getRevision("00000000000")
-    }
-
-    @Test(expected = RevisionNotFoundException::class)
-    fun `test get invalid branch throws`() {
-        git.getRevision("master-non-existent")
-    }
-
-    @Test(expected = RevisionNotFoundException::class)
-    fun `test get file as commit throws`() {
-        println(git.getRevision("src"))
-    }
-
-    @Test fun `test list files from commit`() {
-        val expected = execute(
-                "find", "./",
-                "-path", "./.git", "-prune", "-o",
-                "-path", "*/build", "-prune", "-o",
-                "-path", "./.idea", "-prune", "-o",
-                "-path", "./.gradle", "-prune", "-o",
-                "-type", "f", "-print"
-        ).get().lines()
-                .map { it.removePrefix("./") }
-                .filter(String::isNotBlank)
-                .toSet()
-        val actual = git.listFiles(git.getHead())
-        assertEquals(expected, actual)
-    }
-
-    @Test(expected = RevisionNotFoundException::class)
-    fun `test list files from revision-directory throws`() {
-        git.listFiles(git.getRevision("HEAD:src"))
+    @Test fun `test list files`() {
+        withRepository(url) {
+            val expected = execute(
+                    "find", "../",
+                    "-path", "../.git", "-prune", "-o",
+                    "-path", "*/build", "-prune", "-o",
+                    "-path", "../.idea", "-prune", "-o",
+                    "-path", "../.gradle", "-prune", "-o",
+                    "-type", "f", "-print"
+            ).get().lines()
+                    .map { it.removePrefix("../") }
+                    .filter(String::isNotBlank)
+                    .toSet()
+            val actual = listFiles()
+            assertEquals(expected, actual)
+        }
     }
 
     @Test fun `test get file from commit`() {
-        val expected = File("metanalysis-git/build.gradle").readText()
-        val actual = git.getFile(git.getHead(), "metanalysis-git/build.gradle")
-        assertEquals(expected, actual)
+        withRepository(url) {
+            val expected = File("build.gradle").readText()
+            val actual = getFile("HEAD", "metanalysis-git/build.gradle")
+            assertEquals(expected, actual)
+        }
     }
 
     @Test fun `test get non-existent file from commit returns null`() {
-        val actual = git.getFile(git.getHead(), "non-existent.txt")
-        assertNull(actual)
+        withRepository(url) {
+            val actual = getFile("HEAD", "non-existent.txt")
+            assertNull(actual)
+        }
     }
 
-    @Test fun `test get file history from commit`() {
-        val history = git.getFileHistory(git.getHead(), "README.md")
-        println(history.joinToString(separator = "\n"))
+    @Test fun `test get file history`() {
+        withRepository(url) {
+            val history = getFileHistory("README.md")
+            println(history.joinToString(separator = "\n"))
+        }
     }
 
-    @Test(expected = FileNotFoundException::class)
-    fun `test get non-existent file history from commit throws`() {
-        git.getFileHistory(git.getHead(), "non-existent.txt")
+    @Test fun `test get non-existent file history`() {
+        withRepository(url) {
+            val history = getFileHistory("non-existent.txt")
+            assertEquals(emptyList(), history)
+        }
     }
 }

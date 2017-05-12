@@ -62,9 +62,9 @@ class SourceFileTransactionTest {
 
     @Test fun `test diff integration`() {
         // the original file can be found at: https://raw.githubusercontent.com/spring-projects/spring-framework/826e565b7cfba8de05f9f652c1541df8e8e7efe2/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java
-        val srcFile = File("metanalysis-core/src/test/resources/GenericTypeResolver-v1.mock")
+        val srcFile = File("src/test/resources/GenericTypeResolver-v1.mock")
         // the original file can be found at: https://raw.githubusercontent.com/spring-projects/spring-framework/5e946c270018c71bf25778bc2dc25e5a9dd809b0/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java
-        val dstFile = File("metanalysis-core/src/test/resources/GenericTypeResolver-v2.mock")
+        val dstFile = File("src/test/resources/GenericTypeResolver-v2.mock")
         val src = assertNotNull(Parser.parse(srcFile))
         val dst = assertNotNull(Parser.parse(dstFile))
         assertDiff(src, dst)
