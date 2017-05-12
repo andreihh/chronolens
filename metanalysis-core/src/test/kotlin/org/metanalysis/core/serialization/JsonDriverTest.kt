@@ -36,6 +36,7 @@ import java.util.Date
 
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class JsonDriverTest {
     private val data = SourceFileTransaction(listOf(
@@ -72,19 +73,18 @@ class JsonDriverTest {
             ))
     ))
 
-    @Test(expected = IOException::class)
-    fun `test deserialize invalid KClass throws`() {
-        JsonDriver.deserialize<KClass<*>>(
-                src = "\"java.lang.String$\"".byteInputStream()
-        )
+    @Test fun `test deserialize invalid KClass throws`() {
+        val src = "\"java.lang.String$\"".byteInputStream()
+        assertFailsWith<IOException> {
+            JsonDriver.deserialize<KClass<*>>(src)
+        }
     }
 
     @Test fun `test serialize and deserialize source file transaction`() {
-        val bos = ByteArrayOutputStream()
-        JsonDriver.serialize(bos, data)
-        val actualData = JsonDriver.deserialize<SourceFileTransaction>(
-                src = bos.toByteArray().inputStream()
-        )
+        val out = ByteArrayOutputStream()
+        JsonDriver.serialize(out, data)
+        val src = out.toByteArray().inputStream()
+        val actualData = JsonDriver.deserialize<SourceFileTransaction>(src)
         assertEquals(data, actualData)
     }
 
@@ -92,11 +92,11 @@ class JsonDriverTest {
         val history = (1 until 10).map { i ->
             HistoryEntry("$i", Date(i.toLong()), "<author>", null)
         }
-        val bos = ByteArrayOutputStream()
-        JsonDriver.serialize(bos, history)
-        val actualHistory = JsonDriver.deserialize<Array<HistoryEntry>>(
-                src = bos.toByteArray().inputStream()
-        ).asList()
+        val out = ByteArrayOutputStream()
+        JsonDriver.serialize(out, history)
+        val src = out.toByteArray().inputStream()
+        val actualHistory = JsonDriver.deserialize<Array<HistoryEntry>>(src)
+                .asList()
         assertEquals(history, actualHistory)
     }
 

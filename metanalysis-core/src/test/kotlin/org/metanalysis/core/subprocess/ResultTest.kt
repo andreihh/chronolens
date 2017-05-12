@@ -19,6 +19,7 @@ package org.metanalysis.core.subprocess
 import org.junit.Test
 
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -30,9 +31,11 @@ class ResultTest {
         assertEquals(input, result.get())
     }
 
-    @Test(expected = SubprocessException::class)
-    fun `test get error throws`() {
-        Result.Error(1, "failure").get()
+    @Test fun `test get error throws`() {
+        val result = Result.Error(1, "failure")
+        assertFailsWith<SubprocessException> {
+            result.get()
+        }
     }
 
     @Test fun `test get or null success returns input`() {

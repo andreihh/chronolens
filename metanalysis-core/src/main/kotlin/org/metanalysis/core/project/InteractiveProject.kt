@@ -82,13 +82,19 @@ class InteractiveProject internal constructor(
     fun persist(): PersistentProject {
         val directory = File(".metanalysis")
         for (path in files) {
-            val parent = File(directory, path)
-            parent.mkdirs()
-            FileOutputStream(File(parent, "model.json")).use { out ->
-                serialize(out, getFileModel(path))
-            }
-            FileOutputStream(File(parent, "history.json")).use { out ->
-                serialize(out, getFileHistory(path))
+            try {
+                val model = getFileModel(path)
+                val history = getFileHistory(path)
+                val parent = File(directory, path)
+                parent.mkdirs()
+                FileOutputStream(File(parent, "model.json")).use { out ->
+                    serialize(out, model)
+                }
+                FileOutputStream(File(parent, "history.json")).use { out ->
+                    serialize(out, history)
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
         }
         return PersistentProject(File("."))

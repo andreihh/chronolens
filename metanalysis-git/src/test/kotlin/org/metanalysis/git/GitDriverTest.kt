@@ -74,7 +74,7 @@ class GitDriverTest {
         withRepository(url) {
             val expected = execute(
                     "find", "../",
-                    "-path", "../.git", "-prune", "-o",
+                    "-path", "*/.git", "-prune", "-o",
                     "-path", "*/build", "-prune", "-o",
                     "-path", "../.idea", "-prune", "-o",
                     "-path", "../.gradle", "-prune", "-o",

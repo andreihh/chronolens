@@ -23,7 +23,9 @@ import org.metanalysis.core.subprocess.Subprocess.execute
 
 import java.io.InterruptedIOException
 
+import kotlin.concurrent.thread
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 
 class SubprocessTest {
@@ -39,11 +41,14 @@ class SubprocessTest {
         assertNotEquals(0, actual.exitValue)
     }
 
-    @Test(timeout = 1000, expected = InterruptedIOException::class)
-    fun `test interrupt find throws`() {
-        Thread.currentThread().interrupt()
-        while (true) {
-            execute("find").get()
-        }
+    @Test fun `test interrupt find throws`() {
+        thread {
+            Thread.currentThread().interrupt()
+            assertFailsWith<InterruptedIOException> {
+                while (true) {
+                    execute("find").get()
+                }
+            }
+        }.join(1000)
     }
 }
