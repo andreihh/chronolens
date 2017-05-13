@@ -21,10 +21,12 @@ In order to use `metanalysis` you need to have `JDK 1.8` or newer.
 
 ### Using the command line
 
-Download the most recently released `cli` artifact from
+Download the most recently released executable artifact from
 [here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run it:
 
-```java -jar metanalysis-cli-$version-all help```
+`./metanalysis help` (on Linux and OSX)
+
+`metanalysis help` (on Windows)
 
 ### Using Gradle
 
@@ -39,8 +41,6 @@ Add the dependencies:
 ```groovy
 dependencies {
     compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-core:$version"
-    runtime "com.github.andrei-heidelbacher.metanalysis:metanalysis-git:$version"
-    runtime "com.github.andrei-heidelbacher.metanalysis:metanalysis-java:$version"
     testCompile "com.github.andrei-heidelbacher.metanalysis:metanalysis-test:$version"
 }
 ```
@@ -68,18 +68,6 @@ Add the dependencies:
   </dependency>
   <dependency>
     <groupId>com.github.andrei-heidelbacher.metanalysis</groupId>
-    <artifactId>metanalysis-git</artifactId>
-    <version>$version</version>
-    <scope>runtime</scope>
-  </dependency>
-  <dependency>
-    <groupId>com.github.andrei-heidelbacher.metanalysis</groupId>
-    <artifactId>metanalysis-java</artifactId>
-    <version>$version</version>
-    <scope>runtime</scope>
-  </dependency>
-  <dependency>
-    <groupId>com.github.andrei-heidelbacher.metanalysis</groupId>
     <artifactId>metanalysis-java</artifactId>
     <version>$version</version>
     <scope>test</scope>
@@ -96,11 +84,11 @@ If using the various modules as dependencies, you must provide the following
 
 ## Building
 
-To build this project, run `./gradlew build`.
+To build the project, run `./gradlew build`.
 
-To build the `cli` artifact, run the following command after building the
-project: `./gradlew fatJar`. This will create the
-`metanalysis-cli-$version-all.jar` artifact in `metanalysis-cli/build/libs/`.
+To build the executable artifacts, run the following command:
+`./gradlew release`. This will create the `metanalysis` (for Linux and OSX) and
+`metanalysis.exe` (for Windows) artifacts in `build/`.
 
 ## Documentation
 

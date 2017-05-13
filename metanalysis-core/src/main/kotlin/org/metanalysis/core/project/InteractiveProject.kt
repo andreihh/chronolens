@@ -20,12 +20,9 @@ import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.core.model.SourceFile
-import org.metanalysis.core.serialization.JsonDriver.serialize
 import org.metanalysis.core.versioning.VersionControlSystem
-import java.io.File
 
 import java.io.FileNotFoundException
-import java.io.FileOutputStream
 import java.io.IOException
 
 /**
@@ -76,27 +73,5 @@ class InteractiveProject internal constructor(
             sourceFile = newSourceFile
         }
         return history
-    }
-
-    @Throws(IOException::class)
-    fun persist(): PersistentProject {
-        val directory = File(".metanalysis")
-        for (path in files) {
-            try {
-                val model = getFileModel(path)
-                val history = getFileHistory(path)
-                val parent = File(directory, path)
-                parent.mkdirs()
-                FileOutputStream(File(parent, "model.json")).use { out ->
-                    serialize(out, model)
-                }
-                FileOutputStream(File(parent, "history.json")).use { out ->
-                    serialize(out, history)
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        }
-        return PersistentProject(File("."))
     }
 }

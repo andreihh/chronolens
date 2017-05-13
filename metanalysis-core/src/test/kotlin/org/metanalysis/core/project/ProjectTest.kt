@@ -26,8 +26,8 @@ import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.project.ProjectMock
 import org.metanalysis.test.core.versioning.VersionControlSystemMock
 import org.metanalysis.test.core.versioning.VersionControlSystemMock.CommitMock
-import java.io.FileNotFoundException
 
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.Date
 
@@ -44,14 +44,16 @@ abstract class ProjectTest {
         assertEquals(expectedProject, actualProject)
     }
 
-    @Test(expected = FileNotFoundException::class)
-    fun `test get non-existent file model throws`() {
-        actualProject.getFileModel("non-existent.txt")
+    @Test fun `test get non-existent file model throws`() {
+        assertFailsWith<FileNotFoundException> {
+            actualProject.getFileModel("non-existent.txt")
+        }
     }
 
-    @Test(expected = FileNotFoundException::class)
-    fun `test get non-existent file history throws`() {
-        actualProject.getFileHistory("non-existent.txt")
+    @Test fun `test get non-existent file history throws`() {
+        assertFailsWith<FileNotFoundException> {
+            actualProject.getFileHistory("non-existent.txt")
+        }
     }
 
     /*private fun getResource(path: String): String? =

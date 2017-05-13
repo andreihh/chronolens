@@ -57,8 +57,8 @@ class GitDriver : VersionControlSystem() {
 
     @Throws(IOException::class)
     override fun detectRepository(): Boolean =
-            execute(vcs, "cat-file", "-e", headId).isSuccess &&
-                    execute(vcs, "rev-parse", "--show-prefix").get().isBlank()
+            execute(vcs, "rev-parse", "--show-prefix").getOrNull()?.isBlank()
+                    ?: false
 
     @Throws(IOException::class)
     override fun getHead(): Revision = try {

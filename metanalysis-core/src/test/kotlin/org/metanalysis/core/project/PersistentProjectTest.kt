@@ -16,8 +16,12 @@
 
 package org.metanalysis.core.project
 
+import org.junit.After
+import org.junit.Before
+
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.project.Project.HistoryEntry
+import org.metanalysis.core.project.PersistentProject.Companion.persist
 import org.metanalysis.test.core.project.ProjectMock
 
 import java.io.File
@@ -35,6 +39,13 @@ class PersistentProjectTest : ProjectTest() {
             )
     )
 
-    override val actualProject: Project =
-            PersistentProject(File("src/test/resources/.metanalysis"))
+    override lateinit var actualProject: Project
+
+    @Before fun initProject() {
+        actualProject = expectedProject.persist()
+    }
+
+    @After fun cleanProject() {
+        File(".metanalysis").deleteRecursively()
+    }
 }

@@ -42,6 +42,16 @@ class GitDriverTest {
         }
     }
 
+    private fun withEmptyRepository(block: GitDriver.() -> Unit) {
+        val gitDir = ".git"
+        try {
+            execute("git", "init")
+            GitDriver().block()
+        } finally {
+            File(gitDir).deleteRecursively()
+        }
+    }
+
     @Test fun `test detect repository`() {
         assertNull(VersionControlSystem.detect())
         withRepository(url) {
@@ -56,6 +66,12 @@ class GitDriverTest {
             val branch = getRevision("master")
             assertEquals(head, commit)
             assertEquals(head, branch)
+        }
+    }
+
+    @Test fun `test get head from empty repository throws`() {
+        withEmptyRepository {
+            assertFailsWith<IllegalStateException> { getHead() }
         }
     }
 

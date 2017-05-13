@@ -16,8 +16,10 @@
 
 package org.metanalysis.cli
 
+import org.metanalysis.core.project.PersistentProject.Companion.persist
 import org.metanalysis.core.project.Project
 import org.metanalysis.core.serialization.JsonDriver.serialize
+
 import java.io.IOException
 
 sealed class Command {

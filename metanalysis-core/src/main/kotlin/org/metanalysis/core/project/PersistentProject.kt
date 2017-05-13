@@ -18,14 +18,49 @@ package org.metanalysis.core.project
 
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.serialization.JsonDriver.deserialize
+import org.metanalysis.core.serialization.JsonDriver.serialize
 
 import java.io.File
+import java.io.IOException
 
 class PersistentProject internal constructor(
         private val directory: File
 ) : Project() {
+    companion object {
+        @Throws(IOException::class)
+        @JvmStatic fun Project.persist(): PersistentProject = when {
+            this is PersistentProject -> this
+            else -> {
+                val directory = File(".metanalysis")
+                directory.mkdirs()
+                val files = hashSetOf<String>()
+                for (path in listFiles()) {
+                    try {
+                        val model = getFileModel(path)
+                        val history = getFileHistory(path)
+                        val parent = File(File(directory, "objects"), path)
+                        parent.mkdirs()
+                        File(parent, "model.json").outputStream().use { out ->
+                            serialize(out, model)
+                        }
+                        File(parent, "history.json").outputStream().use { out ->
+                            serialize(out, history)
+                        }
+                        files += path
+                    } catch (e: IOException) {
+                        System.err.println(e.message)
+                    }
+                }
+                File(directory, "files.json").outputStream().use { out ->
+                    serialize(out, files)
+                }
+                PersistentProject(File("."))
+            }
+        }
+    }
+
     private val files by lazy {
-        File(directory, "files.json").inputStream().use { src ->
+        File(directory, ".metanalysis/files.json").inputStream().use { src ->
             deserialize<Array<String>>(src).toSet()
         }
     }
@@ -33,7 +68,7 @@ class PersistentProject internal constructor(
     override fun listFiles(): Set<String> = files
 
     override fun getFileModel(path: String): SourceFile {
-        val parent = File(directory, path)
+        val parent = File(File(directory, ".metanalysis/objects"), path)
         val model = File(parent, "model.json")
         return model.inputStream().use { src ->
             deserialize<SourceFile>(src)
@@ -41,7 +76,7 @@ class PersistentProject internal constructor(
     }
 
     override fun getFileHistory(path: String): List<HistoryEntry> {
-        val parent = File(directory, path)
+        val parent = File(File(directory, ".metanalysis/objects"), path)
         val history = File(parent, "history.json")
         return history.inputStream().use { src ->
             deserialize<Array<HistoryEntry>>(src).asList()
