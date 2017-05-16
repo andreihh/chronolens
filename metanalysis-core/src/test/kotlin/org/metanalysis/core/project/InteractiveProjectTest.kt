@@ -18,25 +18,31 @@ package org.metanalysis.core.project
 
 import org.junit.Ignore
 import org.junit.Test
-import org.metanalysis.core.model.SourceFile
-import org.metanalysis.test.assertEquals
 
+import org.metanalysis.core.delta.Transaction.Companion.apply
+import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.project.Project.HistoryEntry
+import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.project.ProjectMock
 import org.metanalysis.test.core.versioning.VersionControlSystemMock
 import org.metanalysis.test.core.versioning.VersionControlSystemMock.CommitMock
+
 import java.io.IOException
 import java.util.Date
+import kotlin.test.assertFailsWith
+
+import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@Ignore
-class InteractiveProjectTest : ProjectTest() {
-    override val expectedProject: ProjectMock
+//@Ignore
+class InteractiveProjectTest /*: ProjectTest()*/ {
+    /*override val expectedProject: ProjectMock
         get() = TODO("not implemented")
 
     override val actualProject: Project
-        get() = TODO("not implemented")
+        get() = TODO("not implemented")*/
 
-    /*private fun getResource(path: String): String? =
+    private fun getResource(path: String): String? =
             javaClass.getResourceAsStream(path)?.reader()?.readText()
 
     private val author = "name"
@@ -48,7 +54,7 @@ class InteractiveProjectTest : ProjectTest() {
             getResource("/GenericTypeResolver-v2.mock")
     private val project by lazy {
         initializeRepository()
-        Project(VersionControlSystemMock())
+        InteractiveProject(VersionControlSystemMock())
     }
 
     private fun initializeRepository() {
@@ -89,53 +95,48 @@ class InteractiveProjectTest : ProjectTest() {
         ))
     }
 
-    @Test fun `test create with uninitialized repository returns null`() {
+    @Test fun `test connect with uninitialized repository returns null`() {
         VersionControlSystemMock.resetRepository()
         assertNull(Project.connect())
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test create with empty repository throws`() {
+    /*@Test(expected = IllegalStateException::class)
+    fun `test connect with empty repository throws`() {
         VersionControlSystemMock.setRepository(emptyList())
-        Project.connect()
-    }
+        assertFailsWith<IllegalStateException> { Project.connect() }
+    }*/
 
-    @Test fun `test get file model of non-existent file returns null`() {
-        assertNull(project.getFileModel(path, "2"))
-    }
+    /*@Test fun `test get file model of non-existent file returns null`() {
+        assertNull(project.getFileModel(path))
+    }*/
 
-    @Test fun `test get file model of empty file returns empty source file`() {
+    /*@Test fun `test get file model of empty file returns empty source file`() {
         val expected = SourceFile()
-        val actual = project.getFileModel(path, "1")
+        val actual = project.getFileModel(path)
         assertEquals(expected, actual)
-    }
+    }*/
 
-    @Test(expected = IOException::class)
+    /*@Test(expected = IOException::class)
     fun `test get file model with syntax errors throws`() {
-        project.getFileModel(path, "3")
-    }
+        project.getFileModel(path)
+    }*/
 
     @Test(expected = IOException::class)
     fun `test get file model of unrecognized extension throws`() {
         project.getFileModel("resource.java")
-    }*/
+    }
 
-    /*@Test(expected = IOException::class)
-    fun `test get file model from invalid revision throws`() {
-        project.getFileModel(path, "-1")
-    }*/
-
-    /*@Test fun `test apply file history transactions returns correct model`() {
-        val history = project.getFileHistory(path, "5")
+    @Test fun `test apply file history transactions returns correct model`() {
+        val history = project.getFileHistory(path)
         val transactions = history.mapNotNull(HistoryEntry::transaction)
-        val expected = project.getFileModel(path, "5")
+        val expected = project.getFileModel(path)
         val actual = SourceFile().apply(transactions)
         assertEquals(expected, actual)
     }
 
     @Test fun `test list files returns correct set of files`() {
         val expected = setOf(path, "resource.txt")
-        val actual = project.listFiles("5")
+        val actual = project.listFiles()
         assertEquals(expected, actual)
-    }*/
+    }
 }

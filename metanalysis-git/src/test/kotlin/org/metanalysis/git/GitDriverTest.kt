@@ -66,23 +66,16 @@ class GitDriverTest {
             val branch = getRevision("master")
             assertEquals(head, commit)
             assertEquals(head, branch)
+            val invalidRevisions = listOf("0123456", "master-invalid", "gradle")
+            for (rev in invalidRevisions) {
+                assertFailsWith<RevisionNotFoundException> { getRevision(rev) }
+            }
         }
     }
 
     @Test fun `test get head from empty repository throws`() {
         withEmptyRepository {
             assertFailsWith<IllegalStateException> { getHead() }
-        }
-    }
-
-    @Test fun `test get invalid revision throws`() {
-        withRepository(url) {
-            val commit = "0123456789"
-            val branch = "master-invalid"
-            val tree = "gradle"
-            for (rev in listOf(commit, branch, tree)) {
-                assertFailsWith<RevisionNotFoundException> { getRevision(rev) }
-            }
         }
     }
 
@@ -104,32 +97,23 @@ class GitDriverTest {
         }
     }
 
-    @Test fun `test get file from commit`() {
+    @Test fun `test get file`() {
         withRepository(url) {
             val expected = File("build.gradle").readText()
             val actual = getFile("HEAD", "metanalysis-git/build.gradle")
             assertEquals(expected, actual)
-        }
-    }
-
-    @Test fun `test get non-existent file from commit returns null`() {
-        withRepository(url) {
-            val actual = getFile("HEAD", "non-existent.txt")
-            assertNull(actual)
+            assertNull(getFile("HEAD", "non-existent.txt"))
+            assertFailsWith<RevisionNotFoundException> {
+                getFile("invalid-revision", "metanalysis-git/build.gradle")
+            }
         }
     }
 
     @Test fun `test get file history`() {
         withRepository(url) {
+            assertEquals(emptyList(), getFileHistory("non-existent.txt"))
             val history = getFileHistory("README.md")
             println(history.joinToString(separator = "\n"))
-        }
-    }
-
-    @Test fun `test get non-existent file history`() {
-        withRepository(url) {
-            val history = getFileHistory("non-existent.txt")
-            assertEquals(emptyList(), history)
         }
     }
 }

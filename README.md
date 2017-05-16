@@ -23,10 +23,7 @@ In order to use `metanalysis` you need to have `JDK 1.8` or newer.
 
 Download the most recently released executable artifact from
 [here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run it:
-
-`./metanalysis help` (on Linux and OSX)
-
-`metanalysis help` (on Windows)
+`./metanalysis help`.
 
 ### Using Gradle
 
@@ -68,7 +65,7 @@ Add the dependencies:
   </dependency>
   <dependency>
     <groupId>com.github.andrei-heidelbacher.metanalysis</groupId>
-    <artifactId>metanalysis-java</artifactId>
+    <artifactId>metanalysis-test</artifactId>
     <version>$version</version>
     <scope>test</scope>
   </dependency>
@@ -77,18 +74,18 @@ Add the dependencies:
 
 ### Configuration
 
-If using the various modules as dependencies, you must provide the following
- service configuration files:
-- `META-INF/services/org.metanalysis.core.model.Parser`
-- `META-INF/services/org.metanalysis.core.version.VersionControlSystem`
+If using the parsing and versioning modules as dependencies, you must provide
+the following service configuration files:
+- `META-INF/services/org.metanalysis.core.model.Parser` (for parsing)
+- `META-INF/services/org.metanalysis.core.version.VersionControlSystem` (for
+versioning)
 
 ## Building
 
 To build the project, run `./gradlew build`.
 
-To build the executable artifacts, run the following command:
-`./gradlew release`. This will create the `metanalysis` (for Linux and OSX) and
-`metanalysis.exe` (for Windows) artifacts in `build/`.
+To build the executable artifact, run the following command:
+`./gradlew release`. This will create the `metanalysis` artifact in `build/`.
 
 ## Documentation
 
