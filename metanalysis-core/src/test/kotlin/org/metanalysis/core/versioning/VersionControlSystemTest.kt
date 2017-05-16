@@ -44,6 +44,7 @@ class VersionControlSystemTest {
     }
 
     @Test fun `test detect vcs ignores unsupported or undetected`() {
+        VersionControlSystemMock.resetRepository()
         val vcs = VersionControlSystem.detect()
         assertNull(vcs)
     }
