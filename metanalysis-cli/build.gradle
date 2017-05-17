@@ -26,3 +26,5 @@ task releaseUnix(dependsOn: shadowJar) << {
     }
     artifact.setExecutable(true, false)
 }
+
+task release(dependsOn: releaseUnix)

@@ -8,8 +8,9 @@
 ## Features
 
 - an abstract model which contains code metadata
-- an abstract transaction model to represent diffs between code metadata models
-- JSON serialization utilities for code metadata and diffs
+- an abstract transaction model to represent differences between code metadata
+models
+- JSON serialization utilities for code metadata and differences
 - a Git integration module
 - a Java source file parser which extracts Java code metadata
 
@@ -84,8 +85,8 @@ versioning)
 
 To build the project, run `./gradlew build`.
 
-To build the executable artifact, run the following command:
-`./gradlew release`. This will create the `metanalysis` artifact in `build/`.
+To build the `metanalysis` executable artifact in the `build/` directory, run
+the following command: `./gradlew release`.
 
 ## Documentation
 
