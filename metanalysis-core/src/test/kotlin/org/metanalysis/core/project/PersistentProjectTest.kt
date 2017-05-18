@@ -20,6 +20,9 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 
+import org.metanalysis.core.delta.NodeSetEdit
+import org.metanalysis.core.delta.SourceFileTransaction
+import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.project.PersistentProject.Companion.persist
 import org.metanalysis.core.project.Project.HistoryEntry
@@ -28,6 +31,7 @@ import org.metanalysis.test.core.project.ProjectMock
 
 import java.io.File
 import java.io.IOException
+import java.util.Date
 
 import kotlin.test.assertEquals
 
@@ -39,8 +43,25 @@ class PersistentProjectTest : ProjectTest() {
                     "setup.py" to SourceFile()
             ),
             histories = mapOf(
-                    "src/Main.java" to listOf<HistoryEntry>(),
-                    "setup.py" to listOf<HistoryEntry>()
+                    "src/Main.java" to listOf(
+                            HistoryEntry(
+                                    revision = "1",
+                                    date = Date(),
+                                    author = "user",
+                                    transaction = SourceFileTransaction(listOf(
+                                            NodeSetEdit.Add(Type("IClass")),
+                                            NodeSetEdit.Remove<Type>("IClass")
+                                    ))
+                            )
+                    ),
+                    "setup.py" to listOf(
+                            HistoryEntry(
+                                    revision = "1",
+                                    date = Date(),
+                                    author = "user",
+                                    transaction = null
+                            )
+                    )
             )
     )
 
