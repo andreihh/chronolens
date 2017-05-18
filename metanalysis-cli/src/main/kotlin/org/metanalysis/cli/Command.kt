@@ -16,6 +16,7 @@
 
 package org.metanalysis.cli
 
+import org.metanalysis.core.project.PersistentProject
 import org.metanalysis.core.project.PersistentProject.Companion.persist
 import org.metanalysis.core.project.Project
 import org.metanalysis.core.serialization.JsonDriver.serialize
@@ -30,7 +31,8 @@ sealed class Command {
                 List,
                 Model,
                 History,
-                Persist
+                Persist,
+                Clean
         )
 
         @JvmStatic operator fun invoke(name: String): Command =
@@ -42,10 +44,8 @@ sealed class Command {
 
     abstract val help: String
 
-    @Throws(IOException::class)
     abstract fun execute(vararg args: String): Unit
 
-    @Throws(IOException::class)
     protected fun getProject(): Project =
             Project.connect() ?: throw IOException("Project not found!")
 
@@ -142,6 +142,20 @@ sealed class Command {
             val project = Project.connect()
                     ?: throw IOException("Project not found!")
             project.persist()
+        }
+    }
+
+    object Clean : Command() {
+        override val name: String = "clean"
+        override val help: String = """
+        Usage: metanalysis clean
+
+        Deletes the previously persisted project from the current working
+        directory, if it exists.
+        """
+
+        override fun execute(vararg args: String) {
+            PersistentProject.clean()
         }
     }
 }

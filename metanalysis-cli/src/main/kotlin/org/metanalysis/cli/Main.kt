@@ -33,9 +33,10 @@ fun exitError(message: String?): Nothing {
 
 fun main(args: Array<String>) {
     try {
-        val command = args.getOrNull(0)
-                ?: throw IllegalUsageException("")
-        Command(command).execute(*args.drop(1).toTypedArray())
+        val command = args.firstOrNull()
+                ?.let { Command(it) }
+                ?: Command.Help
+        command.execute(*args.drop(1).toTypedArray())
     } catch (e: IOException) {
         exitError(e.message)
     } catch (e: IllegalUsageException) {

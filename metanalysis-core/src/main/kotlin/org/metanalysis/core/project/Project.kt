@@ -78,8 +78,8 @@ abstract class Project {
     abstract fun getFileModel(path: String): SourceFile
 
     /**
-     * If the file contains invalid code in any revision, the changes applied in
-     * that revision are replaced with a `null` transaction.
+     * If the file contains invalid code in a previous revision, the changes
+     * applied in that revision are replaced with a `null` transaction.
      *
      * @param path the path of the file which should be analyzed
      * @return

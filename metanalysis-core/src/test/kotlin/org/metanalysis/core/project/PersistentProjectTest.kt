@@ -18,13 +18,19 @@ package org.metanalysis.core.project
 
 import org.junit.After
 import org.junit.Before
+import org.junit.Test
+import org.metanalysis.core.model.Parser.SyntaxError
 
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.project.Project.HistoryEntry
+import org.metanalysis.core.project.PersistentProject.Companion.clean
 import org.metanalysis.core.project.PersistentProject.Companion.persist
 import org.metanalysis.test.core.project.ProjectMock
 
 import java.io.File
+import java.io.IOException
+
+import kotlin.test.assertFailsWith
 
 class PersistentProjectTest : ProjectTest() {
     override val expectedProject: ProjectMock = ProjectMock(
@@ -39,13 +45,19 @@ class PersistentProjectTest : ProjectTest() {
             )
     )
 
-    override lateinit var actualProject: Project
+    override lateinit var actualProject: PersistentProject
 
     @Before fun initProject() {
         actualProject = expectedProject.persist()
     }
 
+    @Test fun `test get file model with invalid code throws`() {
+        val path = "setup.py"
+        File(".metanalysis/objects/$path").deleteRecursively()
+        assertFailsWith<SyntaxError> { actualProject.getFileModel(path) }
+    }
+
     @After fun cleanProject() {
-        File(".metanalysis").deleteRecursively()
+        actualProject.clean()
     }
 }

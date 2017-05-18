@@ -16,6 +16,7 @@
 
 package org.metanalysis.core.project
 
+import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.serialization.JsonDriver.deserialize
 import org.metanalysis.core.serialization.JsonDriver.serialize
@@ -57,6 +58,16 @@ class PersistentProject internal constructor(
                 PersistentProject(File("."))
             }
         }
+
+        @Throws(IOException::class)
+        @JvmStatic fun PersistentProject.clean() {
+            File(directory, ".metanalysis").deleteRecursively()
+        }
+
+        @Throws(IOException::class)
+        @JvmStatic fun clean() {
+            File(".metanalysis").deleteRecursively()
+        }
     }
 
     private val files by lazy {
@@ -70,6 +81,9 @@ class PersistentProject internal constructor(
     override fun getFileModel(path: String): SourceFile {
         val parent = File(File(directory, ".metanalysis/objects"), path)
         val model = File(parent, "model.json")
+        if (path in files && !model.exists()) {
+            throw SyntaxError("File '$path' contains invalid code!")
+        }
         return model.inputStream().use { src ->
             deserialize<SourceFile>(src)
         }
