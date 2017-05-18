@@ -27,6 +27,7 @@ import org.metanalysis.test.core.project.ProjectMock
 import org.metanalysis.test.core.versioning.VersionControlSystemMock
 import org.metanalysis.test.core.versioning.VersionControlSystemMock.CommitMock
 
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.Date
 import kotlin.test.assertFailsWith
@@ -126,6 +127,12 @@ class InteractiveProjectTest /*: ProjectTest()*/ {
     @Test(expected = IOException::class)
     fun `test get file model of unrecognized extension throws`() {
         project.getFileModel("resource.java")
+    }
+
+    @Test fun `test get history of non-existent file throws`() {
+        assertFailsWith<FileNotFoundException> {
+            project.getFileHistory("non-existent.txt")
+        }
     }
 
     @Test fun `test apply file history transactions returns correct model`() {
