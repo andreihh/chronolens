@@ -32,7 +32,6 @@ import java.io.IOException
 import java.util.Date
 
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 @Ignore
@@ -44,16 +43,14 @@ abstract class ProjectTest {
         assertEquals(expectedProject, actualProject)
     }
 
-    @Test fun `test get non-existent file model throws`() {
-        assertFailsWith<FileNotFoundException> {
-            actualProject.getFileModel("non-existent.txt")
-        }
+    @Test(expected = FileNotFoundException::class)
+    fun `test get non-existent file model throws`() {
+        actualProject.getFileModel("non-existent.txt")
     }
 
-    @Test fun `test get non-existent file history throws`() {
-        assertFailsWith<FileNotFoundException> {
-            actualProject.getFileHistory("non-existent.txt")
-        }
+    @Test(expected = FileNotFoundException::class)
+    fun `test get non-existent file history throws`() {
+        actualProject.getFileHistory("non-existent.txt")
     }
 
     /*private fun getResource(path: String): String? =

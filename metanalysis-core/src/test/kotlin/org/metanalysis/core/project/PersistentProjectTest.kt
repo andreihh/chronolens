@@ -30,7 +30,6 @@ import java.io.File
 import java.io.IOException
 
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class PersistentProjectTest : ProjectTest() {
     override val expectedProject: ProjectMock = ProjectMock(
@@ -51,10 +50,11 @@ class PersistentProjectTest : ProjectTest() {
         actualProject = expectedProject.persist()
     }
 
-    @Test fun `test get file model with invalid code throws`() {
+    @Test(expected = IOException::class)
+    fun `test get file model with invalid code throws`() {
         val path = "setup.py"
         File(".metanalysis/objects/$path/model.json").delete()
-        assertFailsWith<IOException> { actualProject.getFileModel(path) }
+        actualProject.getFileModel(path)
     }
 
     @Test fun `test persist already persistent returns same project`() {

@@ -18,6 +18,12 @@
 
 package org.metanalysis.test
 
+import org.metanalysis.core.delta.FunctionTransaction
+import org.metanalysis.core.delta.NodeSetEdit
+import org.metanalysis.core.delta.SourceFileTransaction
+import org.metanalysis.core.delta.Transaction
+import org.metanalysis.core.delta.TypeTransaction
+import org.metanalysis.core.delta.VariableTransaction
 import org.metanalysis.core.model.Node
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
@@ -107,6 +113,93 @@ fun assertEquals(
 }
 
 fun assertEquals(
+        expected: NodeSetEdit?,
+        actual: NodeSetEdit?,
+        message: String? = null
+) {
+    assertEqualsKt(expected, actual, message)
+    when (expected) {
+        is NodeSetEdit.Add -> {
+            assertEqualsKt(expected, actual as NodeSetEdit.Add, message)
+            assertEquals(expected.node, actual.node, message)
+        }
+        is NodeSetEdit.Remove ->
+            assertEqualsKt(expected, actual as NodeSetEdit.Remove, message)
+        is NodeSetEdit.Change<*> -> {
+            assertEqualsKt(expected, actual as NodeSetEdit.Change<*>, message)
+            assertEquals(expected.transaction, actual.transaction)
+        }
+    }
+}
+
+fun assertEquals(
+        expected: TypeTransaction?,
+        actual: TypeTransaction?,
+        message: String? = null
+) {
+    assertEqualsKt(expected, actual, message)
+    if (expected != null && actual != null) {
+        val memberEdits = expected.memberEdits.zip(actual.memberEdits)
+        memberEdits.forEach { (expectedEdit, actualEdit) ->
+            assertEquals(expectedEdit, actualEdit)
+        }
+    }
+}
+
+fun assertEquals(
+        expected: FunctionTransaction?,
+        actual: FunctionTransaction?,
+        message: String? = null
+) {
+    assertEqualsKt(expected, actual, message)
+    if (expected != null && actual != null) {
+        val parameterEdits = expected.parameterEdits.zip(actual.parameterEdits)
+        parameterEdits.forEach { (expectedEdit, actualEdit) ->
+            //TODO
+        }
+    }
+}
+
+fun assertEquals(
+        expected: VariableTransaction?,
+        actual: VariableTransaction?,
+        message: String? = null
+) {
+    assertEqualsKt(expected, actual, message)
+}
+
+fun assertEquals(
+        expected: Transaction<out Node>?,
+        actual: Transaction<out Node>?,
+        message: String? = null
+) {
+    assertEqualsKt(expected, actual, message)
+    when (expected) {
+        is TypeTransaction ->
+            assertEquals(expected, actual as TypeTransaction, message)
+        is FunctionTransaction ->
+            assertEquals(expected, actual as FunctionTransaction, message)
+        is VariableTransaction ->
+            assertEquals(expected, actual as VariableTransaction, message)
+    }
+}
+
+fun assertEquals(
+        expected: SourceFileTransaction?,
+        actual: SourceFileTransaction?,
+        message: String? = null
+) {
+    assertEqualsKt(expected, actual, message)
+    if (expected != null && actual != null) {
+        assertEqualsKt(expected.nodeEdits, actual.nodeEdits, message)
+        val nodeEdits = expected.nodeEdits.zip(actual.nodeEdits)
+        nodeEdits.forEach { (expectedEdit, actualEdit) ->
+            assertEquals(expectedEdit, actualEdit, message)
+        }
+    }
+}
+
+fun assertEquals(
         expected: Project?,
         actual: Project?,
         message: String? = null
@@ -124,11 +217,17 @@ fun assertEquals(
                     actual = actual.getFileModel(path),
                     message = message
             )
-            assertEqualsKt(
-                    expected = expected.getFileHistory(path),
-                    actual = actual.getFileHistory(path),
-                    message = message
-            )
+            val expectedHistory = expected.getFileHistory(path)
+            val actualHistory = actual.getFileHistory(path)
+            assertEqualsKt(expectedHistory, actualHistory, message)
+            val history = expectedHistory.zip(actualHistory)
+            history.forEach { (expectedEntry, actualEntry) ->
+                assertEquals(
+                        expected = expectedEntry.transaction,
+                        actual = actualEntry.transaction,
+                        message = message
+                )
+            }
         }
     }
 }

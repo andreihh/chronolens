@@ -73,9 +73,10 @@ class GitDriverTest {
         }
     }
 
-    @Test fun `test get head from empty repository throws`() {
+    @Test(expected = IllegalStateException::class)
+    fun `test get head from empty repository throws`() {
         withEmptyRepository {
-            assertFailsWith<IllegalStateException> { getHead() }
+            getHead()
         }
     }
 

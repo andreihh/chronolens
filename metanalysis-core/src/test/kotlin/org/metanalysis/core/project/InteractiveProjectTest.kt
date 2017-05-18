@@ -30,7 +30,6 @@ import org.metanalysis.test.core.versioning.VersionControlSystemMock.CommitMock
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.util.Date
-import kotlin.test.assertFailsWith
 
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -129,10 +128,9 @@ class InteractiveProjectTest /*: ProjectTest()*/ {
         project.getFileModel("resource.java")
     }
 
-    @Test fun `test get history of non-existent file throws`() {
-        assertFailsWith<FileNotFoundException> {
-            project.getFileHistory("non-existent.txt")
-        }
+    @Test(expected = FileNotFoundException::class)
+    fun `test get history of non-existent file throws`() {
+        project.getFileHistory("non-existent.txt")
     }
 
     @Test fun `test apply file history transactions returns correct model`() {

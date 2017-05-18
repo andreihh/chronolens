@@ -36,7 +36,6 @@ import java.util.Date
 
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class JsonDriverTest {
     private val data = SourceFileTransaction(listOf(
@@ -73,11 +72,10 @@ class JsonDriverTest {
             ))
     ))
 
-    @Test fun `test deserialize invalid KClass throws`() {
+    @Test(expected = IOException::class)
+    fun `test deserialize invalid KClass throws`() {
         val src = "\"java.lang.String$\"".byteInputStream()
-        assertFailsWith<IOException> {
-            JsonDriver.deserialize<KClass<*>>(src)
-        }
+        JsonDriver.deserialize<KClass<*>>(src)
     }
 
     @Test fun `test serialize and deserialize source file transaction`() {
