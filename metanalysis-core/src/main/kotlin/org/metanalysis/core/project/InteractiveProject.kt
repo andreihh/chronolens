@@ -29,19 +29,31 @@ import java.io.IOException
  *
  * @property vcs the VCS behind the repository
  */
-class InteractiveProject internal constructor(
+class InteractiveProject private constructor(
         private val vcs: VersionControlSystem
 ) : Project() {
-    private val head = vcs.getHead()
+    companion object {
+        /**
+         * Utility factory method.
+         *
+         * @return the project instance which can query the detected repository
+         * for code metadata, or `null` if no supported VCS repository could be
+         * unambiguously detected
+         * @throws IllegalStateException if the `head` revision doesn't exist
+         * @throws IOException if any input related errors occur
+         */
+        @Throws(IOException::class)
+        @JvmStatic fun connect(): InteractiveProject? =
+                VersionControlSystem.detect()?.let(::InteractiveProject)
+    }
 
-    /** The existing files in the `head` revision. */
-    private val files: Set<String> = vcs.listFiles()
+    private val head = vcs.getHead()
+    private val files = vcs.listFiles()
 
     private fun getParser(path: String): Parser =
             Parser.getByExtension(path.substringAfterLast('.', ""))
                     ?: throw IOException("No parser can interpret '$path'!")
 
-    @Throws(IOException::class)
     override fun listFiles(): Set<String> = files
 
     @Throws(IOException::class)

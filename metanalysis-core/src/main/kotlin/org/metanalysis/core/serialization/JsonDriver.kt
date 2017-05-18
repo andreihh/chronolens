@@ -37,6 +37,7 @@ import org.metanalysis.core.delta.Edit
 import org.metanalysis.core.delta.Transaction
 import org.metanalysis.core.model.Node
 
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -123,6 +124,12 @@ object JsonDriver {
         objectMapper.writeValue(out, value)
     }
 
+    @Throws(IOException::class)
+    @JvmStatic fun serialize(out: File, value: Any) {
+        out.parentFile.mkdirs()
+        out.outputStream().use { serialize(it, value) }
+    }
+
     /**
      * Deserializes an object of the given `type` from the given stream.
      *
@@ -137,8 +144,16 @@ object JsonDriver {
     @JvmStatic fun <T : Any> deserialize(src: InputStream, type: KClass<T>): T =
             objectMapper.readValue(src, type.java)
 
+    @Throws(IOException::class)
+    @JvmStatic fun <T : Any> deserialize(src: File, type: KClass<T>): T =
+            objectMapper.readValue(src, type.java)
+
     /** Utility deserialization method. */
     @Throws(IOException::class)
     inline fun <reified T : Any> deserialize(src: InputStream): T =
+            deserialize(src, T::class)
+
+    @Throws(IOException::class)
+    inline fun <reified T : Any> deserialize(src: File): T =
             deserialize(src, T::class)
 }

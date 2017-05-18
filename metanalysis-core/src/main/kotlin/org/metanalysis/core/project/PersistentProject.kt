@@ -16,84 +16,99 @@
 
 package org.metanalysis.core.project
 
-import org.metanalysis.core.model.Parser.SyntaxError
+import org.metanalysis.core.logging.LoggerFactory
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.serialization.JsonDriver.deserialize
 import org.metanalysis.core.serialization.JsonDriver.serialize
 
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 
-class PersistentProject internal constructor(
-        private val directory: File
-) : Project() {
+class PersistentProject private constructor() : Project() {
     companion object {
+        private val logger = LoggerFactory.getLogger<PersistentProject>()
+
+        private fun getRootDirectory(): File = File(".metanalysis")
+
+        private fun getObjectDirectory(path: String): File =
+                File(File(getRootDirectory(), "objects"), path)
+
+        private fun getFilesFile(): File =
+                File(getRootDirectory(), "files.json")
+
+        private fun getModelFile(path: String): File =
+                File(getObjectDirectory(path), "model.json")
+
+        private fun getHistoryFile(path: String): File =
+                File(getObjectDirectory(path), "history.json")
+
         @Throws(IOException::class)
         @JvmStatic fun Project.persist(): PersistentProject = when {
             this is PersistentProject -> this
             else -> {
-                val directory = File(".metanalysis")
-                directory.mkdirs()
-                val files = hashSetOf<String>()
-                for (path in listFiles()) {
+                val files = listFiles()
+                serialize(getFilesFile(), files)
+                for (path in files) {
                     try {
                         val model = getFileModel(path)
-                        val history = getFileHistory(path)
-                        val parent = File(File(directory, "objects"), path)
-                        parent.mkdirs()
-                        File(parent, "model.json").outputStream().use { out ->
-                            serialize(out, model)
-                        }
-                        File(parent, "history.json").outputStream().use { out ->
-                            serialize(out, history)
-                        }
-                        files += path
+                        serialize(getModelFile(path), model)
+                        logger.info("'$path' model OK!")
                     } catch (e: IOException) {
-                        System.err.println(e.message)
+                        logger.warning(e.message)
+                    }
+                    try {
+                        val history = getFileHistory(path)
+                        serialize(getHistoryFile(path), history)
+                        logger.info("'$path' history OK!")
+                    } catch (e: IOException) {
+                        logger.warning(e.message)
                     }
                 }
-                File(directory, "files.json").outputStream().use { out ->
-                    serialize(out, files)
-                }
-                PersistentProject(File("."))
+                PersistentProject()
             }
         }
 
+        /**
+         * Utility factory method.
+         *
+         * @throws IOException if any input related errors occur
+         */
         @Throws(IOException::class)
-        @JvmStatic fun PersistentProject.clean() {
-            File(directory, ".metanalysis").deleteRecursively()
-        }
+        @JvmStatic fun load(): PersistentProject? =
+                if (getRootDirectory().exists()) PersistentProject()
+                else null
 
         @Throws(IOException::class)
         @JvmStatic fun clean() {
-            File(".metanalysis").deleteRecursively()
+            getRootDirectory().deleteRecursively()
         }
     }
 
-    private val files by lazy {
-        File(directory, ".metanalysis/files.json").inputStream().use { src ->
-            deserialize<Array<String>>(src).toSet()
+    private val files = deserialize<Array<String>>(getFilesFile()).toSet()
+
+    private fun validateFile(path: String) {
+        if (path !in files) {
+            throw FileNotFoundException("'$path' doesn't exist in the project!")
         }
     }
 
     override fun listFiles(): Set<String> = files
 
+    @Throws(IOException::class)
     override fun getFileModel(path: String): SourceFile {
-        val parent = File(File(directory, ".metanalysis/objects"), path)
-        val model = File(parent, "model.json")
-        if (path in files && !model.exists()) {
-            throw SyntaxError("File '$path' contains invalid code!")
+        validateFile(path)
+        val modelFile = getModelFile(path)
+        if (!modelFile.exists()) {
+            throw IOException("'$path' couldn't be interpreted!")
         }
-        return model.inputStream().use { src ->
-            deserialize<SourceFile>(src)
-        }
+        return deserialize(modelFile)
     }
 
+    @Throws(IOException::class)
     override fun getFileHistory(path: String): List<HistoryEntry> {
-        val parent = File(File(directory, ".metanalysis/objects"), path)
-        val history = File(parent, "history.json")
-        return history.inputStream().use { src ->
-            deserialize<Array<HistoryEntry>>(src).asList()
-        }
+        validateFile(path)
+        val historyFile = getHistoryFile(path)
+        return deserialize<Array<HistoryEntry>>(historyFile).asList()
     }
 }

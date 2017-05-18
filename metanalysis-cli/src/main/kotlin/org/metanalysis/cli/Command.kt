@@ -16,6 +16,7 @@
 
 package org.metanalysis.cli
 
+import org.metanalysis.core.project.InteractiveProject
 import org.metanalysis.core.project.PersistentProject
 import org.metanalysis.core.project.PersistentProject.Companion.persist
 import org.metanalysis.core.project.Project
@@ -46,8 +47,8 @@ sealed class Command {
 
     abstract fun execute(vararg args: String): Unit
 
-    protected fun getProject(): Project =
-            Project.connect() ?: throw IOException("Project not found!")
+    protected fun getProject(): Project = InteractiveProject.connect()
+            ?: throw IOException("Project not found!")
 
     object Version : Command() {
         override val name: String = "version"
@@ -139,8 +140,7 @@ sealed class Command {
         """
 
         override fun execute(vararg args: String) {
-            val project = Project.connect()
-                    ?: throw IOException("Project not found!")
+            val project = getProject()
             project.persist()
         }
     }

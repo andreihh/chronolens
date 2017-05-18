@@ -25,28 +25,16 @@ import java.io.IOException
 import java.util.Date
 
 /**
- * An object which queries the repository in the current working directory for
- * code metadata.
+ * An object which queries the project located in the current working directory
+ * for code metadata.
  */
 abstract class Project {
-    companion object {
-        /**
-         * Utility factory method.
-         *
-         * @return the project instance which can query the detected repository
-         * for code metadata, or `null` if no supported VCS repository could be
-         * unambiguously detected
-         * @throws IllegalStateException if the `head` revision doesn't exist
-         * @throws IOException if any input related errors occur
-         */
-        @Throws(IOException::class)
-        @JvmStatic fun connect(): InteractiveProject? =
-                VersionControlSystem.detect()?.let(::InteractiveProject)
-
-        @Throws(IOException::class)
-        @JvmStatic fun load(): PersistentProject? = null
-    }
-
+    /**
+     * @property revision the unique identifier of the revision
+     * @property date the date at which the change was committed
+     * @property author the author of the revision
+     * @property transaction the changes applied in the revision
+     */
     data class HistoryEntry(
             val revision: String,
             val date: Date,
@@ -57,7 +45,7 @@ abstract class Project {
     /**
      * Returns all the existing files in the `head` revision.
      *
-     * @return the set of existing files in `revision`
+     * @return the set of existing files in the `head` revision
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)

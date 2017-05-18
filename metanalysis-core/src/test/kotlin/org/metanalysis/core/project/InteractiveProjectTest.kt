@@ -32,6 +32,7 @@ import java.util.Date
 import kotlin.test.assertFailsWith
 
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 //@Ignore
@@ -54,7 +55,8 @@ class InteractiveProjectTest /*: ProjectTest()*/ {
             getResource("/GenericTypeResolver-v2.mock")
     private val project by lazy {
         initializeRepository()
-        InteractiveProject(VersionControlSystemMock())
+        assertNotNull(InteractiveProject.connect())
+        //InteractiveProject(VersionControlSystemMock())
     }
 
     private fun initializeRepository() {
@@ -97,7 +99,7 @@ class InteractiveProjectTest /*: ProjectTest()*/ {
 
     @Test fun `test connect with uninitialized repository returns null`() {
         VersionControlSystemMock.resetRepository()
-        assertNull(Project.connect())
+        assertNull(InteractiveProject.connect())
     }
 
     /*@Test(expected = IllegalStateException::class)

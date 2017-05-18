@@ -19,17 +19,17 @@ package org.metanalysis.core.project
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.metanalysis.core.model.Parser.SyntaxError
 
 import org.metanalysis.core.model.SourceFile
-import org.metanalysis.core.project.Project.HistoryEntry
-import org.metanalysis.core.project.PersistentProject.Companion.clean
 import org.metanalysis.core.project.PersistentProject.Companion.persist
+import org.metanalysis.core.project.Project.HistoryEntry
+import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.project.ProjectMock
 
 import java.io.File
 import java.io.IOException
 
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class PersistentProjectTest : ProjectTest() {
@@ -53,11 +53,19 @@ class PersistentProjectTest : ProjectTest() {
 
     @Test fun `test get file model with invalid code throws`() {
         val path = "setup.py"
-        File(".metanalysis/objects/$path").deleteRecursively()
-        assertFailsWith<SyntaxError> { actualProject.getFileModel(path) }
+        File(".metanalysis/objects/$path/model.json").delete()
+        assertFailsWith<IOException> { actualProject.getFileModel(path) }
+    }
+
+    @Test fun `test persist already persistent returns same project`() {
+        assertEquals(actualProject, actualProject.persist())
+    }
+
+    @Test fun `test load already persisted returns equal project`() {
+        assertEquals(actualProject, PersistentProject.load())
     }
 
     @After fun cleanProject() {
-        actualProject.clean()
+        PersistentProject.clean()
     }
 }
