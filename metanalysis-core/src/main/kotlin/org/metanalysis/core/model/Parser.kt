@@ -18,7 +18,6 @@ package org.metanalysis.core.model
 
 import java.io.File
 import java.io.IOException
-import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 
 /**
@@ -27,21 +26,19 @@ import java.util.ServiceLoader
  * Parsers must have a public no-arg constructor.
  *
  * The file `META-INF/services/org.metanalysis.core.model.Parser` must be
- * provided and must contain the list of all provided parsers.
+ * provided and must contain the list of all parser implementations.
  */
 abstract class Parser {
     companion object {
-        private val parsers by lazy { ServiceLoader.load(Parser::class.java) }
-        private val languageToParser by lazy {
+        private val parsers = ServiceLoader.load(Parser::class.java)
+        private val languageToParser =
             parsers.associateBy { parser -> parser.language.toLowerCase() }
-        }
-        private val extensionToParser by lazy {
+        private val extensionToParser =
             parsers.flatMap { parser ->
                 parser.extensions.map { extension ->
                     extension.toLowerCase() to parser
                 }
             }.toMap()
-        }
 
         /**
          * Returns a parser which can interpret the given case-insensitive
@@ -50,8 +47,6 @@ abstract class Parser {
          * @param language the language which must be supported by the parser
          * @return the parser which supports the given `language`, or `null` if
          * no such parser was provided
-         * @throws ServiceConfigurationError if the configuration file couldn't
-         * be loaded properly
          */
         @JvmStatic fun getByLanguage(language: String): Parser? =
                 languageToParser[language.toLowerCase()]

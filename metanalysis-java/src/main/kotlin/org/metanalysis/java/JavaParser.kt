@@ -44,12 +44,6 @@ import org.metanalysis.core.model.SourceFile
 /** Java 8 language parser. */
 class JavaParser : Parser() {
     companion object {
-        /** The `Java` programming language supported by this parser. */
-        const val LANGUAGE: String = "Java"
-
-        /** The Java file extensions. */
-        val EXTENSIONS: Set<String> = setOf("java")
-
         /**
          * Formats this string to a block of code by splitting it into lines
          * (delimited by `\n`), removing blank lines (those which consist only
@@ -196,8 +190,13 @@ class JavaParser : Parser() {
             node.types().requireIsInstance<AbstractTypeDeclaration>()
                     .map { visit(it) }.requireDistinct().let(::SourceFile)
 
-    override val language: String = LANGUAGE
-    override val extensions: Set<String> = EXTENSIONS
+    /** The `Java` programming language supported by this parser. */
+    override val language: String
+        get() = "Java"
+
+    /** The Java file extensions supported by this parser. */
+    override val extensions: Set<String>
+        get() = setOf("java")
 
     @Throws(SyntaxError::class)
     override fun parse(source: String): SourceFile = try {

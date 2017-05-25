@@ -31,6 +31,9 @@ object Subprocess {
     /**
      * Executes the given `command` in a subprocess and returns its result.
      *
+     * The `command` output to `stdout` and `stderr` must be `UTF-8` encoded
+     * text.
+     *
      * @param command the command which should be executed
      * @return the parsed input from `stdout` (if the subprocess terminated
      * normally) or from `stderr` (if the subprocess terminated abnormally)

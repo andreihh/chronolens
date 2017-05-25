@@ -17,7 +17,6 @@
 package org.metanalysis.core.versioning
 
 import java.io.IOException
-import java.util.ServiceConfigurationError
 import java.util.ServiceLoader
 
 /**
@@ -31,14 +30,12 @@ import java.util.ServiceLoader
  *
  * The file
  * `META-INF/services/org.metanalysis.core.versioning.VcsProxy` must
- * be provided and must contain the list of all provided VCS implementations.
+ * be provided and must contain the list of all VCS implementations.
  */
 abstract class VcsProxy {
     companion object {
-        private val vcsList by lazy {
-            ServiceLoader.load(VcsProxy::class.java)
-                    .filter(VcsProxy::isSupported)
-        }
+        private val vcsProxies = ServiceLoader.load(VcsProxy::class.java)
+                .filter(VcsProxy::isSupported)
 
         /**
          * Returns the VCS for the repository detected in the current working
@@ -50,21 +47,16 @@ abstract class VcsProxy {
          *
          * @return the requested VCS, or `null` if no supported VCS repository
          * was detected or if multiple repositories were detected
-         * @throws ServiceConfigurationError if the configuration file couldn't
-         * be loaded properly
-         * @throws IllegalThreadStateException if the VCS process is interrupted
          * @throws IOException if any input related errors occur
          */
         @Throws(IOException::class)
         @JvmStatic fun detect(): VcsProxy? =
-                vcsList.filter(VcsProxy::detectRepository)
-                        .singleOrNull()
+                vcsProxies.filter(VcsProxy::detectRepository).singleOrNull()
     }
 
     /**
      * Returns whether this VCS is supported in this environment.
      *
-     * @throws IllegalThreadStateException if the VCS process is interrupted
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -83,7 +75,7 @@ abstract class VcsProxy {
      * Returns the `head` revision.
      *
      * @return the `head` revision
-     * @throws IllegalStateException if the `head` revision doesn't exist
+     * @throws RevisionNotFoundException if the `head` revision doesn't exist
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
@@ -103,8 +95,7 @@ abstract class VcsProxy {
     /**
      * Returns all the existing files in the `head` revision.
      *
-     * @return the set of existing files in `revision`
-     * @throws IllegalArgumentException if `revision` wasn't created by this VCS
+     * @return the set of existing files in the `head` revision
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
