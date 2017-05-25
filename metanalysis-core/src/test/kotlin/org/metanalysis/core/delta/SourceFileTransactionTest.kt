@@ -26,6 +26,7 @@ import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.test.core.model.assertEquals
+import org.metanalysis.test.core.model.sourceFileOf
 
 import java.io.File
 
@@ -41,8 +42,8 @@ class SourceFileTransactionTest {
     // TODO: refactor to `test change nodes`
     @Test fun `test add type`() {
         val addedType = Type("IInterface")
-        val expected = SourceFile(setOf(addedType))
-        val actual = SourceFile(emptySet()).apply(SourceFileTransaction(
+        val expected = sourceFileOf(addedType)
+        val actual = SourceFile().apply(SourceFileTransaction(
                 nodeEdits = listOf(NodeSetEdit.Add(addedType))
         ))
         assertEquals(expected, actual)
@@ -56,7 +57,7 @@ class SourceFileTransactionTest {
 
     @Test fun `test diff empty source to single type`() {
         val src = SourceFile()
-        val dst = SourceFile(setOf(Type("IClass")))
+        val dst = sourceFileOf(Type("IClass"))
         assertDiff(src, dst)
     }
 
@@ -71,18 +72,19 @@ class SourceFileTransactionTest {
     }
 
     @Test fun `test apply null transaction returns equal source file`() {
-        val sourceFile = SourceFile(setOf(Variable("version",
+        val sourceFile = sourceFileOf(Variable(
+                name = "version",
                 initializer = listOf("1")
-        )))
+        ))
         assertEquals(sourceFile, sourceFile.apply(transaction = null))
     }
 
     @Test fun `test diff equal source files returns null`() {
-        val sourceFile = SourceFile(setOf(
+        val sourceFile = sourceFileOf(
                 Variable("version"),
                 Type("IClass"),
                 Function("getVersion()")
-        ))
+        )
         assertNull(sourceFile.diff(sourceFile))
     }
 }

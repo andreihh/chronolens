@@ -17,17 +17,17 @@
 package org.metanalysis.core.subprocess
 
 sealed class Result {
-    data class Success(val input: String) : Result()
+    data class Success(val text: String) : Result()
 
     data class Error(val exitValue: Int, val message: String) : Result()
 
-    fun getOrNull(): String? = (this as? Success)?.input
+    fun getOrNull(): String? = (this as? Success)?.text
 
     /**
      * @throws SubprocessException if the subprocess terminated abnormally
      */
     fun get(): String = when (this) {
-        is Success -> input
+        is Success -> text
         is Error -> throw SubprocessException(exitValue, message)
     }
 

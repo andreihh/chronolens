@@ -25,10 +25,10 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ResultTest {
-    @Test fun `test get success returns input`() {
-        val input = "success"
-        val result = Result.Success(input)
-        assertEquals(input, result.get())
+    @Test fun `test get success returns text`() {
+        val text = "success"
+        val result = Result.Success(text)
+        assertEquals(text, result.get())
     }
 
     @Test fun `test get error throws`() {
@@ -38,10 +38,10 @@ class ResultTest {
         }
     }
 
-    @Test fun `test get or null success returns input`() {
-        val input = "success"
-        val result = Result.Success(input)
-        assertEquals(input, result.getOrNull())
+    @Test fun `test get or null success returns text`() {
+        val text = "success"
+        val result = Result.Success(text)
+        assertEquals(text, result.getOrNull())
     }
 
     @Test fun `test get or null error returns null`() {

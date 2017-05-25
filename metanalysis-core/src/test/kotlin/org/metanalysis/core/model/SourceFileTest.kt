@@ -22,12 +22,13 @@ import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.test.core.model.assertEquals
+import org.metanalysis.test.core.model.sourceFileOf
 
 class SourceFileTest {
     @Test fun `test find variable`() {
         val name = "version"
         val expected = Variable(name, initializer = listOf("1"))
-        val sourceFile = SourceFile(setOf(Type(name), Function(name), expected))
+        val sourceFile = sourceFileOf(Type(name), Function(name), expected)
         val actual = sourceFile.find<Variable>(name)
         assertEquals(expected, actual)
     }
@@ -35,7 +36,7 @@ class SourceFileTest {
     @Test fun `test find function`() {
         val name = "version"
         val expected = Function(name, body = listOf("{", "return 1;", "}"))
-        val sourceFile = SourceFile(setOf(Type(name), Variable(name), expected))
+        val sourceFile = sourceFileOf(Type(name), Variable(name), expected)
         val actual = sourceFile.find<Function>(name)
         assertEquals(expected, actual)
     }
@@ -43,11 +44,7 @@ class SourceFileTest {
     @Test fun `test find type`() {
         val name = "version"
         val expected = Type(name, setOf("Object"))
-        val sourceFile = SourceFile(setOf(
-                Function(name),
-                Variable(name),
-                expected
-        ))
+        val sourceFile = sourceFileOf(Function(name), Variable(name), expected)
         val actual = sourceFile.find<Type>(name)
         assertEquals(expected, actual)
     }

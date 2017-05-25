@@ -14,8 +14,21 @@
  * limitations under the License.
  */
 
-package org.metanalysis.git
+package org.metanalysis.java
 
-abstract class GitProxyTest {
-    protected val git: GitProxy = GitProxy()
+import org.junit.Test
+
+import java.net.URL
+
+class JavaParserIntegrationTest : JavaParserTest() {
+    @Test fun `test integration`() {
+        val source = javaClass.getResource("/IntegrationTest.java").readText()
+        println(parser.parse(source))
+    }
+
+    @Test fun `test network`() {
+        val source = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/master/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
+                .readText()
+        println(parser.parse(source))
+    }
 }

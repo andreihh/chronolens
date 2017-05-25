@@ -16,6 +16,14 @@
 
 package org.metanalysis.git
 
-abstract class GitProxyTest {
-    protected val git: GitProxy = GitProxy()
+import org.junit.Test
+
+import org.metanalysis.core.versioning.VcsProxy
+
+import kotlin.test.assertNull
+
+class GitProxyWithNoRepositoryTest : GitProxyTest() {
+    @Test fun `test detect repository`() {
+        assertNull(VcsProxy.detect())
+    }
 }

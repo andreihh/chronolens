@@ -16,6 +16,14 @@
 
 package org.metanalysis.git
 
-abstract class GitProxyTest {
-    protected val git: GitProxy = GitProxy()
-}
+import org.junit.runner.RunWith
+import org.junit.runners.Suite
+import org.junit.runners.Suite.SuiteClasses
+
+@RunWith(Suite::class)
+@SuiteClasses(
+        GitProxyWithNoRepositoryTest::class,
+        GitProxyWithEmptyRepositoryTest::class,
+        GitProxyWithRepositoryTest::class
+)
+class GitProxyTestSuite

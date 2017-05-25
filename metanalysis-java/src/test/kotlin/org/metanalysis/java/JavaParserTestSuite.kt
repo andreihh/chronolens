@@ -14,8 +14,19 @@
  * limitations under the License.
  */
 
-package org.metanalysis.git
+package org.metanalysis.java
 
-abstract class GitProxyTest {
-    protected val git: GitProxy = GitProxy()
-}
+import org.junit.runner.RunWith
+import org.junit.runners.Suite
+import org.junit.runners.Suite.SuiteClasses
+
+@RunWith(Suite::class)
+@SuiteClasses(
+        JavaParserClassTest::class,
+        JavaParserInterfaceTest::class,
+        JavaParserEnumTest::class,
+        JavaParserAnnotationTest::class,
+        JavaParserErrorTest::class,
+        JavaParserIntegrationTest::class
+)
+class JavaParserTestSuite

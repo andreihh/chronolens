@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package org.metanalysis.git
+@file:JvmName("Utils")
 
-abstract class GitProxyTest {
-    protected val git: GitProxy = GitProxy()
-}
+package org.metanalysis.test.core.model
+
+import org.metanalysis.core.model.Node
+import org.metanalysis.core.model.SourceFile
+
+fun sourceFileOf(vararg nodes: Node): SourceFile = SourceFile(nodes.toSet())
+
