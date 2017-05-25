@@ -25,6 +25,7 @@ import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.test.core.model.assertEquals
 
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class TypeTransactionTest {
@@ -35,8 +36,8 @@ class TypeTransactionTest {
 
     @Test fun `test change supertypes`() {
         val name = "IClass"
-        val expected = Type(name, setOf("IInterface"))
-        val actual = Type(name, setOf("Object"))
+        val expected = Type(name, supertypes = setOf("IInterface"))
+        val actual = Type(name, supertypes = setOf("Object"))
                 .apply(TypeTransaction(supertypeEdits = listOf(
                         SetEdit.Add("IInterface"),
                         SetEdit.Remove("Object")
@@ -46,8 +47,8 @@ class TypeTransactionTest {
 
     @Test fun `test change modifiers`() {
         val name = "IClass"
-        val expected = Type(name, emptySet(), setOf("public"))
-        val actual = Type(name, emptySet(), setOf("private"))
+        val expected = Type(name, modifiers = setOf("public"))
+        val actual = Type(name, modifiers = setOf("private"))
                 .apply(TypeTransaction(modifierEdits = listOf(
                         SetEdit.Remove("private"),
                         SetEdit.Add("public")
@@ -194,24 +195,25 @@ class TypeTransactionTest {
     }
 
     @Test fun `test apply null transaction returns equal type`() {
-        val type = Type("IClass", setOf("IInterface"))
+        val type = Type("IClass", supertypes = setOf("IInterface"))
         assertEquals(type, type.apply(transaction = null))
     }
 
     @Test fun `test diff equal types returns null`() {
-        val type = Type("IClass", setOf("IInterface"))
+        val type = Type("IClass", supertypes = setOf("IInterface"))
         assertNull(type.diff(type))
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun `test diff types with different identifiers throws`() {
-        Type("IClass").diff(Type("IInterface"))
+    @Test fun `test diff types with different identifiers throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            Type("IClass").diff(Type("IInterface"))
+        }
     }
 
     @Test fun `test diff modifiers`() {
         val name = "IClass"
-        val src = Type(name, emptySet(), setOf("public"))
-        val dst = Type(name, emptySet(), setOf("private"))
+        val src = Type(name, modifiers = setOf("public"))
+        val dst = Type(name, modifiers = setOf("private"))
         assertDiff(src, dst)
     }
 }

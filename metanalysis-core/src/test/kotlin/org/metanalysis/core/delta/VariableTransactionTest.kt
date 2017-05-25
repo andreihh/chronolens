@@ -23,6 +23,7 @@ import org.metanalysis.core.delta.VariableTransaction.Companion.diff
 import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.test.core.model.assertEquals
 
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class VariableTransactionTest {
@@ -33,8 +34,8 @@ class VariableTransactionTest {
 
     @Test fun `test change modifiers`() {
         val name = "version"
-        val expected = Variable(name, setOf("public"))
-        val actual = Variable(name, setOf("private"))
+        val expected = Variable(name, modifiers = setOf("public"))
+        val actual = Variable(name, modifiers = setOf("private"))
                 .apply(VariableTransaction(modifierEdits = listOf(
                         SetEdit.Remove("private"),
                         SetEdit.Add("public")
@@ -44,8 +45,8 @@ class VariableTransactionTest {
 
     @Test fun `test change initializer`() {
         val name = "version"
-        val expected = Variable(name, emptySet(), listOf("1"))
-        val actual = Variable(name, emptySet(), listOf("2"))
+        val expected = Variable(name, initializer = listOf("1"))
+        val actual = Variable(name, initializer = listOf("2"))
                 .apply(VariableTransaction(initializerEdits = listOf(
                         ListEdit.Remove(0),
                         ListEdit.Add(0, "1")
@@ -54,31 +55,32 @@ class VariableTransactionTest {
     }
 
     @Test fun `test apply null transaction returns equal variable`() {
-        val variable = Variable("version", emptySet(), listOf("1"))
+        val variable = Variable("version", initializer = listOf("1"))
         assertEquals(variable, variable.apply(transaction = null))
     }
 
     @Test fun `test diff equal variables returns null`() {
-        val variable = Variable("version", emptySet(), listOf("1"))
+        val variable = Variable("version", initializer = listOf("1"))
         assertNull(variable.diff(variable))
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun `test diff variables with different identifiers throws`() {
-        Variable("version").diff(Variable("version2"))
+    @Test fun `test diff variables with different identifiers throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            Variable("version").diff(Variable("version2"))
+        }
     }
 
     @Test fun `test diff modifiers`() {
         val name = "name"
-        val src = Variable(name, setOf("public"))
-        val dst = Variable(name, setOf("private"))
+        val src = Variable(name, modifiers = setOf("public"))
+        val dst = Variable(name, modifiers = setOf("private"))
         assertDiff(src, dst)
     }
 
     @Test fun `test diff initializer`() {
         val name = "name"
-        val src = Variable(name, emptySet(), listOf("1"))
-        val dst = Variable(name, emptySet(), listOf("2"))
+        val src = Variable(name, initializer = listOf("1"))
+        val dst = Variable(name, initializer = listOf("2"))
         assertDiff(src, dst)
     }
 }

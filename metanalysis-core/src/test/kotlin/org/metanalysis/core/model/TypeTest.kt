@@ -26,34 +26,24 @@ import org.metanalysis.test.core.model.assertEquals
 class TypeTest {
     @Test fun `test find variable`() {
         val name = "version"
-        val expected = Variable(name, emptySet(), listOf("1"))
-        val type = Type(
-                name = "IClass",
-                members = setOf(
-                        Type(name),
-                        Function(name, emptyList()),
-                        expected
-                )
-        )
+        val expected = Variable(name, initializer = listOf("1"))
+        val type = Type("IClass", members = setOf(
+                Type(name),
+                Function(name),
+                expected
+        ))
         val actual = type.find<Variable>(name)
         assertEquals(expected, actual)
     }
 
     @Test fun `test find function`() {
         val name = "version"
-        val expected = Function(
-                signature = name,
-                parameters = emptyList(),
-                body = listOf("{", "  return 1;", "}")
-        )
-        val type = Type(
-                name = "IClass",
-                members = setOf(
-                        Type(name),
-                        Variable(name),
-                        expected
-                )
-        )
+        val expected = Function(name, body = listOf("{", "return 1;", "}"))
+        val type = Type("IClass", members = setOf(
+                Type(name),
+                Variable(name),
+                expected
+        ))
         val actual = type.find<Function>(name)
         assertEquals(expected, actual)
     }
@@ -61,14 +51,11 @@ class TypeTest {
     @Test fun `test find type`() {
         val name = "version"
         val expected = Type(name, setOf("Object"))
-        val type = Type(
-                name = "IClass",
-                members = setOf(
-                        Function(name, emptyList()),
-                        Variable(name),
-                        expected
-                )
-        )
+        val type = Type("IClass", members = setOf(
+                Function(name),
+                Variable(name),
+                expected
+        ))
         val actual = type.find<Type>(name)
         assertEquals(expected, actual)
     }

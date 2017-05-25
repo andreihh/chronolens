@@ -26,28 +26,16 @@ import org.metanalysis.test.core.model.assertEquals
 class SourceFileTest {
     @Test fun `test find variable`() {
         val name = "version"
-        val expected = Variable(name, emptySet(), listOf("1"))
-        val sourceFile = SourceFile(setOf(
-                Type(name),
-                Function(name, emptyList()),
-                expected
-        ))
+        val expected = Variable(name, initializer = listOf("1"))
+        val sourceFile = SourceFile(setOf(Type(name), Function(name), expected))
         val actual = sourceFile.find<Variable>(name)
         assertEquals(expected, actual)
     }
 
     @Test fun `test find function`() {
         val name = "version"
-        val expected = Function(
-                signature = name,
-                parameters = emptyList(),
-                body = listOf("{", "  return 1;", "}")
-        )
-        val sourceFile = SourceFile(setOf(
-                Type(name),
-                Variable(name),
-                expected
-        ))
+        val expected = Function(name, body = listOf("{", "return 1;", "}"))
+        val sourceFile = SourceFile(setOf(Type(name), Variable(name), expected))
         val actual = sourceFile.find<Function>(name)
         assertEquals(expected, actual)
     }

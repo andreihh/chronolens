@@ -21,16 +21,19 @@ import org.junit.Test
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Variable
 
+import kotlin.test.assertFailsWith
+
 class FunctionTest {
-    @Test(expected = IllegalArgumentException::class)
-    fun `test duplicated parameters throws`() {
-        Function(
-                signature = "getVersion(int, int)",
-                parameters = listOf(
-                        Variable("name"),
-                        Variable("name", emptySet(), emptyList())
-                ),
-                body = emptyList()
-        )
+    @Test fun `test duplicated parameters throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            Function(
+                    signature = "getVersion(int, int)",
+                    parameters = listOf(
+                            Variable("name"),
+                            Variable("name", emptySet(), emptyList())
+                    ),
+                    body = emptyList()
+            )
+        }
     }
 }

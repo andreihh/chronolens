@@ -36,6 +36,7 @@ import java.util.Date
 
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class JsonDriverTest {
     private val data = SourceFileTransaction(listOf(
@@ -44,27 +45,23 @@ class JsonDriverTest {
                     supertypes = setOf("Interface", "Object"),
                     members = setOf(
                             Type("InnerClass"),
-                            Variable("version", emptySet(), listOf("1")),
-                            Function(
-                                    signature = "getVersion()",
-                                    parameters = emptyList(),
-                                    body = listOf("{return 1;}")
-                            )
+                            Variable("version", initializer = listOf("1")),
+                            Function("getVersion()", body = listOf("1"))
                     )
             )),
             NodeSetEdit.Remove<Function>("createIClass()"),
             NodeSetEdit.Change<Variable>(
                     identifier = "DEBUG",
-                    transaction = VariableTransaction(initializerEdits = listOf(
-                            ListEdit.Add(0, "true")
-                    ))
+                    transaction = VariableTransaction(
+                            initializerEdits = listOf(ListEdit.Add(0, "true"))
+                    )
             ),
             NodeSetEdit.Remove<Variable>("RELEASE"),
             NodeSetEdit.Change<Type>("Interface", TypeTransaction(
                     supertypeEdits = listOf(SetEdit.Remove("Object")),
                     memberEdits = listOf(NodeSetEdit.Change<Function>(
-                            "getVersion()",
-                            FunctionTransaction(
+                            identifier = "getVersion()",
+                            transaction = FunctionTransaction(
                                     parameterEdits = listOf(ListEdit.Remove(0)),
                                     bodyEdits = listOf(ListEdit.Remove(0))
                             )
@@ -72,10 +69,11 @@ class JsonDriverTest {
             ))
     ))
 
-    @Test(expected = IOException::class)
-    fun `test deserialize invalid KClass throws`() {
+    @Test fun `test deserialize invalid KClass throws`() {
         val src = "\"java.lang.String$\"".byteInputStream()
-        JsonDriver.deserialize<KClass<*>>(src)
+        assertFailsWith<IOException> {
+            JsonDriver.deserialize<KClass<*>>(src)
+        }
     }
 
     @Test fun `test serialize and deserialize source file transaction`() {
@@ -99,6 +97,7 @@ class JsonDriverTest {
     }
 
     @Test fun `test serialize to file`() {
+        // TODO
     }
 
     /*@Test fun gen() {

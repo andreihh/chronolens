@@ -17,6 +17,7 @@
 package org.metanalysis.java
 
 import org.junit.Test
+import org.metanalysis.core.model.Node
 
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
@@ -28,17 +29,26 @@ import org.metanalysis.test.core.model.assertEquals
 
 import java.net.URL
 
+import kotlin.test.assertFailsWith
+
 class JavaParserTest {
+    private fun sourceFileOf(vararg nodes: Node): SourceFile =
+            SourceFile(nodes.toSet())
+
     private val parser = JavaParser()
 
-    @Test(expected = SyntaxError::class)
-    fun `test parse invalid source throws`() {
-        parser.parse("cla Main { int i = &@*; { class K; interface {}")
+    @Test fun `test parse invalid source throws`() {
+        val source = "cla Main { int i = &@*; { class K; interface {}"
+        assertFailsWith<SyntaxError> {
+            parser.parse(source)
+        }
     }
 
-    @Test(expected = SyntaxError::class)
-    fun `test parse duplicated members in class throws`() {
-        parser.parse("class Main { int i = 2; int i = 3; }")
+    @Test fun `test parse duplicated members in class throws`() {
+        val source = "class Main { int i = 2; int i = 3; }"
+        assertFailsWith<SyntaxError> {
+            parser.parse(source)
+        }
     }
 
     @Test fun `test annotation`() {
@@ -46,7 +56,7 @@ class JavaParserTest {
         @interface AnnotationClass {
         }
         """
-        val expected = SourceFile(setOf(Type("AnnotationClass")))
+        val expected = sourceFileOf(Type("AnnotationClass"))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -57,9 +67,9 @@ class JavaParserTest {
             int version();
         }
         """
-        val expected = SourceFile(setOf(Type(
-                name = "AnnotationClass",
-                members = setOf(Variable("name"), Variable("version"))
+        val expected = sourceFileOf(Type("AnnotationClass", members = setOf(
+                Variable("name"),
+                Variable("version")
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -71,12 +81,9 @@ class JavaParserTest {
             int version() default 1;
         }
         """
-        val expected = SourceFile(setOf(Type(
-                name = "AnnotationClass",
-                members = setOf(
-                        Variable("name"),
-                        Variable("version", emptySet(), listOf("1"))
-                )
+        val expected = sourceFileOf(Type("AnnotationClass", members = setOf(
+                Variable("name"),
+                Variable("version", initializer = listOf("1"))
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -86,7 +93,7 @@ class JavaParserTest {
         enum Color {
         }
         """
-        val expected = SourceFile(setOf(Type("Color")))
+        val expected = sourceFileOf(Type("Color"))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -98,13 +105,10 @@ class JavaParserTest {
             BLUE;
         }
         """
-        val expected = SourceFile(setOf(Type(
-                name = "Color",
-                members = setOf(
-                        Variable("RED", emptySet(), listOf("RED")),
-                        Variable("GREEN", emptySet(), listOf("GREEN")),
-                        Variable("BLUE", emptySet(), listOf("BLUE"))
-                )
+        val expected = sourceFileOf(Type("Color", members = setOf(
+                Variable("RED", initializer = listOf("RED")),
+                Variable("GREEN", initializer = listOf("GREEN")),
+                Variable("BLUE", initializer = listOf("BLUE"))
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -120,19 +124,16 @@ class JavaParserTest {
             public static int i;
         }
         """
-        val expected = SourceFile(setOf(Type(
-                name = "Color",
-                members = setOf(
-                        Variable("RED", emptySet(), listOf("RED")),
-                        Variable("GREEN", emptySet(), listOf("GREEN")),
-                        Variable("BLUE", emptySet(), listOf("BLUE")),
-                        Variable(
-                                name = "format",
-                                modifiers = setOf("public", "final"),
-                                initializer = listOf("\"hex\"")
-                        ),
-                        Variable("i", setOf("public", "static"))
-                )
+        val expected = sourceFileOf(Type("Color", members = setOf(
+                Variable("RED", initializer = listOf("RED")),
+                Variable("GREEN", initializer = listOf("GREEN")),
+                Variable("BLUE", initializer = listOf("BLUE")),
+                Variable(
+                        name = "format",
+                        modifiers = setOf("public", "final"),
+                        initializer = listOf("\"hex\"")
+                ),
+                Variable("i", modifiers = setOf("public", "static"))
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -159,35 +160,23 @@ class JavaParserTest {
             abstract String getCode();
         }
         """
-        val expected = SourceFile(setOf(Type(
-                name = "Color",
-                members = setOf(
-                        Variable(
-                                name = "RED",
-                                initializer = """RED() {
-                                    @Override String getCode() {
-                                        return "#FF0000";
-                                    }
-                                }""".toBlock()
-                        ),
-                        Variable(
-                                name = "GREEN",
-                                initializer = """GREEN() {
-                                    @Override String getCode() {
-                                        return "#00FF00";
-                                    }
-                                }""".toBlock()
-                        ),
-                        Variable(
-                                name = "BLUE",
-                                initializer = """BLUE() {
-                                    @Override String getCode() {
-                                        return "#0000FF";
-                                    }
-                                }""".toBlock()
-                        ),
-                        Function("getCode()", emptyList(), setOf("abstract"))
-                )
+        val expected = sourceFileOf(Type("Color", members = setOf(
+                Variable("RED", initializer = """RED() {
+                    @Override String getCode() {
+                        return "#FF0000";
+                    }
+                }""".toBlock()),
+                Variable("GREEN", initializer = """GREEN() {
+                    @Override String getCode() {
+                        return "#00FF00";
+                    }
+                }""".toBlock()),
+                Variable("BLUE", initializer = """BLUE() {
+                    @Override String getCode() {
+                        return "#0000FF";
+                    }
+                }""".toBlock()),
+                Function("getCode()", modifiers = setOf("abstract"))
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -197,7 +186,7 @@ class JavaParserTest {
         interface IInterface {
         }
         """
-        val expected = SourceFile(setOf(Type("IInterface")))
+        val expected = sourceFileOf(Type("IInterface"))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -208,12 +197,9 @@ class JavaParserTest {
             int version = 1;
         }
         """
-        val expected = SourceFile(setOf(Type(
-                name = "IInterface",
-                members = setOf(
-                        Variable("name", emptySet(), listOf("null")),
-                        Variable("version", emptySet(), listOf("1"))
-                )
+        val expected = sourceFileOf(Type("IInterface", members = setOf(
+                Variable("name", initializer = listOf("null")),
+                Variable("version", initializer = listOf("1"))
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -225,12 +211,9 @@ class JavaParserTest {
             int getVersion();
         }
         """
-        val expected = SourceFile(setOf(Type(
-                name = "IInterface",
-                members = setOf(
-                        Function("getName()", emptyList()),
-                        Function("getVersion()", emptyList())
-                )
+        val expected = sourceFileOf(Type("IInterface", members = setOf(
+                Function("getName()"),
+                Function("getVersion()")
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -244,18 +227,14 @@ class JavaParserTest {
             }
         }
         """
-        val expected = SourceFile(setOf(Type(
-                name = "IInterface",
-                members = setOf(
-                        Function("getName()", emptyList()),
-                        Function(
-                                signature = "getVersion()",
-                                parameters = emptyList(),
-                                modifiers = setOf("default"),
-                                body = """{
-                                    return 1;
-                                }""".toBlock()
-                        )
+        val expected = sourceFileOf(Type("IInterface", members = setOf(
+                Function("getName()"),
+                Function(
+                        signature = "getVersion()",
+                        modifiers = setOf("default"),
+                        body = """{
+                            return 1;
+                        }""".toBlock()
                 )
         )))
         assertEquals(expected, parser.parse(source))
@@ -266,10 +245,10 @@ class JavaParserTest {
         interface IInterface extends Comparable<IInterface> {
         }
         """
-        val expected = SourceFile(setOf(Type(
+        val expected = sourceFileOf(Type(
                 name = "IInterface",
                 supertypes = setOf("Comparable<IInterface>")
-        )))
+        ))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -278,10 +257,10 @@ class JavaParserTest {
         class IClass extends Object implements Comparable<IInterface> {
         }
         """
-        val expected = SourceFile(setOf(Type(
+        val expected = sourceFileOf(Type(
                 name = "IClass",
                 supertypes = setOf("Object", "Comparable<IInterface>")
-        )))
+        ))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -292,7 +271,7 @@ class JavaParserTest {
             abstract void println(String... args);
         }
         """
-        val expected = SourceFile(setOf(Type(
+        val expected = sourceFileOf(Type(
                 name = "IClass",
                 modifiers = setOf("abstract"),
                 members = setOf(Function(
@@ -300,12 +279,11 @@ class JavaParserTest {
                         parameters = listOf(Variable("args")),
                         modifiers = setOf("abstract", "@Override")
                 ))
-        )))
+        ))
         assertEquals(expected, parser.parse(source))
     }
 
-    @Test(expected = SyntaxError::class)
-    fun `test initializers not supported`() {
+    @Test fun `test initializers not supported`() {
         val source = """
         class Type {
             int i;
@@ -314,7 +292,9 @@ class JavaParserTest {
             }
         }
         """
-        parser.parse(source)
+        assertFailsWith<SyntaxError> {
+            parser.parse(source)
+        }
     }
 
     @Test fun `test integration`() {

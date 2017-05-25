@@ -18,10 +18,13 @@ package org.metanalysis.core.delta
 
 import org.junit.Test
 
+import org.metanalysis.core.delta.SetEdit.Add
 import org.metanalysis.core.delta.SetEdit.Companion.apply
 import org.metanalysis.core.delta.SetEdit.Companion.diff
+import org.metanalysis.core.delta.SetEdit.Remove
 
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class SetEditTest {
     private fun <T> assertDiff(src: Set<T>, dst: Set<T>) {
@@ -35,33 +38,35 @@ class SetEditTest {
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test add duplicate throws`() {
-        setOf(1).apply(SetEdit.Add(1))
+    @Test fun `test add duplicate throws`() {
+        assertFailsWith<IllegalStateException> {
+            setOf(1).apply(Add(1))
+        }
     }
 
     @Test fun `test remove existing element`() {
         val expected = setOf(1)
-        val actual = setOf(1, 2).apply(SetEdit.Remove(2))
+        val actual = setOf(1, 2).apply(Remove(2))
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test remove non-existing element throws`() {
-        setOf(1).apply(SetEdit.Remove(2))
+    @Test fun `test remove non-existing element throws`() {
+        assertFailsWith<IllegalStateException> {
+            setOf(1).apply(SetEdit.Remove(2))
+        }
     }
 
     @Test fun `test chained edits`() {
         val expected = setOf(1, 2, 3, 4, 6, 7)
         val actual = setOf(1, 4).apply(
-                SetEdit.Remove(4),
-                SetEdit.Add(2),
-                SetEdit.Add(3),
-                SetEdit.Add(4),
-                SetEdit.Add(5),
-                SetEdit.Add(6),
-                SetEdit.Add(7),
-                SetEdit.Remove(5)
+                Remove(4),
+                Add(2),
+                Add(3),
+                Add(4),
+                Add(5),
+                Add(6),
+                Add(7),
+                Remove(5)
         )
         assertEquals(expected, actual)
     }

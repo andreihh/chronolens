@@ -27,6 +27,7 @@ import org.metanalysis.test.core.model.assertEquals
 import java.io.File
 import java.io.IOException
 
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -62,14 +63,16 @@ class ParserTest {
         assertNull(Parser.parse(file))
     }
 
-    @Test(expected = IOException::class)
-    fun `test parse non-existent file throws`() {
-        Parser.parse(File("non-existing-file.mock"))
+    @Test fun `test parse non-existent file throws`() {
+        assertFailsWith<IOException> {
+            Parser.parse(File("non-existing-file.mock"))
+        }
     }
 
-    @Test(expected = SyntaxError::class)
-    fun `test parse source with errors throws`() {
+    @Test fun `test parse source with errors throws`() {
         val parser = requireNotNull(Parser.getByLanguage(ParserMock.LANGUAGE))
-        parser.parse("{ \"invalid property\":2")
+        assertFailsWith<SyntaxError> {
+            parser.parse("{ \"invalid property\":2")
+        }
     }
 }

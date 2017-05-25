@@ -73,10 +73,11 @@ class GitProxyTest {
         }
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test get head from empty repository throws`() {
+    @Test fun `test get head from empty repository throws`() {
         withEmptyRepository {
-            getHead()
+            assertFailsWith<IllegalStateException> {
+                getHead()
+            }
         }
     }
 

@@ -26,6 +26,7 @@ import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.test.core.model.assertEquals
 
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class NodeSetEditTest {
@@ -41,10 +42,11 @@ class NodeSetEditTest {
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test add existing type throws`() {
+    @Test fun `test add existing type throws`() {
         val type = Type("IClass")
-        setOf(type).apply(NodeSetEdit.Add(type))
+        assertFailsWith<IllegalStateException> {
+            setOf(type).apply(NodeSetEdit.Add(type))
+        }
     }
 
     @Test fun `test remove type`() {
@@ -55,18 +57,23 @@ class NodeSetEditTest {
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test remove non-existing type throws`() {
-        emptySet<Node>().apply(NodeSetEdit.Remove<Type>("IClass"))
+    @Test fun `test remove non-existing type throws`() {
+        assertFailsWith<IllegalStateException> {
+            emptySet<Node>().apply(NodeSetEdit.Remove<Type>("IClass"))
+        }
     }
 
     @Test fun `test change type`() {
         val name = "IClass"
         val supertype = "IInterface"
-        val function = Function("getField()", emptyList())
+        val function = Function("getField()")
         val expected = setOf(
                 Variable(name),
-                Type(name, setOf(supertype), emptySet(), setOf(function))
+                Type(
+                        name = name,
+                        supertypes = setOf(supertype),
+                        members = setOf(function)
+                )
         )
         val actual = setOf(Variable(name), Type(name))
                 .apply(NodeSetEdit.Change<Type>(
@@ -79,12 +86,13 @@ class NodeSetEditTest {
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test change non-existing type throws`() {
-        emptySet<Node>().apply(NodeSetEdit.Change<Type>(
-                identifier = "IClass",
-                transaction = TypeTransaction()
-        ))
+    @Test fun `test change non-existing type throws`() {
+        assertFailsWith<IllegalStateException> {
+            emptySet<Node>().apply(NodeSetEdit.Change<Type>(
+                    identifier = "IClass",
+                    transaction = TypeTransaction()
+            ))
+        }
     }
 
     @Test fun `test add variable`() {
@@ -94,10 +102,11 @@ class NodeSetEditTest {
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test add existing variable throws`() {
+    @Test fun `test add existing variable throws`() {
         val variable = Variable("field")
-        setOf(variable).apply(NodeSetEdit.Add(variable))
+        assertFailsWith<IllegalStateException> {
+            setOf(variable).apply(NodeSetEdit.Add(variable))
+        }
     }
 
     @Test fun `test remove variable`() {
@@ -108,16 +117,17 @@ class NodeSetEditTest {
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test remove non-existing variable throws`() {
-        emptySet<Node>().apply(NodeSetEdit.Remove<Variable>("field"))
+    @Test fun `test remove non-existing variable throws`() {
+        assertFailsWith<IllegalStateException> {
+            emptySet<Node>().apply(NodeSetEdit.Remove<Variable>("field"))
+        }
     }
 
     @Test fun `test change variable`() {
         val name = "field"
         val expected = setOf(
                 Type(name),
-                Variable(name, emptySet(), listOf("1"))
+                Variable(name,  initializer = listOf("1"))
         )
         val actual = setOf(Type(name), Variable(name))
                 .apply(NodeSetEdit.Change<Variable>(
@@ -129,49 +139,52 @@ class NodeSetEditTest {
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test change non-existing variable throws`() {
-        emptySet<Node>().apply(NodeSetEdit.Change<Variable>(
-                identifier = "field",
-                transaction = VariableTransaction()
-        ))
+    @Test fun `test change non-existing variable throws`() {
+        assertFailsWith<IllegalStateException> {
+            emptySet<Node>().apply(NodeSetEdit.Change<Variable>(
+                    identifier = "field",
+                    transaction = VariableTransaction()
+            ))
+        }
     }
 
     @Test fun `test add function`() {
-        val function = Function("getVersion()", emptyList())
+        val function = Function("getVersion()")
         val expected = setOf(function)
         val actual = emptySet<Node>().apply(NodeSetEdit.Add(function))
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test add existing function throws`() {
-        val function = Function("getVersion()", emptyList())
-        setOf(function).apply(NodeSetEdit.Add(function))
+    @Test fun `test add existing function throws`() {
+        val function = Function("getVersion()")
+        assertFailsWith<IllegalStateException> {
+            setOf(function).apply(NodeSetEdit.Add(function))
+        }
     }
 
     @Test fun `test remove function`() {
         val signature = "getField()"
         val expected = setOf(Type(signature))
-        val actual = setOf(Type(signature), Function(signature, emptyList()))
+        val actual = setOf(Type(signature), Function(signature))
                 .apply(NodeSetEdit.Remove<Function>(signature))
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test remove non-existing function throws`() {
-        emptySet<Node>().apply(NodeSetEdit.Remove<Function>("getField()"))
+    @Test fun `test remove non-existing function throws`() {
+        assertFailsWith<IllegalStateException> {
+            emptySet<Node>().apply(NodeSetEdit.Remove<Function>("getField()"))
+        }
     }
 
     @Test fun `test change function`() {
         val signature = "getField()"
         val expected = setOf(
                 Type(signature),
-                Function(signature, emptyList(), emptySet(), listOf("{}"))
+                Function(signature, body = listOf("{}"))
         )
         val actual = setOf(
                 Type(signature),
-                Function(signature, listOf(Variable("name")))
+                Function(signature, parameters = listOf(Variable("name")))
         ).apply(NodeSetEdit.Change<Function>(
                 identifier = signature,
                 transaction = FunctionTransaction(
@@ -182,18 +195,19 @@ class NodeSetEditTest {
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test change non-existing function throws`() {
-        emptySet<Node>().apply(NodeSetEdit.Change<Function>(
-                identifier = "getField()",
-                transaction = FunctionTransaction()
-        ))
+    @Test fun `test change non-existing function throws`() {
+        assertFailsWith<IllegalStateException> {
+            emptySet<Node>().apply(NodeSetEdit.Change<Function>(
+                    identifier = "getField()",
+                    transaction = FunctionTransaction()
+            ))
+        }
     }
 
     @Test fun `test diff equal node sets returns empty list`() {
         val nodeSet = setOf(
                 Variable("version"),
-                Function("getVersion()", emptyList()),
+                Function("getVersion()"),
                 Type("IClass")
         )
         assertTrue(nodeSet.diff(nodeSet).isEmpty())
@@ -201,13 +215,16 @@ class NodeSetEditTest {
 
     @Test fun `test diff`() {
         val src = setOf(
-                Function("getVersion()", listOf(Variable("version"))),
-                Type("IClass", setOf("IInterface")),
+                Function(
+                        signature = "getVersion()",
+                        parameters = listOf(Variable("version"))
+                ),
+                Type("IClass", supertypes = setOf("IInterface")),
                 Type("IInterface")
         )
         val dst = setOf(
                 Variable("version"),
-                Function("getVersion()", emptyList()),
+                Function("getVersion()"),
                 Type("IClass")
         )
         assertDiff(src, dst)

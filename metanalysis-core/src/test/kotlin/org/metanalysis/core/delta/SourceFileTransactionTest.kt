@@ -49,13 +49,13 @@ class SourceFileTransactionTest {
     }
 
     @Test fun `test diff equal empty source files`() {
-        val src = SourceFile(emptySet())
-        val dst = SourceFile(emptySet())
+        val src = SourceFile()
+        val dst = SourceFile()
         assertDiff(src, dst)
     }
 
     @Test fun `test diff empty source to single type`() {
-        val src = SourceFile(emptySet())
+        val src = SourceFile()
         val dst = SourceFile(setOf(Type("IClass")))
         assertDiff(src, dst)
     }
@@ -71,9 +71,9 @@ class SourceFileTransactionTest {
     }
 
     @Test fun `test apply null transaction returns equal source file`() {
-        val sourceFile = SourceFile(setOf(
-                Variable("version", emptySet(), listOf("1"))
-        ))
+        val sourceFile = SourceFile(setOf(Variable("version",
+                initializer = listOf("1")
+        )))
         assertEquals(sourceFile, sourceFile.apply(transaction = null))
     }
 
@@ -81,7 +81,7 @@ class SourceFileTransactionTest {
         val sourceFile = SourceFile(setOf(
                 Variable("version"),
                 Type("IClass"),
-                Function("getVersion()", emptyList())
+                Function("getVersion()")
         ))
         assertNull(sourceFile.diff(sourceFile))
     }

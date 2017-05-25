@@ -59,37 +59,33 @@ class FunctionTransactionTest {
         val signature = "println()"
         val body = listOf("{", "  i = 1;", "}")
         val expected = Function(signature, emptyList(), emptySet(), body)
-        val actual = Function(
-                signature = signature,
-                parameters = emptyList(),
-                body = listOf("{", "  j = 2;", "}")
-        ).apply(FunctionTransaction(bodyEdits = listOf(
-                ListEdit.Remove(1),
-                ListEdit.Add(1, "  i = 1;")
-        )))
+        val actual = Function(signature, body = listOf("{", "  j = 2;", "}"))
+                .apply(FunctionTransaction(bodyEdits = listOf(
+                        ListEdit.Remove(1),
+                        ListEdit.Add(1, "  i = 1;")
+                )))
         assertEquals(expected, actual)
     }
 
     @Test fun `test apply null transaction returns equal function`() {
-        val function = Function("getVersion()", emptyList())
+        val function = Function("getVersion()")
         assertEquals(function, function.apply(transaction = null))
     }
 
     @Test fun `test diff equal function returns null`() {
-        val function = Function("getVersion()", emptyList())
+        val function = Function("getVersion()")
         assertNull(function.diff(function))
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun `test diff function with different identifiers throws`() {
-        Function("getVersion()", emptyList())
-                .diff(Function("get_version()", emptyList()))
+        Function("getVersion()").diff(Function("get_version()"))
     }
 
     @Test fun `test diff modifiers`() {
         val signature = "getVersion()"
-        val src = Function(signature, emptyList(), setOf("public"))
-        val dst = Function(signature, emptyList(), setOf("private"))
+        val src = Function(signature, modifiers = setOf("public"))
+        val dst = Function(signature, modifiers = setOf("private"))
         assertDiff(src, dst)
     }
 }

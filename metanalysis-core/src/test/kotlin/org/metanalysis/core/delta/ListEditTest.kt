@@ -18,10 +18,13 @@ package org.metanalysis.core.delta
 
 import org.junit.Test
 
+import org.metanalysis.core.delta.ListEdit.Add
 import org.metanalysis.core.delta.ListEdit.Companion.apply
 import org.metanalysis.core.delta.ListEdit.Companion.diff
+import org.metanalysis.core.delta.ListEdit.Remove
 
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class ListEditTest {
     private fun String.apply(edits: List<ListEdit<Char>>): String =
@@ -35,86 +38,90 @@ class ListEditTest {
         assertEquals(src, dst.apply(dst.toList().diff(src.toList())))
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun `test add element at negative position throws`() {
-        ListEdit.Add(-1, '0')
+    @Test fun `test add element at negative position throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            Add(-1, '0')
+        }
     }
 
     @Test fun `test add element at end`() {
         val expected = "12345"
-        val actual = "1234".apply(ListEdit.Add(4, '5'))
+        val actual = "1234".apply(Add(4, '5'))
         assertEquals(expected, actual)
     }
 
     @Test fun `test add element before end`() {
         val expected = "12345"
-        val actual = "1235".apply(ListEdit.Add(3, '4'))
+        val actual = "1235".apply(Add(3, '4'))
         assertEquals(expected, actual)
     }
 
     @Test fun `test add element at front`() {
         val expected = "12345"
-        val actual = "2345".apply(ListEdit.Add(0, '1'))
+        val actual = "2345".apply(Add(0, '1'))
         assertEquals(expected, actual)
     }
 
     @Test fun `test add element in middle`() {
         val expected = "12345"
-        val actual = "1245".apply(ListEdit.Add(2, '3'))
+        val actual = "1245".apply(Add(2, '3'))
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test add element out of bounds throws`() {
-        "1234".apply(ListEdit.Add(5, '6'))
+    @Test fun `test add element out of bounds throws`() {
+        assertFailsWith<IllegalStateException> {
+            "1234".apply(Add(5, '6'))
+        }
     }
 
-    @Test(expected = IllegalArgumentException::class)
-    fun `test remove element at negative index throws`() {
-        ListEdit.Remove<Char>(-1)
+    @Test fun `test remove element at negative index throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            Remove<Char>(-1)
+        }
     }
 
     @Test fun `test remove first element`() {
         val expected = "2345"
-        val actual = "12345".apply(ListEdit.Remove(0))
+        val actual = "12345".apply(Remove(0))
         assertEquals(expected, actual)
     }
 
     @Test fun `test remove last element`() {
         val expected = "1234"
-        val actual = "12345".apply(ListEdit.Remove(4))
+        val actual = "12345".apply(Remove(4))
         assertEquals(expected, actual)
     }
 
     @Test fun `test remove middle element`() {
         val expected = "1245"
-        val actual = "12345".apply(ListEdit.Remove(2))
+        val actual = "12345".apply(Remove(2))
         assertEquals(expected, actual)
     }
 
-    @Test(expected = IllegalStateException::class)
-    fun `test remove element out of bounds throws`() {
-        "1234".apply(ListEdit.Remove(4))
+    @Test fun `test remove element out of bounds throws`() {
+        assertFailsWith<IllegalStateException> {
+            "1234".apply(Remove(4))
+        }
     }
 
     @Test fun `test chained edits`() {
         val expected = "republican"
         val actual = "democrats".apply(
-                ListEdit.Remove(8), // democrat
-                ListEdit.Remove(7), // democra
-                ListEdit.Add(7, 'n'), // democran
-                ListEdit.Remove(5), // democan
-                ListEdit.Add(5, 'c'), // democcan
-                ListEdit.Remove(4), // democan
-                ListEdit.Add(4, 'i'), // demoican
-                ListEdit.Remove(3), // demican
-                ListEdit.Add(3, 'l'), // demlican
-                ListEdit.Remove(2), // delican
-                ListEdit.Add(2, 'b'), // deblican
-                ListEdit.Add(2, 'u'), // deublican
-                ListEdit.Add(2, 'p'), // depublican
-                ListEdit.Remove(0), // epublican
-                ListEdit.Add(0, 'r') // republican
+                Remove(8), // democrat
+                Remove(7), // democra
+                Add(7, 'n'), // democran
+                Remove(5), // democan
+                Add(5, 'c'), // democcan
+                Remove(4), // democan
+                Add(4, 'i'), // demoican
+                Remove(3), // demican
+                Add(3, 'l'), // demlican
+                Remove(2), // delican
+                Add(2, 'b'), // deblican
+                Add(2, 'u'), // deublican
+                Add(2, 'p'), // depublican
+                Remove(0), // epublican
+                Add(0, 'r') // republican
         )
         assertEquals(expected, actual)
     }
