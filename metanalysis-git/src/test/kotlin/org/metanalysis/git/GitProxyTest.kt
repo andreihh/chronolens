@@ -18,9 +18,9 @@ package org.metanalysis.git
 
 import org.junit.Test
 
-import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.subprocess.Subprocess.execute
-import org.metanalysis.core.versioning.VersionControlSystem
+import org.metanalysis.core.versioning.RevisionNotFoundException
+import org.metanalysis.core.versioning.VcsProxy
 
 import java.io.File
 
@@ -29,33 +29,33 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class GitDriverTest {
+class GitProxyTest {
     private val url = "https://github.com/andrei-heidelbacher/metanalysis.git"
 
-    private fun withRepository(url: String, block: GitDriver.() -> Unit) {
+    private fun withRepository(url: String, block: GitProxy.() -> Unit) {
         val gitDir = ".git"
         try {
             execute("git", "clone", "--bare", url, gitDir)
-            GitDriver().block()
+            GitProxy().block()
         } finally {
             File(gitDir).deleteRecursively()
         }
     }
 
-    private fun withEmptyRepository(block: GitDriver.() -> Unit) {
+    private fun withEmptyRepository(block: GitProxy.() -> Unit) {
         val gitDir = ".git"
         try {
             execute("git", "init")
-            GitDriver().block()
+            GitProxy().block()
         } finally {
             File(gitDir).deleteRecursively()
         }
     }
 
     @Test fun `test detect repository`() {
-        assertNull(VersionControlSystem.detect())
+        assertNull(VcsProxy.detect())
         withRepository(url) {
-            assertTrue(VersionControlSystem.detect() is GitDriver)
+            assertTrue(VcsProxy.detect() is GitProxy)
         }
     }
 

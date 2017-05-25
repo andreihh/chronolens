@@ -18,13 +18,13 @@ package org.metanalysis.core.versioning
 
 import org.junit.Test
 
-import org.metanalysis.test.core.versioning.VersionControlSystemMock
+import org.metanalysis.test.core.versioning.VcsProxyMock
 
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class VersionControlSystemTest {
-    class UnsupportedVersionControlSystem : VersionControlSystem() {
+class VcsProxyTest {
+    class UnsupportedVcsProxy : VcsProxy() {
         override fun isSupported(): Boolean = false
 
         override fun detectRepository(): Boolean = false
@@ -44,14 +44,14 @@ class VersionControlSystemTest {
     }
 
     @Test fun `test detect vcs ignores unsupported or undetected`() {
-        VersionControlSystemMock.resetRepository()
-        val vcs = VersionControlSystem.detect()
+        VcsProxyMock.resetRepository()
+        val vcs = VcsProxy.detect()
         assertNull(vcs)
     }
 
     @Test fun `test detect initialized vcs returns non-null`() {
-        VersionControlSystemMock.setRepository(emptyList())
-        val vcs = VersionControlSystem.detect()
-        assertTrue(vcs is VersionControlSystemMock)
+        VcsProxyMock.setRepository(emptyList())
+        val vcs = VcsProxy.detect()
+        assertTrue(vcs is VcsProxyMock)
     }
 }

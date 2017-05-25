@@ -19,20 +19,10 @@ package org.metanalysis.core.project
 import org.junit.Ignore
 import org.junit.Test
 
-import org.metanalysis.core.delta.Transaction.Companion.apply
-import org.metanalysis.core.model.SourceFile
-import org.metanalysis.core.project.Project.HistoryEntry
 import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.project.ProjectMock
-import org.metanalysis.test.core.versioning.VersionControlSystemMock
-import org.metanalysis.test.core.versioning.VersionControlSystemMock.CommitMock
 
 import java.io.FileNotFoundException
-import java.io.IOException
-import java.util.Date
-
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 @Ignore
 abstract class ProjectTest {
@@ -65,11 +55,11 @@ abstract class ProjectTest {
             getResource("/GenericTypeResolver-v2.mock")
     private val project by lazy {
         initializeRepository()
-        Project(VersionControlSystemMock())
+        Project(VcsProxyMock())
     }
 
     private fun initializeRepository() {
-        VersionControlSystemMock.setRepository(listOf(
+        VcsProxyMock.setRepository(listOf(
                 CommitMock(
                         id = "1",
                         date = Date(1),
@@ -107,13 +97,13 @@ abstract class ProjectTest {
     }
 
     @Test fun `test create with uninitialized repository returns null`() {
-        VersionControlSystemMock.resetRepository()
+        VcsProxyMock.resetRepository()
         assertNull(Project.connect())
     }
 
     @Test(expected = IllegalStateException::class)
     fun `test create with empty repository throws`() {
-        VersionControlSystemMock.setRepository(emptyList())
+        VcsProxyMock.setRepository(emptyList())
         Project.connect()
     }
 

@@ -18,11 +18,11 @@ package org.metanalysis.test.core.versioning
 
 import org.metanalysis.core.versioning.Revision
 import org.metanalysis.core.versioning.RevisionNotFoundException
-import org.metanalysis.core.versioning.VersionControlSystem
+import org.metanalysis.core.versioning.VcsProxy
 
 import java.util.Date
 
-class VersionControlSystemMock : VersionControlSystem() {
+class VcsProxyMock : VcsProxy() {
     companion object {
         private var isInitialized = false
         private var commits = emptyList<CommitMock>()

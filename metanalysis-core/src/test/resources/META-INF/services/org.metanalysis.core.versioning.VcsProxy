@@ -1,0 +1,2 @@
+org.metanalysis.core.versioning.VcsProxyTest$UnsupportedVcsProxy
+org.metanalysis.test.core.versioning.VcsProxyMock

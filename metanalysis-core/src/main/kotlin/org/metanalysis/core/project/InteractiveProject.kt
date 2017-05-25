@@ -20,7 +20,7 @@ import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.core.model.SourceFile
-import org.metanalysis.core.versioning.VersionControlSystem
+import org.metanalysis.core.versioning.VcsProxy
 
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -30,7 +30,7 @@ import java.io.IOException
  * @property vcs the VCS behind the repository
  */
 class InteractiveProject private constructor(
-        private val vcs: VersionControlSystem
+        private val vcs: VcsProxy
 ) : Project() {
     companion object {
         /**
@@ -44,7 +44,7 @@ class InteractiveProject private constructor(
          */
         @Throws(IOException::class)
         @JvmStatic fun connect(): InteractiveProject? =
-                VersionControlSystem.detect()?.let(::InteractiveProject)
+                VcsProxy.detect()?.let(::InteractiveProject)
     }
 
     private val head = vcs.getHead()

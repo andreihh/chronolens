@@ -19,13 +19,13 @@ package org.metanalysis.git
 import org.metanalysis.core.subprocess.Subprocess.execute
 import org.metanalysis.core.versioning.Revision
 import org.metanalysis.core.versioning.RevisionNotFoundException
-import org.metanalysis.core.versioning.VersionControlSystem
+import org.metanalysis.core.versioning.VcsProxy
 
 import java.io.IOException
 import java.util.Date
 
 /** A module which integrates the `git` version control system. */
-class GitDriver : VersionControlSystem() {
+class GitProxy : VcsProxy() {
     private val vcs = "git"
     private val headId = "HEAD"
     private val format = "--format=%at:%an"

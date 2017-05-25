@@ -18,7 +18,6 @@ package org.metanalysis.core.project
 
 import org.metanalysis.core.delta.SourceFileTransaction
 import org.metanalysis.core.model.SourceFile
-import org.metanalysis.core.versioning.VersionControlSystem
 
 import java.io.FileNotFoundException
 import java.io.IOException

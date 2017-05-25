@@ -30,14 +30,14 @@ import java.util.ServiceLoader
  * Version control systems must have a public no-arg constructor.
  *
  * The file
- * `META-INF/services/org.metanalysis.core.versioning.VersionControlSystem` must
+ * `META-INF/services/org.metanalysis.core.versioning.VcsProxy` must
  * be provided and must contain the list of all provided VCS implementations.
  */
-abstract class VersionControlSystem {
+abstract class VcsProxy {
     companion object {
         private val vcsList by lazy {
-            ServiceLoader.load(VersionControlSystem::class.java)
-                    .filter(VersionControlSystem::isSupported)
+            ServiceLoader.load(VcsProxy::class.java)
+                    .filter(VcsProxy::isSupported)
         }
 
         /**
@@ -56,8 +56,8 @@ abstract class VersionControlSystem {
          * @throws IOException if any input related errors occur
          */
         @Throws(IOException::class)
-        @JvmStatic fun detect(): VersionControlSystem? =
-                vcsList.filter(VersionControlSystem::detectRepository)
+        @JvmStatic fun detect(): VcsProxy? =
+                vcsList.filter(VcsProxy::detectRepository)
                         .singleOrNull()
     }
 
