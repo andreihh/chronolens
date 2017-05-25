@@ -78,7 +78,7 @@ class GitDriver : VersionControlSystem() {
 
     @Throws(IOException::class)
     override fun listFiles(): Set<String> =
-            execute(vcs, "ls-tree", "--name-only", "-r", headId)
+            execute(vcs, "ls-tree", "--full-tree", "--name-only", "-r", headId)
                     .get()
                     .lines()
                     .filter(String::isNotBlank)

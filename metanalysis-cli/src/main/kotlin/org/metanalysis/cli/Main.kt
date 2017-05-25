@@ -19,6 +19,7 @@
 package org.metanalysis.cli
 
 import org.metanalysis.core.logging.LoggerFactory
+
 import java.io.IOException
 import java.util.logging.Logger
 
@@ -26,17 +27,9 @@ import kotlin.system.exitProcess
 
 val logger: Logger = LoggerFactory.getLogger("metanalysis")
 
-fun printlnError(line: String?) {
-    System.err.println("metanalysis: $line")
-}
-
-fun exitError(message: String?): Nothing {
-    printlnError(message)
-    exitProcess(1)
-}
-
 fun main(args: Array<String>) {
     try {
+        LoggerFactory.loadConfiguration("/logging.properties")
         val command = args.firstOrNull()
                 ?.let { Command(it) }
                 ?: Command.Help
@@ -45,6 +38,7 @@ fun main(args: Array<String>) {
         logger.severe(e.message)
         exitProcess(1)
     } catch (e: IllegalUsageException) {
-        exitError(e.message)
+        System.err.println(e.message)
+        exitProcess(1)
     }
 }

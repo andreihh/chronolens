@@ -16,25 +16,20 @@
 
 package org.metanalysis.core.logging
 
-import java.util.logging.ConsoleHandler
-import java.util.logging.Formatter
-import java.util.logging.LogRecord
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.util.logging.LogManager
 import java.util.logging.Logger
 
 object LoggerFactory {
-    private val formatter = object : Formatter() {
-        override fun format(record: LogRecord): String = with(record) {
-            "$loggerName: $level: $message${System.lineSeparator()}"
-        }
+    @Throws(IOException::class)
+    @JvmStatic fun loadConfiguration(resource: String) {
+        val src = LoggerFactory::class.java.getResourceAsStream(resource)
+                ?: throw FileNotFoundException("'$resource' doesn't exist!")
+        LogManager.getLogManager().readConfiguration(src)
     }
 
-    @JvmStatic fun getLogger(name: String): Logger =
-            Logger.getLogger(name).apply {
-                useParentHandlers = false
-                val handler = ConsoleHandler()
-                handler.formatter = formatter
-                addHandler(handler)
-            }
+    @JvmStatic fun getLogger(name: String): Logger = Logger.getLogger(name)
 
     inline fun <reified T> getLogger(): Logger = getLogger(T::class.java.name)
 }
