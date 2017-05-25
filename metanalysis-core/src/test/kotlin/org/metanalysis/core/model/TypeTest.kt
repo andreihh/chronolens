@@ -21,7 +21,7 @@ import org.junit.Test
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
-import org.metanalysis.test.assertEquals
+import org.metanalysis.test.core.model.assertEquals
 
 class TypeTest {
     @Test fun `test find variable`() {

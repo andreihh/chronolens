@@ -19,7 +19,7 @@ package org.metanalysis.test.core.project
 import org.metanalysis.core.delta.Transaction.Companion.apply
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.project.Project
-import org.metanalysis.test.assertEquals
+import org.metanalysis.test.core.model.assertEquals
 
 import java.io.FileNotFoundException
 

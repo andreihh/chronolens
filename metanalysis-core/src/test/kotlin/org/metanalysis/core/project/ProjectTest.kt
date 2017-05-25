@@ -19,8 +19,8 @@ package org.metanalysis.core.project
 import org.junit.Ignore
 import org.junit.Test
 
-import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.project.ProjectMock
+import org.metanalysis.test.core.project.assertEquals
 
 import java.io.FileNotFoundException
 

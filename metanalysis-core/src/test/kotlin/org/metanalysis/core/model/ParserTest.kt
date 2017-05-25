@@ -21,8 +21,8 @@ import org.junit.Test
 import org.metanalysis.core.model.Parser.Companion.getByExtension
 import org.metanalysis.core.model.Parser.Companion.getByLanguage
 import org.metanalysis.core.model.Parser.SyntaxError
-import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.model.ParserMock
+import org.metanalysis.test.core.model.assertEquals
 
 import java.io.File
 import java.io.IOException

@@ -24,7 +24,7 @@ import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.java.JavaParser.Companion.toBlock
-import org.metanalysis.test.assertEquals
+import org.metanalysis.test.core.model.assertEquals
 
 import java.net.URL
 

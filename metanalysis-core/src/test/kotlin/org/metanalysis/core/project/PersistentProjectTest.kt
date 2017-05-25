@@ -26,14 +26,12 @@ import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.project.PersistentProject.Companion.persist
 import org.metanalysis.core.project.Project.HistoryEntry
-import org.metanalysis.test.assertEquals
 import org.metanalysis.test.core.project.ProjectMock
+import org.metanalysis.test.core.project.assertEquals
 
 import java.io.File
 import java.io.IOException
 import java.util.Date
-
-import kotlin.test.assertEquals
 
 class PersistentProjectTest : ProjectTest() {
     override val expectedProject: ProjectMock = ProjectMock(

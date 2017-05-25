@@ -18,7 +18,7 @@ models
 
 ### Environment requirements
 
-In order to use `metanalysis` you need to have `JDK 1.8` or newer.
+In order to use `metanalysis` you need to have `JDK 1.7` or newer.
 
 ### Using the command line
 
@@ -78,8 +78,7 @@ Add the dependencies:
 If using the parsing and versioning modules as dependencies, you must provide
 the following service configuration files:
 - `META-INF/services/org.metanalysis.core.model.Parser` (for parsing)
-- `META-INF/services/org.metanalysis.core.version.VersionControlSystem` (for
-versioning)
+- `META-INF/services/org.metanalysis.core.version.VcsProxy` (for versioning)
 
 ## Building
 

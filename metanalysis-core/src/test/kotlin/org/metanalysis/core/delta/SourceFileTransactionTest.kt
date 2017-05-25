@@ -25,7 +25,7 @@ import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
-import org.metanalysis.test.assertEquals
+import org.metanalysis.test.core.model.assertEquals
 
 import java.io.File
 

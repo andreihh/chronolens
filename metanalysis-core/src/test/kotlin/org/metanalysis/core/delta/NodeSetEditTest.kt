@@ -24,7 +24,7 @@ import org.metanalysis.core.model.Node
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
-import org.metanalysis.test.assertEquals
+import org.metanalysis.test.core.model.assertEquals
 
 import kotlin.test.assertTrue
 
