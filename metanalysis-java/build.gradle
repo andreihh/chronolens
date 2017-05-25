@@ -7,6 +7,18 @@ dependencies {
     testCompile project(':metanalysis-test')
 }
 
+dokka {
+    moduleName = project.name
+    jdkVersion = 7
+    includes = ['Module.md']
+
+    linkMapping {
+        dir = "src/main/kotlin"
+        url = "https://github.com/andrei-heidelbacher/${rootProject.name}/blob/master/${project.name}/$dir"
+        suffix = "#L"
+    }
+}
+
 task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
     outputFormat = 'javadoc'
     outputDirectory = javadoc.destinationDir
