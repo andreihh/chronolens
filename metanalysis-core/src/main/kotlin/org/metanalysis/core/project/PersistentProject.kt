@@ -109,6 +109,9 @@ class PersistentProject private constructor() : Project() {
     override fun getFileHistory(path: String): List<HistoryEntry> {
         validateFile(path)
         val historyFile = getHistoryFile(path)
+        if (!historyFile.exists()) {
+            throw IOException("'$path' couldn't be interpreted!")
+        }
         return deserialize<Array<HistoryEntry>>(historyFile).asList()
     }
 }

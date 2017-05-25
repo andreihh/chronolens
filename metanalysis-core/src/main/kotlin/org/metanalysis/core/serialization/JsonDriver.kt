@@ -126,7 +126,7 @@ object JsonDriver {
 
     @Throws(IOException::class)
     @JvmStatic fun serialize(out: File, value: Any) {
-        out.parentFile.mkdirs()
+        out.parentFile?.mkdirs()
         out.outputStream().use { serialize(it, value) }
     }
 

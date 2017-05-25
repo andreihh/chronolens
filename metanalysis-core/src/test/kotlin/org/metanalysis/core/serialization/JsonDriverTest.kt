@@ -31,6 +31,7 @@ import org.metanalysis.core.model.Node.Variable
 import org.metanalysis.core.project.Project.HistoryEntry
 
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.IOException
 import java.util.Date
 
@@ -96,8 +97,27 @@ class JsonDriverTest {
         assertEquals(history, actualHistory)
     }
 
-    @Test fun `test serialize to file`() {
-        // TODO
+    @Test fun `test serialize to and deserialize from top-level file`() {
+        val file = File("tmp.json")
+        try {
+            JsonDriver.serialize(file, data)
+            val actualData = JsonDriver.deserialize<SourceFileTransaction>(file)
+            assertEquals(data, actualData)
+        } finally {
+            file.delete()
+        }
+    }
+
+    @Test fun `test serialize to and deserialize from nested file`() {
+        val dir = "tmpdir"
+        val file = File("$dir/tmp.json")
+        try {
+            JsonDriver.serialize(file, data)
+            val actualData = JsonDriver.deserialize<SourceFileTransaction>(file)
+            assertEquals(data, actualData)
+        } finally {
+            File(dir).deleteRecursively()
+        }
     }
 
     /*@Test fun gen() {

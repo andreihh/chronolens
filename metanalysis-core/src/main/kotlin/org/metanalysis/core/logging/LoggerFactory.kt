@@ -24,6 +24,7 @@ import java.util.logging.Logger
 object LoggerFactory {
     @Throws(IOException::class)
     @JvmStatic fun loadConfiguration(resource: String) {
+        require(resource.startsWith("/")) { "'$resource' must be absolute!" }
         val src = LoggerFactory::class.java.getResourceAsStream(resource)
                 ?: throw FileNotFoundException("'$resource' doesn't exist!")
         LogManager.getLogManager().readConfiguration(src)
