@@ -61,11 +61,7 @@ class GitProxy : VcsProxy() {
                     ?: false
 
     @Throws(IOException::class)
-    override fun getHead(): Revision = try {
-        getRevision(headId)
-    } catch (e: RevisionNotFoundException) {
-        throw IllegalStateException(e)
-    }
+    override fun getHead(): Revision = getRevision(headId)
 
     @Throws(IOException::class)
     override fun getRevision(revisionId: String): Revision =

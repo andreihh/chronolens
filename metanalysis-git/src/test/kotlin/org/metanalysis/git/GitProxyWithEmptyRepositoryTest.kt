@@ -21,6 +21,7 @@ import org.junit.BeforeClass
 import org.junit.Test
 
 import org.metanalysis.core.subprocess.Subprocess.execute
+import org.metanalysis.core.versioning.RevisionNotFoundException
 
 import java.io.File
 
@@ -42,7 +43,7 @@ class GitProxyWithEmptyRepositoryTest : GitProxyTest() {
     }
 
     @Test fun `test get head from empty repository throws`() {
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<RevisionNotFoundException> {
             git.getHead()
         }
     }
