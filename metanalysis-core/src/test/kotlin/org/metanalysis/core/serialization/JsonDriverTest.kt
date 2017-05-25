@@ -32,7 +32,6 @@ import org.metanalysis.core.project.Project.HistoryEntry
 
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.IOException
 import java.util.Date
 
 import kotlin.reflect.KClass
@@ -72,8 +71,15 @@ class JsonDriverTest {
 
     @Test fun `test deserialize invalid KClass throws`() {
         val src = "\"java.lang.String$\"".byteInputStream()
-        assertFailsWith<IOException> {
+        assertFailsWith<JsonProcessingException> {
             JsonDriver.deserialize<KClass<*>>(src)
+        }
+    }
+
+    @Test fun `test serialize class throws`() {
+        val dst = ByteArrayOutputStream()
+        assertFailsWith<JsonProcessingException> {
+            JsonDriver.serialize(dst, javaClass.classLoader)
         }
     }
 

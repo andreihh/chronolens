@@ -30,13 +30,15 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
 
 javadocJar.dependsOn dokkaJavadoc
 
-task releaseUnix(dependsOn: shadowJar) << {
-    def artifact = new File(rootProject.buildDir, rootProject.name)
-    delete(artifact)
-    files('unix-wrapper.sh', shadowJar.archivePath).forEach { f ->
-        artifact << f.bytes
+task releaseUnix(dependsOn: shadowJar) {
+    doLast {
+        def artifact = new File(rootProject.buildDir, rootProject.name)
+        delete(artifact)
+        files('unix-wrapper.sh', shadowJar.archivePath).forEach { f ->
+            artifact << f.bytes
+        }
+        artifact.setExecutable(true, false)
     }
-    artifact.setExecutable(true, false)
 }
 
 task release(dependsOn: releaseUnix)

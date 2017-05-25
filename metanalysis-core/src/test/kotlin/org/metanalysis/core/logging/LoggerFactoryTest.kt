@@ -18,17 +18,13 @@ package org.metanalysis.core.logging
 
 import org.junit.Test
 
-import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
-import java.util.logging.SimpleFormatter
-import java.util.logging.StreamHandler
+import java.util.logging.LogManager
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class LoggerFactoryTest {
-    private val logger = LoggerFactory.getLogger<LoggerFactoryTest>()
-
     @Test fun `test load configuration from non-existent file throws`() {
         assertFailsWith<FileNotFoundException> {
             LoggerFactory.loadConfiguration("/non-existent.properties")
@@ -43,12 +39,8 @@ class LoggerFactoryTest {
 
     @Test fun `test load configuration applies changes`() {
         LoggerFactory.loadConfiguration("/logging.properties")
-        val stream = ByteArrayOutputStream()
-        val handler = StreamHandler(stream, SimpleFormatter())
-        val message = "simple logger"
-        logger.addHandler(handler)
-        logger.info(message)
-        handler.flush()
-        assertEquals(message, stream.toString())
+        val format = LogManager.getLogManager()
+                .getProperty("java.util.logging.SimpleFormatter.format")
+        assertEquals("%5\$s", format)
     }
 }
