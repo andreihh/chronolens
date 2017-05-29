@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.model
+package org.metanalysis.core.parsing
+
+import org.metanalysis.core.model.SourceFile
 
 import java.io.File
 import java.io.IOException
@@ -25,7 +27,7 @@ import java.util.ServiceLoader
  *
  * Parsers must have a public no-arg constructor.
  *
- * The file `META-INF/services/org.metanalysis.core.model.Parser` must be
+ * The file `META-INF/services/org.metanalysis.core.parsing.Parser` must be
  * provided and must contain the list of all parser implementations.
  */
 abstract class Parser {

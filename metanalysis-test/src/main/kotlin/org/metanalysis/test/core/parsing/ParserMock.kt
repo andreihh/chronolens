@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.metanalysis.test.core.model
+package org.metanalysis.test.core.parsing
 
-import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.parsing.Parser
 import org.metanalysis.core.serialization.JsonDriver
 
 import java.io.IOException

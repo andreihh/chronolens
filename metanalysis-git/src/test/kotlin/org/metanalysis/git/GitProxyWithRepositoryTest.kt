@@ -22,7 +22,6 @@ import org.junit.Test
 
 import org.metanalysis.core.subprocess.Subprocess.execute
 import org.metanalysis.core.versioning.RevisionNotFoundException
-import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
 
 import java.io.File

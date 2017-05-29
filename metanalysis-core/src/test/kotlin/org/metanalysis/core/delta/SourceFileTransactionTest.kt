@@ -23,8 +23,8 @@ import org.metanalysis.core.delta.Transaction.Companion.apply
 import org.metanalysis.core.model.Node.Function
 import org.metanalysis.core.model.Node.Type
 import org.metanalysis.core.model.Node.Variable
-import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.parsing.Parser
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.sourceFileOf
 

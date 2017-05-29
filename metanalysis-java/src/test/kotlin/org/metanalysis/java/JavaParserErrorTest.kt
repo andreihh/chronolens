@@ -18,7 +18,7 @@ package org.metanalysis.java
 
 import org.junit.Test
 
-import org.metanalysis.core.model.Parser.SyntaxError
+import org.metanalysis.core.parsing.Parser.SyntaxError
 
 import kotlin.test.assertFailsWith
 

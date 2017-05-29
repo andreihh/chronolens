@@ -17,9 +17,9 @@
 package org.metanalysis.core.project
 
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
-import org.metanalysis.core.model.Parser
-import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.parsing.Parser
+import org.metanalysis.core.parsing.Parser.SyntaxError
 import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
 

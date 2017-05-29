@@ -38,8 +38,8 @@ import org.eclipse.jdt.core.dom.VariableDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment
 
 import org.metanalysis.core.model.Node
-import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.parsing.Parser
 
 /** Java 8 language parser. */
 class JavaParser : Parser() {

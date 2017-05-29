@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.model
+package org.metanalysis.core.parsing
 
 import org.junit.Test
 
-import org.metanalysis.core.model.Parser.Companion.getByExtension
-import org.metanalysis.core.model.Parser.Companion.getByLanguage
-import org.metanalysis.core.model.Parser.SyntaxError
-import org.metanalysis.test.core.model.ParserMock
+import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.parsing.Parser.Companion.getByExtension
+import org.metanalysis.core.parsing.Parser.Companion.getByLanguage
+import org.metanalysis.core.parsing.Parser.SyntaxError
 import org.metanalysis.test.core.model.assertEquals
+import org.metanalysis.test.core.parsing.ParserMock
+import org.metanalysis.test.core.parsing.ParserMock.Companion
 
 import java.io.File
 import java.io.IOException
@@ -33,7 +35,7 @@ import kotlin.test.assertTrue
 
 class ParserTest {
     @Test fun `test get provided parser by language returns non-null`() {
-        assertTrue(getByLanguage(ParserMock.LANGUAGE) is ParserMock)
+        assertTrue(getByLanguage(Companion.LANGUAGE) is ParserMock)
     }
 
     @Test fun `test get provided parser by extension returns non-null`() {
