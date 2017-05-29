@@ -7,8 +7,12 @@ dependencies {
 
 dokka {
     moduleName = project.name
-    jdkVersion = 7
     includes = ['Module.md']
+    impliedPlatforms = ['JVM']
+    jdkVersion = 7
+
+    outputFormat = 'javadoc'
+    outputDirectory = javadoc.destinationDir
 
     linkMapping {
         dir = "src/main/kotlin"
@@ -17,9 +21,4 @@ dokka {
     }
 }
 
-task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
-    outputFormat = 'javadoc'
-    outputDirectory = javadoc.destinationDir
-}
-
-javadocJar.dependsOn dokkaJavadoc
+javadocJar.dependsOn dokka

@@ -89,7 +89,7 @@ the following command: `./gradlew release`.
 
 ## Documentation
 
-To generate the documentation, run `./gradlew javadocJar`.
+To generate the documentation, run `./gradlew dokka`.
 
 ## Licensing
 

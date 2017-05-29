@@ -13,8 +13,9 @@ jar.manifest.attributes 'Main-Class': project.mainClassName
 
 dokka {
     moduleName = project.name
-    jdkVersion = 7
     includes = ['Module.md']
+    impliedPlatforms = ['JVM']
+    jdkVersion = 7
 
     linkMapping {
         dir = "src/main/kotlin"
