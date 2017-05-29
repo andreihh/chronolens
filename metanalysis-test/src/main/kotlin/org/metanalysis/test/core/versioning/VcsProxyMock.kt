@@ -20,54 +20,30 @@ import org.metanalysis.core.versioning.Revision
 import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VcsProxy
 
-import java.util.Date
+class VcsProxyMock(private val commits: List<CommitMock>) : VcsProxy {
+    private val commitsById = commits.associateBy(CommitMock::id)
+    private val files: Map<String, Map<String, String>>
 
-class VcsProxyMock : VcsProxy() {
-    companion object {
-        private var isInitialized = false
-        private var commits = emptyList<CommitMock>()
-        private var commitsById = emptyMap<String, CommitMock>()
-        private var files = emptyMap<String, Map<String, String>>()
-
-        fun resetRepository() {
-            isInitialized = false
-        }
-
-        fun setRepository(revisions: List<CommitMock>) {
-            isInitialized = true
-            commits = revisions
-            commitsById = commits.associateBy(CommitMock::id)
-            val fileHistory = hashMapOf<String, Map<String, String>>()
-            val currentFiles = hashMapOf<String, String>()
-            commits.forEach { (id, _, _, changedFiles) ->
-                changedFiles.forEach { path, src ->
-                    if (src == null) {
-                        currentFiles -= path
-                    } else {
-                        currentFiles[path] = src
-                    }
+    init {
+        val fileHistory = hashMapOf<String, Map<String, String>>()
+        val currentFiles = hashMapOf<String, String>()
+        commits.forEach { (id, _, _, changedFiles) ->
+            changedFiles.forEach { path, src ->
+                if (src == null) {
+                    currentFiles -= path
+                } else {
+                    currentFiles[path] = src
                 }
-                fileHistory[id] = currentFiles.toMap()
             }
-            files = fileHistory
+            fileHistory[id] = currentFiles.toMap()
         }
+        files = fileHistory
     }
-
-    data class CommitMock(
-            val id: String,
-            val date: Date,
-            val author: String,
-            val changedFiles: Map<String, String?>
-    )
 
     private fun CommitMock.toRevision(): Revision = Revision(id, date, author)
 
     private fun getCommit(id: String): CommitMock =
             commitsById[id] ?: throw RevisionNotFoundException(id)
-
-    override fun isSupported(): Boolean = true
-
-    override fun detectRepository(): Boolean = isInitialized
 
     override fun getHead(): Revision =
             checkNotNull(commits.lastOrNull()).toRevision()

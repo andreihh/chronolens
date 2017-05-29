@@ -21,6 +21,7 @@ import org.metanalysis.core.model.Parser
 import org.metanalysis.core.model.Parser.SyntaxError
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.versioning.VcsProxy
+import org.metanalysis.core.versioning.VcsProxyFactory
 
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -44,7 +45,7 @@ class InteractiveProject private constructor(
          */
         @Throws(IOException::class)
         @JvmStatic fun connect(): InteractiveProject? =
-                VcsProxy.detect()?.let(::InteractiveProject)
+                VcsProxyFactory.detect()?.let(::InteractiveProject)
     }
 
     private val head = vcs.getHead()

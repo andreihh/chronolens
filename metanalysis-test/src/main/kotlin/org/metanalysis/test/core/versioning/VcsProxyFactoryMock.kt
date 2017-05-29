@@ -14,16 +14,30 @@
  * limitations under the License.
  */
 
-package org.metanalysis.git
+package org.metanalysis.test.core.versioning
 
-import org.junit.Test
-
+import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
 
-import kotlin.test.assertNull
+class VcsProxyFactoryMock : VcsProxyFactory() {
+    companion object {
+        private var isInitialized = false
+        private var commits = emptyList<CommitMock>()
 
-class GitProxyWithNoRepositoryTest : GitProxyTest() {
-    @Test fun `test detect repository`() {
-        assertNull(VcsProxyFactory.detect())
+        @JvmStatic fun resetRepository() {
+            isInitialized = false
+            commits = emptyList()
+        }
+
+        @JvmStatic fun setRepository(revisions: List<CommitMock>) {
+            isInitialized = true
+            commits = revisions
+        }
     }
+
+    override fun isSupported(): Boolean = true
+
+    override fun isRepository(): Boolean = isInitialized
+
+    override fun createProxy(): VcsProxy = VcsProxyMock(commits)
 }

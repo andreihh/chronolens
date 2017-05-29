@@ -17,41 +17,41 @@
 package org.metanalysis.core.versioning
 
 import org.junit.Test
+import org.metanalysis.test.core.versioning.VcsProxyFactoryMock
 
 import org.metanalysis.test.core.versioning.VcsProxyMock
 
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class VcsProxyTest {
-    class UnsupportedVcsProxy : VcsProxy() {
+class VcsProxyFactoryTest {
+    class UnsupportedVcsProxyFactory : VcsProxyFactory() {
         override fun isSupported(): Boolean = false
-
-        override fun detectRepository(): Boolean = false
-
-        override fun getHead(): Revision = TODO("not implemented")
-
-        override fun getRevision(revisionId: String): Revision =
-            TODO("not implemented")
-
-        override fun listFiles(): Set<String> = TODO("not implemented")
-
-        override fun getFile(revisionId: String, path: String): String? =
-                TODO("not implemented")
-
-        override fun getFileHistory(path: String): List<Revision> =
-                TODO("not implemented")
+        override fun isRepository(): Boolean = false
+        override fun createProxy(): VcsProxy = throw AssertionError()
     }
 
-    @Test fun `test detect vcs ignores unsupported or undetected`() {
-        VcsProxyMock.resetRepository()
-        val vcs = VcsProxy.detect()
+    class UndetectedVcsProxyFactory : VcsProxyFactory() {
+        override fun isSupported(): Boolean = true
+        override fun isRepository(): Boolean = false
+        override fun createProxy(): VcsProxy = throw AssertionError()
+    }
+
+    @Test fun `test detect vcs ignores unsupported`() {
+        VcsProxyFactoryMock.resetRepository()
+        val vcs = VcsProxyFactory.detect()
+        assertNull(vcs)
+    }
+
+    @Test fun `test detect vcs ignores undetected`() {
+        VcsProxyFactoryMock.resetRepository()
+        val vcs = VcsProxyFactory.detect()
         assertNull(vcs)
     }
 
     @Test fun `test detect initialized vcs returns non-null`() {
-        VcsProxyMock.setRepository(emptyList())
-        val vcs = VcsProxy.detect()
+        VcsProxyFactoryMock.setRepository(emptyList())
+        val vcs = VcsProxyFactory.detect()
         assertTrue(vcs is VcsProxyMock)
     }
 }

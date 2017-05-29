@@ -25,52 +25,8 @@ import java.util.ServiceLoader
  *
  * A VCS operates with the concept of `revision`, which are objects that can be
  * dereferenced to commits (a commit, branch, tag etc.).
- *
- * Version control systems must have a public no-arg constructor.
- *
- * The file
- * `META-INF/services/org.metanalysis.core.versioning.VcsProxy` must
- * be provided and must contain the list of all VCS implementations.
  */
-abstract class VcsProxy {
-    companion object {
-        private val vcsProxies = ServiceLoader.load(VcsProxy::class.java)
-                .filter(VcsProxy::isSupported)
-
-        /**
-         * Returns the VCS for the repository detected in the current working
-         * directory.
-         *
-         * This method is the only safe way of getting VCS instances. Calling
-         * methods on a VCS instance which is not supported or detected will
-         * lead to undefined results.
-         *
-         * @return the requested VCS, or `null` if no supported VCS repository
-         * was detected or if multiple repositories were detected
-         * @throws IOException if any input related errors occur
-         */
-        @Throws(IOException::class)
-        @JvmStatic fun detect(): VcsProxy? =
-                vcsProxies.filter(VcsProxy::detectRepository).singleOrNull()
-    }
-
-    /**
-     * Returns whether this VCS is supported in this environment.
-     *
-     * @throws IOException if any input related errors occur
-     */
-    @Throws(IOException::class)
-    protected abstract fun isSupported(): Boolean
-
-    /**
-     * Returns whether a repository was detected in the current working
-     * directory.
-     *
-     * @throws IOException if any input related errors occur
-     */
-    @Throws(IOException::class)
-    protected abstract fun detectRepository(): Boolean
-
+interface VcsProxy {
     /**
      * Returns the `head` revision.
      *
@@ -79,7 +35,7 @@ abstract class VcsProxy {
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun getHead(): Revision
+    fun getHead(): Revision
 
     /**
      * Returns the revision with the given `revisionId`.
@@ -90,7 +46,7 @@ abstract class VcsProxy {
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun getRevision(revisionId: String): Revision
+    fun getRevision(revisionId: String): Revision
 
     /**
      * Returns all the existing files in the `head` revision.
@@ -99,7 +55,7 @@ abstract class VcsProxy {
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun listFiles(): Set<String>
+    fun listFiles(): Set<String>
 
     /**
      * Returns the content of the file located at the given `path` as it is
@@ -113,7 +69,7 @@ abstract class VcsProxy {
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun getFile(revisionId: String, path: String): String?
+    fun getFile(revisionId: String, path: String): String?
 
     /**
      * Returns all the revisions which modified the file at the given `path` up
@@ -127,5 +83,5 @@ abstract class VcsProxy {
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
-    abstract fun getFileHistory(path: String): List<Revision>
+    fun getFileHistory(path: String): List<Revision>
 }

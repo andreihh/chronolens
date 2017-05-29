@@ -23,6 +23,7 @@ import org.junit.Test
 import org.metanalysis.core.subprocess.Subprocess.execute
 import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VcsProxy
+import org.metanalysis.core.versioning.VcsProxyFactory
 
 import java.io.File
 
@@ -48,7 +49,7 @@ class GitProxyWithRepositoryTest : GitProxyTest() {
     }
 
     @Test fun `test detect`() {
-        assertTrue(VcsProxy.detect() is GitProxy)
+        assertTrue(VcsProxyFactory.detect() is GitProxy)
     }
 
     @Test fun `test get revision`() {

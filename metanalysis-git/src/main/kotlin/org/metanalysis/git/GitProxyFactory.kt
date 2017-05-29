@@ -16,14 +16,22 @@
 
 package org.metanalysis.git
 
-import org.junit.Test
-
+import org.metanalysis.core.subprocess.Subprocess.execute
+import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
+import java.io.IOException
 
-import kotlin.test.assertNull
+/** Creates proxies which delegate their operations to the `git` VCS. */
+class GitProxyFactory : VcsProxyFactory() {
+    private val vcs: String = "git"
 
-class GitProxyWithNoRepositoryTest : GitProxyTest() {
-    @Test fun `test detect repository`() {
-        assertNull(VcsProxyFactory.detect())
-    }
+    @Throws(IOException::class)
+    override fun isSupported(): Boolean = execute(vcs, "--version").isSuccess
+
+    @Throws(IOException::class)
+    override fun isRepository(): Boolean =
+            execute(vcs, "rev-parse", "--show-prefix").getOrNull()?.isBlank()
+                    ?: false
+
+    override fun createProxy(): VcsProxy = GitProxy()
 }

@@ -21,8 +21,8 @@ import org.junit.Test
 import org.metanalysis.core.delta.Transaction.Companion.apply
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.project.Project.HistoryEntry
-import org.metanalysis.test.core.versioning.VcsProxyMock
-import org.metanalysis.test.core.versioning.VcsProxyMock.CommitMock
+import org.metanalysis.test.core.versioning.CommitMock
+import org.metanalysis.test.core.versioning.VcsProxyFactoryMock
 
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -57,7 +57,7 @@ class InteractiveProjectTest /*: ProjectTest()*/ {
     }
 
     private fun initializeRepository() {
-        VcsProxyMock.setRepository(listOf(
+        VcsProxyFactoryMock.setRepository(listOf(
                 CommitMock(
                         id = "1",
                         date = Date(1),
@@ -95,7 +95,7 @@ class InteractiveProjectTest /*: ProjectTest()*/ {
     }
 
     @Test fun `test connect with uninitialized repository returns null`() {
-        VcsProxyMock.resetRepository()
+        VcsProxyFactoryMock.resetRepository()
         assertNull(InteractiveProject.connect())
     }
 

@@ -24,8 +24,7 @@ import org.metanalysis.core.versioning.VcsProxy
 import java.io.IOException
 import java.util.Date
 
-/** A module which integrates the `git` version control system. */
-class GitProxy : VcsProxy() {
+internal class GitProxy : VcsProxy {
     private val vcs = "git"
     private val headId = "HEAD"
     private val format = "--format=%at:%an"
@@ -51,14 +50,6 @@ class GitProxy : VcsProxy() {
         val date = Date(rawDate.toLong() * 1000)
         return Revision(id, date, author)
     }
-
-    @Throws(IOException::class)
-    override fun isSupported(): Boolean = execute(vcs, "--version").isSuccess
-
-    @Throws(IOException::class)
-    override fun detectRepository(): Boolean =
-            execute(vcs, "rev-parse", "--show-prefix").getOrNull()?.isBlank()
-                    ?: false
 
     @Throws(IOException::class)
     override fun getHead(): Revision = getRevision(headId)

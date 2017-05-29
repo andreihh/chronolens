@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package org.metanalysis.git
+package org.metanalysis.test.core.versioning
 
-abstract class GitProxyTest {
-    internal val git: GitProxy = GitProxy()
-}
+import java.util.Date
+
+data class CommitMock(
+        val id: String,
+        val date: Date,
+        val author: String,
+        val changedFiles: Map<String, String?>
+)
