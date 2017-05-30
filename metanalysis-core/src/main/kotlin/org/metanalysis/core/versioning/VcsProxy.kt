@@ -21,6 +21,9 @@ import java.io.IOException
 /**
  * A version control system (VCS) proxy which interacts with the repository
  * detected in the current working directory.
+ *
+ * The associated VCS must be supported in the current environment and the
+ * detected repository must be in a valid state.
  */
 interface VcsProxy {
     /**
