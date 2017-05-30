@@ -18,6 +18,7 @@ package org.metanalysis.test.core.parsing
 
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.parsing.Parser
+import org.metanalysis.core.parsing.SyntaxErrorException
 import org.metanalysis.core.serialization.JsonDriver
 
 import java.io.IOException
@@ -31,10 +32,10 @@ class ParserMock : Parser() {
     override val language: String = LANGUAGE
     override val extensions: Set<String> = EXTENSIONS
 
-    @Throws(SyntaxError::class)
+    @Throws(SyntaxErrorException::class)
     override fun parse(source: String): SourceFile = try {
         JsonDriver.deserialize<SourceFile>(source.byteInputStream())
     } catch (e: IOException) {
-        throw SyntaxError(e)
+        throw SyntaxErrorException(e)
     }
 }

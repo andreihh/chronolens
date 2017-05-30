@@ -16,9 +16,6 @@
 
 package org.metanalysis.core.subprocess
 
-import org.metanalysis.core.subprocess.Result.Error
-import org.metanalysis.core.subprocess.Result.Success
-
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -49,8 +46,8 @@ object Subprocess {
             val input = process.inputStream.readText()
             val error = process.errorStream.readText()
             val exitCode = process.waitFor()
-            return if (exitCode == 0) Success(input)
-            else Error(exitCode, error)
+            return if (exitCode == 0) Result.Success(input)
+            else Result.Error(exitCode, error)
         } catch (e: InterruptedException) {
             throw InterruptedIOException(e.message)
         } finally {

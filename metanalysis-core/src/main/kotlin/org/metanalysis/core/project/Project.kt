@@ -51,12 +51,12 @@ abstract class Project {
     abstract fun listFiles(): Set<String>
 
     /**
-     * Returns the code metadata of the file at the given `path` as it is found
+     * Returns the code metadata of the file at the given path as it is found
      * in the `head` revision.
      *
-     * @param path the relative path of the file which should be interpreted
-     * @return the parsed code metadata, or `null` if the given `path` doesn't
-     * exist
+     * @param path the path of the file which should be interpreted, relative to
+     * the project root
+     * @return the parsed code metadata
      * @throws FileNotFoundException if the given `path` doesn't exist
      * @throws IOException if the file at the given `path` couldn't be
      * interpreted or if any input related errors occur
@@ -65,11 +65,15 @@ abstract class Project {
     abstract fun getFileModel(path: String): SourceFile
 
     /**
-     * If the file contains invalid code in a previous revision, the changes
+     * Returns the history of the file located at the given path.
+     *
+     * If the file contained invalid code in a previous revision, the changes
      * applied in that revision are replaced with a `null` transaction.
      *
-     * @param path the path of the file which should be analyzed
-     * @return
+     * @param path the path of the file which should be analyzed, relative to
+     * the project root
+     * @return the chronological list of changes applied to the file up to the
+     * `head` revision
      * @throws FileNotFoundException if `path` doesn't exist
      * @throws IOException if the file at the given `path` couldn't be
      * interpreted or if any input related errors occur

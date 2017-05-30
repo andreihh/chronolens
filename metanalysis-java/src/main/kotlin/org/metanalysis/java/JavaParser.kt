@@ -40,6 +40,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment
 import org.metanalysis.core.model.Node
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.parsing.Parser
+import org.metanalysis.core.parsing.SyntaxErrorException
 
 /** Java 8 language parser. */
 class JavaParser : Parser() {
@@ -56,16 +57,15 @@ class JavaParser : Parser() {
         private fun <T> Collection<T>.requireDistinct(): Set<T> {
             val unique = toSet()
             if (size != unique.size) {
-                throw SyntaxError("$this contains duplicated elements!")
+                throw SyntaxErrorException("$this contains duplicates!")
             }
             return unique
         }
 
+        @Suppress("UNCHECKED_CAST")
         private inline fun <reified T> List<*>.requireIsInstance(): List<T> =
-                map {
-                    if (it is T) it
-                    else throw SyntaxError("$this contains invalid type $it!")
-                }
+                if (all { it is T }) this as List<T>
+                else throw SyntaxErrorException("$this contains invalid types!")
     }
 
     private data class Context(private val source: String) {
@@ -198,7 +198,7 @@ class JavaParser : Parser() {
     override val extensions: Set<String>
         get() = setOf("java")
 
-    @Throws(SyntaxError::class)
+    @Throws(SyntaxErrorException::class)
     override fun parse(source: String): SourceFile = try {
         val options = JavaCore.getOptions()
         JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
@@ -211,6 +211,6 @@ class JavaParser : Parser() {
         val compilationUnit = jdtParser.createAST(null) as CompilationUnit
         Context(source).visit(compilationUnit)
     } catch (e: NotImplementedError) {
-        throw SyntaxError(e)
+        throw SyntaxErrorException(e)
     }
 }

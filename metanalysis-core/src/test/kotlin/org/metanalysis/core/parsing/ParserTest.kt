@@ -21,7 +21,6 @@ import org.junit.Test
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.parsing.Parser.Companion.getByExtension
 import org.metanalysis.core.parsing.Parser.Companion.getByLanguage
-import org.metanalysis.core.parsing.Parser.SyntaxError
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.parsing.ParserMock
 import org.metanalysis.test.core.parsing.ParserMock.Companion
@@ -73,7 +72,7 @@ class ParserTest {
 
     @Test fun `test parse source with errors throws`() {
         val parser = requireNotNull(Parser.getByLanguage(ParserMock.LANGUAGE))
-        assertFailsWith<SyntaxError> {
+        assertFailsWith<SyntaxErrorException> {
             parser.parse("{ \"invalid property\":2")
         }
     }

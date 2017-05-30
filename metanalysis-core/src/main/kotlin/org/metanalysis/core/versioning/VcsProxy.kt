@@ -17,31 +17,24 @@
 package org.metanalysis.core.versioning
 
 import java.io.IOException
-import java.util.ServiceLoader
 
 /**
- * An abstract version control system (VCS) which interacts with the repository
+ * A version control system (VCS) proxy which interacts with the repository
  * detected in the current working directory.
- *
- * A VCS operates with the concept of `revision`, which are objects that can be
- * dereferenced to commits (a commit, branch, tag etc.).
  */
 interface VcsProxy {
     /**
      * Returns the `head` revision.
      *
-     * @return the `head` revision
-     * @throws RevisionNotFoundException if the `head` revision doesn't exist
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
     fun getHead(): Revision
 
     /**
-     * Returns the revision with the given `revisionId`.
+     * Returns the revision with the given id.
      *
      * @param revisionId the id of the requested revision
-     * @return the requested revision
      * @throws RevisionNotFoundException if the requested revision doesn't exist
      * @throws IOException if any input related errors occur
      */
@@ -49,22 +42,22 @@ interface VcsProxy {
     fun getRevision(revisionId: String): Revision
 
     /**
-     * Returns all the existing files in the `head` revision.
+     * Returns the set of existing files in the [head][getHead] revision.
      *
-     * @return the set of existing files in the `head` revision
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)
     fun listFiles(): Set<String>
 
     /**
-     * Returns the content of the file located at the given `path` as it is
-     * found in `revision`.
+     * Returns the file located at the given path as it is found in the given
+     * revision.
      *
      * @param revisionId the id of the desired revision of the file
-     * @param path the relative path of the requested file
+     * @param path the path of the requested file, relative to the repository
+     * root
      * @return the content of the requested file, or `null` if it doesn't exist
-     * in `revision`
+     * in the specified revision
      * @throws RevisionNotFoundException if `revisionId` doesn't exist
      * @throws IOException if any input related errors occur
      */
@@ -72,14 +65,14 @@ interface VcsProxy {
     fun getFile(revisionId: String, path: String): String?
 
     /**
-     * Returns all the revisions which modified the file at the given `path` up
-     * to the `head` revision.
+     * Returns all the revisions which modified the file at the given path up to
+     * the [head][getHead] revision.
      *
-     * The revisions are given chronologically.
-     *
-     * @return the list of revisions which modified the file at the given
-     * `path`, or the empty list if `path` never existed in the `head` revision
-     * or any of its ancestors
+     * @param path the path of the requested file, relative to the repository
+     * root
+     * @return the chronological list of revisions which modified the requested
+     * file, or the empty list if `path` never existed in the [head][getHead]
+     * revision or any of its ancestors
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)

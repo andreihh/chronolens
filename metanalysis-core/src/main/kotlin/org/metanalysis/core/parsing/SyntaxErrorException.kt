@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.versioning
+package org.metanalysis.core.parsing
 
 import java.io.IOException
 
-/** Signals that a requested [Revision] doesn't exist. */
-class RevisionNotFoundException(
-        revisionId: String
-) : IOException("Revision '$revisionId' doesn't exist!")
+/** Indicates that a parsed file contains invalid code. */
+class SyntaxErrorException : IOException {
+    constructor(message: String) : super(message)
+    constructor(cause: Throwable) : super(cause)
+}

@@ -10,6 +10,10 @@ The model of `metanalysis`.
 
 The delta model of `metanalysis`.
 
+# Package org.metanalysis.core.parsing
+
+The parsing services of `metanalysis`.
+
 # Package org.metanalysis.core.serialization
 
 Serialization utils.

@@ -19,7 +19,7 @@ package org.metanalysis.core.project
 import org.metanalysis.core.delta.SourceFileTransaction.Companion.diff
 import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.parsing.Parser
-import org.metanalysis.core.parsing.Parser.SyntaxError
+import org.metanalysis.core.parsing.SyntaxErrorException
 import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
 
@@ -51,6 +51,12 @@ class InteractiveProject private constructor(
     private val head = vcs.getHead()
     private val files = vcs.listFiles()
 
+    private fun validatePath(path: String) {
+        if (path !in files) {
+            throw FileNotFoundException("'$path' doesn't exist!")
+        }
+    }
+
     private fun getParser(path: String): Parser =
             Parser.getByExtension(path.substringAfterLast('.', ""))
                     ?: throw IOException("No parser can interpret '$path'!")
@@ -59,17 +65,15 @@ class InteractiveProject private constructor(
 
     @Throws(IOException::class)
     override fun getFileModel(path: String): SourceFile {
+        validatePath(path)
         val parser = getParser(path)
-        val source = vcs.getFile(head.id, path)
-        return source?.let(parser::parse)
-                ?: throw FileNotFoundException("'$path' doesn't exist!")
+        val source = vcs.getFile(head.id, path)!!
+        return parser.parse(source)
     }
 
     @Throws(IOException::class)
     override fun getFileHistory(path: String): List<HistoryEntry> {
-        if (path !in files) {
-            throw FileNotFoundException("'$path' doesn't exist!")
-        }
+        validatePath(path)
         val parser = getParser(path)
         val revisions = vcs.getFileHistory(path)
         val history = arrayListOf<HistoryEntry>()
@@ -78,7 +82,7 @@ class InteractiveProject private constructor(
             val source = vcs.getFile(id, path)
             val newSourceFile = try {
                 source?.let(parser::parse) ?: SourceFile()
-            } catch (e: SyntaxError) {
+            } catch (e: SyntaxErrorException) {
                 sourceFile
             }
             val transaction = sourceFile.diff(newSourceFile)

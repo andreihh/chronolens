@@ -18,21 +18,21 @@ package org.metanalysis.java
 
 import org.junit.Test
 
-import org.metanalysis.core.parsing.Parser.SyntaxError
+import org.metanalysis.core.parsing.SyntaxErrorException
 
 import kotlin.test.assertFailsWith
 
 class JavaParserErrorTest : JavaParserTest() {
     @Test fun `test parse invalid source throws`() {
         val source = "cla Main { int i = &@*; { class K; interface {}"
-        assertFailsWith<SyntaxError> {
+        assertFailsWith<SyntaxErrorException> {
             parser.parse(source)
         }
     }
 
     @Test fun `test parse duplicated members in class throws`() {
         val source = "class Main { int i = 2; int i = 3; }"
-        assertFailsWith<SyntaxError> {
+        assertFailsWith<SyntaxErrorException> {
             parser.parse(source)
         }
     }
@@ -46,7 +46,7 @@ class JavaParserErrorTest : JavaParserTest() {
             }
         }
         """
-        assertFailsWith<SyntaxError> {
+        assertFailsWith<SyntaxErrorException> {
             parser.parse(source)
         }
     }

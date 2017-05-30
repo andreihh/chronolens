@@ -17,6 +17,7 @@
 package org.metanalysis.git
 
 import org.metanalysis.core.subprocess.Subprocess.execute
+import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
 import java.io.IOException
@@ -33,5 +34,12 @@ class GitProxyFactory : VcsProxyFactory() {
             execute(vcs, "rev-parse", "--show-prefix").getOrNull()?.isBlank()
                     ?: false
 
-    override fun createProxy(): VcsProxy = GitProxy()
+    @Throws(IOException::class)
+    override fun createProxy(): VcsProxy {
+        val head = "HEAD"
+        if (!execute(vcs, "cat-file", "-e", "$head^{commit}").isSuccess) {
+            throw IllegalStateException("'$head' commit doesn't exist!")
+        }
+        return GitProxy()
+    }
 }

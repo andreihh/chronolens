@@ -22,10 +22,12 @@ import org.junit.Test
 
 import org.metanalysis.core.subprocess.Subprocess.execute
 import org.metanalysis.core.versioning.RevisionNotFoundException
+import org.metanalysis.core.versioning.VcsProxyFactory
 
 import java.io.File
 
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class GitProxyWithEmptyRepositoryTest : GitProxyTest() {
     companion object {
@@ -42,9 +44,9 @@ class GitProxyWithEmptyRepositoryTest : GitProxyTest() {
 
     }
 
-    @Test fun `test get head from empty repository throws`() {
-        assertFailsWith<RevisionNotFoundException> {
-            git.getHead()
+    @Test fun `test connect to empty repository throws`() {
+        assertFailsWith<IllegalStateException> {
+            VcsProxyFactory.detect()
         }
     }
 }
