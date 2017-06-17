@@ -1,9 +1,9 @@
 apply plugin: 'application'
 
 dependencies {
-    compile project(':metanalysis-core')
-    runtime project(':metanalysis-git')
-    runtime project(':metanalysis-java')
+    implementation project(':metanalysis-core')
+    runtimeOnly project(':metanalysis-git')
+    runtimeOnly project(':metanalysis-java')
 }
 
 mainClassName = 'org.metanalysis.cli.Main'

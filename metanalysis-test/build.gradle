@@ -1,4 +1,4 @@
 dependencies {
-    compile project(':metanalysis-core')
-    compile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    api project(':metanalysis-core')
+    implementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
 }

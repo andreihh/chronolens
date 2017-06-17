@@ -1,6 +1,6 @@
 dependencies {
-    compile project(':metanalysis-core')
-    compile "org.eclipse.jdt:org.eclipse.jdt.core:$jdt_version"
+    api project(':metanalysis-core')
+    implementation "org.eclipse.jdt:org.eclipse.jdt.core:$jdt_version"
 
-    testCompile project(':metanalysis-test')
+    testImplementation project(':metanalysis-test')
 }

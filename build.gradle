@@ -39,10 +39,10 @@ subprojects {
     targetCompatibility = JavaVersion.VERSION_1_7
 
     dependencies {
-        compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+        implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-        testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-        testCompile "junit:junit:$junit_version"
+        testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+        testImplementation "junit:junit:$junit_version"
     }
 
     dokka {
@@ -86,6 +86,20 @@ subprojects {
             html.enabled = true
             xml.enabled = true
             csv.enabled = false
+        }
+    }
+}
+
+configure(subprojects.findAll { it.name != 'metanalysis-cli' }) {
+    apply plugin: 'java-library'
+
+    configurations {
+        apiElements {
+            outgoing.variants.getByName('classes').artifact(
+                    file: compileKotlin.destinationDir,
+                    type: ArtifactTypeDefinition.JVM_CLASS_DIRECTORY,
+                    builtBy: compileKotlin
+            )
         }
     }
 }
