@@ -22,9 +22,9 @@ In order to use `metanalysis` you need to have `JDK 1.7` or newer.
 
 ### Using the command line
 
-Download the most recently released executable artifact from
-[here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run it:
-`./metanalysis help`.
+Download the most recently released distribution from
+[here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run the
+executable from the `bin` directory: `./metanalysis-cli help`.
 
 ### Using Gradle
 
@@ -84,8 +84,8 @@ the following service configuration files:
 
 To build the project, run `./gradlew build`.
 
-To build the `metanalysis` executable artifact in the `build/` directory, run
-the following command: `./gradlew release`.
+To build the distribution `zip` in the `metanalysis-cli/build/distributions`
+directory, run `./gradlew distZip`.
 
 ## Documentation
 
