@@ -22,6 +22,11 @@ allprojects {
     group 'org.metanalysis'
     version '0.1.6'
 
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
     apply plugin: 'jacoco'
 }
 
@@ -32,11 +37,6 @@ subprojects {
 
     sourceCompatibility = JavaVersion.VERSION_1_7
     targetCompatibility = JavaVersion.VERSION_1_7
-
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
 
     dependencies {
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
