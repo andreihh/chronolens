@@ -1,26 +1,6 @@
-apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.dokka'
-
 dependencies {
-    compile "org.eclipse.jdt:org.eclipse.jdt.core:$jdt_version"
     compile project(':metanalysis-core')
+    compile "org.eclipse.jdt:org.eclipse.jdt.core:$jdt_version"
+
     testCompile project(':metanalysis-test')
 }
-
-dokka {
-    moduleName = project.name
-    includes = ['Module.md']
-    impliedPlatforms = ['JVM']
-    jdkVersion = 7
-
-    outputFormat = 'javadoc'
-    outputDirectory = javadoc.destinationDir
-
-    linkMapping {
-        dir = "src/main/kotlin"
-        url = "https://github.com/andrei-heidelbacher/${rootProject.name}/blob/master/${project.name}/$dir"
-        suffix = "#L"
-    }
-}
-
-javadocJar.dependsOn dokka

@@ -1,6 +1,4 @@
-apply plugin: 'kotlin'
-apply plugin: 'org.jetbrains.dokka'
-apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'application'
 
 dependencies {
     compile project(':metanalysis-core')
@@ -8,38 +6,14 @@ dependencies {
     runtime project(':metanalysis-java')
 }
 
-ext.mainClassName = 'org.metanalysis.cli.Main'
-jar.manifest.attributes 'Main-Class': project.mainClassName
+mainClassName = 'org.metanalysis.cli.Main'
 
-dokka {
-    moduleName = project.name
-    includes = ['Module.md']
-    impliedPlatforms = ['JVM']
-    jdkVersion = 7
-
-    linkMapping {
-        dir = "src/main/kotlin"
-        url = "https://github.com/andrei-heidelbacher/${rootProject.name}/blob/master/${project.name}/$dir"
-        suffix = "#L"
-    }
-}
-
-task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
-    outputFormat = 'javadoc'
-    outputDirectory = javadoc.destinationDir
-}
-
-javadocJar.dependsOn dokkaJavadoc
-
-task releaseUnix(dependsOn: shadowJar) {
-    doLast {
-        def artifact = new File(rootProject.buildDir, rootProject.name)
-        delete(artifact)
-        files('unix-wrapper.sh', shadowJar.archivePath).forEach { f ->
-            artifact << f.bytes
+distributions {
+    main {
+        contents {
+            from(dokka) {
+                into 'docs'
+            }
         }
-        artifact.setExecutable(true, false)
     }
 }
-
-task release(dependsOn: releaseUnix)
