@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.core.JsonProcessingException as JacksonException
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.JsonDeserializer
@@ -71,7 +71,7 @@ object JsonDriver {
     private fun findClass(name: String): KClass<*> = try {
         Class.forName(name).kotlin
     } catch (e: ClassNotFoundException) {
-        throw JsonProcessingException(e)
+        throw JsonException(e)
     }
 
     private val typeResolver = object : DefaultTypeResolverBuilder(
@@ -117,15 +117,15 @@ object JsonDriver {
      *
      * @param out the stream to which the object is serialized
      * @param value the object which should be serialized
-     * @throws JsonProcessingException if there are any serialization errors
+     * @throws JsonException if there are any serialization errors
      * @throws IOException if there are any output related errors
      */
     @Throws(IOException::class)
     @JvmStatic fun serialize(out: OutputStream, value: Any) {
         try {
             objectMapper.writeValue(out, value)
-        } catch (e: JacksonException) {
-            throw JsonProcessingException(e)
+        } catch (e: JsonProcessingException) {
+            throw JsonException(e)
         }
     }
 
@@ -142,15 +142,15 @@ object JsonDriver {
      * @param src the stream from which the object is deserialized
      * @param type the class object of the deserialized object
      * @return the deserialized object
-     * @throws JsonProcessingException if there are any deserialization errors
+     * @throws JsonException if there are any deserialization errors
      * @throws IOException if there are any input related errors
      */
     @Throws(IOException::class)
     @JvmStatic fun <T : Any> deserialize(src: InputStream, type: KClass<T>): T =
             try {
                 objectMapper.readValue(src, type.java)
-            } catch (e: JacksonException) {
-                throw JsonProcessingException(e)
+            } catch (e: JsonProcessingException) {
+                throw JsonException(e)
             }
 
     @Throws(IOException::class)

@@ -71,14 +71,14 @@ class JsonDriverTest {
 
     @Test fun `test deserialize invalid KClass throws`() {
         val src = "\"java.lang.String$\"".byteInputStream()
-        assertFailsWith<JsonProcessingException> {
+        assertFailsWith<JsonException> {
             JsonDriver.deserialize<KClass<*>>(src)
         }
     }
 
     @Test fun `test serialize class throws`() {
         val dst = ByteArrayOutputStream()
-        assertFailsWith<JsonProcessingException> {
+        assertFailsWith<JsonException> {
             JsonDriver.serialize(dst, javaClass.classLoader)
         }
     }

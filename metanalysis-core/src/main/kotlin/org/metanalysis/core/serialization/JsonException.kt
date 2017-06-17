@@ -19,4 +19,4 @@ package org.metanalysis.core.serialization
 import java.io.IOException
 
 /** Signals that an error occurred while trying to read or write JSON data. */
-class JsonProcessingException(cause: Throwable) : IOException(cause)
+class JsonException(cause: Throwable) : IOException(cause)
