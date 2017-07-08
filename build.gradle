@@ -20,7 +20,7 @@ buildscript {
 
 allprojects {
     group 'org.metanalysis'
-    version '0.1.6'
+    version '0.1.7'
 
     repositories {
         mavenCentral()
@@ -54,7 +54,7 @@ subprojects {
 
         linkMapping {
             dir = "src/main/kotlin"
-            url = "https://github.com/andrei-heidelbacher/${rootProject.name}/blob/master/${project.name}/$dir"
+            url = "https://github.com/andreihh/${rootProject.name}/blob/master/${project.name}/$dir"
             suffix = "#L"
         }
     }
