@@ -57,7 +57,9 @@ class SubprocessTest {
     @Test fun `test interrupt throws`() {
         Thread.currentThread().interrupt()
         assertFailsWith<InterruptedIOException> {
-            execute(delaySeconds = 1).get()
+            while (true) {
+                execute(delaySeconds = 1).get()
+            }
         }
     }
 }

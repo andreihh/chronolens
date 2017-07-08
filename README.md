@@ -1,8 +1,8 @@
 # Metanalysis
 
-[![](https://jitpack.io/v/andrei-heidelbacher/metanalysis.svg)](https://jitpack.io/#andrei-heidelbacher/metanalysis)
-[![Build Status](https://travis-ci.org/andrei-heidelbacher/metanalysis.svg)](https://travis-ci.org/andrei-heidelbacher/metanalysis)
-[![codecov](https://codecov.io/gh/andrei-heidelbacher/metanalysis/branch/master/graph/badge.svg)](https://codecov.io/gh/andrei-heidelbacher/metanalysis)
+[![](https://jitpack.io/v/andreihh/metanalysis.svg)](https://jitpack.io/#andrei-heidelbacher/metanalysis)
+[![Build Status](https://travis-ci.org/andreihh/metanalysis.svg)](https://travis-ci.org/andrei-heidelbacher/metanalysis)
+[![codecov](https://codecov.io/gh/andreihh/metanalysis/branch/master/graph/badge.svg)](https://codecov.io/gh/andrei-heidelbacher/metanalysis)
 [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## Features
