@@ -31,7 +31,7 @@ class JavaParserEnumTest : JavaParserTest() {
         enum Color {
         }
         """
-        val expected = sourceFileOf(Type("Color"))
+        val expected = sourceFileOf(Type(name = "Color"))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -43,10 +43,10 @@ class JavaParserEnumTest : JavaParserTest() {
             BLUE;
         }
         """
-        val expected = sourceFileOf(Type("Color", members = setOf(
-                Variable("RED", initializer = listOf("RED")),
-                Variable("GREEN", initializer = listOf("GREEN")),
-                Variable("BLUE", initializer = listOf("BLUE"))
+        val expected = sourceFileOf(Type(name = "Color", members = setOf(
+                Variable(name = "RED", initializer = listOf("RED")),
+                Variable(name = "GREEN", initializer = listOf("GREEN")),
+                Variable(name = "BLUE", initializer = listOf("BLUE"))
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -62,16 +62,16 @@ class JavaParserEnumTest : JavaParserTest() {
             public static int i;
         }
         """
-        val expected = sourceFileOf(Type("Color", members = setOf(
-                Variable("RED", initializer = listOf("RED")),
-                Variable("GREEN", initializer = listOf("GREEN")),
-                Variable("BLUE", initializer = listOf("BLUE")),
+        val expected = sourceFileOf(Type(name = "Color", members = setOf(
+                Variable(name = "RED", initializer = listOf("RED")),
+                Variable(name = "GREEN", initializer = listOf("GREEN")),
+                Variable(name = "BLUE", initializer = listOf("BLUE")),
                 Variable(
                         name = "format",
                         modifiers = setOf("public", "final"),
                         initializer = listOf("\"hex\"")
                 ),
-                Variable("i", modifiers = setOf("public", "static"))
+                Variable(name = "i", modifiers = setOf("public", "static"))
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -98,23 +98,23 @@ class JavaParserEnumTest : JavaParserTest() {
             abstract String getCode();
         }
         """
-        val expected = sourceFileOf(Type("Color", members = setOf(
-                Variable("RED", initializer = """RED() {
+        val expected = sourceFileOf(Type(name = "Color", members = setOf(
+                Variable(name = "RED", initializer = """RED() {
                     @Override String getCode() {
                         return "#FF0000";
                     }
                 }""".toBlock()),
-                Variable("GREEN", initializer = """GREEN() {
+                Variable(name = "GREEN", initializer = """GREEN() {
                     @Override String getCode() {
                         return "#00FF00";
                     }
                 }""".toBlock()),
-                Variable("BLUE", initializer = """BLUE() {
+                Variable(name = "BLUE", initializer = """BLUE() {
                     @Override String getCode() {
                         return "#0000FF";
                     }
                 }""".toBlock()),
-                Function("getCode()", modifiers = setOf("abstract"))
+                Function(signature = "getCode()", modifiers = setOf("abstract"))
         )))
         assertEquals(expected, parser.parse(source))
     }

@@ -93,8 +93,9 @@ abstract class VcsProxyFactory {
      *
      * @return the VCS proxy, or `null` if the associated VCS is not supported
      * in this environment or no repository could be detected
-     * @throws IllegalStateException if the detected repository is corrupted or
-     * empty (doesn't have a [head][VcsProxy.getHead] revision)
+     * @throws IllegalStateException if the detected repository is not in a
+     * valid state (it is corrupted or doesn't have a [head][VcsProxy.getHead]
+     * revision)
      * @throws IOException if any input related errors occur
      */
     @Throws(IOException::class)

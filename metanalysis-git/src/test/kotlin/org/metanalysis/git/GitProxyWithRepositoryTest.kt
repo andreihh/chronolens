@@ -53,8 +53,8 @@ class GitProxyWithRepositoryTest : GitProxyTest() {
 
     @Test fun `test get revision`() {
         val head = git.getHead()
-        val commit = git.getRevision("HEAD")
-        val branch = git.getRevision("master")
+        val commit = git.getRevision(revisionId = "HEAD")
+        val branch = git.getRevision(revisionId = "master")
         assertEquals(head, commit)
         assertEquals(head, branch)
         val invalidRevisions = listOf("0123456", "master-invalid", "gradle")
@@ -73,7 +73,7 @@ class GitProxyWithRepositoryTest : GitProxyTest() {
                 "-path", "../.gradle", "-prune", "-o",
                 "-type", "f", "-print"
         ).get().lines()
-                .map { it.removePrefix("../") }
+                .map { it.removePrefix(prefix = "../") }
                 .filter(String::isNotBlank)
                 .toSet()
         val actual = git.listFiles()
@@ -82,17 +82,23 @@ class GitProxyWithRepositoryTest : GitProxyTest() {
 
     @Test fun `test get file`() {
         val expected = File("build.gradle").readText()
-        val actual = git.getFile("HEAD", "metanalysis-git/build.gradle")
+        val actual = git.getFile(
+                revisionId = "HEAD",
+                path = "metanalysis-git/build.gradle"
+        )
         assertEquals(expected, actual)
-        assertNull(git.getFile("HEAD", "non-existent.txt"))
+        assertNull(git.getFile(revisionId = "HEAD", path = "non-existent.txt"))
         assertFailsWith<RevisionNotFoundException> {
-            git.getFile("invalid-revision", "metanalysis-git/build.gradle")
+            git.getFile(
+                    revisionId = "invalid-revision",
+                    path = "metanalysis-git/build.gradle"
+            )
         }
     }
 
     @Test fun `test get file history`() {
-        assertEquals(emptyList(), git.getFileHistory("non-existent.txt"))
-        val history = git.getFileHistory("README.md")
+        assertEquals(emptyList(), git.getFileHistory(path = "non-existent.txt"))
+        val history = git.getFileHistory(path = "README.md")
         println(history.joinToString(separator = "\n"))
     }
 }

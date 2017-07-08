@@ -31,7 +31,7 @@ class JavaParserInterfaceTest : JavaParserTest() {
         interface IInterface {
         }
         """
-        val expected = sourceFileOf(Type("IInterface"))
+        val expected = sourceFileOf(Type(name = "IInterface"))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -42,9 +42,9 @@ class JavaParserInterfaceTest : JavaParserTest() {
             int version = 1;
         }
         """
-        val expected = sourceFileOf(Type("IInterface", members = setOf(
-                Variable("name", initializer = listOf("null")),
-                Variable("version", initializer = listOf("1"))
+        val expected = sourceFileOf(Type(name = "IInterface", members = setOf(
+                Variable(name = "name", initializer = listOf("null")),
+                Variable(name = "version", initializer = listOf("1"))
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -56,9 +56,9 @@ class JavaParserInterfaceTest : JavaParserTest() {
             int getVersion();
         }
         """
-        val expected = sourceFileOf(Type("IInterface", members = setOf(
-                Function("getName()"),
-                Function("getVersion()")
+        val expected = sourceFileOf(Type(name = "IInterface", members = setOf(
+                Function(signature = "getName()"),
+                Function(signature = "getVersion()")
         )))
         assertEquals(expected, parser.parse(source))
     }
@@ -72,8 +72,8 @@ class JavaParserInterfaceTest : JavaParserTest() {
             }
         }
         """
-        val expected = sourceFileOf(Type("IInterface", members = setOf(
-                Function("getName()"),
+        val expected = sourceFileOf(Type(name = "IInterface", members = setOf(
+                Function(signature = "getName()"),
                 Function(
                         signature = "getVersion()",
                         modifiers = setOf("default"),

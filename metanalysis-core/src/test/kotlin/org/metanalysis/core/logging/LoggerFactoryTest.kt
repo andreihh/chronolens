@@ -27,20 +27,20 @@ import kotlin.test.assertFailsWith
 class LoggerFactoryTest {
     @Test fun `test load configuration from non-existent file throws`() {
         assertFailsWith<FileNotFoundException> {
-            LoggerFactory.loadConfiguration("/non-existent.properties")
+            LoggerFactory.loadConfiguration(resource = "invalid.properties")
         }
     }
 
     @Test fun `test load configuration from relative file throws`() {
         assertFailsWith<IllegalArgumentException> {
-            LoggerFactory.loadConfiguration("logging.properties")
+            LoggerFactory.loadConfiguration(resource = "logging.properties")
         }
     }
 
     @Test fun `test load configuration applies changes`() {
-        LoggerFactory.loadConfiguration("/logging.properties")
+        LoggerFactory.loadConfiguration(resource = "/logging.properties")
         val format = LogManager.getLogManager()
                 .getProperty("java.util.logging.SimpleFormatter.format")
-        assertEquals("%5\$s", format)
+        assertEquals(expected = "%5\$s", actual = format)
     }
 }

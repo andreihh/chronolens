@@ -32,7 +32,7 @@ class ResultTest {
     }
 
     @Test fun `test get error throws`() {
-        val result = Result.Error(1, "failure")
+        val result = Result.Error(exitValue = 1, message = "failure")
         assertFailsWith<SubprocessException> {
             result.get()
         }
@@ -45,17 +45,17 @@ class ResultTest {
     }
 
     @Test fun `test get or null error returns null`() {
-        val result = Result.Error(1, "failure")
+        val result = Result.Error(exitValue = 1, message = "failure")
         assertNull(result.getOrNull())
     }
 
     @Test fun `test success result is success`() {
-        val result = Result.Success("success")
+        val result = Result.Success(text = "success")
         assertTrue(result.isSuccess)
     }
 
     @Test fun `test error result is not success`() {
-        val result = Result.Error(1, "failure")
+        val result = Result.Error(exitValue = 1, message = "failure")
         assertFalse(result.isSuccess)
     }
 }

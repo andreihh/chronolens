@@ -45,8 +45,8 @@ class VcsProxyMock(private val commits: List<CommitMock>) : VcsProxy {
     private fun getCommit(id: String): CommitMock =
             commitsById[id] ?: throw RevisionNotFoundException(id)
 
-    override fun getHead(): Revision = commits.lastOrNull()?.toRevision()
-            ?: throw RevisionNotFoundException("HEAD")
+    override fun getHead(): Revision =
+            checkNotNull(commits.lastOrNull()).toRevision()
 
     override fun listFiles(): Set<String> =
             checkNotNull(files[getHead().id]).keys

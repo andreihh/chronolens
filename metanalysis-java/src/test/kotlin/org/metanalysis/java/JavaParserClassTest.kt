@@ -49,7 +49,7 @@ class JavaParserClassTest : JavaParserTest() {
                 modifiers = setOf("abstract"),
                 members = setOf(Function(
                         signature = "println(String...)",
-                        parameters = listOf(Variable("args")),
+                        parameters = listOf(Variable(name = "args")),
                         modifiers = setOf("abstract", "@Override")
                 ))
         ))

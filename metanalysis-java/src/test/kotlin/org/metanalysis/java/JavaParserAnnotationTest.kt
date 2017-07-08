@@ -29,7 +29,7 @@ class JavaParserAnnotationTest : JavaParserTest() {
         @interface AnnotationClass {
         }
         """
-        val expected = sourceFileOf(Type("AnnotationClass"))
+        val expected = sourceFileOf(Type(name = "AnnotationClass"))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -40,10 +40,13 @@ class JavaParserAnnotationTest : JavaParserTest() {
             int version();
         }
         """
-        val expected = sourceFileOf(Type("AnnotationClass", members = setOf(
-                Variable("name"),
-                Variable("version")
-        )))
+        val expected = sourceFileOf(Type(
+                name = "AnnotationClass",
+                members = setOf(
+                        Variable(name = "name"),
+                        Variable(name = "version")
+                )
+        ))
         assertEquals(expected, parser.parse(source))
     }
 
@@ -54,10 +57,13 @@ class JavaParserAnnotationTest : JavaParserTest() {
             int version() default 1;
         }
         """
-        val expected = sourceFileOf(Type("AnnotationClass", members = setOf(
-                Variable("name"),
-                Variable("version", initializer = listOf("1"))
-        )))
+        val expected = sourceFileOf(Type(
+                name = "AnnotationClass",
+                members = setOf(
+                        Variable(name = "name"),
+                        Variable(name = "version", initializer = listOf("1"))
+                )
+        ))
         assertEquals(expected, parser.parse(source))
     }
 }

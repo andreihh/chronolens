@@ -39,11 +39,11 @@ internal class GitProxy : VcsProxy {
     private fun String.formatCommits(): List<String> {
         val lines = lines()
         return (0 until lines.size - 1 step 2).map { i ->
-            "${lines[i]}:${lines[i + 1]}".removePrefix("commit ")
+            "${lines[i]}:${lines[i + 1]}".removePrefix(prefix = "commit ")
         }
     }
 
-    private fun String.formatCommit(): String? = formatCommits().singleOrNull()
+    private fun String.formatCommit(): String = formatCommits().single()
 
     private fun parseCommit(formattedLine: String): Revision {
         val (id, rawDate, author) = formattedLine.split(':', limit = 3)
@@ -61,7 +61,6 @@ internal class GitProxy : VcsProxy {
                     ?.formatCommit()
                     ?.let(this::parseCommit)
                     ?: throw RevisionNotFoundException(revisionId)
-
 
     @Throws(IOException::class)
     override fun listFiles(): Set<String> =

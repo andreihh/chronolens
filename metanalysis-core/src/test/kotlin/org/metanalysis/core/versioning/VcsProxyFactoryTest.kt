@@ -87,11 +87,11 @@ class VcsProxyFactoryTest {
         assertNotNull(vcs)
     }
 
-    @Test fun `test get head from empty repository throws`() {
+    @Test fun `test get non-existing revision throws`() {
         VcsProxyFactoryMock.setRepository(emptyList())
         val vcs = checkNotNull(VcsProxyFactory.detect())
         assertFailsWith<RevisionNotFoundException> {
-            vcs.getHead()
+            vcs.getRevision(revisionId = "non-existing")
         }
     }
 }

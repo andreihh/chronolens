@@ -44,26 +44,38 @@ class JsonDriverTest {
                     name = "IClass",
                     supertypes = setOf("Interface", "Object"),
                     members = setOf(
-                            Type("InnerClass"),
-                            Variable("version", initializer = listOf("1")),
-                            Function("getVersion()", body = listOf("1"))
+                            Type(name = "InnerClass"),
+                            Variable(
+                                    name = "version",
+                                    initializer = listOf("1")
+                            ),
+                            Function(
+                                    signature = "getVersion()",
+                                    body = listOf("1")
+                            )
                     )
             )),
             NodeSetEdit.Remove<Function>("createIClass()"),
             NodeSetEdit.Change<Variable>(
                     identifier = "DEBUG",
                     transaction = VariableTransaction(
-                            initializerEdits = listOf(ListEdit.Add(0, "true"))
+                            initializerEdits = listOf(
+                                    ListEdit.Add(index = 0, value = "true")
+                            )
                     )
             ),
             NodeSetEdit.Remove<Variable>("RELEASE"),
             NodeSetEdit.Change<Type>("Interface", TypeTransaction(
-                    supertypeEdits = listOf(SetEdit.Remove("Object")),
+                    supertypeEdits = listOf(SetEdit.Remove(value = "Object")),
                     memberEdits = listOf(NodeSetEdit.Change<Function>(
                             identifier = "getVersion()",
                             transaction = FunctionTransaction(
-                                    parameterEdits = listOf(ListEdit.Remove(0)),
-                                    bodyEdits = listOf(ListEdit.Remove(0))
+                                    parameterEdits = listOf(
+                                            ListEdit.Remove(index = 0)
+                                    ),
+                                    bodyEdits = listOf(
+                                            ListEdit.Remove(index = 0)
+                                    )
                             )
                     ))
             ))
@@ -93,7 +105,12 @@ class JsonDriverTest {
 
     @Test fun `test serialize and deserialize history`() {
         val history = (1 until 10).map { i ->
-            HistoryEntry("$i", Date(i.toLong()), "<author>", null)
+            HistoryEntry(
+                    revision = "$i",
+                    date = Date(i.toLong()),
+                    author = "<author>",
+                    transaction = null
+            )
         }
         val out = ByteArrayOutputStream()
         JsonDriver.serialize(out, history)

@@ -47,7 +47,9 @@ class PersistentProjectTest : ProjectTest() {
                                     date = Date(),
                                     author = "user",
                                     transaction = SourceFileTransaction(listOf(
-                                            NodeSetEdit.Add(Type("IClass")),
+                                            NodeSetEdit.Add(
+                                                    Type(name = "IClass")
+                                            ),
                                             NodeSetEdit.Remove<Type>("IClass")
                                     ))
                             )
