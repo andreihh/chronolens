@@ -17,12 +17,12 @@
 package org.metanalysis.core.versioning
 
 import org.junit.Test
+
 import org.metanalysis.test.core.versioning.VcsProxyFactoryMock
 
-import org.metanalysis.test.core.versioning.VcsProxyMock
-
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class VcsProxyFactoryTest {
     class UnsupportedVcsProxyFactory : VcsProxyFactory() {
@@ -37,21 +37,61 @@ class VcsProxyFactoryTest {
         override fun createProxy(): VcsProxy = throw AssertionError()
     }
 
-    @Test fun `test detect vcs ignores unsupported`() {
+    @Test fun `test detect ignores unsupported`() {
         VcsProxyFactoryMock.resetRepository()
         val vcs = VcsProxyFactory.detect()
         assertNull(vcs)
     }
 
-    @Test fun `test detect vcs ignores undetected`() {
+    @Test fun `test detect ignores undetected`() {
         VcsProxyFactoryMock.resetRepository()
         val vcs = VcsProxyFactory.detect()
         assertNull(vcs)
     }
 
-    @Test fun `test detect initialized vcs returns non-null`() {
+    @Test fun `test detect uninitialized repository returns null`() {
+        VcsProxyFactoryMock.resetRepository()
+        val vcs = VcsProxyFactory.detect()
+        assertNull(vcs)
+    }
+
+    @Test fun `test detect initialized repository returns non-null`() {
         VcsProxyFactoryMock.setRepository(emptyList())
         val vcs = VcsProxyFactory.detect()
-        assertTrue(vcs is VcsProxyMock)
+        assertNotNull(vcs)
+    }
+
+    @Test fun `test connect to unsupported returns null`() {
+        val vcsFactory = UnsupportedVcsProxyFactory()
+        val vcs = vcsFactory.connect()
+        assertNull(vcs)
+    }
+
+    @Test fun `test connect to undetected returns null`() {
+        val vcsFactory = UndetectedVcsProxyFactory()
+        val vcs = vcsFactory.connect()
+        assertNull(vcs)
+    }
+
+    @Test fun `test connect to uninitialized repository returns non-null`() {
+        VcsProxyFactoryMock.resetRepository()
+        val vcsFactory = VcsProxyFactoryMock()
+        val vcs = vcsFactory.connect()
+        assertNull(vcs)
+    }
+
+    @Test fun `test connect to initialized repository returns non-null`() {
+        VcsProxyFactoryMock.setRepository(emptyList())
+        val vcsFactory = VcsProxyFactoryMock()
+        val vcs = vcsFactory.connect()
+        assertNotNull(vcs)
+    }
+
+    @Test fun `test get head from empty repository throws`() {
+        VcsProxyFactoryMock.setRepository(emptyList())
+        val vcs = checkNotNull(VcsProxyFactory.detect())
+        assertFailsWith<RevisionNotFoundException> {
+            vcs.getHead()
+        }
     }
 }
