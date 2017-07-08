@@ -80,6 +80,70 @@ the following service configuration files:
 - `META-INF/services/org.metanalysis.core.model.Parser` (for parsing)
 - `META-INF/services/org.metanalysis.core.version.VcsProxy` (for versioning)
 
+### Example Java usage
+
+There are three ways to interact with a repository from Java.
+
+1. Connect to the repository directly, without persisting anything:
+
+```java
+final Project project = InteractiveProject.connect();
+// all project method calls are delegated to a VCS proxy
+for (final String filePath : project.listFiles()) {
+    final SourceFile model = project.getFileModel(filePath);
+    final List<HistoryEntry> history = project.getFileHistory(filePath);
+    // process the model and history
+}
+```
+
+2. Connect to the previously persisted data from the repository:
+
+```java
+final Project project = PersistentProject.load();
+// all project method calls read the persisted data from the disk
+for (final String filePath : project.listFiles()) {
+    final SourceFile model = project.getFileModel(filePath);
+    final List<HistoryEntry> history = project.getFileHistory(filePath);
+    // process the model and history
+}
+```
+
+3. Connect to the repository directly, persist the data and then interact with
+the persisted data:
+
+```java
+// the repository will be analyzed and persisted to disk
+final Project project = InteractiveProject.connect().persist();
+// all project method calls read the persisted data from the disk
+for (final String filePath : project.listFiles()) {
+    final SourceFile model = project.getFileModel(filePath);
+    final List<HistoryEntry> history = project.getFileHistory(filePath);
+    // process the model and history
+}
+```
+
+Processing a `SourceFile` or `Node` can be achieved using the `Visitor` pattern:
+
+```java
+abstract class CodeVisitor {
+    public abstract void visit(SourceFile sourceFile);
+    public abstract void visit(Node.Type type);
+    public abstract void visit(Node.Variable variable);
+    public abstract void visit(Node.Function function);
+    
+    public final void visit(Node node) {
+        // safe to use `instanceof` because the class hierarchy is sealed
+        if (node instanceof Node.Type) {
+            visit((Node.Type) node);
+        } else if (node instanceof Node.Variable) {
+            visit((Node.Variable) node);
+        } else if (node instanceof Node.Function) {
+            visit((Node.Function) node);
+        }
+    }
+}
+```
+
 ## Building
 
 To build the project, run `./gradlew build`.
