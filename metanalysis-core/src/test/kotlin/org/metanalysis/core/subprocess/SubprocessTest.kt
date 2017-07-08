@@ -18,34 +18,46 @@ package org.metanalysis.core.subprocess
 
 import org.junit.Test
 
-import org.metanalysis.core.subprocess.Result.Error
 import org.metanalysis.core.subprocess.Subprocess.execute
 
 import java.io.InterruptedIOException
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNotEquals
 
 class SubprocessTest {
-    @Test fun `test get echo message`() {
+    private val script = "src/test/resources/test_script.py"
+
+    private fun execute(
+            out: String = "",
+            err: String = "",
+            delaySeconds: Int = 0,
+            exitValue: Int = 0
+    ): Result =
+            execute("python", script, out, err, "$delaySeconds", "$exitValue")
+
+    @Test fun `test get output`() {
         val message = "Hello, world!"
         val expected = "$message\n"
-        val actual = execute("echo", message).get()
+        val actual = execute(out = message).get()
         assertEquals(expected, actual)
     }
 
-    @Test fun `test date with invalid argument returns error`() {
-        val actual = execute("date", "invalid-date") as Error
-        assertNotEquals(0, actual.exitValue)
+    @Test fun `test get error`() {
+        val expectedMessage = "Hello, error!"
+        val expectedExitValue = 1
+        val actual = execute(
+                err = expectedMessage,
+                exitValue = expectedExitValue
+        ) as Result.Error
+        assertEquals(expectedExitValue, actual.exitValue)
+        assertEquals(expectedMessage, actual.message)
     }
 
-    @Test fun `test interrupt find throws`() {
+    @Test fun `test interrupt throws`() {
         Thread.currentThread().interrupt()
         assertFailsWith<InterruptedIOException> {
-            while (true) {
-                execute("find").get()
-            }
+            execute(delaySeconds = 1).get()
         }
     }
 }

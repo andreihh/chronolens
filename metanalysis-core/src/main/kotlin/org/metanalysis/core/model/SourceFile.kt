@@ -32,20 +32,12 @@ data class SourceFile(val nodes: Set<Node> = emptySet()) {
      *
      * @param nodeType the class object of the requested node
      * @param identifier the identifier of the requested node
-     * @return the requested node, or `null` if this source file doesn't contain
-     * a node with the specified `nodeType` and `identifier`
+     * @return the requested node, or `null` no such node was found
      */
     fun find(nodeType: KClass<out Node>, identifier: String): Node? =
             nodeMap[nodeType to identifier]
 
-    /**
-     * Returns the node with the specified type and `identifier`.
-     *
-     * @param T the type of the requested node
-     * @param identifier the identifier of the requested node
-     * @return the requested node, or `null` if this source file doesn't contain
-     * a node with the specified type and `identifier`
-     */
+    /** Inline utility method. */
     inline fun <reified T : Node> find(identifier: String): T? =
             find(T::class, identifier) as T?
 }

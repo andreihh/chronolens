@@ -18,7 +18,7 @@ package org.metanalysis.core.model
 
 import kotlin.reflect.KClass
 
-/** Abstract metadata of a declaration within a source file. */
+/** Abstract representation of a code entity. */
 sealed class Node {
     /** A unique identifier among other nodes of the same type. */
     abstract val identifier: String
@@ -34,7 +34,7 @@ sealed class Node {
     final override fun hashCode(): Int = identifier.hashCode()
 
     /**
-     * A type declared within a source file.
+     * A type declaration found inside a [SourceFile] or another [Type].
      *
      * The [identifier] of a type is its [name].
      *
@@ -61,26 +61,18 @@ sealed class Node {
          *
          * @param nodeType the class object of the requested member node
          * @param identifier the identifier of the requested member node
-         * @return the requested member node, or `null` if this node doesn't
-         * contain a member with the specified `nodeType` and `identifier`
+         * @return the requested member node, or `null` no such member was found
          */
         fun find(nodeType: KClass<out Node>, identifier: String): Node? =
                 memberMap[nodeType to identifier]
 
-        /**
-         * Returns the member with the specified type and `identifier`.
-         *
-         * @param T the type of the requested member node
-         * @param identifier the identifier of the requested member node
-         * @return the requested member node, or `null` if this node doesn't
-         * contain a member with the specified type and `identifier`
-         */
+        /** Inline utility method. */
         inline fun <reified T : Node> find(identifier: String): T? =
                 find(T::class, identifier) as T?
     }
 
     /**
-     * A variable declared within a source file.
+     * A variable declaration found inside a [SourceFile] or [Type].
      *
      * The [identifier] of a variable is its [name].
      *
@@ -99,7 +91,7 @@ sealed class Node {
     }
 
     /**
-     * A function declared within a source file.
+     * A function declaration found inside a [SourceFile] or [Type].
      *
      * The parameters of a function must have unique names.
      *
@@ -116,7 +108,7 @@ sealed class Node {
      * @property body the body lines of this function, or an empty list if it
      * doesn't have a body
      * @throws IllegalArgumentException if multiple `parameters` have the same
-     * `name`
+     * [name][Variable.name]
      */
     data class Function(
             val signature: String,
