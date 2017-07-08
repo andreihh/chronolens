@@ -27,7 +27,7 @@ import kotlin.test.assertFailsWith
 class LoggerFactoryTest {
     @Test fun `test load configuration from non-existent file throws`() {
         assertFailsWith<FileNotFoundException> {
-            LoggerFactory.loadConfiguration("non-existent.properties")
+            LoggerFactory.loadConfiguration("/non-existent.properties")
         }
     }
 
