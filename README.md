@@ -1,8 +1,8 @@
 # Metanalysis
 
-[![](https://jitpack.io/v/andreihh/metanalysis.svg)](https://jitpack.io/#andrei-heidelbacher/metanalysis)
-[![Build Status](https://travis-ci.org/andreihh/metanalysis.svg)](https://travis-ci.org/andrei-heidelbacher/metanalysis)
-[![codecov](https://codecov.io/gh/andreihh/metanalysis/branch/master/graph/badge.svg)](https://codecov.io/gh/andrei-heidelbacher/metanalysis)
+[![](https://jitpack.io/v/andreihh/metanalysis.svg)](https://jitpack.io/#andreihh/metanalysis)
+[![Build Status](https://travis-ci.org/andreihh/metanalysis.svg)](https://travis-ci.org/andreihh/metanalysis)
+[![codecov](https://codecov.io/gh/andreihh/metanalysis/branch/master/graph/badge.svg)](https://codecov.io/gh/andreihh/metanalysis)
 [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## Features
@@ -23,8 +23,8 @@ In order to use `metanalysis` you need to have `JDK 1.7` or newer.
 ### Using the command line
 
 Download the most recently released distribution from
-[here](https://github.com/andrei-heidelbacher/metanalysis/releases) and run the
-executable from the `bin` directory: `./metanalysis-cli help`.
+[here](https://github.com/andreihh/metanalysis/releases) and run the executable
+from the `bin` directory: `./metanalysis-cli help`.
 
 ### Using Gradle
 
@@ -38,8 +38,8 @@ repositories {
 Add the dependencies:
 ```groovy
 dependencies {
-    compile "com.github.andrei-heidelbacher.metanalysis:metanalysis-core:$version"
-    testCompile "com.github.andrei-heidelbacher.metanalysis:metanalysis-test:$version"
+    compile "com.github.andreihh.metanalysis:metanalysis-core:$version"
+    testCompile "com.github.andreihh.metanalysis:metanalysis-test:$version"
 }
 ```
 
@@ -59,13 +59,13 @@ Add the dependencies:
 ```xml
 <dependencies>
   <dependency>
-    <groupId>com.github.andrei-heidelbacher.metanalysis</groupId>
+    <groupId>com.github.andreihh.metanalysis</groupId>
     <artifactId>metanalysis-core</artifactId>
     <version>$version</version>
     <scope>compile</scope>
   </dependency>
   <dependency>
-    <groupId>com.github.andrei-heidelbacher.metanalysis</groupId>
+    <groupId>com.github.andreihh.metanalysis</groupId>
     <artifactId>metanalysis-test</artifactId>
     <version>$version</version>
     <scope>test</scope>
