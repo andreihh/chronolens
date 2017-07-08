@@ -17,9 +17,9 @@
 package org.metanalysis.git
 
 import org.metanalysis.core.subprocess.Subprocess.execute
-import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
+
 import java.io.IOException
 
 /** Creates proxies which delegate their operations to the `git` VCS. */
@@ -31,7 +31,9 @@ class GitProxyFactory : VcsProxyFactory() {
 
     @Throws(IOException::class)
     override fun isRepository(): Boolean =
-            execute(vcs, "rev-parse", "--show-prefix").getOrNull()?.isBlank()
+            execute(vcs, "rev-parse", "--show-prefix")
+                    .getOrNull()
+                    ?.isBlank()
                     ?: false
 
     @Throws(IOException::class)

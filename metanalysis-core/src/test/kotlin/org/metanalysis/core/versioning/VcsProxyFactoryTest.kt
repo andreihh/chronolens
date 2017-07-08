@@ -91,7 +91,7 @@ class VcsProxyFactoryTest {
         VcsProxyFactoryMock.setRepository(emptyList())
         val vcs = checkNotNull(VcsProxyFactory.detect())
         assertFailsWith<RevisionNotFoundException> {
-            vcs.getRevision(revisionId = "non-existing")
+            vcs.getRevision("non-existing")
         }
     }
 }

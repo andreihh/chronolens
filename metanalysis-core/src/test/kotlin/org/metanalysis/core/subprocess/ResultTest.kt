@@ -50,7 +50,7 @@ class ResultTest {
     }
 
     @Test fun `test success result is success`() {
-        val result = Result.Success(text = "success")
+        val result = Result.Success("success")
         assertTrue(result.isSuccess)
     }
 

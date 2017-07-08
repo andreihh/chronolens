@@ -66,16 +66,12 @@ class JsonDriverTest {
             ),
             NodeSetEdit.Remove<Variable>("RELEASE"),
             NodeSetEdit.Change<Type>("Interface", TypeTransaction(
-                    supertypeEdits = listOf(SetEdit.Remove(value = "Object")),
+                    supertypeEdits = listOf(SetEdit.Remove("Object")),
                     memberEdits = listOf(NodeSetEdit.Change<Function>(
                             identifier = "getVersion()",
                             transaction = FunctionTransaction(
-                                    parameterEdits = listOf(
-                                            ListEdit.Remove(index = 0)
-                                    ),
-                                    bodyEdits = listOf(
-                                            ListEdit.Remove(index = 0)
-                                    )
+                                    parameterEdits = listOf(ListEdit.Remove(0)),
+                                    bodyEdits = listOf(ListEdit.Remove(0))
                             )
                     ))
             ))

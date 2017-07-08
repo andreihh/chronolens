@@ -53,8 +53,8 @@ class GitProxyWithRepositoryTest : GitProxyTest() {
 
     @Test fun `test get revision`() {
         val head = git.getHead()
-        val commit = git.getRevision(revisionId = "HEAD")
-        val branch = git.getRevision(revisionId = "master")
+        val commit = git.getRevision("HEAD")
+        val branch = git.getRevision("master")
         assertEquals(head, commit)
         assertEquals(head, branch)
         val invalidRevisions = listOf("0123456", "master-invalid", "gradle")
@@ -73,7 +73,7 @@ class GitProxyWithRepositoryTest : GitProxyTest() {
                 "-path", "../.gradle", "-prune", "-o",
                 "-type", "f", "-print"
         ).get().lines()
-                .map { it.removePrefix(prefix = "../") }
+                .map { it.removePrefix("../") }
                 .filter(String::isNotBlank)
                 .toSet()
         val actual = git.listFiles()
@@ -97,8 +97,8 @@ class GitProxyWithRepositoryTest : GitProxyTest() {
     }
 
     @Test fun `test get file history`() {
-        assertEquals(emptyList(), git.getFileHistory(path = "non-existent.txt"))
-        val history = git.getFileHistory(path = "README.md")
+        assertEquals(emptyList(), git.getFileHistory("non-existent.txt"))
+        val history = git.getFileHistory("README.md")
         println(history.joinToString(separator = "\n"))
     }
 }

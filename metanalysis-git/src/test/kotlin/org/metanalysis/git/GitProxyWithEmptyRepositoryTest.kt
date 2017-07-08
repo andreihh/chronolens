@@ -21,13 +21,11 @@ import org.junit.BeforeClass
 import org.junit.Test
 
 import org.metanalysis.core.subprocess.Subprocess.execute
-import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VcsProxyFactory
 
 import java.io.File
 
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNotNull
 
 class GitProxyWithEmptyRepositoryTest : GitProxyTest() {
     companion object {

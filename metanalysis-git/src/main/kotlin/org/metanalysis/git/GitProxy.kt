@@ -39,7 +39,7 @@ internal class GitProxy : VcsProxy {
     private fun String.formatCommits(): List<String> {
         val lines = lines()
         return (0 until lines.size - 1 step 2).map { i ->
-            "${lines[i]}:${lines[i + 1]}".removePrefix(prefix = "commit ")
+            "${lines[i]}:${lines[i + 1]}".removePrefix("commit ")
         }
     }
 

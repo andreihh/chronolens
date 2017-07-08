@@ -44,11 +44,11 @@ class ParserTest {
     }
 
     @Test fun `test get unprovided parser by language returns null`() {
-        assertNull(getByLanguage(language = "Java"))
+        assertNull(getByLanguage("Java"))
     }
 
     @Test fun `test get unprovided parser by extension returns null`() {
-        assertNull(getByExtension(extension = "java"))
+        assertNull(getByExtension("java"))
     }
 
     @Test fun `test parse file`() {
@@ -73,7 +73,7 @@ class ParserTest {
     @Test fun `test parse source with errors throws`() {
         val parser = requireNotNull(Parser.getByLanguage(ParserMock.LANGUAGE))
         assertFailsWith<SyntaxErrorException> {
-            parser.parse(source = "{ \"invalid property\":2")
+            parser.parse("{ \"invalid property\":2")
         }
     }
 }
