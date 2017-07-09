@@ -1,7 +1,7 @@
-# Module metanalysis-cli
+# Module metanalysis
 
 The core functionality of `metanalysis`.
 
-# Package org.metanalysis.cli
+# Package org.metanalysis
 
 The model of `metanalysis`.

@@ -148,7 +148,7 @@ abstract class CodeVisitor {
 
 To build the project, run `./gradlew build`.
 
-To build the distribution `zip` in the `metanalysis-cli/build/distributions`
+To build the distribution `zip` in the `metanalysis/build/distributions`
 directory, run `./gradlew distZip`.
 
 ## Documentation

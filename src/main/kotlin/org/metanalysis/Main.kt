@@ -25,7 +25,7 @@ import java.util.logging.Logger
 
 import kotlin.system.exitProcess
 
-val logger: Logger = LoggerFactory.getLogger("metanalysis")
+val logger: Logger = LoggerFactory.getLogger("org/metanalysis")
 
 fun main(args: Array<String>) {
     try {

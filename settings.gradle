@@ -1,5 +1,5 @@
 rootProject.name = 'metanalysis'
 
-include 'metanalysis-core', 'metanalysis-test', 'metanalysis-cli'
+include 'metanalysis-core', 'metanalysis-test'
 include 'metanalysis-git'
 include 'metanalysis-java'
