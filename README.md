@@ -24,7 +24,7 @@ In order to use `metanalysis` you need to have `JDK 1.7` or newer.
 
 Download the most recently released distribution from
 [here](https://github.com/andreihh/metanalysis/releases) and run the executable
-from the `bin` directory: `./metanalysis-cli help`.
+from the `bin` directory: `./metanalysis help`.
 
 ### Using Gradle
 
@@ -77,8 +77,8 @@ Add the dependencies:
 
 If using the parsing and versioning modules as dependencies, you must provide
 the following service configuration files:
-- `META-INF/services/org.metanalysis.core.model.Parser` (for parsing)
-- `META-INF/services/org.metanalysis.core.version.VcsProxy` (for versioning)
+- `META-INF/services/org.metanalysis.core.parsing.Parser` (for parsing)
+- `META-INF/services/org.metanalysis.core.versioning.VcsProxy` (for versioning)
 
 ### Example Java usage
 

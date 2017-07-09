@@ -53,18 +53,18 @@ sealed class Command {
     object Version : Command() {
         override val name: String = "version"
         override val help: String = """
-        Usage: metanalysis version
+        Prints the installed version of metanalysis.
         """
 
         override fun execute(vararg args: String) {
-            println("metanalysis 0.1.5")
+            println("metanalysis 0.1.7")
         }
     }
 
     object Help : Command() {
         override val name: String = "help"
         override val help: String = """
-        Usage: metanalysis help [<command>]
+        Parameters: [<command>]
 
         Show usage instructions for the given <command>, or list the available
         commands if no arguments are provided.
@@ -84,8 +84,6 @@ sealed class Command {
     object List : Command() {
         override val name: String = "list"
         override val help: String = """
-        Usage: metanalysis list
-
         Prints all the files in the project detected in the current working
         directory.
         """
@@ -99,7 +97,7 @@ sealed class Command {
     object Model : Command() {
         override val name: String = "model"
         override val help: String = """
-        Usage: metanalysis model <path>
+        Parameters: <path>
 
         Prints the interpreted code metadata from the file located at the given
         <path> in the project detected in the current working directory.
@@ -129,8 +127,6 @@ sealed class Command {
     object Persist : Command() {
         override val name: String = "persist"
         override val help: String = """
-        Usage: metanalysis persist
-
         Connects to the repository detected in the current working directory and
         persists the code metadata and history from all the files which can be
         interpreted.
@@ -148,8 +144,6 @@ sealed class Command {
     object Clean : Command() {
         override val name: String = "clean"
         override val help: String = """
-        Usage: metanalysis clean
-
         Deletes the previously persisted project from the current working
         directory, if it exists.
         """
