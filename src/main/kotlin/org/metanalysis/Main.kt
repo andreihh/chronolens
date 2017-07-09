@@ -16,7 +16,7 @@
 
 @file:JvmName("Main")
 
-package org.metanalysis.cli
+package org.metanalysis
 
 import org.metanalysis.core.logging.LoggerFactory
 

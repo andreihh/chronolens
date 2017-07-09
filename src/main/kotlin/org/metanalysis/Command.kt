@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.cli
+package org.metanalysis
 
 import org.metanalysis.core.project.InteractiveProject
 import org.metanalysis.core.project.PersistentProject

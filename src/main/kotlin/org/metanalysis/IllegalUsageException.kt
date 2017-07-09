@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package org.metanalysis.cli
+package org.metanalysis
 
 class IllegalUsageException(message: String) : IllegalArgumentException(message)
