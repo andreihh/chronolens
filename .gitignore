@@ -1,6 +1,9 @@
 # Gradle
-.gradle
+.gradle/
 build/
+
+# Maven
+target/
 
 # IntelliJ IDEA
 .idea/
@@ -16,8 +19,9 @@ out/
 bin/
 
 # Mac
-*.DS_Store
+.DS_Store
 ._*
 
 # Windows
+Desktop.ini
 Thumbs.db
