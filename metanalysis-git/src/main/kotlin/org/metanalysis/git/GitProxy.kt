@@ -27,7 +27,7 @@ import java.util.Date
 internal class GitProxy : VcsProxy {
     private val vcs = "git"
     private val headId = "HEAD"
-    private val format = "--format=%at:%an"
+    private val format = "--format=%ct:%an"
 
     private fun validateRevision(revisionId: String) {
         val result = execute(vcs, "cat-file", "-e", "$revisionId^{commit}")
