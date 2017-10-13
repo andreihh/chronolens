@@ -18,19 +18,20 @@ package org.metanalysis.java
 
 import org.junit.Test
 
-import org.metanalysis.core.model.Node.Type
-import org.metanalysis.core.model.Node.Variable
-import org.metanalysis.test.core.model.assertEquals
-import org.metanalysis.test.core.model.sourceFileOf
+import kotlin.test.assertEquals
 
 class JavaParserAnnotationTest : JavaParserTest() {
     @Test fun `test annotation`() {
         val source = """
         @interface AnnotationClass {
         }
-        """
-        val expected = sourceFileOf(Type(name = "AnnotationClass"))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("AnnotationClass") {
+                modifiers("@interface")
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
     @Test fun `test annotation with members`() {
@@ -39,15 +40,15 @@ class JavaParserAnnotationTest : JavaParserTest() {
             String name();
             int version();
         }
-        """
-        val expected = sourceFileOf(Type(
-                name = "AnnotationClass",
-                members = setOf(
-                        Variable(name = "name"),
-                        Variable(name = "version")
-                )
-        ))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("AnnotationClass") {
+                modifiers("@interface")
+                variable("name") {}
+                variable("version") {}
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
     @Test fun `test annotation with default members`() {
@@ -56,14 +57,14 @@ class JavaParserAnnotationTest : JavaParserTest() {
             String name();
             int version() default 1;
         }
-        """
-        val expected = sourceFileOf(Type(
-                name = "AnnotationClass",
-                members = setOf(
-                        Variable(name = "name"),
-                        Variable(name = "version", initializer = listOf("1"))
-                )
-        ))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("AnnotationClass") {
+                modifiers("@interface")
+                variable("name") {}
+                variable("version") { +"1" }
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 }

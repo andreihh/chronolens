@@ -18,29 +18,22 @@ package org.metanalysis.core.logging
 
 import org.junit.Test
 
-import java.io.FileNotFoundException
 import java.util.logging.LogManager
 
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class LoggerFactoryTest {
-    @Test fun `test load configuration from non-existent file throws`() {
-        assertFailsWith<FileNotFoundException> {
-            LoggerFactory.loadConfiguration("/non-existent.properties")
-        }
-    }
+    private val loggerFactory = LoggerFactory
 
-    @Test fun `test load configuration from relative file throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            LoggerFactory.loadConfiguration("logging.properties")
-        }
-    }
-
-    @Test fun `test load configuration applies changes`() {
-        LoggerFactory.loadConfiguration("/logging.properties")
+    @Test fun `test loaded configuration applies changes`() {
         val format = LogManager.getLogManager()
                 .getProperty("java.util.logging.SimpleFormatter.format")
-        assertEquals(expected = "%5\$s", actual = format)
+        assertEquals(expected = "%4\$s: %5\$s", actual = format)
+    }
+
+    @Test fun `test get logger with same name returns same instance`() {
+        val expected = loggerFactory.getLogger<LoggerFactoryTest>()
+        val actual = loggerFactory.getLogger<LoggerFactoryTest>()
+        assertEquals(expected, actual)
     }
 }

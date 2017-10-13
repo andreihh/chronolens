@@ -18,23 +18,26 @@ package org.metanalysis.core.subprocess
 
 import org.junit.Test
 
-import org.metanalysis.core.subprocess.Subprocess.execute
-
-import java.io.InterruptedIOException
-
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class SubprocessTest {
-    private val script = "src/test/resources/test_script.py"
+    private val script =
+            "src/test/resources/org/metanalysis/core/subprocess/test_script.py"
 
     private fun execute(
             out: String = "",
             err: String = "",
             delaySeconds: Int = 0,
             exitValue: Int = 0
-    ): Result =
-            execute("python", script, out, err, "$delaySeconds", "$exitValue")
+    ): Result = Subprocess.execute(
+            "python",
+            script,
+            out,
+            err,
+            "$delaySeconds",
+            "$exitValue"
+    )
 
     @Test fun `test get output`() {
         val message = "Hello, world!"
@@ -56,10 +59,16 @@ class SubprocessTest {
 
     @Test fun `test interrupt throws`() {
         Thread.currentThread().interrupt()
-        assertFailsWith<InterruptedIOException> {
+        assertFailsWith<SubprocessException> {
             while (true) {
                 execute(delaySeconds = 1).get()
             }
+        }
+    }
+
+    @Test fun `test invalid command throws`() {
+        assertFailsWith<SubprocessException> {
+            Subprocess.execute("non-existing-program")
         }
     }
 }

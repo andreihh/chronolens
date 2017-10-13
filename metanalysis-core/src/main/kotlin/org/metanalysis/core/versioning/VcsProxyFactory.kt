@@ -16,7 +16,6 @@
 
 package org.metanalysis.core.versioning
 
-import java.io.IOException
 import java.util.ServiceLoader
 
 /**
@@ -25,67 +24,49 @@ import java.util.ServiceLoader
  *
  * [VcsProxy] instances should be created only through a `VcsProxyFactory`.
  *
- * VCS proxy factories must have a public no-arg constructor.
- *
- * The file
- * `META-INF/services/org.metanalysis.core.versioning.VcsProxyFactory` must
- * be provided and must contain the list of all implemented VCS proxy factories.
+ * VCS proxy factories must have a public no-arg constructor and must supply an
+ * entry in the
+ * `META-INF/services/org.metanalysis.core.versioning.VcsProxyFactory`
+ * configuration file.
  */
 abstract class VcsProxyFactory {
     companion object {
-        private val vcsProxyFactories = ServiceLoader
-                .load(VcsProxyFactory::class.java)
-                .filter(VcsProxyFactory::isSupported)
+        private val vcsProxyFactories =
+                ServiceLoader.load(VcsProxyFactory::class.java)
+                        .filter(VcsProxyFactory::isSupported)
 
         /**
-         * Returns the VCS for the repository detected in the current working
-         * directory.
+         * Returns the VCS proxy for the repository detected in the current
+         * working directory.
          *
-         * @return the requested VCS, or `null` if no supported VCS repository
-         * was detected or if multiple repositories were detected
+         * @return the requested VCS proxy, or `null` if no supported VCS
+         * repository was detected or if multiple repositories were detected
          * @throws IllegalStateException if the detected repository is corrupted
          * or empty (doesn't have a [head][VcsProxy.getHead] revision)
-         * @throws IOException if any input related errors occur
          */
-        @Throws(IOException::class)
-        @JvmStatic fun detect(): VcsProxy? =
-                vcsProxyFactories
-                        .filter(VcsProxyFactory::isRepository)
+        @JvmStatic
+        fun detect(): VcsProxy? =
+                vcsProxyFactories.mapNotNull(VcsProxyFactory::createProxy)
                         .singleOrNull()
-                        ?.createProxy()
     }
 
     /**
      * Returns whether the associated VCS is supported in the current
      * environment.
-     *
-     * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
     protected abstract fun isSupported(): Boolean
-
-    /**
-     * Returns whether a repository was detected in the current working
-     * directory.
-     *
-     * @throws IOException if any input related errors occur
-     */
-    @Throws(IOException::class)
-    protected abstract fun isRepository(): Boolean
 
     /**
      * Returns a proxy for the repository detected in the current working
      * directory.
      *
-     * It is required for the associated VCS to be supported and a repository to
-     * exist in the current working directory.
+     * It is required for the associated VCS to be supported.
      *
+     * @return the detected proxy, or `null` if no repository was detected
      * @throws IllegalStateException if the detected repository is corrupted or
      * empty (doesn't have a [head][VcsProxy.getHead] revision)
-     * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
-    protected abstract fun createProxy(): VcsProxy
+    protected abstract fun createProxy(): VcsProxy?
 
     /**
      * Returns a VCS proxy for the repository detected in the current working
@@ -96,10 +77,6 @@ abstract class VcsProxyFactory {
      * @throws IllegalStateException if the detected repository is not in a
      * valid state (it is corrupted or doesn't have a [head][VcsProxy.getHead]
      * revision)
-     * @throws IOException if any input related errors occur
      */
-    @Throws(IOException::class)
-    fun connect(): VcsProxy? =
-            if (isSupported() && isRepository()) createProxy()
-            else null
+    fun connect(): VcsProxy? = if (isSupported()) createProxy() else null
 }

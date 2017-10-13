@@ -18,23 +18,54 @@ package org.metanalysis.java
 
 import org.junit.Test
 
-import org.metanalysis.core.parsing.SyntaxErrorException
+import org.metanalysis.core.parsing.Result
 
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class JavaParserErrorTest : JavaParserTest() {
-    @Test fun `test parse invalid source throws`() {
-        val source = "cla Main { int i = &@*; { class K; interface {}"
-        assertFailsWith<SyntaxErrorException> {
-            parser.parse(source)
+    @Test fun `test parse invalid path throws`() {
+        val source = "class Main {}"
+        val path = "src/Test.jav"
+        assertFailsWith<IllegalArgumentException> {
+            parse(source, path)
         }
     }
 
-    @Test fun `test parse duplicated members in class throws`() {
+    @Test fun `test parse invalid source is syntax error`() {
+        val source = "cla Main { int i = &@*; { class K; interface {}"
+        val result = parseResult(source)
+        assertEquals(Result.SyntaxError, result)
+    }
+
+    @Test fun `test parse malformed type is syntax error`() {
+        val source = "class 2Main {}"
+        val result = parseResult(source)
+        assertEquals(Result.SyntaxError, result)
+    }
+
+    @Test fun `test parse malformed method is syntax error`() {
+        val source = "class Main { void 2setName() { in k = 0; } }"
+        val result = parseResult(source)
+        assertEquals(Result.SyntaxError, result)
+    }
+
+    @Test fun `test parse malformed modifiers is syntax error`() {
+        val source = "class interface Main {}"
+        val result = parseResult(source)
+        assertEquals(Result.SyntaxError, result)
+    }
+
+    @Test fun `test parse duplicated members in class is syntax error`() {
         val source = "class Main { int i = 2; int i = 3; }"
-        assertFailsWith<SyntaxErrorException> {
-            parser.parse(source)
-        }
+        val result = parseResult(source)
+        assertEquals(Result.SyntaxError, result)
+    }
+
+    @Test fun `test parse duplicated parameters in method is syntax error`() {
+        val source = "class Main { void setName(String name, int name) {} }"
+        val result = parseResult(source)
+        assertEquals(Result.SyntaxError, result)
     }
 
     @Test fun `test initializers not supported`() {
@@ -45,9 +76,8 @@ class JavaParserErrorTest : JavaParserTest() {
                 i = 2;
             }
         }
-        """
-        assertFailsWith<SyntaxErrorException> {
-            parser.parse(source)
-        }
+        """.trimIndent()
+        val result = parseResult(source)
+        assertEquals(Result.SyntaxError, result)
     }
 }

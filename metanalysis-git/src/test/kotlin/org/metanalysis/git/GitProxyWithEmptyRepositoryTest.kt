@@ -27,7 +27,7 @@ import java.io.File
 
 import kotlin.test.assertFailsWith
 
-class GitProxyWithEmptyRepositoryTest : GitProxyTest() {
+class GitProxyWithEmptyRepositoryTest {
     companion object {
         @BeforeClass
         @JvmStatic fun initRepository() {
@@ -36,15 +36,19 @@ class GitProxyWithEmptyRepositoryTest : GitProxyTest() {
 
         @AfterClass
         @JvmStatic fun cleanRepository() {
-            val gitDir = ".git"
-            File(gitDir).deleteRecursively()
+            File("./").listFiles().forEach { it.deleteRecursively() }
         }
-
     }
 
     @Test fun `test connect to empty repository throws`() {
         assertFailsWith<IllegalStateException> {
             VcsProxyFactory.detect()
+        }
+    }
+
+    @Test fun `test get head from empty repository throws`() {
+        assertFailsWith<IllegalStateException> {
+            GitProxy("").getHead()
         }
     }
 }

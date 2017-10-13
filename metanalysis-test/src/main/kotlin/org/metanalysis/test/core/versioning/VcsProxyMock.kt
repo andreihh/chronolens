@@ -17,49 +17,49 @@
 package org.metanalysis.test.core.versioning
 
 import org.metanalysis.core.versioning.Revision
-import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VcsProxy
 
-class VcsProxyMock(private val commits: List<CommitMock>) : VcsProxy {
-    private val commitsById = commits.associateBy(CommitMock::id)
-    private val files: Map<String, Map<String, String>>
+class VcsProxyMock(private val revisions: List<RevisionMock>) : VcsProxy {
+    private val revisionsById = revisions.associateBy(RevisionMock::id)
+    private val files: Map<String, Map<String, String?>>
 
     init {
-        val fileHistory = hashMapOf<String, Map<String, String>>()
-        val currentFiles = hashMapOf<String, String>()
-        commits.forEach { (id, _, _, changedFiles) ->
-            changedFiles.forEach { path, src ->
-                if (src == null) {
-                    currentFiles -= path
-                } else {
-                    currentFiles[path] = src
-                }
-            }
-            fileHistory[id] = currentFiles.toMap()
+        val fileHistory = hashMapOf<String, Map<String, String?>>()
+        val currentFiles = hashMapOf<String, String?>()
+        val ids = hashSetOf<String>()
+        for ((id, _, _, changeSet) in revisions) {
+            require(id !in ids) { "Duplicated revision id '$id'!" }
+            currentFiles += changeSet
+            fileHistory[id] = currentFiles.filterValues { it != null }
+            ids += id
         }
         files = fileHistory
     }
 
-    private fun CommitMock.toRevision(): Revision = Revision(id, date, author)
+    private fun RevisionMock.toRevision(): Revision = Revision(id, date, author)
 
-    private fun getCommit(id: String): CommitMock =
-            commitsById[id] ?: throw RevisionNotFoundException(id)
+    private fun getRevisionMock(id: String): RevisionMock =
+            requireNotNull(revisionsById[id]) {
+                "Revision '$id' doesn't exist!"
+            }
 
     override fun getHead(): Revision =
-            checkNotNull(commits.lastOrNull()).toRevision()
+            checkNotNull(revisions.lastOrNull()).toRevision()
 
-    override fun listFiles(): Set<String> =
-            checkNotNull(files[getHead().id]).keys
+    override fun listFiles(revisionId: String): Set<String> =
+            checkNotNull(files[getRevisionMock(revisionId).id]).keys
 
-    @Throws(RevisionNotFoundException::class)
     override fun getRevision(revisionId: String): Revision =
-            getCommit(revisionId).toRevision()
+            getRevisionMock(revisionId).toRevision()
 
-    @Throws(RevisionNotFoundException::class)
+    override fun getChangeSet(revisionId: String): Set<String> =
+            getRevisionMock(revisionId).changeSet.keys
+
     override fun getFile(revisionId: String, path: String): String? =
-            checkNotNull(files[getCommit(revisionId).id])[path]
+            checkNotNull(files[getRevisionMock(revisionId).id])[path]
 
-    override fun getFileHistory(path: String): List<Revision> =
-            commits.filter { path in it.changedFiles }
-                    .map { it.toRevision() }
+    override fun getHistory(path: String): List<Revision> =
+            revisions.filter { commit ->
+                commit.changeSet.keys.any { file -> file.startsWith(path) }
+            }.map { it.toRevision() }
 }

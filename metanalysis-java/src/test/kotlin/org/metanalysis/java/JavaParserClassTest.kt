@@ -18,23 +18,21 @@ package org.metanalysis.java
 
 import org.junit.Test
 
-import org.metanalysis.core.model.Node.Function
-import org.metanalysis.core.model.Node.Type
-import org.metanalysis.core.model.Node.Variable
-import org.metanalysis.test.core.model.assertEquals
-import org.metanalysis.test.core.model.sourceFileOf
+import kotlin.test.assertEquals
 
 class JavaParserClassTest : JavaParserTest() {
     @Test fun `test class with supertypes`() {
         val source = """
         class IClass extends Object implements Comparable<IInterface> {
         }
-        """
-        val expected = sourceFileOf(Type(
-                name = "IClass",
-                supertypes = setOf("Object", "Comparable<IInterface>")
-        ))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("IClass") {
+                modifiers("class")
+                supertypes("Object", "Comparable<IInterface>")
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
     @Test fun `test class with vararg parameter method`() {
@@ -43,16 +41,18 @@ class JavaParserClassTest : JavaParserTest() {
             @Override
             abstract void println(String... args);
         }
-        """
-        val expected = sourceFileOf(Type(
-                name = "IClass",
-                modifiers = setOf("abstract"),
-                members = setOf(Function(
-                        signature = "println(String...)",
-                        parameters = listOf(Variable(name = "args")),
-                        modifiers = setOf("abstract", "@Override")
-                ))
-        ))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("IClass") {
+                modifiers("abstract", "class")
+
+                function("println(String...)") {
+                    parameter("args") {}
+
+                    modifiers("abstract", "@Override")
+                }
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 }

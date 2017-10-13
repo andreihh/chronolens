@@ -19,7 +19,6 @@ package org.metanalysis.core.subprocess
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.io.InterruptedIOException
 
 object Subprocess {
     private fun InputStream.readText(): String =
@@ -34,24 +33,27 @@ object Subprocess {
      * @param command the command which should be executed
      * @return the parsed input from `stdout` (if the subprocess terminated
      * normally) or from `stderr` (if the subprocess terminated abnormally)
-     * @throws InterruptedIOException if the current thread is interrupted
-     * while waiting for the subprocess to terminate
-     * @throws IOException if any input related errors occur
+     * @throws SubprocessException if the given `command` is invalid or if the
+     * current thread is interrupted while waiting for the subprocess to
+     * terminate or if any input related errors occur
      */
-    @Throws(IOException::class)
-    @JvmStatic fun execute(vararg command: String): Result {
-        val process = ProcessBuilder().command(*command).start()
-        try {
+    @JvmStatic
+    fun execute(vararg command: String): Result {
+        var process: Process? = null
+        return try {
+            process = ProcessBuilder().command(*command).start()
             process.outputStream.close()
             val input = process.inputStream.readText()
-            val error = process.errorStream.readText()
-            val exitCode = process.waitFor()
-            return if (exitCode == 0) Result.Success(input)
-            else Result.Error(exitCode, error)
+            val error = process.errorStream
+            val exitValue = process.waitFor()
+            if (exitValue == 0) Result.Success(input)
+            else Result.Error(exitValue, error.readText())
         } catch (e: InterruptedException) {
-            throw InterruptedIOException(e.message)
+            throw SubprocessException(e)
+        } catch (e: IOException) {
+            throw SubprocessException(e)
         } finally {
-            process.destroy()
+            process?.destroy()
         }
     }
 }

@@ -1,3 +1,5 @@
 dependencies {
     api project(':metanalysis-core')
 }
+
+test.workingDir = java.nio.file.Files.createTempDirectory(null)

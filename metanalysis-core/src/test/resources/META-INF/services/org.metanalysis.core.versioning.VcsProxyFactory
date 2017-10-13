@@ -1,3 +1,2 @@
 org.metanalysis.core.versioning.VcsProxyFactoryTest$UnsupportedVcsProxyFactory
 org.metanalysis.core.versioning.VcsProxyFactoryTest$UndetectedVcsProxyFactory
-org.metanalysis.test.core.versioning.VcsProxyFactoryMock

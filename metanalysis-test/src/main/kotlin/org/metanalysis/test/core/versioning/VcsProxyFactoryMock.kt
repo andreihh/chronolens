@@ -22,22 +22,23 @@ import org.metanalysis.core.versioning.VcsProxyFactory
 class VcsProxyFactoryMock : VcsProxyFactory() {
     companion object {
         private var isInitialized = false
-        private var commits = emptyList<CommitMock>()
+        private var revisions = emptyList<RevisionMock>()
 
-        @JvmStatic fun resetRepository() {
+        @JvmStatic
+        fun resetRepository() {
             isInitialized = false
-            commits = emptyList()
+            revisions = emptyList()
         }
 
-        @JvmStatic fun setRepository(revisions: List<CommitMock>) {
+        @JvmStatic
+        fun setRepository(revisions: List<RevisionMock>) {
             isInitialized = true
-            commits = revisions
+            this.revisions = revisions
         }
     }
 
     override fun isSupported(): Boolean = true
 
-    override fun isRepository(): Boolean = isInitialized
-
-    override fun createProxy(): VcsProxy = VcsProxyMock(commits)
+    override fun createProxy(): VcsProxy? =
+            if (isInitialized) VcsProxyMock(revisions) else null
 }

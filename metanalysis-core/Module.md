@@ -6,10 +6,6 @@ The core functionality of `metanalysis`.
 
 The model of `metanalysis`.
 
-# Package org.metanalysis.core.delta
-
-The delta model of `metanalysis`.
-
 # Package org.metanalysis.core.parsing
 
 The parsing services of `metanalysis`.
@@ -30,6 +26,6 @@ Logging utils.
 
 VCS API.
 
-# Package org.metanalysis.core.project
+# Package org.metanalysis.core.repository
 
 Project interaction API.

@@ -18,21 +18,20 @@ package org.metanalysis.java
 
 import org.junit.Test
 
-import org.metanalysis.core.model.Node.Function
-import org.metanalysis.core.model.Node.Type
-import org.metanalysis.core.model.Node.Variable
-import org.metanalysis.java.JavaParser.Companion.toBlock
-import org.metanalysis.test.core.model.assertEquals
-import org.metanalysis.test.core.model.sourceFileOf
+import kotlin.test.assertEquals
 
 class JavaParserEnumTest : JavaParserTest() {
     @Test fun `test enum`() {
         val source = """
         enum Color {
         }
-        """
-        val expected = sourceFileOf(Type(name = "Color"))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("Color") {
+                modifiers("enum")
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
     @Test fun `test enum with constants`() {
@@ -42,13 +41,16 @@ class JavaParserEnumTest : JavaParserTest() {
             GREEN,
             BLUE;
         }
-        """
-        val expected = sourceFileOf(Type(name = "Color", members = setOf(
-                Variable(name = "RED", initializer = listOf("RED")),
-                Variable(name = "GREEN", initializer = listOf("GREEN")),
-                Variable(name = "BLUE", initializer = listOf("BLUE"))
-        )))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("Color") {
+                modifiers("enum")
+                variable("RED") { +"RED" }
+                variable("GREEN") { +"GREEN" }
+                variable("BLUE") { +"BLUE" }
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
     @Test fun `test enum with fields`() {
@@ -61,19 +63,24 @@ class JavaParserEnumTest : JavaParserTest() {
             public final String format = "hex";
             public static int i;
         }
-        """
-        val expected = sourceFileOf(Type(name = "Color", members = setOf(
-                Variable(name = "RED", initializer = listOf("RED")),
-                Variable(name = "GREEN", initializer = listOf("GREEN")),
-                Variable(name = "BLUE", initializer = listOf("BLUE")),
-                Variable(
-                        name = "format",
-                        modifiers = setOf("public", "final"),
-                        initializer = listOf("\"hex\"")
-                ),
-                Variable(name = "i", modifiers = setOf("public", "static"))
-        )))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("Color") {
+                modifiers("enum")
+                variable("RED") { +"RED" }
+                variable("GREEN") { +"GREEN" }
+                variable("BLUE") { +"BLUE" }
+                variable("format") {
+                    modifiers("public", "final")
+
+                    +"\"hex\""
+                }
+                variable("i") {
+                    modifiers("public", "static")
+                }
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
     @Test fun `test enum with anonymous class constants`() {
@@ -97,26 +104,41 @@ class JavaParserEnumTest : JavaParserTest() {
 
             abstract String getCode();
         }
-        """
-        val expected = sourceFileOf(Type(name = "Color", members = setOf(
-                Variable(name = "RED", initializer = """RED() {
-                    @Override String getCode() {
-                        return "#FF0000";
-                    }
-                }""".toBlock()),
-                Variable(name = "GREEN", initializer = """GREEN() {
-                    @Override String getCode() {
-                        return "#00FF00";
-                    }
-                }""".toBlock()),
-                Variable(name = "BLUE", initializer = """BLUE() {
-                    @Override String getCode() {
-                        return "#0000FF";
-                    }
-                }""".toBlock()),
-                Function(signature = "getCode()", modifiers = setOf("abstract"))
-        )))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("Color") {
+                modifiers("enum")
+
+                variable("RED") {
+                    +"RED() {"
+                    +"@Override String getCode() {"
+                    +"return \"#FF0000\";"
+                    +"}"
+                    +"}"
+                }
+
+                variable("GREEN") {
+                    +"GREEN() {"
+                    +"@Override String getCode() {"
+                    +"return \"#00FF00\";"
+                    +"}"
+                    +"}"
+                }
+
+                variable("BLUE") {
+                    +"BLUE() {"
+                    +"@Override String getCode() {"
+                    +"return \"#0000FF\";"
+                    +"}"
+                    +"}"
+                }
+
+                function("getCode()") {
+                    modifiers("abstract")
+                }
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
 }

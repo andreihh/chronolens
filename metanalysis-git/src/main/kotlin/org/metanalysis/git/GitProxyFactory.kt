@@ -20,28 +20,22 @@ import org.metanalysis.core.subprocess.Subprocess.execute
 import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
 
-import java.io.IOException
-
 /** Creates proxies which delegate their operations to the `git` VCS. */
 class GitProxyFactory : VcsProxyFactory() {
     private val vcs: String = "git"
 
-    @Throws(IOException::class)
+    private fun getPrefix(): String? =
+            execute(vcs, "rev-parse", "--show-prefix").getOrNull()
+                    ?.lines()?.first()
+
+    private fun headExists(): Boolean =
+            execute(vcs, "cat-file", "-e", "HEAD^{commit}").isSuccess
+
     override fun isSupported(): Boolean = execute(vcs, "--version").isSuccess
 
-    @Throws(IOException::class)
-    override fun isRepository(): Boolean =
-            execute(vcs, "rev-parse", "--show-prefix")
-                    .getOrNull()
-                    ?.isBlank()
-                    ?: false
-
-    @Throws(IOException::class)
-    override fun createProxy(): VcsProxy {
-        val head = "HEAD"
-        if (!execute(vcs, "cat-file", "-e", "$head^{commit}").isSuccess) {
-            throw IllegalStateException("'$head' commit doesn't exist!")
-        }
-        return GitProxy()
+    override fun createProxy(): VcsProxy? {
+        val prefix = getPrefix() ?: return null
+        check(headExists()) { "'HEAD' commit doesn't exist!" }
+        return GitProxy(prefix)
     }
 }

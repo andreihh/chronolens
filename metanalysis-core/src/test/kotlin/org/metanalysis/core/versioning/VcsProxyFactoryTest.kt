@@ -27,14 +27,12 @@ import kotlin.test.assertNull
 class VcsProxyFactoryTest {
     class UnsupportedVcsProxyFactory : VcsProxyFactory() {
         override fun isSupported(): Boolean = false
-        override fun isRepository(): Boolean = false
-        override fun createProxy(): VcsProxy = throw AssertionError()
+        override fun createProxy(): VcsProxy? = throw AssertionError()
     }
 
     class UndetectedVcsProxyFactory : VcsProxyFactory() {
         override fun isSupported(): Boolean = true
-        override fun isRepository(): Boolean = false
-        override fun createProxy(): VcsProxy = throw AssertionError()
+        override fun createProxy(): VcsProxy? = null
     }
 
     @Test fun `test detect ignores unsupported`() {
@@ -90,7 +88,7 @@ class VcsProxyFactoryTest {
     @Test fun `test get non-existing revision throws`() {
         VcsProxyFactoryMock.setRepository(emptyList())
         val vcs = checkNotNull(VcsProxyFactory.detect())
-        assertFailsWith<RevisionNotFoundException> {
+        assertFailsWith<IllegalArgumentException> {
             vcs.getRevision("non-existing")
         }
     }

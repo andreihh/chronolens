@@ -14,31 +14,32 @@
  * limitations under the License.
  */
 
-@file:JvmName("Main")
-
 package org.metanalysis
 
 import org.metanalysis.core.logging.LoggerFactory
 
-import java.io.IOException
-import java.util.logging.Logger
-
 import kotlin.system.exitProcess
 
-val logger: Logger = LoggerFactory.getLogger("org/metanalysis")
+fun usage(message: String): Nothing {
+    throw IllegalUsageException(message)
+}
+
+fun printlnErr(message: String?) {
+    System.err.println(message)
+}
 
 fun main(args: Array<String>) {
+    val logger = LoggerFactory.getLogger("org/metanalysis")
     try {
-        LoggerFactory.loadConfiguration("/logging.properties")
-        val command = args.firstOrNull()
-                ?.let { Command(it) }
-                ?: Command.Help
+        val command = args.firstOrNull()?.let { Command(it) }
+                ?: usage(Command.Help.help)
         command.execute(*args.drop(1).toTypedArray())
-    } catch (e: IOException) {
-        logger.severe(e.message)
-        exitProcess(1)
     } catch (e: IllegalUsageException) {
-        System.err.println(e.message)
+        printlnErr(e.message)
+        exitProcess(1)
+    } catch (e: Exception) {
+        logger.severe("${e.message}\n")
+        e.printStackTrace(System.err)
         exitProcess(1)
     }
 }

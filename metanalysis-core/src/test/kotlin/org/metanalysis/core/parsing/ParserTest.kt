@@ -18,62 +18,47 @@ package org.metanalysis.core.parsing
 
 import org.junit.Test
 
-import org.metanalysis.core.model.SourceFile
-import org.metanalysis.core.parsing.Parser.Companion.getByExtension
-import org.metanalysis.core.parsing.Parser.Companion.getByLanguage
-import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.parsing.ParserMock
-import org.metanalysis.test.core.parsing.ParserMock.Companion
 
-import java.io.File
-import java.io.IOException
-
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 class ParserTest {
-    @Test fun `test get provided parser by language returns non-null`() {
-        assertTrue(getByLanguage(Companion.LANGUAGE) is ParserMock)
+    @Test fun `test get provided parser by language returns implementation`() {
+        val parser = Parser.getParserByLanguage(ParserMock.LANGUAGE)
+        assertEquals(ParserMock.LANGUAGE, parser?.language)
     }
 
-    @Test fun `test get provided parser by extension returns non-null`() {
-        ParserMock.EXTENSIONS.forEach {
-            assertTrue(getByExtension(it) is ParserMock)
-        }
+    @Test fun `test get provided parser returns implementation`() {
+        val parser = Parser.getParser("Test.mock")
+        assertEquals(ParserMock.LANGUAGE, parser?.language)
     }
 
     @Test fun `test get unprovided parser by language returns null`() {
-        assertNull(getByLanguage("Java"))
+        assertNull(Parser.getParserByLanguage("Java"))
     }
 
-    @Test fun `test get unprovided parser by extension returns null`() {
-        assertNull(getByExtension("java"))
+    @Test fun `test get unprovided parser returns null`() {
+        assertNull(Parser.getParser("Test.java"))
     }
 
-    @Test fun `test parse file`() {
-        val file = File("src/test/resources/resource.mock")
-        val expected = SourceFile()
-        val actual = Parser.parse(file)
-        assertEquals(expected, actual)
-    }
-
-    @Test fun `test parse file of unknown extension returns null`() {
-        val parser = Parser::class.qualifiedName
-        val file = File("src/test/resources/META-INF/services/$parser")
-        assertNull(Parser.parse(file))
-    }
-
-    @Test fun `test parse non-existent file throws`() {
-        assertFailsWith<IOException> {
-            Parser.parse(File("non-existing-file.mock"))
-        }
+    @Test fun `test get parser for unknown language returns null`() {
+        assertNull(Parser.getParser("mp3"))
     }
 
     @Test fun `test parse source with errors throws`() {
-        val parser = requireNotNull(Parser.getByLanguage(ParserMock.LANGUAGE))
-        assertFailsWith<SyntaxErrorException> {
-            parser.parse("{ \"invalid property\":2")
+        val result = Parser.parse(path = "res.mock", source = "{ \"invalid\":2")
+        assertTrue(result is Result.SyntaxError)
+    }
+
+    @Test fun `test parse invalid path throws`() {
+        val parser = Parser.getParserByLanguage(ParserMock.LANGUAGE)
+                ?: fail("Parser not provided!")
+        assertFailsWith<IllegalArgumentException> {
+            parser.parse(path = "res.moc", source = "{}")
         }
     }
 }

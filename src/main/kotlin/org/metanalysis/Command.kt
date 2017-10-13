@@ -16,67 +16,73 @@
 
 package org.metanalysis
 
-import org.metanalysis.core.project.InteractiveProject
-import org.metanalysis.core.project.PersistentProject
-import org.metanalysis.core.project.PersistentProject.Companion.persist
-import org.metanalysis.core.project.Project
-import org.metanalysis.core.serialization.JsonDriver.serialize
+import org.metanalysis.core.repository.InteractiveRepository
+import org.metanalysis.core.repository.PersistentRepository
+import org.metanalysis.core.repository.PersistentRepository.Companion.persist
+import org.metanalysis.core.repository.Repository
+import org.metanalysis.core.serialization.JsonModule.serialize
 
 import java.io.IOException
 
 sealed class Command {
     companion object {
-        private val commands = listOf(
-                Version,
-                Help,
-                List,
-                Model,
-                History,
-                Persist,
-                Clean
-        )
+        private val commands =
+                listOf(Version, Help, List, Model, History, Persist, Clean)
 
-        @JvmStatic operator fun invoke(name: String): Command =
+        operator fun invoke(name: String): Command? =
                 commands.firstOrNull { it.name == name }
-                        ?: throw NoSuchElementException("")
     }
 
     abstract val name: String
 
     abstract val help: String
 
-    abstract fun execute(vararg args: String): Unit
+    abstract fun execute(vararg args: String)
 
-    protected fun getProject(): Project = InteractiveProject.connect()
-            ?: throw IOException("Project not found!")
+    protected fun checkUsage(value: Boolean) {
+        if (!value) {
+            usage(help)
+        }
+    }
+
+    protected fun getProject(): Repository = InteractiveRepository.connect()
+            ?: throw IOException("Repository not found!")
 
     object Version : Command() {
         override val name: String = "version"
         override val help: String = """
+        Usage: metanalysis version
+
         Prints the installed version of metanalysis.
-        """
+        """.trimIndent()
 
         override fun execute(vararg args: String) {
-            println("metanalysis 0.1.7")
+            println("metanalysis 0.2.0")
         }
     }
 
     object Help : Command() {
         override val name: String = "help"
         override val help: String = """
-        Parameters: [<command>]
+        Usage: metanalysis help [<command>]
 
         Show usage instructions for the given <command>, or list the available
         commands if no arguments are provided.
-        """
+        """.trimIndent()
 
         override fun execute(vararg args: String) {
-            require(args.size <= 1)
+            checkUsage(args.size <= 1)
             if (args.isEmpty()) {
                 println("Usage: metanalysis <command> <args>")
-                commands.map(Command::name).forEach(::println)
+                println("\nAvailable commands:")
+                commands.map(Command::name).forEach { println("- $it") }
             } else {
-                println(Command(args[0]).help)
+                val command = Command(args[0])
+                if (command != null) {
+                    println(command.help)
+                } else {
+                    printlnErr("Unknown command!")
+                }
             }
         }
     }
@@ -84,58 +90,70 @@ sealed class Command {
     object List : Command() {
         override val name: String = "list"
         override val help: String = """
-        Prints all the files in the project detected in the current working
-        directory.
-        """
+        Usage: metanalysis list
+
+        Prints all the interpretable files in the project detected in the
+        current working directory.
+        """.trimIndent()
 
         override fun execute(vararg args: String) {
+            checkUsage(args.isEmpty())
             val project = getProject()
-            project.listFiles().forEach(::println)
+            project.listSources().forEach(::println)
         }
     }
 
     object Model : Command() {
         override val name: String = "model"
         override val help: String = """
-        Parameters: <path>
+        Usage: metanalysis model <path>
 
         Prints the interpreted code metadata from the file located at the given
         <path> in the project detected in the current working directory.
-        """
+        """.trimIndent()
 
         override fun execute(vararg args: String) {
-            require(args.size == 1)
+            checkUsage(args.size == 1)
             val project = getProject()
-            serialize(System.out, project.getFileModel(args[0]))
+            val model = project.getSourceUnit(args[0])
+            if (model != null) {
+                serialize(System.out, model)
+            } else {
+                printlnErr("File couldn't be interpreted!")
+            }
         }
     }
 
     object History : Command() {
         override val name: String = "history"
         override val help: String = """
-        """
+        Usage: metanalysis history
+        """.trimIndent()
 
         override fun execute(vararg args: String) {
-            if (args.size != 1) {
-                throw IllegalUsageException("")
-            }
+            checkUsage(args.isEmpty())
             val project = getProject()
-            serialize(System.out, project.getFileHistory(args[0]))
+            for (transaction in project.getHistory()) {
+                serialize(System.out, transaction)
+            }
         }
     }
 
     object Persist : Command() {
         override val name: String = "persist"
         override val help: String = """
+        Usage: metanalysis persist
+
         Connects to the repository detected in the current working directory and
         persists the code metadata and history from all the files which can be
         interpreted.
 
         The project is persisted in the '.metanalysis' directory from the
         current working directory.
-        """
+        """.trimIndent()
 
         override fun execute(vararg args: String) {
+            checkUsage(args.isEmpty())
             val project = getProject()
             project.persist()
         }
@@ -144,12 +162,15 @@ sealed class Command {
     object Clean : Command() {
         override val name: String = "clean"
         override val help: String = """
+        Usage: metanalysis clean
+
         Deletes the previously persisted project from the current working
         directory, if it exists.
-        """
+        """.trimIndent()
 
         override fun execute(vararg args: String) {
-            PersistentProject.clean()
+            checkUsage(args.isEmpty())
+            PersistentRepository.clean()
         }
     }
 }

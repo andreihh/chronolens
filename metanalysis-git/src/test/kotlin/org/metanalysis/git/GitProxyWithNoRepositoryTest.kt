@@ -22,7 +22,7 @@ import org.metanalysis.core.versioning.VcsProxyFactory
 
 import kotlin.test.assertNull
 
-class GitProxyWithNoRepositoryTest : GitProxyTest() {
+class GitProxyWithNoRepositoryTest {
     @Test fun `test detect repository`() {
         assertNull(VcsProxyFactory.detect())
     }

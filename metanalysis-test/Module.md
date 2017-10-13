@@ -4,16 +4,16 @@ The core functionality of `metanalysis`.
 
 # Package org.metanalysis.test.core.model
 
-The model of `metanalysis`.
+Model test utils for `metanalysis`.
 
-# Package org.metanalysis.test.core.delta
+# Package org.metanalysis.test.core.parsing
 
-The model of `metanalysis`.
+Parsing test utils for `metanalysis`.
 
 # Package org.metanalysis.test.core.versioning
 
-The model of `metanalysis`.
+Versioning test utils for `metanalysis`.
 
-# Package org.metanalysis.test.core.project
+# Package org.metanalysis.test.core.repository
 
-The model of `metanalysis`.
+Repository test utils for `metanalysis`.

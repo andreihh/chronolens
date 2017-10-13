@@ -7,11 +7,10 @@
 
 ## Features
 
-- an abstract model which contains code metadata
-- an abstract transaction model to represent differences between code metadata
-models
-- JSON serialization utilities for code metadata and differences
-- a Git integration module
+- an abstract model to represent code metadata and transactions (differences
+between two versions of code metadata)
+- JSON serialization utilities for code metadata and transactions
+- a Git proxy module
 - a Java source file parser which extracts Java code metadata
 
 ## Using Metanalysis
@@ -73,72 +72,103 @@ Add the dependencies:
 </dependencies>
 ```
 
-### Configuration
-
-If using the parsing and versioning modules as dependencies, you must provide
-the following service configuration files:
-- `META-INF/services/org.metanalysis.core.parsing.Parser` (for parsing)
-- `META-INF/services/org.metanalysis.core.versioning.VcsProxy` (for versioning)
-
 ### Example Java usage
 
-There are three ways to interact with a repository from Java.
-
-1. Connect to the repository directly, without persisting anything:
-
+There are three ways to interact with a repository from Java:
 ```java
-final Project project = InteractiveProject.connect();
-// all project method calls are delegated to a VCS proxy
-for (final String filePath : project.listFiles()) {
-    final SourceFile model = project.getFileModel(filePath);
-    final List<HistoryEntry> history = project.getFileHistory(filePath);
-    // process the model and history
-}
-```
+// Connect to the repository directly, without persisting anything. All method
+// calls are delegated to a VCS proxy.
+final Repository repository = InteractiveRepository.connect();
+// ...
 
-2. Connect to the previously persisted data from the repository:
+// Connect to the previously persisted data from the repository. All method
+// calls read the persisted data from the disk.
+final Repository repository = PersistentRepository.load();
+// ...
 
-```java
-final Project project = PersistentProject.load();
-// all project method calls read the persisted data from the disk
-for (final String filePath : project.listFiles()) {
-    final SourceFile model = project.getFileModel(filePath);
-    final List<HistoryEntry> history = project.getFileHistory(filePath);
-    // process the model and history
-}
-```
-
-3. Connect to the repository directly, persist the data and then interact with
-the persisted data:
-
-```java
-// the repository will be analyzed and persisted to disk
+// Connect to the repository directly, persist the data and then interact with
+// the persisted data. The repository will be analyzed and persisted to disk.
 final Project project = InteractiveProject.connect().persist();
-// all project method calls read the persisted data from the disk
-for (final String filePath : project.listFiles()) {
-    final SourceFile model = project.getFileModel(filePath);
-    final List<HistoryEntry> history = project.getFileHistory(filePath);
-    // process the model and history
+// ...
+```
+
+There are three ways to process data from a repository:
+```java
+// Process all sources individually.
+for (final String path : repository.listSources()) {
+    final SourceUnit sourceUnit = repository.getSourceUnit(path);
+    // ...
+}
+
+// Process the latest snapshot.
+final Project project = repository.getSnapshot();
+// ...
+
+// Process the transaction history.
+final Iterable<Transaction> history = repository.getHistory();
+// ...
+```
+
+Processing a `SourceNode` can be achieved using the `Visitor` pattern:
+```java
+abstract class NodeVisitor {
+    public abstract void visit(SourceUnit sourceUnit);
+    public abstract void visit(Type type);
+    public abstract void visit(Function function);
+    public abstract void visit(Variable variable);
+    public final void visit(SourceNode node) {
+        // safe to use `instanceof` because the class hierarchy is sealed
+        if (node instanceof SourceUnit) {
+            visit((SourceUnit) node);
+        } else if (node instanceof Type) {
+            visit((Type) node);
+        } else if (node instanceof Function) {
+            visit((Function) node);
+        } else if (node instanceof Variable) {
+            visit((Variable) node);
+        } else {
+            // should never be executed
+            throw new AssertionError("Unknown node type!");
+        }
+    }
 }
 ```
 
-Processing a `SourceFile` or `Node` can be achieved using the `Visitor` pattern:
-
+Processing a `Transaction` can also be achieved using the `Visitor` pattern:
 ```java
-abstract class CodeVisitor {
-    public abstract void visit(SourceFile sourceFile);
-    public abstract void visit(Node.Type type);
-    public abstract void visit(Node.Variable variable);
-    public abstract void visit(Node.Function function);
+abstract class TransactionVisitor {
+    protected final Project project;
     
-    public final void visit(Node node) {
+    public TransactionVisitor(Project project) {
+        this.project = project;
+    }
+
+    protected abstract void visit(AddNode edit);
+    protected abstract void visit(RemoveNode edit);
+    protected abstract void visit(EditType edit);
+    protected abstract void visit(EditFunction edit);
+    protected abstract void visit(EditVariable edit);
+    protected final void visit(ProjectEdit edit) {
         // safe to use `instanceof` because the class hierarchy is sealed
-        if (node instanceof Node.Type) {
-            visit((Node.Type) node);
-        } else if (node instanceof Node.Variable) {
-            visit((Node.Variable) node);
-        } else if (node instanceof Node.Function) {
-            visit((Node.Function) node);
+        if (edit instanceof AddNode) {
+            visit((AddNode) edit);
+        } else if (edit instanceof RemoveNode) {
+            visit((RemoveNode) edit);
+        } else if (edit instanceof EditType) {
+            visit((EditType) edit);
+        } else if (edit instanceof EditFunction) {
+            visit((EditFunction) edit);
+        } else if (edit instanceof EditVariable) {
+            visit((EditVariable) edit);
+        } else {
+            // should never be executed
+            throw new AssertionError("Unknown edit type!");
+        }
+    }
+
+    public final void visit(Transaction transaction) {
+        for (ProjectEdit edit : transaction.getEdits()) {
+            visit(edit);
         }
     }
 }

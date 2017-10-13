@@ -16,14 +16,34 @@
 
 package org.metanalysis.core.subprocess
 
+/** The result from executing a subprocess. */
 sealed class Result {
+    /**
+     * The result of a successful execution of a subprocess.
+     *
+     * @property text the `UTF-8` encoded output from the `stdout` of the
+     * subprocess
+     */
     data class Success(val text: String) : Result()
 
+    /**
+     * The result of a subprocess which terminated with non-zero exit status.
+     *
+     * @property exitValue the exit code of the subprocess
+     * @property message the `UTF-8` encoded output from the `stderr` of the
+     * subprocess
+     */
     data class Error(val exitValue: Int, val message: String) : Result()
 
+    /**
+     * Returns the output parsed from the `stdout` of a subprocess, or `null` if
+     * the subprocess terminated abnormally.
+     */
     fun getOrNull(): String? = (this as? Success)?.text
 
     /**
+     * Returns the output parsed from the `stdout` of a subprocess.
+     *
      * @throws SubprocessException if the subprocess terminated abnormally
      */
     fun get(): String = when (this) {
@@ -31,6 +51,7 @@ sealed class Result {
         is Error -> throw SubprocessException(exitValue, message)
     }
 
+    /** Returns whether this result is a [Success]. */
     val isSuccess: Boolean
         get() = this is Success
 }

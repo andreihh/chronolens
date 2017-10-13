@@ -18,21 +18,20 @@ package org.metanalysis.java
 
 import org.junit.Test
 
-import org.metanalysis.core.model.Node.Function
-import org.metanalysis.core.model.Node.Type
-import org.metanalysis.core.model.Node.Variable
-import org.metanalysis.java.JavaParser.Companion.toBlock
-import org.metanalysis.test.core.model.assertEquals
-import org.metanalysis.test.core.model.sourceFileOf
+import kotlin.test.assertEquals
 
 class JavaParserInterfaceTest : JavaParserTest() {
     @Test fun `test interface`() {
         val source = """
         interface IInterface {
         }
-        """
-        val expected = sourceFileOf(Type(name = "IInterface"))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("IInterface") {
+                modifiers("interface")
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
     @Test fun `test interface with fields`() {
@@ -41,12 +40,15 @@ class JavaParserInterfaceTest : JavaParserTest() {
             String name = null;
             int version = 1;
         }
-        """
-        val expected = sourceFileOf(Type(name = "IInterface", members = setOf(
-                Variable(name = "name", initializer = listOf("null")),
-                Variable(name = "version", initializer = listOf("1"))
-        )))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("IInterface") {
+                modifiers("interface")
+                variable("name") { +"null" }
+                variable("version") { +"1" }
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
     @Test fun `test interface with methods`() {
@@ -55,12 +57,15 @@ class JavaParserInterfaceTest : JavaParserTest() {
             String getName();
             int getVersion();
         }
-        """
-        val expected = sourceFileOf(Type(name = "IInterface", members = setOf(
-                Function(signature = "getName()"),
-                Function(signature = "getVersion()")
-        )))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("IInterface") {
+                modifiers("interface")
+                function("getName()") {}
+                function("getVersion()") {}
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
     @Test fun `test interface with default methods`() {
@@ -71,29 +76,34 @@ class JavaParserInterfaceTest : JavaParserTest() {
                 return 1;
             }
         }
-        """
-        val expected = sourceFileOf(Type(name = "IInterface", members = setOf(
-                Function(signature = "getName()"),
-                Function(
-                        signature = "getVersion()",
-                        modifiers = setOf("default"),
-                        body = """{
-                            return 1;
-                        }""".toBlock()
-                )
-        )))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("IInterface") {
+                modifiers("interface")
+                function("getName()") {}
+                function("getVersion()") {
+                    modifiers("default")
+
+                    +"{"
+                    +"return 1;"
+                    +"}"
+                }
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 
     @Test fun `test interface with supertypes`() {
         val source = """
         interface IInterface extends Comparable<IInterface> {
         }
-        """
-        val expected = sourceFileOf(Type(
-                name = "IInterface",
-                supertypes = setOf("Comparable<IInterface>")
-        ))
-        assertEquals(expected, parser.parse(source))
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("IInterface") {
+                modifiers("interface")
+                supertypes("Comparable<IInterface>")
+            }
+        }
+        assertEquals(expected, parse(source))
     }
 }

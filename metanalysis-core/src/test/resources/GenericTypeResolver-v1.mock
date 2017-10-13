@@ -1,216 +1,216 @@
 {
   "nodes" : [ {
-    "@class" : "org.metanalysis.core.model.Node$Type",
+    "@class" : "org.metanalysis.core.model.SourceNode$Type",
     "name" : "GenericTypeResolver",
     "supertypes" : [ ],
     "members" : [ {
-      "@class" : "org.metanalysis.core.model.Node$Variable",
+      "@class" : "org.metanalysis.core.model.SourceNode$Variable",
       "name" : "logger",
       "initializer" : [ "LogFactory.getLog(GenericTypeResolver.class)" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Variable",
+      "@class" : "org.metanalysis.core.model.SourceNode$Variable",
       "name" : "typeVariableCache",
       "initializer" : [ "Collections.synchronizedMap(new WeakHashMap<Class,Reference<Map<TypeVariable,Type>>>())" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "getTargetType(MethodParameter)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "methodParam",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  Assert.notNull(methodParam,\"MethodParameter must not be null\");", "  if (methodParam.getConstructor() != null) {", "    return methodParam.getConstructor().getGenericParameterTypes()[methodParam.getParameterIndex()];", "  }", " else {", "    if (methodParam.getParameterIndex() >= 0) {", "      return methodParam.getMethod().getGenericParameterTypes()[methodParam.getParameterIndex()];", "    }", " else {", "      return methodParam.getMethod().getGenericReturnType();", "    }", "  }", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "resolveParameterType(MethodParameter, Class)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "methodParam",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "clazz",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  Type genericType=getTargetType(methodParam);", "  Assert.notNull(clazz,\"Class must not be null\");", "  Map<TypeVariable,Type> typeVariableMap=getTypeVariableMap(clazz);", "  Type rawType=getRawType(genericType,typeVariableMap);", "  Class result=(rawType instanceof Class ? (Class)rawType : methodParam.getParameterType());", "  methodParam.setParameterType(result);", "  methodParam.typeVariableMap=typeVariableMap;", "  return result;", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "resolveReturnType(Method, Class<?>)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "method",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "clazz",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  Assert.notNull(method,\"Method must not be null\");", "  Type genericType=method.getGenericReturnType();", "  Assert.notNull(clazz,\"Class must not be null\");", "  Map<TypeVariable,Type> typeVariableMap=getTypeVariableMap(clazz);", "  Type rawType=getRawType(genericType,typeVariableMap);", "  return (rawType instanceof Class ? (Class<?>)rawType : method.getReturnType());", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "resolveReturnTypeForGenericMethod(Method, Object[])",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "method",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "args",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  Assert.notNull(method,\"method must not be null\");", "  Assert.notNull(args,\"args must not be null\");", "  if (logger.isDebugEnabled()) {", "    logger.debug(String.format(\"Resolving return type for [%s] with concrete method arguments [%s].\",method.toGenericString(),ObjectUtils.nullSafeToString(args)));", "  }", "  final TypeVariable<Method>[] declaredTypeVariables=method.getTypeParameters();", "  final Type genericReturnType=method.getGenericReturnType();", "  final Type[] methodArgumentTypes=method.getGenericParameterTypes();", "  if (declaredTypeVariables.length == 0) {", "    return method.getReturnType();", "  }", "  if (args.length < methodArgumentTypes.length) {", "    return null;", "  }", "  boolean locallyDeclaredTypeVariableMatchesReturnType=false;", "  for (  TypeVariable<Method> currentTypeVariable : declaredTypeVariables) {", "    if (currentTypeVariable.equals(genericReturnType)) {", "      if (logger.isDebugEnabled()) {", "        logger.debug(String.format(\"Found declared type variable [%s] that matches the target return type [%s].\",currentTypeVariable,genericReturnType));", "      }", "      locallyDeclaredTypeVariableMatchesReturnType=true;", "      break;", "    }", "  }", "  if (locallyDeclaredTypeVariableMatchesReturnType) {", "    for (int i=0; i < methodArgumentTypes.length; i++) {", "      final Type currentMethodArgumentType=methodArgumentTypes[i];", "      if (currentMethodArgumentType.equals(genericReturnType)) {", "        if (logger.isDebugEnabled()) {", "          logger.debug(String.format(\"Found method argument type at index [%s] that matches the target return type.\",i));", "        }", "        return args[i].getClass();", "      }", "      if (currentMethodArgumentType instanceof ParameterizedType) {", "        ParameterizedType parameterizedType=(ParameterizedType)currentMethodArgumentType;", "        Type[] actualTypeArguments=parameterizedType.getActualTypeArguments();", "        for (int j=0; j < actualTypeArguments.length; j++) {", "          final Type typeArg=actualTypeArguments[j];", "          if (typeArg.equals(genericReturnType)) {", "            if (logger.isDebugEnabled()) {", "              logger.debug(String.format(\"Found method argument type at index [%s] that is parameterized with a type argument that matches the target return type.\",i));", "            }", "            if (args[i] instanceof Class) {", "              return (Class<?>)args[i];", "            }", " else {", "              logger.info(String.format(\"Could not determine the target type for type argument [%s] for method [%s].\",typeArg,method.toGenericString()));", "              return method.getReturnType();", "            }", "          }", "        }", "      }", "    }", "  }", "  return method.getReturnType();", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "resolveReturnTypeArgument(Method, Class<?>)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "method",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "genericIfc",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  Assert.notNull(method,\"method must not be null\");", "  Type returnType=method.getReturnType();", "  Type genericReturnType=method.getGenericReturnType();", "  if (returnType.equals(genericIfc)) {", "    if (genericReturnType instanceof ParameterizedType) {", "      ParameterizedType targetType=(ParameterizedType)genericReturnType;", "      Type[] actualTypeArguments=targetType.getActualTypeArguments();", "      Type typeArg=actualTypeArguments[0];", "      if (!(typeArg instanceof WildcardType)) {", "        return (Class<?>)typeArg;", "      }", "    }", " else {", "      return null;", "    }", "  }", "  return resolveTypeArgument((Class<?>)returnType,genericIfc);", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "resolveTypeArgument(Class, Class)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "clazz",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "genericIfc",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  Class[] typeArgs=resolveTypeArguments(clazz,genericIfc);", "  if (typeArgs == null) {", "    return null;", "  }", "  if (typeArgs.length != 1) {", "    throw new IllegalArgumentException(\"Expected 1 type argument on generic interface [\" + genericIfc.getName() + \"] but found \"+ typeArgs.length);", "  }", "  return typeArgs[0];", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "resolveTypeArguments(Class, Class)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "clazz",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "genericIfc",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  return doResolveTypeArguments(clazz,clazz,genericIfc);", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "doResolveTypeArguments(Class, Class, Class)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "ownerClass",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "classToIntrospect",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "genericIfc",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  while (classToIntrospect != null) {", "    if (genericIfc.isInterface()) {", "      Type[] ifcs=classToIntrospect.getGenericInterfaces();", "      for (      Type ifc : ifcs) {", "        Class[] result=doResolveTypeArguments(ownerClass,ifc,genericIfc);", "        if (result != null) {", "          return result;", "        }", "      }", "    }", " else {", "      Class[] result=doResolveTypeArguments(ownerClass,classToIntrospect.getGenericSuperclass(),genericIfc);", "      if (result != null) {", "        return result;", "      }", "    }", "    classToIntrospect=classToIntrospect.getSuperclass();", "  }", "  return null;", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "doResolveTypeArguments(Class, Type, Class)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "ownerClass",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "ifc",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "genericIfc",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  if (ifc instanceof ParameterizedType) {", "    ParameterizedType paramIfc=(ParameterizedType)ifc;", "    Type rawType=paramIfc.getRawType();", "    if (genericIfc.equals(rawType)) {", "      Type[] typeArgs=paramIfc.getActualTypeArguments();", "      Class[] result=new Class[typeArgs.length];", "      for (int i=0; i < typeArgs.length; i++) {", "        Type arg=typeArgs[i];", "        result[i]=extractClass(ownerClass,arg);", "      }", "      return result;", "    }", " else     if (genericIfc.isAssignableFrom((Class)rawType)) {", "      return doResolveTypeArguments(ownerClass,(Class)rawType,genericIfc);", "    }", "  }", " else   if (ifc != null && genericIfc.isAssignableFrom((Class)ifc)) {", "    return doResolveTypeArguments(ownerClass,(Class)ifc,genericIfc);", "  }", "  return null;", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "extractClass(Class, Type)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "ownerClass",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "arg",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  if (arg instanceof ParameterizedType) {", "    return extractClass(ownerClass,((ParameterizedType)arg).getRawType());", "  }", " else   if (arg instanceof GenericArrayType) {", "    GenericArrayType gat=(GenericArrayType)arg;", "    Type gt=gat.getGenericComponentType();", "    Class<?> componentClass=extractClass(ownerClass,gt);", "    return Array.newInstance(componentClass,0).getClass();", "  }", " else   if (arg instanceof TypeVariable) {", "    TypeVariable tv=(TypeVariable)arg;", "    arg=getTypeVariableMap(ownerClass).get(tv);", "    if (arg == null) {", "      arg=extractBoundForTypeVariable(tv);", "    }", " else {", "      arg=extractClass(ownerClass,arg);", "    }", "  }", "  return (arg instanceof Class ? (Class)arg : Object.class);", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "resolveType(Type, Map<TypeVariable,Type>)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "genericType",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "typeVariableMap",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  Type rawType=getRawType(genericType,typeVariableMap);", "  return (rawType instanceof Class ? (Class)rawType : Object.class);", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "getRawType(Type, Map<TypeVariable,Type>)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "genericType",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "typeVariableMap",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  Type resolvedType=genericType;", "  if (genericType instanceof TypeVariable) {", "    TypeVariable tv=(TypeVariable)genericType;", "    resolvedType=typeVariableMap.get(tv);", "    if (resolvedType == null) {", "      resolvedType=extractBoundForTypeVariable(tv);", "    }", "  }", "  if (resolvedType instanceof ParameterizedType) {", "    return ((ParameterizedType)resolvedType).getRawType();", "  }", " else {", "    return resolvedType;", "  }", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "getTypeVariableMap(Class)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "clazz",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  Reference<Map<TypeVariable,Type>> ref=typeVariableCache.get(clazz);", "  Map<TypeVariable,Type> typeVariableMap=(ref != null ? ref.get() : null);", "  if (typeVariableMap == null) {", "    typeVariableMap=new HashMap<TypeVariable,Type>();", "    extractTypeVariablesFromGenericInterfaces(clazz.getGenericInterfaces(),typeVariableMap);", "    Type genericType=clazz.getGenericSuperclass();", "    Class type=clazz.getSuperclass();", "    while (type != null && !Object.class.equals(type)) {", "      if (genericType instanceof ParameterizedType) {", "        ParameterizedType pt=(ParameterizedType)genericType;", "        populateTypeMapFromParameterizedType(pt,typeVariableMap);", "      }", "      extractTypeVariablesFromGenericInterfaces(type.getGenericInterfaces(),typeVariableMap);", "      genericType=type.getGenericSuperclass();", "      type=type.getSuperclass();", "    }", "    type=clazz;", "    while (type.isMemberClass()) {", "      genericType=type.getGenericSuperclass();", "      if (genericType instanceof ParameterizedType) {", "        ParameterizedType pt=(ParameterizedType)genericType;", "        populateTypeMapFromParameterizedType(pt,typeVariableMap);", "      }", "      type=type.getEnclosingClass();", "    }", "    typeVariableCache.put(clazz,new WeakReference<Map<TypeVariable,Type>>(typeVariableMap));", "  }", "  return typeVariableMap;", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "extractBoundForTypeVariable(TypeVariable)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "typeVariable",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  Type[] bounds=typeVariable.getBounds();", "  if (bounds.length == 0) {", "    return Object.class;", "  }", "  Type bound=bounds[0];", "  if (bound instanceof TypeVariable) {", "    bound=extractBoundForTypeVariable((TypeVariable)bound);", "  }", "  return bound;", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "extractTypeVariablesFromGenericInterfaces(Type[], Map<TypeVariable,Type>)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "genericInterfaces",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "typeVariableMap",
         "initializer" : [ ]
       } ],
       "body" : [ "{", "  for (  Type genericInterface : genericInterfaces) {", "    if (genericInterface instanceof ParameterizedType) {", "      ParameterizedType pt=(ParameterizedType)genericInterface;", "      populateTypeMapFromParameterizedType(pt,typeVariableMap);", "      if (pt.getRawType() instanceof Class) {", "        extractTypeVariablesFromGenericInterfaces(((Class)pt.getRawType()).getGenericInterfaces(),typeVariableMap);", "      }", "    }", " else     if (genericInterface instanceof Class) {", "      extractTypeVariablesFromGenericInterfaces(((Class)genericInterface).getGenericInterfaces(),typeVariableMap);", "    }", "  }", "}", "" ]
     }, {
-      "@class" : "org.metanalysis.core.model.Node$Function",
+      "@class" : "org.metanalysis.core.model.SourceNode$Function",
       "signature" : "populateTypeMapFromParameterizedType(ParameterizedType, Map<TypeVariable,Type>)",
       "parameters" : [ {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "type",
         "initializer" : [ ]
       }, {
-        "@class" : "org.metanalysis.core.model.Node$Variable",
+        "@class" : "org.metanalysis.core.model.SourceNode$Variable",
         "name" : "typeVariableMap",
         "initializer" : [ ]
       } ],

@@ -16,8 +16,6 @@
 
 package org.metanalysis.core.versioning
 
-import java.io.IOException
-
 /**
  * A version control system (VCS) proxy which interacts with the repository
  * detected in the current working directory.
@@ -29,55 +27,61 @@ interface VcsProxy {
     /**
      * Returns the `head` revision.
      *
-     * @throws IOException if any input related errors occur
+     * @throws IllegalStateException if the `head` revision doesn't exist
      */
-    @Throws(IOException::class)
     fun getHead(): Revision
 
     /**
      * Returns the revision with the given id.
      *
      * @param revisionId the id of the requested revision
-     * @throws RevisionNotFoundException if the requested revision doesn't exist
-     * @throws IOException if any input related errors occur
+     * @return the requested revision, or `null` if no such revision exists
      */
-    @Throws(IOException::class)
-    fun getRevision(revisionId: String): Revision
+    fun getRevision(revisionId: String): Revision?
 
     /**
-     * Returns the set of existing files in the [head][getHead] revision.
+     * Returns the files inside the current working directory which were
+     * modified in the revision with the given id.
      *
-     * @throws IOException if any input related errors occur
+     * @param revisionId the id of the requested revision
+     * @return the requested change set
+     * @throws IllegalArgumentException if `revisionId` doesn't exist
      */
-    @Throws(IOException::class)
-    fun listFiles(): Set<String>
+    fun getChangeSet(revisionId: String): Set<String>
 
     /**
-     * Returns the file located at the given path as it is found in the given
+     * Returns the set of existing files in the current working directory in the
+     * given revision.
+     *
+     * @param revisionId the id of the requested revision
+     * @return the set of files in the requested revision
+     * @throws IllegalArgumentException if `revisionId` doesn't exist
+     */
+    fun listFiles(revisionId: String): Set<String>
+
+    /**
+     * Returns the file located at the given `path` as it is found in the given
      * revision.
      *
      * @param revisionId the id of the desired revision of the file
-     * @param path the path of the requested file, relative to the repository
-     * root
+     * @param path the relative path of the requested file
      * @return the content of the requested file, or `null` if it doesn't exist
      * in the specified revision
-     * @throws RevisionNotFoundException if `revisionId` doesn't exist
-     * @throws IOException if any input related errors occur
+     * @throws IllegalArgumentException if `revisionId` doesn't exist
      */
-    @Throws(IOException::class)
     fun getFile(revisionId: String, path: String): String?
 
     /**
-     * Returns all the revisions which modified the file at the given path up to
-     * the [head][getHead] revision.
+     * Returns all the revisions which modified the file or directory at the
+     * given `path` up to the `head` revision.
      *
-     * @param path the path of the requested file, relative to the repository
-     * root
+     * A directory is modified if any file in its subtree is modified.
+     *
+     * @param path the relative path of the requested file or directory (the
+     * empty string represents the current working directory)
      * @return the chronological list of revisions which modified the requested
-     * file, or the empty list if `path` never existed in the [head][getHead]
-     * revision or any of its ancestors
-     * @throws IOException if any input related errors occur
+     * file or directory, or the empty list if `path` never existed in the
+     * `head` revision or any of its ancestors
      */
-    @Throws(IOException::class)
-    fun getFileHistory(path: String): List<Revision>
+    fun getHistory(path: String = ""): List<Revision>
 }

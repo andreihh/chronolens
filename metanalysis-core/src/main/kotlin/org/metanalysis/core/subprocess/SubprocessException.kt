@@ -17,7 +17,11 @@
 package org.metanalysis.core.subprocess
 
 /** Signals that a subprocess terminated abnormally. */
-class SubprocessException(
-        exitValue: Int,
-        message: String
-) : RuntimeException("Subprocess exited with code $exitValue: $message")
+class SubprocessException : RuntimeException {
+    constructor(cause: Throwable) : super(cause)
+
+    constructor(
+            exitValue: Int,
+            message: String
+    ) : super("Subprocess exited with code $exitValue: $message")
+}

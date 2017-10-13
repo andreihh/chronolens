@@ -18,22 +18,16 @@ package org.metanalysis.git
 
 import org.metanalysis.core.subprocess.Subprocess.execute
 import org.metanalysis.core.versioning.Revision
-import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VcsProxy
 
-import java.io.IOException
-import java.util.Date
-
-internal class GitProxy : VcsProxy {
+internal class GitProxy(private val prefix: String) : VcsProxy {
     private val vcs = "git"
     private val headId = "HEAD"
-    private val format = "--format=%at:%an"
+    private val format = "--format=%ct:%an"
 
     private fun validateRevision(revisionId: String) {
         val result = execute(vcs, "cat-file", "-e", "$revisionId^{commit}")
-        if (!result.isSuccess) {
-            throw RevisionNotFoundException(revisionId)
-        }
+        require(result.isSuccess) { "Revision '$revisionId' doesn't exist!" }
     }
 
     private fun String.formatCommits(): List<String> {
@@ -46,38 +40,46 @@ internal class GitProxy : VcsProxy {
     private fun String.formatCommit(): String = formatCommits().single()
 
     private fun parseCommit(formattedLine: String): Revision {
-        val (id, rawDate, author) = formattedLine.split(':', limit = 3)
-        val date = Date(rawDate.toLong() * 1000)
+        val (id, rawDate, author) =
+                formattedLine.split(delimiters = ':', limit = 3)
+        val date = rawDate.toLong() * 1000
         return Revision(id, date, author)
     }
 
-    @Throws(IOException::class)
-    override fun getHead(): Revision = getRevision(headId)
+    private fun String.parseFiles(): Set<String> =
+            lines().filter(String::isNotBlank).toSet()
 
-    @Throws(IOException::class)
-    override fun getRevision(revisionId: String): Revision =
+    override fun getHead(): Revision =
+            getRevision(headId) ?: error("'$headId' must exist!")
+
+    override fun getRevision(revisionId: String): Revision? =
             execute(vcs, "rev-list", "-1", format, "$revisionId^{commit}")
                     .getOrNull()
                     ?.formatCommit()
                     ?.let(this::parseCommit)
-                    ?: throw RevisionNotFoundException(revisionId)
 
-    @Throws(IOException::class)
-    override fun listFiles(): Set<String> =
-            execute(vcs, "ls-tree", "--full-tree", "--name-only", "-r", headId)
-                    .get()
-                    .lines()
-                    .filter(String::isNotBlank)
-                    .toSet()
-
-    @Throws(IOException::class)
-    override fun getFile(revisionId: String, path: String): String? {
+    override fun getChangeSet(revisionId: String): Set<String> {
         validateRevision(revisionId)
-        return execute(vcs, "cat-file", "blob", "$revisionId:$path").getOrNull()
+        return execute(
+                vcs, "diff-tree", "-m", "-r", "--root",
+                "--name-only", "--relative", "--no-commit-id",
+                revisionId
+        ).get().parseFiles()
     }
 
-    @Throws(IOException::class)
-    override fun getFileHistory(path: String): List<Revision> = execute(
+    override fun listFiles(revisionId: String): Set<String> {
+        validateRevision(revisionId)
+        return execute(vcs, "ls-tree", "-r", "--name-only", revisionId)
+                .get().parseFiles()
+    }
+
+    override fun getFile(revisionId: String, path: String): String? {
+        validateRevision(revisionId)
+        return execute(vcs, "cat-file", "blob", "$revisionId:$prefix$path")
+                .getOrNull()
+    }
+
+    override fun getHistory(path: String): List<Revision> = execute(
             vcs, "rev-list", "--first-parent", "--reverse", format,
             headId, "--", path
     ).get().formatCommits().map(this::parseCommit)

@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        kotlin_version = '1.1.3-2'
+        kotlin_version = '1.1.51'
         dokka_version = '0.9.15'
         jackson_version = '2.8.9'
         jdt_version = '3.12.3'
@@ -19,8 +19,8 @@ buildscript {
 }
 
 allprojects {
-    group 'org.metanalysis'
-    version '0.1.7'
+    group = 'org.metanalysis'
+    version = '0.2.0'
 
     repositories {
         mavenCentral()
@@ -28,7 +28,6 @@ allprojects {
     }
 
     apply plugin: 'kotlin'
-    apply plugin: 'org.jetbrains.dokka'
     apply plugin: 'jacoco'
 
     sourceCompatibility = JavaVersion.VERSION_1_7
@@ -40,6 +39,29 @@ allprojects {
         testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
         testImplementation "junit:junit:$junit_version"
     }
+
+    test.exclude '**/*Suite.class'
+
+    jar {
+        from rootProject.file('LICENSE')
+        from rootProject.file('NOTICE')
+    }
+
+    jacocoTestReport {
+        dependsOn test
+
+        reports {
+            html.enabled = true
+            xml.enabled = true
+            csv.enabled = false
+        }
+    }
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'org.jetbrains.dokka'
+    apply plugin: 'maven'
 
     dokka {
         moduleName = project.name
@@ -53,11 +75,6 @@ allprojects {
             url = "https://github.com/andreihh/${rootProject.name}/blob/master/${project.name}/$dir"
             suffix = "#L"
         }
-    }
-
-    jar {
-        from rootProject.file('LICENSE')
-        from rootProject.file('NOTICE')
     }
 
     task sourcesJar(type: Jar, dependsOn: classes) {
@@ -74,16 +91,16 @@ allprojects {
         archives sourcesJar
         archives javadocJar
     }
+}
 
-    jacocoTestReport {
-        dependsOn test
+apply plugin: 'application'
 
-        reports {
-            html.enabled = true
-            xml.enabled = true
-            csv.enabled = false
-        }
-    }
+mainClassName = 'org.metanalysis.MainKt'
+
+dependencies {
+    implementation project(':metanalysis-core')
+    runtimeOnly project(':metanalysis-git')
+    runtimeOnly project(':metanalysis-java')
 }
 
 task codeCoverageReport(type: JacocoReport) {
@@ -103,29 +120,4 @@ task codeCoverageReport(type: JacocoReport) {
         xml.enabled = true
         csv.enabled = false
     }
-}
-
-subprojects {
-    apply plugin: 'java-library'
-    apply plugin: 'maven'
-
-    configurations {
-        apiElements {
-            outgoing.variants.getByName('classes').artifact(
-                    file: compileKotlin.destinationDir,
-                    type: ArtifactTypeDefinition.JVM_CLASS_DIRECTORY,
-                    builtBy: compileKotlin
-            )
-        }
-    }
-}
-
-apply plugin: 'application'
-
-mainClassName = 'org.metanalysis.Main'
-
-dependencies {
-    implementation project(':metanalysis-core')
-    runtimeOnly project(':metanalysis-git')
-    runtimeOnly project(':metanalysis-java')
 }

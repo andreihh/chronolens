@@ -16,13 +16,17 @@
 
 package org.metanalysis.core.versioning
 
-import java.util.Date
-
 /**
  * A revision in a version control system (commit, tag, branch etc.).
  *
  * @property id the unique id of this revision
- * @property date the date at which this revision was created
+ * @property date the date at which this revision was committed in milliseconds
+ * since the Unix epoch
  * @property author the author of this revision
+ * @throws IllegalArgumentException if `date` is negative
  */
-data class Revision(val id: String, val date: Date, val author: String)
+data class Revision(val id: String, val date: Long, val author: String) {
+    init {
+        require(date >= 0L) { "Date '$date' can't be negative!" }
+    }
+}

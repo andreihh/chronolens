@@ -21,31 +21,33 @@ import org.junit.BeforeClass
 import org.junit.Test
 
 import org.metanalysis.core.subprocess.Subprocess.execute
-import org.metanalysis.core.versioning.RevisionNotFoundException
 import org.metanalysis.core.versioning.VcsProxyFactory
 
 import java.io.File
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
-class GitProxyWithRepositoryTest : GitProxyTest() {
+class GitProxyWithRepositoryTest {
     companion object {
         @BeforeClass
         @JvmStatic fun cloneRepository() {
-            val url = "https://github.com/andrei-heidelbacher/metanalysis.git"
-            val gitDir = ".git"
-            execute("git", "clone", "--bare", url, gitDir)
+            val url = "https://github.com/andreihh/metanalysis.git"
+            execute("git", "clone", url, "./")
         }
 
         @AfterClass
         @JvmStatic fun cleanRepository() {
-            val gitDir = ".git"
-            File(gitDir).deleteRecursively()
+            File("./").listFiles().forEach { it.deleteRecursively() }
         }
     }
+
+    private val git = GitProxyFactory().connect()
+            ?: fail("Couldn't connect to git repository!")
 
     @Test fun `test detect`() {
         assertTrue(VcsProxyFactory.detect() is GitProxy)
@@ -59,46 +61,39 @@ class GitProxyWithRepositoryTest : GitProxyTest() {
         assertEquals(head, branch)
         val invalidRevisions = listOf("0123456", "master-invalid", "gradle")
         for (rev in invalidRevisions) {
-            assertFailsWith<RevisionNotFoundException> { git.getRevision(rev) }
+            assertNull(git.getRevision(rev))
         }
     }
 
+    @Test fun `test get change set`() {
+        val headId = git.getHead().id
+        assertNotEquals(emptySet(), git.getChangeSet(headId))
+    }
 
     @Test fun `test list files`() {
-        val expected = execute(
-                "find", "../",
-                "-path", "*/.git", "-prune", "-o",
-                "-path", "*/build", "-prune", "-o",
-                "-path", "../.idea", "-prune", "-o",
-                "-path", "../.gradle", "-prune", "-o",
-                "-type", "f", "-print"
-        ).get().lines()
-                .map { it.removePrefix("../") }
-                .filter(String::isNotBlank)
-                .toSet()
-        val actual = git.listFiles()
+        val expected = File("./")
+                .walk().onEnter { it.name != ".git" }
+                .filter { it.isFile }
+                .mapTo(hashSetOf()) { it.path.removePrefix("./") }
+        val headId = git.getHead().id
+        val actual = git.listFiles(headId)
         assertEquals(expected, actual)
     }
 
     @Test fun `test get file`() {
-        val expected = File("build.gradle").readText()
-        val actual = git.getFile(
-                revisionId = "HEAD",
-                path = "metanalysis-git/build.gradle"
-        )
+        val path = "metanalysis-git/build.gradle"
+        val expected = File(path).readText()
+        val actual = git.getFile(revisionId = "HEAD", path = path)
         assertEquals(expected, actual)
         assertNull(git.getFile(revisionId = "HEAD", path = "non-existent.txt"))
-        assertFailsWith<RevisionNotFoundException> {
-            git.getFile(
-                    revisionId = "invalid-revision",
-                    path = "metanalysis-git/build.gradle"
-            )
+        assertFailsWith<IllegalArgumentException> {
+            git.getFile(revisionId = "invalid-revision", path = path)
         }
     }
 
-    @Test fun `test get file history`() {
-        assertEquals(emptyList(), git.getFileHistory("non-existent.txt"))
-        val history = git.getFileHistory("README.md")
-        println(history.joinToString(separator = "\n"))
+    @Test fun `test get history`() {
+        assertEquals(emptyList(), git.getHistory("non-existent.txt"))
+        assertNotEquals(emptyList(), git.getHistory("README.md"))
+        assertNotEquals(emptyList(), git.getHistory())
     }
 }

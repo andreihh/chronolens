@@ -23,12 +23,12 @@ import java.net.URL
 class JavaParserIntegrationTest : JavaParserTest() {
     @Test fun `test integration`() {
         val source = javaClass.getResource("/IntegrationTest.java").readText()
-        println(parser.parse(source))
+        println(parse(source))
     }
 
     @Test fun `test network`() {
         val source = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/master/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
                 .readText()
-        println(parser.parse(source))
+        println(parse(source))
     }
 }
