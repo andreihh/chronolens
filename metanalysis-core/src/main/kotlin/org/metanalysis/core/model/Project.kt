@@ -52,6 +52,9 @@ class Project private constructor(
     val units: Collection<SourceUnit>
         get() = unitMap.values
 
+    /** Returns all the source nodes in this project. */
+    fun findAll(): Collection<SourceNode> = nodeMap.values
+
     /**
      * Returns the node with the specified `id`.
      *

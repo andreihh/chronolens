@@ -17,11 +17,9 @@ applies to the following third-party libraries:
 - kotlin-stdlib, Copyright JetBrains s.r.o.
 - kotlin-reflect, Copyright JetBrains s.r.o.
 - kotlin-test, Copyright JetBrains s.r.o.
-- kotlin-test-junit, Copyright JetBrains s.r.o.
 - jackson-module-kotlin, Copyright FasterXML
 
 The Eclipse Public License, Version 1.0
 (https://www.eclipse.org/legal/epl-v10.html) applies to the following
 third-party libraries:
 - eclipse-jdt-core, Copyright Eclipse Foundation
-- junit, Copyright JUnit

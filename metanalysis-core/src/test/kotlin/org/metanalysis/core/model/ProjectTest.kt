@@ -43,6 +43,47 @@ class ProjectTest {
         }
     }
 
+    @Test fun `test find all returns structurally equal nodes`() {
+        val classVersion = Variable(
+                id = "src/Test.java:IClass:version",
+                initializer = listOf("1")
+        )
+        val classFunction = Function(
+                id = "src/Test.java:IClass:getVersion()"
+        )
+        val classType = Type(
+                id = "src/Test.java:IClass",
+                modifiers = setOf("interface"),
+                supertypes = setOf("Object"),
+                members = listOf(classVersion, classFunction)
+        )
+        val version = Variable(
+                id = "src/Test.java:version",
+                initializer = listOf("2")
+        )
+        val testUnit = SourceUnit(
+                id = "src/Test.java",
+                entities = listOf(classType, version)
+        )
+        val expectedNodes =
+                setOf(testUnit, version, classType, classVersion, classFunction)
+
+        val project = project {
+            sourceUnit("src/Test.java") {
+                type("IClass") {
+                    modifiers("interface")
+                    supertypes("Object")
+                    variable("version") { +"1" }
+                    function("getVersion()") {}
+                }
+                variable("version") { +"2" }
+            }
+        }
+        val actualNodes = project.findAll().toSet()
+
+        assertEquals(expectedNodes, actualNodes)
+    }
+
     @Test fun `test find node returns structurally equal node`() {
         val expectedNode = Variable(
                 id = "src/Test.java:IClass:version",
