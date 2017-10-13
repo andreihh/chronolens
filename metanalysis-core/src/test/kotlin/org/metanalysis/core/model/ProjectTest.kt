@@ -43,6 +43,11 @@ class ProjectTest {
         }
     }
 
+    @Test fun `test empty project contains no nodes`() {
+        val nodes = Project.emptyProject().findAll().toSet()
+        assertEquals(emptySet(), nodes)
+    }
+
     @Test fun `test find all returns structurally equal nodes`() {
         val classVersion = Variable(
                 id = "src/Test.java:IClass:version",

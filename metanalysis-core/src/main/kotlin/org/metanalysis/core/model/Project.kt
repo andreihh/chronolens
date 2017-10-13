@@ -30,6 +30,12 @@ class Project private constructor(
         private val unitMap: MutableMap<String, SourceUnit>,
         private val nodeMap: MutableMap<String, SourceNode>
 ) {
+    companion object {
+        /** Creates and returns an empty project containing no source units. */
+        @JvmStatic
+        fun emptyProject(): Project = Project(emptyList())
+    }
+
     /**
      * Creates a project from the given `units`.
      *
@@ -37,7 +43,7 @@ class Project private constructor(
      * @throws IllegalArgumentException if the given `units` contain duplicated
      * ids
      */
-    constructor(units: Collection<SourceUnit> = emptyList()) : this(
+    constructor(units: Collection<SourceUnit>) : this(
             unitMap = units.associateByTo(hashMapOf(), SourceUnit::path),
             nodeMap = buildVisit(units).toMutableMap()
     ) {
