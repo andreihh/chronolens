@@ -137,12 +137,9 @@ abstract class NodeVisitor {
 Processing a `Transaction` can also be achieved using the `Visitor` pattern:
 ```java
 abstract class TransactionVisitor {
-    protected final Project project;
+    /** The current snapshot of the repository. */
+    protected final Project project = new Project();
     
-    public TransactionVisitor(Project project) {
-        this.project = project;
-    }
-
     protected abstract void visit(AddNode edit);
     protected abstract void visit(RemoveNode edit);
     protected abstract void visit(EditType edit);
@@ -168,7 +165,8 @@ abstract class TransactionVisitor {
 
     public final void visit(Transaction transaction) {
         for (ProjectEdit edit : transaction.getEdits()) {
-            visit(edit);
+            visit(edit); // process this edit
+            project.apply(edit); // update the snapshot with this edit
         }
     }
 }
