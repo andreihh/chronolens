@@ -17,7 +17,6 @@
 package org.metanalysis.core.repository
 
 import org.metanalysis.core.model.Project
-import org.metanalysis.core.model.Project.Companion.emptyProject
 import org.metanalysis.core.model.ProjectEdit.Companion.diff
 import org.metanalysis.core.model.SourceNode.SourceUnit
 import org.metanalysis.core.model.Transaction
@@ -80,7 +79,7 @@ class InteractiveRepository private constructor(
     }
 
     override fun getHistory(): Iterable<Transaction> {
-        val project = emptyProject()
+        val project = Project()
         return vcs.getHistory().asSequence().map { (revisionId, date, author) ->
             val changeSet = vcs.getChangeSet(revisionId)
             val before = hashSetOf<SourceUnit>()

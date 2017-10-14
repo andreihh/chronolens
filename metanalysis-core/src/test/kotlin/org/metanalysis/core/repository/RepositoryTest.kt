@@ -21,7 +21,7 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 
-import org.metanalysis.core.model.Project.Companion.emptyProject
+import org.metanalysis.core.model.Project
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
 import org.metanalysis.test.core.model.sourceUnit
@@ -166,7 +166,7 @@ abstract class RepositoryTest {
             sourceUnit("src/Error.mock") {}
         }
         val transactions = repository.getHistory()
-        val actual = emptyProject()
+        val actual = Project()
         transactions.forEach(actual::apply)
         assertEquals(expected, actual)
     }
