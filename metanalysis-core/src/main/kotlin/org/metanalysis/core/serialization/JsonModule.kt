@@ -73,15 +73,15 @@ object JsonModule {
         override fun idFromValueAndType(
                 value: Any?,
                 suggestedType: Class<*>
-        ): String? = value?.let(this::idFromValue) ?: typeToId[suggestedType]
+        ): String = typeToId.getValue(suggestedType)
 
-        override fun idFromValue(value: Any): String? =
-                typeToId[value.javaClass]
+        override fun idFromValue(value: Any): String =
+                typeToId.getValue(value.javaClass)
 
         override fun typeFromId(
                 context: DatabindContext,
                 id: String
-        ): JavaType? = idToType[id]?.let(context.typeFactory::constructType)
+        ): JavaType = context.typeFactory.constructType(idToType.getValue(id))
 
         override fun getMechanism(): JsonTypeInfo.Id = JsonTypeInfo.Id.NAME
     }.apply { init(null) }

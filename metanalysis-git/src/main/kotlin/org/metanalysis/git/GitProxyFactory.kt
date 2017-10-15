@@ -24,9 +24,11 @@ import org.metanalysis.core.versioning.VcsProxyFactory
 class GitProxyFactory : VcsProxyFactory() {
     private val vcs: String = "git"
 
-    private fun getPrefix(): String? =
-            execute(vcs, "rev-parse", "--show-prefix").getOrNull()
-                    ?.lines()?.first()
+    private fun getPrefix(): String? {
+        val result = execute(vcs, "rev-parse", "--show-prefix")
+        val rawPrefix = result.getOrNull() ?: return null
+        return rawPrefix.lines().first()
+    }
 
     private fun headExists(): Boolean =
             execute(vcs, "cat-file", "-e", "HEAD^{commit}").isSuccess

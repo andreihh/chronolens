@@ -26,7 +26,8 @@ import kotlin.test.assertEquals
 fun assertEquals(
         expected: Repository,
         actual: Repository,
-        message: String? = null) {
+        message: String? = null
+) {
     assertEquals(expected.getHeadId(), actual.getHeadId(), message)
     assertEquals(expected.listSources(), actual.listSources(), message)
     assertEquals(expected.getSnapshot(), actual.getSnapshot(), message)

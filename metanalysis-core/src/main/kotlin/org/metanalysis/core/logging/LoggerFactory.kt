@@ -29,7 +29,7 @@ import java.util.logging.Logger
  */
 object LoggerFactory {
     init {
-        val resource = "/logging.properties"
+        val resource = "logging.properties"
         val src = javaClass.getResourceAsStream(resource)
         LogManager.getLogManager().readConfiguration(src)
     }

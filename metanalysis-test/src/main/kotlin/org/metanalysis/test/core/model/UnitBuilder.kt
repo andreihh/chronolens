@@ -34,8 +34,6 @@ class UnitBuilder(private val path: String) {
         entities += VariableBuilder(name).apply(init)
     }
 
-    fun build(): SourceUnit = SourceUnit(
-            id = path,
-            entities = entities.map { it.build(path) }
-    )
+    fun build(): SourceUnit =
+            SourceUnit(id = path, entities = entities.map { it.build(path) })
 }
