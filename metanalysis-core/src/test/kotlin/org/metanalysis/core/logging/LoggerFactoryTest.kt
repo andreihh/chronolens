@@ -28,7 +28,7 @@ class LoggerFactoryTest {
     @Test fun `test loaded configuration applies changes`() {
         val format = LogManager.getLogManager()
                 .getProperty("java.util.logging.SimpleFormatter.format")
-        assertEquals(expected = "%4\$s: %5\$s", actual = format)
+        assertEquals(expected = "[%4\$s] %5\$s", actual = format)
     }
 
     @Test fun `test get logger with same name returns same instance`() {
