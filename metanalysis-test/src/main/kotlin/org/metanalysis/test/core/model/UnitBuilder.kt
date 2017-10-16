@@ -34,21 +34,6 @@ class UnitBuilder(private val path: String) {
         entities += VariableBuilder(name).apply(init)
     }
 
-    fun type(builder: TypeBuilder): UnitBuilder {
-        entities += builder
-        return this
-    }
-
-    fun function(builder: FunctionBuilder): UnitBuilder {
-        entities += builder
-        return this
-    }
-
-    fun variable(builder: VariableBuilder): UnitBuilder {
-        entities += builder
-        return this
-    }
-
     fun build(): SourceUnit =
             SourceUnit(id = path, entities = entities.map { it.build(path) })
 }
