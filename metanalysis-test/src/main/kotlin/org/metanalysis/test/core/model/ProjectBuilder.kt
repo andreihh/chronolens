@@ -26,5 +26,10 @@ class ProjectBuilder {
         units += UnitBuilder(path).apply(init)
     }
 
+    fun sourceUnit(builder: UnitBuilder): ProjectBuilder {
+        units += builder
+        return this
+    }
+
     fun build(): Project = Project(units.map(UnitBuilder::build))
 }

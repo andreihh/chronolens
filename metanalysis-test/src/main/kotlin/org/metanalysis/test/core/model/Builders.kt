@@ -21,13 +21,13 @@ package org.metanalysis.test.core.model
 import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.SourceNode.SourceUnit
 
-fun sourceUnit(path: String, init: UnitBuilder.() -> Unit): SourceUnit {
+inline fun sourceUnit(path: String, init: UnitBuilder.() -> Unit): SourceUnit {
     val builder = UnitBuilder(path)
     builder.init()
     return builder.build()
 }
 
-fun project(init: ProjectBuilder.() -> Unit): Project {
+inline fun project(init: ProjectBuilder.() -> Unit): Project {
     val builder = ProjectBuilder()
     builder.init()
     return builder.build()

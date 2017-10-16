@@ -24,13 +24,14 @@ class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
     private val parameters = arrayListOf<VariableBuilder>()
     private val body = arrayListOf<String>()
 
-    fun modifiers(vararg modifiers: String) {
+    fun modifiers(vararg modifiers: String): FunctionBuilder {
         modifiers.groupBy { it }.forEach { (modifier, occurrences) ->
             require(occurrences.size == 1) {
                 "Duplicated modifier '$modifier'!"
             }
         }
         this.modifiers = modifiers.toSet()
+        return this
     }
 
     fun parameter(name: String, init: VariableBuilder.() -> Unit) {
@@ -39,6 +40,16 @@ class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
 
     operator fun String.unaryPlus() {
         body += this
+    }
+
+    fun parameter(builder: VariableBuilder): FunctionBuilder {
+        parameters += builder
+        return this
+    }
+
+    fun body(lines: String): FunctionBuilder {
+        body += lines
+        return this
     }
 
     override fun build(parentId: String): Function {

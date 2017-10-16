@@ -47,8 +47,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
-import kotlin.reflect.KClass
-
 /** Provides JSON serialization and deserialization of arbitrary objects. */
 object JsonModule {
     private val typeIdResolver = object : TypeIdResolverBase() {
@@ -135,8 +133,8 @@ object JsonModule {
      */
     @Throws(IOException::class)
     @JvmStatic
-    fun <T : Any> deserialize(src: InputStream, type: KClass<T>): T = try {
-        objectMapper.readValue(src, type.java)
+    fun <T : Any> deserialize(src: InputStream, type: Class<T>): T = try {
+        objectMapper.readValue(src, type)
     } catch (e: JsonProcessingException) {
         throw JsonException(e)
     }
@@ -144,5 +142,5 @@ object JsonModule {
     /** Utility deserialization method. */
     @Throws(IOException::class)
     inline fun <reified T : Any> deserialize(src: InputStream): T =
-            deserialize(src, T::class)
+            deserialize(src, T::class.java)
 }

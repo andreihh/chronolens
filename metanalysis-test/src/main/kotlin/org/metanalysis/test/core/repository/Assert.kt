@@ -24,16 +24,16 @@ import org.metanalysis.test.core.model.assertEquals
 import kotlin.test.assertEquals
 
 fun assertEquals(
-        expected: Repository,
-        actual: Repository,
+        expected: Repository?,
+        actual: Repository?,
         message: String? = null
 ) {
-    assertEquals(expected.getHeadId(), actual.getHeadId(), message)
-    assertEquals(expected.listSources(), actual.listSources(), message)
-    assertEquals(expected.getSnapshot(), actual.getSnapshot(), message)
+    assertEquals(expected?.getHeadId(), actual?.getHeadId(), message)
+    assertEquals(expected?.listSources(), actual?.listSources(), message)
+    assertEquals(expected?.getSnapshot(), actual?.getSnapshot(), message)
     assertEquals(
-            expected = expected.getHistory().toList(),
-            actual = actual.getHistory().toList(),
+            expected = expected?.getHistory()?.toList(),
+            actual = actual?.getHistory()?.toList(),
             message = message
     )
 }

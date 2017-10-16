@@ -24,22 +24,24 @@ class TypeBuilder(private val name: String) : EntityBuilder<Type> {
     private var supertypes = setOf<String>()
     private val members = arrayListOf<EntityBuilder<*>>()
 
-    fun modifiers(vararg modifiers: String) {
+    fun modifiers(vararg modifiers: String): TypeBuilder {
         modifiers.groupBy { it }.forEach { (modifier, occurrences) ->
             require(occurrences.size == 1) {
                 "Duplicated modifier '$modifier'!"
             }
         }
         this.modifiers = modifiers.toSet()
+        return this
     }
 
-    fun supertypes(vararg supertypes: String) {
+    fun supertypes(vararg supertypes: String): TypeBuilder {
         supertypes.groupBy { it }.forEach { (supertype, occurrences) ->
             require(occurrences.size == 1) {
                 "Duplicated supertype '$supertype'!"
             }
         }
         this.supertypes = supertypes.toSet()
+        return this
     }
 
     fun type(name: String, init: TypeBuilder.() -> Unit) {
@@ -52,6 +54,21 @@ class TypeBuilder(private val name: String) : EntityBuilder<Type> {
 
     fun variable(name: String, init: VariableBuilder.() -> Unit) {
         members += VariableBuilder(name).apply(init)
+    }
+
+    fun type(builder: TypeBuilder): TypeBuilder {
+        members += builder
+        return this
+    }
+
+    fun function(builder: FunctionBuilder): TypeBuilder {
+        members += builder
+        return this
+    }
+
+    fun variable(builder: VariableBuilder): TypeBuilder {
+        members += builder
+        return this
     }
 
     override fun build(parentId: String): Type {

@@ -23,17 +23,23 @@ class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
     private var modifiers = setOf<String>()
     private val initializer = arrayListOf<String>()
 
-    fun modifiers(vararg modifiers: String) {
+    fun modifiers(vararg modifiers: String): VariableBuilder {
         modifiers.groupBy { it }.forEach { (modifier, occurrences) ->
             require(occurrences.size == 1) {
                 "Duplicated modifier '$modifier'!"
             }
         }
         this.modifiers = modifiers.toSet()
+        return this
     }
 
     operator fun String.unaryPlus() {
         initializer += this
+    }
+
+    fun initializer(lines: String): VariableBuilder {
+        initializer += lines
+        return this
     }
 
     override fun build(parentId: String): Variable = Variable(
