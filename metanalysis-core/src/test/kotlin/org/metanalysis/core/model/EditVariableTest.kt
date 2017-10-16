@@ -18,8 +18,8 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
-import org.metanalysis.core.model.ProjectEdit.EditVariable
 import org.metanalysis.test.core.model.assertEquals
+import org.metanalysis.test.core.model.editVariable
 import org.metanalysis.test.core.model.project
 
 import kotlin.test.assertFailsWith
@@ -43,10 +43,9 @@ class EditVariableTest {
                 }
             }
         }
-        actual.apply(EditVariable(
-                id = "src/Test.java:getVersion():name",
-                modifierEdits = listOf(SetEdit.Add("@NotNull"))
-        ))
+        actual.apply(editVariable("src/Test.java:getVersion():name") {
+            modifiers { +"@NotNull" }
+        })
 
         assertEquals(expected, actual)
     }
@@ -57,7 +56,7 @@ class EditVariableTest {
                 variable("DEBUG") {}
             }
         }
-        val edit = EditVariable("src/Test.java:RELEASE")
+        val edit = editVariable("src/Test.java:RELEASE") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -70,7 +69,7 @@ class EditVariableTest {
                 type("Test") {}
             }
         }
-        val edit = EditVariable("src/Test.java:Test")
+        val edit = editVariable("src/Test.java:Test") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

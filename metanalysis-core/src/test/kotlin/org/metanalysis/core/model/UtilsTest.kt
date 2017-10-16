@@ -18,46 +18,37 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
-import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.test.core.model.function
+import org.metanalysis.test.core.model.sourceUnit
+import org.metanalysis.test.core.model.type
+import org.metanalysis.test.core.model.variable
 
 import kotlin.test.assertEquals
 
 class UtilsTest {
     @Test fun `test children of unit are equal to entities`() {
-        val unit = SourceUnit(
-                id = "src/Test.java",
-                entities = setOf(Type("src/Test.java:Test"))
-        )
-
-        assertEquals(unit.entities, unit.children.toSet())
+        val unit = sourceUnit("src/Test.java") {
+            type("Test") {}
+        }
+        assertEquals(unit.entities, unit.children)
     }
 
     @Test fun `test children of type are equal to members`() {
-        val type = Type(
-                id = "src/Test.java:Test",
-                members = setOf(Variable("src/Test.java:Test:version"))
-        )
-
-        assertEquals(type.members, type.children.toSet())
+        val type = type("src/Test.java:Test") {
+            variable("version") {}
+        }
+        assertEquals(type.members, type.children)
     }
 
     @Test fun `test children of function are equal to parameters`() {
-        val function = Function(
-                id = "src/Test.java:getVersion(String)",
-                parameters = listOf(
-                        Variable("src/Test.java:getVersion(String):name")
-                )
-        )
-
-        assertEquals(function.parameters.toSet(), function.children.toSet())
+        val function = function("src/Test.java:getVersion(String)") {
+            parameter("name") {}
+        }
+        assertEquals(function.parameters, function.children)
     }
 
     @Test fun `test children of variable are equal to empty collection`() {
-        val variable = Variable(id = "src/Test.java:VERSION")
-
-        assertEquals(emptySet(), variable.children.toSet())
+        val variable = variable("src/Test.java:VERSION") {}
+        assertEquals(emptyList(), variable.children.toList())
     }
 }

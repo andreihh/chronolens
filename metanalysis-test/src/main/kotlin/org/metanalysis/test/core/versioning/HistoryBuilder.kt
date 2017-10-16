@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.model
+package org.metanalysis.test.core.versioning
 
-import org.junit.Test
+class HistoryBuilder {
+    private var id = 0
+    private val revisions = arrayListOf<RevisionMock>()
 
-import kotlin.test.assertFailsWith
-
-class TransactionTest {
-    @Test fun `test transaction with negative date throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            Transaction(id = "123", date = -1L, author = "<author>")
-        }
+    fun revision(init: RevisionMockBuilder.() -> Unit) {
+        revisions += RevisionMockBuilder("${id++}").apply(init).build()
     }
+
+    fun build(): List<RevisionMock> = revisions
 }

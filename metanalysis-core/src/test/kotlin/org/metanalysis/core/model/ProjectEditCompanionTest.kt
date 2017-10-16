@@ -135,17 +135,13 @@ class ProjectEditCompanionTest {
     @Test fun `test diff change function body`() {
         val before = project {
             sourceUnit("src/Test.java") {
-                function("getVersion()") {
-                    +"DEBUG"
-                }
+                function("getVersion()") { +"DEBUG" }
             }
         }
 
         val after = project {
             sourceUnit("src/Test.java") {
-                function("getVersion()") {
-                    +"RELEASE"
-                }
+                function("getVersion()") { +"RELEASE" }
             }
         }
 
@@ -173,17 +169,13 @@ class ProjectEditCompanionTest {
     @Test fun `test diff change variable initializer`() {
         val before = project {
             sourceUnit("src/Test.java") {
-                variable("version") {
-                    +"DEBUG"
-                }
+                variable("version") { +"DEBUG" }
             }
         }
 
         val after = project {
             sourceUnit("src/Test.java") {
-                variable("version") {
-                    +"RELEASE"
-                }
+                variable("version") { +"RELEASE" }
             }
         }
 

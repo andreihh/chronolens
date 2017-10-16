@@ -27,11 +27,7 @@ import org.metanalysis.core.model.SourceNode.SourceUnit
 
 /** The id of the [SourceNode] which contains this entity. */
 val SourceEntity.parentId: String
-    get() = id.substringBeforeLast(ENTITY_SEPARATOR, missingDelimiterValue = "")
-
-/** The id of the [SourceUnit] which contains this entity in its source tree. */
-val String.parentUnitId: String
-    get() = substringBefore(ENTITY_SEPARATOR)
+    get() = id.substringBeforeLast(ENTITY_SEPARATOR)
 
 /** The child source nodes contained in this source node. */
 val SourceNode.children: Collection<SourceEntity>
@@ -39,7 +35,7 @@ val SourceNode.children: Collection<SourceEntity>
         is SourceUnit -> entities
         is Type -> members
         is Function -> parameters
-        else -> emptySet()
+        else -> emptyList()
     }
 
 /**

@@ -18,16 +18,19 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
-import org.metanalysis.core.model.ProjectEdit.AddNode
-import org.metanalysis.core.model.ProjectEdit.EditType
-import org.metanalysis.core.model.ProjectEdit.RemoveNode
-import org.metanalysis.core.model.SetEdit.Add
 import org.metanalysis.core.model.SourceNode.SourceEntity.Function
 import org.metanalysis.core.model.SourceNode.SourceEntity.Type
 import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
 import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.test.core.model.addFunction
+import org.metanalysis.test.core.model.addSourceUnit
+import org.metanalysis.test.core.model.addType
 import org.metanalysis.test.core.model.assertEquals
+import org.metanalysis.test.core.model.editType
 import org.metanalysis.test.core.model.project
+import org.metanalysis.test.core.model.removeNode
+import org.metanalysis.test.core.model.transaction
+import org.metanalysis.test.core.model.variable
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -36,10 +39,12 @@ import kotlin.test.fail
 
 class ProjectTest {
     @Test fun `test create project with duplicated unit ids throws`() {
-        val id = "src/Test.java"
-        val units = listOf(SourceUnit(id), SourceUnit(id))
+        val path = "src/Test.java"
         assertFailsWith<IllegalArgumentException> {
-            Project(units)
+            project {
+                sourceUnit(path) {}
+                sourceUnit(path) {}
+            }
         }
     }
 
@@ -85,10 +90,8 @@ class ProjectTest {
     }
 
     @Test fun `test find node returns structurally equal node`() {
-        val expectedNode = Variable(
-                id = "src/Test.java:IClass:version",
-                initializer = listOf("1")
-        )
+        val expectedNode =
+                variable("src/Test.java:IClass:version") { +"1" }
 
         val project = project {
             sourceUnit("src/Test.java") {
@@ -113,6 +116,7 @@ class ProjectTest {
                 type("IClass") {}
             }
         }
+
         assertFailsWith<IllegalArgumentException> {
             project.find<Variable>("src/Test.java:IClass")
         }
@@ -135,7 +139,6 @@ class ProjectTest {
                 type("Test") {
                     modifiers("abstract")
                     supertypes("Object")
-
                     function("getVersion()") {}
                 }
             }
@@ -145,15 +148,14 @@ class ProjectTest {
             sourceUnit("src/Main.java") {}
         }
         actual.apply(
-                RemoveNode("src/Main.java"),
-                AddNode(SourceUnit("src/Test.java")),
-                AddNode(Type("src/Test.java:Test")),
-                AddNode(Function("src/Test.java:Test:getVersion()")),
-                EditType(
-                        id = "src/Test.java:Test",
-                        modifierEdits = listOf(Add("abstract")),
-                        supertypeEdits = listOf(Add("Object"))
-                )
+                removeNode("src/Main.java"),
+                addSourceUnit("src/Test.java") {},
+                addType("src/Test.java:Test") {},
+                addFunction("src/Test.java:Test:getVersion()") {},
+                editType("src/Test.java:Test") {
+                    modifiers { +"abstract" }
+                    supertypes { +"Object" }
+                }
         )
 
         assertEquals(expected, actual)
@@ -167,15 +169,10 @@ class ProjectTest {
         val actual = project {
             sourceUnit("src/Main.java") {}
         }
-        actual.apply(Transaction(
-                id = "123",
-                date = 123L,
-                author = "<author>",
-                edits = listOf(
-                        RemoveNode("src/Main.java"),
-                        AddNode(SourceUnit("src/Test.java"))
-                )
-        ))
+        actual.apply(transaction("123") {
+            removeNode("src/Main.java")
+            addSourceUnit("src/Test.java") {}
+        })
 
         assertEquals(expected, actual)
     }

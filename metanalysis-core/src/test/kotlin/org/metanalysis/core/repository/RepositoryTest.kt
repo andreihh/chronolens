@@ -25,7 +25,6 @@ import org.metanalysis.core.model.Project
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
 import org.metanalysis.test.core.model.sourceUnit
-import org.metanalysis.test.core.versioning.RevisionMock
 import org.metanalysis.test.core.versioning.VcsProxyFactoryMock
 
 import kotlin.test.assertEquals
@@ -38,52 +37,43 @@ abstract class RepositoryTest {
     protected abstract fun createRepository(): Repository
 
     @Before fun initVcsRepository() {
-        VcsProxyFactoryMock.setRepository(listOf(
-                RevisionMock(
-                        id = "0",
-                        date = 0L,
-                        author = "<author>",
-                        changeSet = mapOf(
-                                "src/Main.mock" to "{",
-                                "src/Worksheet.mock" to """{
-                                    "id": "src/Worksheet.mock",
-                                    "@class": "SourceUnit",
-                                    "entities": [{
-                                        "id": "src/Worksheet.mock:println()",
-                                        "@class": "Function"
-                                    }]
-                                }""",
-                                "src/Test.mock" to """{
-                                    "id": "src/Test.mock",
-                                    "@class": "SourceUnit"
-                                }""",
-                                "src/BuildVersion.mock" to """
-                                    "id": "src/BuildVersion.mock",
-                                    "@class": "SourceUnit"
-                                """,
-                                "README.md" to "## Mock repository\n"
-                        )
-                ),
-                RevisionMock(
-                        id = "1",
-                        date = 1L,
-                        author = "<author>",
-                        changeSet = mapOf(
-                                "src/Main.mock" to """{
-                                    "id": "src/Main.mock",
-                                    "@class": "SourceUnit",
-                                    "entities": [{
-                                        "id": "src/Main.mock:Main",
-                                        "@class": "Type"
-                                    }]
-                                }""",
-                                "src/Test.mock" to null,
-                                "src/Error.mock" to "{",
-                                "src/Worksheet.mock" to "{",
-                                "README.md" to "## Mock repository v2\n"
-                        )
-                )
-        ))
+        VcsProxyFactoryMock.setRepository {
+            revision {
+                change("src/Main.mock" to "{")
+                change("src/Worksheet.mock" to """{
+                        "id": "src/Worksheet.mock",
+                        "@class": "SourceUnit",
+                        "entities": [{
+                            "id": "src/Worksheet.mock:println()",
+                            "@class": "Function"
+                        }]
+                }""")
+                change("src/Test.mock" to """{
+                        "id": "src/Test.mock",
+                        "@class": "SourceUnit"
+                }""")
+                change("src/BuildVersion.mock" to """
+                        "id": "src/BuildVersion.mock",
+                        "@class": "SourceUnit"
+                """)
+                change("README.md" to "## Mock repository\n")
+            }
+
+            revision {
+                change("src/Main.mock" to """{
+                        "id": "src/Main.mock",
+                        "@class": "SourceUnit",
+                        "entities": [{
+                            "id": "src/Main.mock:Main",
+                            "@class": "Type"
+                        }]
+                }""")
+                change("src/Test.mock" to null)
+                change("src/Error.mock" to "{")
+                change("src/Worksheet.mock" to "{")
+                change("README.md" to "## Mock repository v2\n")
+            }
+        }
     }
 
     @After fun resetVcsRepository() {

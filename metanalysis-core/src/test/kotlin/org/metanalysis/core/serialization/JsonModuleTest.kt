@@ -18,14 +18,8 @@ package org.metanalysis.core.serialization
 
 import org.junit.Test
 
-import org.metanalysis.core.model.ListEdit
-import org.metanalysis.core.model.ProjectEdit.AddNode
-import org.metanalysis.core.model.ProjectEdit.EditType
-import org.metanalysis.core.model.ProjectEdit.EditVariable
-import org.metanalysis.core.model.ProjectEdit.RemoveNode
-import org.metanalysis.core.model.SetEdit
 import org.metanalysis.core.model.Transaction
-import org.metanalysis.test.core.model.sourceUnit
+import org.metanalysis.test.core.model.transaction
 
 import java.io.ByteArrayOutputStream
 
@@ -33,35 +27,33 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class JsonModuleTest {
-    private val data = Transaction(
-            id = "HEAD",
-            date = 1824733L,
-            author = "unknown",
-            edits = listOf(
-                    AddNode(sourceUnit("res") {
-                        variable("DEBUG") { +"true" }
-                        variable("RELEASE") { +"false" }
-                        function("createIClass()") {}
-                        type("IClass") {
-                            supertypes("Interface", "Object")
+    private val data = transaction("HEAD") {
+        date = 1824733L
+        author = "unknown"
+        addSourceUnit("res") {
+            variable("DEBUG") { +"true" }
+            variable("RELEASE") { +"false" }
+            function("createIClass()") {}
+            type("IClass") {
+                supertypes("Interface", "Object")
 
-                            type("InnerClass") {}
-                            variable("version") { +"1" }
-                            function("getVersion()") { +"1" }
-                        }
-                    }),
-                    RemoveNode("res:createIClass()"),
-                    EditVariable(id = "res:DEBUG", initializerEdits = listOf(
-                            ListEdit.Remove(0),
-                            ListEdit.Add(index = 0, value = "false")
-                    )),
-                    RemoveNode(id = "res:RELEASE"),
-                    EditType(
-                            id = "res:IClass",
-                            supertypeEdits = listOf(SetEdit.Remove("Interface"))
-                    )
-            )
-    )
+                type("InnerClass") {}
+                variable("version") { +"1" }
+                function("getVersion()") { +"1" }
+            }
+        }
+        removeNode("res:createIClass()")
+        editVariable("res:DEBUG") {
+            initializer {
+                remove(0)
+                add(index = 0, value = "false")
+            }
+        }
+        removeNode("res:RELEASE")
+        editType("res:IClass") {
+            supertypes { -"Interface" }
+        }
+    }
 
     @Test fun `test serialize class loader throws`() {
         val dst = ByteArrayOutputStream()

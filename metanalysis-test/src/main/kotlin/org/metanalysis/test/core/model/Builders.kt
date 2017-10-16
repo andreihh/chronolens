@@ -19,16 +19,38 @@
 package org.metanalysis.test.core.model
 
 import org.metanalysis.core.model.Project
+import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
+import org.metanalysis.core.model.SourceNode.SourceEntity.Function
+import org.metanalysis.core.model.SourceNode.SourceEntity.Type
+import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
 import org.metanalysis.core.model.SourceNode.SourceUnit
 
-inline fun sourceUnit(path: String, init: UnitBuilder.() -> Unit): SourceUnit {
-    val builder = UnitBuilder(path)
+inline fun project(init: ProjectBuilder.() -> Unit): Project =
+        ProjectBuilder().apply(init).build()
+
+inline fun sourceUnit(path: String, init: UnitBuilder.() -> Unit): SourceUnit =
+        UnitBuilder(path).apply(init).build()
+
+inline fun type(id: String, init: TypeBuilder.() -> Unit): Type {
+    val parentId = id.substringBeforeLast(ENTITY_SEPARATOR)
+    val name = id.substringAfterLast(ENTITY_SEPARATOR)
+    val builder = TypeBuilder(name)
     builder.init()
-    return builder.build()
+    return builder.build(parentId)
 }
 
-inline fun project(init: ProjectBuilder.() -> Unit): Project {
-    val builder = ProjectBuilder()
+inline fun function(id: String, init: FunctionBuilder.() -> Unit): Function {
+    val parentId = id.substringBeforeLast(ENTITY_SEPARATOR)
+    val signature = id.substringAfterLast(ENTITY_SEPARATOR)
+    val builder = FunctionBuilder(signature)
     builder.init()
-    return builder.build()
+    return builder.build(parentId)
+}
+
+inline fun variable(id: String, init: VariableBuilder.() -> Unit): Variable {
+    val parentId = id.substringBeforeLast(ENTITY_SEPARATOR)
+    val name = id.substringAfterLast(ENTITY_SEPARATOR)
+    val builder = VariableBuilder(name)
+    builder.init()
+    return builder.build(parentId)
 }

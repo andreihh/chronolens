@@ -18,8 +18,8 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
-import org.metanalysis.core.model.ProjectEdit.EditType
 import org.metanalysis.test.core.model.assertEquals
+import org.metanalysis.test.core.model.editType
 import org.metanalysis.test.core.model.project
 
 import kotlin.test.assertFailsWith
@@ -39,10 +39,9 @@ class EditTypeTest {
                 type("Test") {}
             }
         }
-        actual.apply(EditType(
-                id = "src/Test.java:Test",
-                supertypeEdits = listOf(SetEdit.Add("Object"))
-        ))
+        actual.apply(editType("src/Test.java:Test") {
+            supertypes { +"Object" }
+        })
 
         assertEquals(expected, actual)
     }
@@ -51,20 +50,20 @@ class EditTypeTest {
         val project = project {
             sourceUnit("src/Test.java") {}
         }
-        val edit = EditType("src/Test.java:Test")
+        val edit = editType("src/Test.java:Test") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
         }
     }
 
-    @Test fun `test edit variable throws`() {
+    @Test fun `test edit type applied to variable id throws`() {
         val project = project {
             sourceUnit("src/Test.java") {
                 variable("test") {}
             }
         }
-        val edit = EditType("src/Test.java:test")
+        val edit = editType("src/Test.java:test") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

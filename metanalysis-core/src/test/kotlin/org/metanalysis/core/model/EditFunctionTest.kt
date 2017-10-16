@@ -18,8 +18,8 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
-import org.metanalysis.core.model.ProjectEdit.EditFunction
 import org.metanalysis.test.core.model.assertEquals
+import org.metanalysis.test.core.model.editFunction
 import org.metanalysis.test.core.model.project
 
 import kotlin.test.assertFailsWith
@@ -43,10 +43,9 @@ class EditFunctionTest {
                 }
             }
         }
-        actual.apply(EditFunction(
-                id = "src/Test.java:Test:getVersion()",
-                modifierEdits = listOf(SetEdit.Add("@Override"))
-        ))
+        actual.apply(editFunction("src/Test.java:Test:getVersion()") {
+            modifiers { +"@Override" }
+        })
 
         assertEquals(expected, actual)
     }
@@ -69,13 +68,12 @@ class EditFunctionTest {
                 }
             }
         }
-        actual.apply(EditFunction(
-                id = "src/Test.java:getValue(int, int)",
-                parameterEdits = listOf(
-                        ListEdit.Remove(0),
-                        ListEdit.Add(index = 1, value = "y")
-                )
-        ))
+        actual.apply(editFunction("src/Test.java:getValue(int, int)") {
+            parameters {
+                remove(0)
+                add(index = 1, value = "y")
+            }
+        })
 
         assertEquals(expected, actual)
     }
@@ -86,7 +84,7 @@ class EditFunctionTest {
                 function("get_version()") {}
             }
         }
-        val edit = EditFunction("src/Test.java:getVersion()")
+        val edit = editFunction("src/Test.java:getVersion()") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -102,13 +100,12 @@ class EditFunctionTest {
                 }
             }
         }
-        val edit = EditFunction(
-                id = "src/Test.java:getValue(int, int)",
-                parameterEdits = listOf(
-                        ListEdit.Remove(0),
-                        ListEdit.Add(index = 1, value = "z")
-                )
-        )
+        val edit = editFunction("src/Test.java:getValue(int, int)") {
+            parameters {
+                remove(0)
+                add(index = 1, value = "z")
+            }
+        }
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

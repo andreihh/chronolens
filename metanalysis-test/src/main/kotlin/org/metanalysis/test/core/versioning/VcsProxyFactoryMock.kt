@@ -35,6 +35,11 @@ class VcsProxyFactoryMock : VcsProxyFactory() {
             isInitialized = true
             this.revisions = revisions
         }
+
+        @JvmStatic
+        inline fun setRepository(init: HistoryBuilder.() -> Unit) {
+            setRepository(HistoryBuilder().apply(init).build())
+        }
     }
 
     override fun isSupported(): Boolean = true

@@ -22,17 +22,21 @@ import org.metanalysis.core.model.SourceNode.SourceEntity.Function
 import org.metanalysis.core.model.SourceNode.SourceEntity.Type
 import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
 import org.metanalysis.core.model.SourceNode.SourceUnit
-import kotlin.test.assertEquals
+import org.metanalysis.test.core.model.function
+import org.metanalysis.test.core.model.sourceUnit
+import org.metanalysis.test.core.model.type
 
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class SourceNodeTest {
     @Test fun `test duplicated entity in unit throws`() {
-        val id = "src/Test.java"
-        val name = "$id:type"
-        val entities = listOf(Type(name), Variable(name))
+        val name = "type"
         assertFailsWith<IllegalArgumentException> {
-            SourceUnit(id = id, entities = entities)
+            sourceUnit("src/Test.java") {
+                type(name) {}
+                variable(name) {}
+            }
         }
     }
 
@@ -45,11 +49,12 @@ class SourceNodeTest {
     }
 
     @Test fun `test duplicated entity in type throws`() {
-        val id = "src/Test.java:Type"
-        val name = "$id:member"
-        val members = listOf(Type(name), Variable(name))
+        val name = "member"
         assertFailsWith<IllegalArgumentException> {
-            Type(id = id, members = members)
+            type("src/Test.java:Type") {
+                type(name) {}
+                variable(name) {}
+            }
         }
     }
 
@@ -62,11 +67,12 @@ class SourceNodeTest {
     }
 
     @Test fun `test duplicated parameter in function throws`() {
-        val id = "src/Test.java:getVersion(int, int)"
-        val name = "$id:param"
-        val parameters = listOf(Variable(name), Variable(name))
+        val name = "parameter"
         assertFailsWith<IllegalArgumentException> {
-            Function(id = id, parameters = parameters)
+            function("src/Test.java:getVersion(int, int)") {
+                parameter(name) {}
+                parameter(name) {}
+            }
         }
     }
 

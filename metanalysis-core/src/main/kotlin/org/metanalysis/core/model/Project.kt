@@ -16,6 +16,7 @@
 
 package org.metanalysis.core.model
 
+import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.SourceNode.SourceUnit
 
 /**
@@ -92,7 +93,7 @@ class Project private constructor(
      */
     fun apply(edits: List<ProjectEdit>) {
         for (edit in edits) {
-            val parentUnitId = edit.id.parentUnitId
+            val parentUnitId = edit.id.substringBefore(ENTITY_SEPARATOR)
             unitMap -= parentUnitId
             edit.applyOn(nodeMap)
             val newParentUnit = nodeMap[parentUnitId] as SourceUnit?

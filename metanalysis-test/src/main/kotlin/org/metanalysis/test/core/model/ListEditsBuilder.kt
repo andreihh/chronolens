@@ -16,24 +16,18 @@
 
 package org.metanalysis.test.core.model
 
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.ListEdit
 
-@ModelBuilderMarker
-class UnitBuilder(private val path: String) {
-    private val entities = arrayListOf<EntityBuilder<*>>()
+class ListEditsBuilder<T> {
+    private val listEdits = arrayListOf<ListEdit<T>>()
 
-    fun type(name: String, init: TypeBuilder.() -> Unit) {
-        entities += TypeBuilder(name).apply(init)
+    fun add(index: Int, value: T) {
+        listEdits += ListEdit.Add(index, value)
     }
 
-    fun function(signature: String, init: FunctionBuilder.() -> Unit) {
-        entities += FunctionBuilder(signature).apply(init)
+    fun remove(index: Int) {
+        listEdits += ListEdit.Remove(index)
     }
 
-    fun variable(name: String, init: VariableBuilder.() -> Unit) {
-        entities += VariableBuilder(name).apply(init)
-    }
-
-    fun build(): SourceUnit =
-            SourceUnit(id = path, entities = entities.map { it.build(path) })
+    fun build(): List<ListEdit<T>> = listEdits
 }

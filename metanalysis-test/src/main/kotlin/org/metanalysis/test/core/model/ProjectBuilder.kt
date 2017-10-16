@@ -18,7 +18,7 @@ package org.metanalysis.test.core.model
 
 import org.metanalysis.core.model.Project
 
-@SourceBuilderMarker
+@ModelBuilderMarker
 class ProjectBuilder {
     private val units = arrayListOf<UnitBuilder>()
 

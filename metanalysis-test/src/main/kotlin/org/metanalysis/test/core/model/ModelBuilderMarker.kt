@@ -17,4 +17,4 @@
 package org.metanalysis.test.core.model
 
 @DslMarker
-internal annotation class SourceBuilderMarker
+internal annotation class ModelBuilderMarker

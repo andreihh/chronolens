@@ -18,11 +18,10 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
-import org.metanalysis.core.model.ProjectEdit.AddNode
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
-import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.test.core.model.addFunction
+import org.metanalysis.test.core.model.addSourceUnit
+import org.metanalysis.test.core.model.addType
+import org.metanalysis.test.core.model.addVariable
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
 
@@ -38,7 +37,7 @@ class AddNodeTest {
         val actual = project {
             sourceUnit("src/Main.java") {}
         }
-        actual.apply(AddNode(SourceUnit("src/Test.java")))
+        actual.apply(addSourceUnit("src/Test.java") {})
 
         assertEquals(expected, actual)
     }
@@ -61,7 +60,7 @@ class AddNodeTest {
                 }
             }
         }
-        actual.apply(AddNode(Variable("src/Test.java:Test:getVersion():name")))
+        actual.apply(addVariable("src/Test.java:Test:getVersion():name") {})
 
         assertEquals(expected, actual)
     }
@@ -80,7 +79,7 @@ class AddNodeTest {
                 type("Test") {}
             }
         }
-        actual.apply(AddNode(Function("src/Test.java:Test:getVersion()")))
+        actual.apply(addFunction("src/Test.java:Test:getVersion()") {})
 
         assertEquals(expected, actual)
     }
@@ -99,15 +98,11 @@ class AddNodeTest {
         val actual = project {
             sourceUnit("src/Test.java") {}
         }
-        actual.apply(AddNode(Type(
-                id = "src/Test.java:Test",
-                members = listOf(Function(
-                        id = "src/Test.java:Test:getV(String)",
-                        parameters = listOf(Variable(
-                                id = "src/Test.java:Test:getV(String):name"
-                        ))
-                ))
-        )))
+        actual.apply(addType("src/Test.java:Test") {
+            function("getV(String)") {
+                parameter("name") {}
+            }
+        })
 
         assertEquals(expected, actual)
     }
@@ -118,7 +113,7 @@ class AddNodeTest {
                 type("Test") {}
             }
         }
-        val edit = AddNode(Type("src/Test.java:Test"))
+        val edit = addType("src/Test.java:Test") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -131,7 +126,7 @@ class AddNodeTest {
                 function("getVersion()") {}
             }
         }
-        val edit = AddNode(Variable("src/Test.java:getV():name"))
+        val edit = addVariable("src/Test.java:getV():name") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -144,7 +139,7 @@ class AddNodeTest {
                 variable("version") {}
             }
         }
-        val edit = AddNode(Function("src/Test.java:version:getVersion()"))
+        val edit = addFunction("src/Test.java:version:getVersion()") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

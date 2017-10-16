@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.model
+package org.metanalysis.test.core.versioning
 
-import org.junit.Test
+class RevisionMockBuilder(private val id: String) {
+    var date: Long = System.currentTimeMillis()
+    var author: String = "<unknown-author>"
+    private val changeSet = hashMapOf<String, String?>()
 
-import kotlin.test.assertFailsWith
-
-class TransactionTest {
-    @Test fun `test transaction with negative date throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            Transaction(id = "123", date = -1L, author = "<author>")
-        }
+    fun change(entry: Pair<String, String?>) {
+        changeSet[entry.first] = entry.second
     }
+
+    fun build(): RevisionMock = RevisionMock(id, date, author, changeSet)
 }

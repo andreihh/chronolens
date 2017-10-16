@@ -18,7 +18,7 @@ package org.metanalysis.test.core.model
 
 import org.metanalysis.core.model.SourceNode.SourceEntity
 
-@SourceBuilderMarker
+@ModelBuilderMarker
 interface EntityBuilder<out T : SourceEntity> {
     fun build(parentId: String): T
 }

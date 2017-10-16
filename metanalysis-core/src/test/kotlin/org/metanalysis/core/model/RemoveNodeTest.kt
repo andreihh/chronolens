@@ -18,9 +18,9 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
-import org.metanalysis.core.model.ProjectEdit.RemoveNode
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
+import org.metanalysis.test.core.model.removeNode
 
 import kotlin.test.assertFailsWith
 
@@ -40,7 +40,7 @@ class RemoveNodeTest {
             }
             sourceUnit("src/Test.java") {}
         }
-        actual.apply(RemoveNode("src/Main.java"))
+        actual.apply(removeNode("src/Main.java"))
 
         assertEquals(expected, actual)
     }
@@ -51,7 +51,7 @@ class RemoveNodeTest {
                 function("getVersion()") {}
             }
         }
-        val edit = RemoveNode("src/Test.java:version")
+        val edit = removeNode("src/Test.java:version")
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -76,7 +76,7 @@ class RemoveNodeTest {
                 }
             }
         }
-        actual.apply(RemoveNode("src/Test.java:Test:getVersion():name"))
+        actual.apply(removeNode("src/Test.java:Test:getVersion():name"))
 
         assertEquals(expected, actual)
     }
