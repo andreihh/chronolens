@@ -72,7 +72,7 @@ sealed class ProjectEdit : Edit<Project> {
         }
     }
 
-    /** The id of the edited node. */
+    /** The [SourceNode.id] of the edited node. */
     abstract val id: String
 
     /**
@@ -128,6 +128,11 @@ sealed class ProjectEdit : Edit<Project> {
         }
     }
 
+    /**
+     * Indicates that a [SourceNode] should be added to a project.
+     *
+     * @property node the node which should be added to the project
+     */
     data class AddNode(val node: SourceNode) : ProjectEdit() {
         override val id: String
             get() = node.id
@@ -141,6 +146,11 @@ sealed class ProjectEdit : Edit<Project> {
         }
     }
 
+    /**
+     * Indicates that a [SourceNode] should be removed from a project.
+     *
+     * @throws IllegalArgumentException if the `id` is not a valid node id
+     */
     data class RemoveNode(override val id: String) : ProjectEdit() {
         init {
             validateNodeId(id)
@@ -155,6 +165,16 @@ sealed class ProjectEdit : Edit<Project> {
         }
     }
 
+    /**
+     * Indicates that the properties of a [Type] within a project should be
+     * edited.
+     *
+     * @property modifierEdits the edits which should be applied to the
+     * [Type.modifiers] of the type with the given [id]
+     * @property supertypeEdits the edits which should be applied to the
+     * [Type.supertypes] of the type with the given [id]
+     * @throws IllegalArgumentException if the `id` is not a valid type id
+     */
     data class EditType(
             override val id: String,
             val modifierEdits: List<SetEdit<String>> = emptyList(),
@@ -174,6 +194,18 @@ sealed class ProjectEdit : Edit<Project> {
         }
     }
 
+    /**
+     * Indicates that the properties of a [Function] within a project should be
+     * edited.
+     *
+     * @property modifierEdits the edits which should be applied to the
+     * [Function.modifiers] of the function with the given [id]
+     * @property parameterEdits the edits which should be applied to the
+     * [Function.parameters] of the function with the given [id]
+     * @property bodyEdits the edits which should be applied to the
+     * [Function.body] of the function with the given [id]
+     * @throws IllegalArgumentException if the `id` is not a valid function id
+     */
     data class EditFunction(
             override val id: String,
             val modifierEdits: List<SetEdit<String>> = emptyList(),
@@ -202,6 +234,16 @@ sealed class ProjectEdit : Edit<Project> {
         }
     }
 
+    /**
+     * Indicates that the properties of a [Variable] within a project should be
+     * edited.
+     *
+     * @property modifierEdits the edits which should be applied to the
+     * [Variable.modifiers] of the variable with the given [id]
+     * @property initializerEdits the edits which should be applied to the
+     * [Variable.initializer] of the variable with the given [id]
+     * @throws IllegalArgumentException if the `id` is not a valid variable id
+     */
     data class EditVariable(
             override val id: String,
             val modifierEdits: List<SetEdit<String>> = emptyList(),

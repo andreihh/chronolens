@@ -34,7 +34,7 @@ class SetEditTest {
 
     @Test fun `test add non-existing element`() {
         val expected = setOf(1, 2)
-        val actual = setOf(1).apply(SetEdit.Add(2))
+        val actual = setOf(1).apply(Add(2))
         assertEquals(expected, actual)
     }
 
@@ -52,7 +52,7 @@ class SetEditTest {
 
     @Test fun `test remove non-existing element throws`() {
         assertFailsWith<IllegalStateException> {
-            setOf(1).apply(SetEdit.Remove(2))
+            setOf(1).apply(Remove(2))
         }
     }
 

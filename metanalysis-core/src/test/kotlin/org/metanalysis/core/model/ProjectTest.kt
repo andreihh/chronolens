@@ -29,6 +29,7 @@ import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.editType
 import org.metanalysis.test.core.model.project
 import org.metanalysis.test.core.model.removeNode
+import org.metanalysis.test.core.model.sourceUnit
 import org.metanalysis.test.core.model.transaction
 import org.metanalysis.test.core.model.variable
 
@@ -39,12 +40,9 @@ import kotlin.test.fail
 
 class ProjectTest {
     @Test fun `test create project with duplicated unit ids throws`() {
-        val path = "src/Test.java"
+        val unit = sourceUnit("src/Test.java") {}
         assertFailsWith<IllegalArgumentException> {
-            project {
-                sourceUnit(path) {}
-                sourceUnit(path) {}
-            }
+            Project(listOf(unit, unit))
         }
     }
 

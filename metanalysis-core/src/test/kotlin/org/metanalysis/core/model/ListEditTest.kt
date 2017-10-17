@@ -40,37 +40,37 @@ class ListEditTest {
 
     @Test fun `test add element at negative position throws`() {
         assertFailsWith<IllegalArgumentException> {
-            Add(-1, '0')
+            Add(index = -1, value = '0')
         }
     }
 
     @Test fun `test add element at end`() {
         val expected = "12345"
-        val actual = "1234".apply(Add(4, '5'))
+        val actual = "1234".apply(Add(index = 4, value = '5'))
         assertEquals(expected, actual)
     }
 
     @Test fun `test add element before end`() {
         val expected = "12345"
-        val actual = "1235".apply(Add(3, '4'))
+        val actual = "1235".apply(Add(index = 3, value = '4'))
         assertEquals(expected, actual)
     }
 
     @Test fun `test add element at front`() {
         val expected = "12345"
-        val actual = "2345".apply(Add(0, '1'))
+        val actual = "2345".apply(Add(index = 0, value = '1'))
         assertEquals(expected, actual)
     }
 
     @Test fun `test add element in middle`() {
         val expected = "12345"
-        val actual = "1245".apply(Add(2, '3'))
+        val actual = "1245".apply(Add(index = 2, value = '3'))
         assertEquals(expected, actual)
     }
 
     @Test fun `test add element out of bounds throws`() {
         assertFailsWith<IllegalStateException> {
-            "1234".apply(Add(5, '6'))
+            "1234".apply(Add(index = 5, value = '6'))
         }
     }
 
@@ -109,19 +109,19 @@ class ListEditTest {
         val actual = "democrats".apply(
                 Remove(8), // democrat
                 Remove(7), // democra
-                Add(7, 'n'), // democran
+                Add(index = 7, value = 'n'), // democran
                 Remove(5), // democan
-                Add(5, 'c'), // democcan
+                Add(index = 5, value = 'c'), // democcan
                 Remove(4), // democan
-                Add(4, 'i'), // demoican
+                Add(index = 4, value = 'i'), // demoican
                 Remove(3), // demican
-                Add(3, 'l'), // demlican
+                Add(index = 3, value = 'l'), // demlican
                 Remove(2), // delican
-                Add(2, 'b'), // deblican
-                Add(2, 'u'), // deublican
-                Add(2, 'p'), // depublican
+                Add(index = 2, value = 'b'), // deblican
+                Add(index = 2, value = 'u'), // deublican
+                Add(index = 2, value = 'p'), // depublican
                 Remove(0), // epublican
-                Add(0, 'r') // republican
+                Add(index = 0, value = 'r') // republican
         )
         assertEquals(expected, actual)
     }

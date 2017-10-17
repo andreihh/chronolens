@@ -22,21 +22,16 @@ import org.metanalysis.core.model.SourceNode.SourceEntity.Function
 import org.metanalysis.core.model.SourceNode.SourceEntity.Type
 import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
 import org.metanalysis.core.model.SourceNode.SourceUnit
-import org.metanalysis.test.core.model.function
-import org.metanalysis.test.core.model.sourceUnit
-import org.metanalysis.test.core.model.type
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class SourceNodeTest {
     @Test fun `test duplicated entity in unit throws`() {
-        val name = "type"
+        val id = "src/Test.java"
+        val entities = listOf(Type("$id:type"), Variable("$id:type"))
         assertFailsWith<IllegalArgumentException> {
-            sourceUnit("src/Test.java") {
-                type(name) {}
-                variable(name) {}
-            }
+            SourceUnit(id = id, entities = entities)
         }
     }
 
@@ -49,12 +44,10 @@ class SourceNodeTest {
     }
 
     @Test fun `test duplicated entity in type throws`() {
-        val name = "member"
+        val id = "src/Test.java:Type"
+        val members = listOf(Type("$id:member"), Variable("$id:member"))
         assertFailsWith<IllegalArgumentException> {
-            type("src/Test.java:Type") {
-                type(name) {}
-                variable(name) {}
-            }
+            Type(id = id, members = members)
         }
     }
 
@@ -67,12 +60,10 @@ class SourceNodeTest {
     }
 
     @Test fun `test duplicated parameter in function throws`() {
-        val name = "parameter"
+        val id = "src/Test.java:getVersion(int, int)"
+        val parameters = listOf(Variable("$id:param"), Variable("$id:param"))
         assertFailsWith<IllegalArgumentException> {
-            function("src/Test.java:getVersion(int, int)") {
-                parameter(name) {}
-                parameter(name) {}
-            }
+            Function(id = id, parameters = parameters)
         }
     }
 

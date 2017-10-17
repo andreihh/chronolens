@@ -139,7 +139,7 @@ object JsonModule {
         throw JsonException(e)
     }
 
-    /** Utility deserialization method. */
+    /** Inline utility method. */
     @Throws(IOException::class)
     inline fun <reified T : Any> deserialize(src: InputStream): T =
             deserialize(src, T::class.java)

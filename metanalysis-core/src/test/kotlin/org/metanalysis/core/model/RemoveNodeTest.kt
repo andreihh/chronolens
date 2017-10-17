@@ -18,6 +18,7 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
+import org.metanalysis.core.model.ProjectEdit.RemoveNode
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
 import org.metanalysis.test.core.model.removeNode
@@ -25,6 +26,12 @@ import org.metanalysis.test.core.model.removeNode
 import kotlin.test.assertFailsWith
 
 class RemoveNodeTest {
+    @Test fun `test remove invalid id throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            RemoveNode("src/Test.java:/")
+        }
+    }
+
     @Test fun `test remove source unit`() {
         val expected = project {
             sourceUnit("src/Test.java") {}

@@ -18,6 +18,7 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
+import org.metanalysis.core.model.ProjectEdit.EditVariable
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.editVariable
 import org.metanalysis.test.core.model.project
@@ -25,6 +26,12 @@ import org.metanalysis.test.core.model.project
 import kotlin.test.assertFailsWith
 
 class EditVariableTest {
+    @Test fun `test edit invalid variable id throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            EditVariable("src/Test.java:version()")
+        }
+    }
+
     @Test fun `test add modifier to parameter`() {
         val expected = project {
             sourceUnit("src/Test.java") {

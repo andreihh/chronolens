@@ -20,6 +20,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 
+/** A subprocess executor. */
 object Subprocess {
     private fun InputStream.readText(): String =
             reader().use(InputStreamReader::readText)

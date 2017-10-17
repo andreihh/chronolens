@@ -25,6 +25,11 @@ import org.metanalysis.core.parsing.Result
 import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
 
+/**
+ * A wrapper around a repository persisted in a version control system (VCS).
+ *
+ * All queries retrieve and interpret the data from a VCS subprocess.
+ */
 class InteractiveRepository private constructor(
         private val vcs: VcsProxy
 ): Repository {

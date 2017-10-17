@@ -23,7 +23,7 @@ import java.util.logging.Logger
  * A utility factory for loggers which provides a default configuration.
  *
  * The default configuration logs to [System.err] with the following format:
- * `%level: %message%n`. In order to override this configuration for newly
+ * `[%level] %message%n`. In order to override this configuration for newly
  * created loggers, you must call [LogManager.readConfiguration] after the
  * factory was initialized.
  */

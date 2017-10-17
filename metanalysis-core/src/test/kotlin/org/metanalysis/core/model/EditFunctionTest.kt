@@ -18,6 +18,7 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
+import org.metanalysis.core.model.ProjectEdit.EditFunction
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.editFunction
 import org.metanalysis.test.core.model.project
@@ -25,6 +26,12 @@ import org.metanalysis.test.core.model.project
 import kotlin.test.assertFailsWith
 
 class EditFunctionTest {
+    @Test fun `test edit invalid function id throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            EditFunction("src/Test.java:getVersion)")
+        }
+    }
+
     @Test fun `test add modifier to function`() {
         val expected = project {
             sourceUnit("src/Test.java") {
@@ -91,7 +98,7 @@ class EditFunctionTest {
         }
     }
 
-    @Test fun `test add non-existing parameter throws`() {
+    @Test fun `test edit non-existing parameter throws`() {
         val project = project {
             sourceUnit("src/Test.java") {
                 function("getValue(int, int)") {

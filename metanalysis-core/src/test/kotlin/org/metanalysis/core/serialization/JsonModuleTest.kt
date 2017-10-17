@@ -36,7 +36,6 @@ class JsonModuleTest {
             function("createIClass()") {}
             type("IClass") {
                 supertypes("Interface", "Object")
-
                 type("InnerClass") {}
                 variable("version") { +"1" }
                 function("getVersion()") { +"1" }

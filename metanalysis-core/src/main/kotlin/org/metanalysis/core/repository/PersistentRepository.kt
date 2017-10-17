@@ -25,6 +25,13 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 
+/**
+ * A wrapper around a repository which has all its interpreted data persisted on
+ * disk.
+ *
+ * All queries read the interpreted data directly from disk, not having to
+ * reinterpret it again or to communicate with other subprocesses.
+ */
 class PersistentRepository private constructor() : Repository {
     companion object {
         private val logger = LoggerFactory.getLogger<PersistentRepository>()

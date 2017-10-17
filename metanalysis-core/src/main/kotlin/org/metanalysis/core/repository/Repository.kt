@@ -20,6 +20,10 @@ import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.SourceNode.SourceUnit
 import org.metanalysis.core.model.Transaction
 
+/**
+ * A wrapper which connects to a repository and allows querying source code
+ * metadata and the project history.
+ */
 interface Repository {
     /** Returns the id of the `head` revision of this repository. */
     fun getHeadId(): String

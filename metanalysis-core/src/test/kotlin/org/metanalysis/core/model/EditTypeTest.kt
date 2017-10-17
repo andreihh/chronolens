@@ -18,6 +18,7 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 
+import org.metanalysis.core.model.ProjectEdit.EditType
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.editType
 import org.metanalysis.test.core.model.project
@@ -25,6 +26,12 @@ import org.metanalysis.test.core.model.project
 import kotlin.test.assertFailsWith
 
 class EditTypeTest {
+    @Test fun `test edit invalid type id throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            EditType("src/Test.java")
+        }
+    }
+
     @Test fun `test add supertype to type`() {
         val expected = project {
             sourceUnit("src/Test.java") {
