@@ -57,7 +57,7 @@ sealed class Command {
         """.trimIndent()
 
         override fun execute(vararg args: String) {
-            println("metanalysis 0.2.0")
+            println("metanalysis 0.2")
         }
     }
 
