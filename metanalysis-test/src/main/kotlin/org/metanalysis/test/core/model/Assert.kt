@@ -20,7 +20,6 @@ package org.metanalysis.test.core.model
 
 import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.SourceNode.SourceUnit
-
 import kotlin.test.assertEquals as assertEqualsKt
 
 fun assertEquals(

@@ -17,9 +17,7 @@
 package org.metanalysis.java
 
 import org.junit.Test
-
 import org.metanalysis.core.parsing.Result
-
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 

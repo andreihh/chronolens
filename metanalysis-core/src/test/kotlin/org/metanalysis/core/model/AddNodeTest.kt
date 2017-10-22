@@ -17,14 +17,12 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-
 import org.metanalysis.test.core.model.addFunction
 import org.metanalysis.test.core.model.addSourceUnit
 import org.metanalysis.test.core.model.addType
 import org.metanalysis.test.core.model.addVariable
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
-
 import kotlin.test.assertFailsWith
 
 class AddNodeTest {

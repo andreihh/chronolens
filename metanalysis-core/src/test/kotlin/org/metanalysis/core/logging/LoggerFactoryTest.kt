@@ -17,9 +17,7 @@
 package org.metanalysis.core.logging
 
 import org.junit.Test
-
 import java.util.logging.LogManager
-
 import kotlin.test.assertEquals
 
 class LoggerFactoryTest {

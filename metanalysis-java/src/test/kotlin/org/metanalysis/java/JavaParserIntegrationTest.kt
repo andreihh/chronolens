@@ -17,7 +17,6 @@
 package org.metanalysis.java
 
 import org.junit.Test
-
 import java.net.URL
 
 class JavaParserIntegrationTest : JavaParserTest() {

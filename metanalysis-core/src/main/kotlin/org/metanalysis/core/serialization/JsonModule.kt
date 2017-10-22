@@ -28,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.OBJECT_AND_NON_
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-
 import org.metanalysis.core.model.Edit
 import org.metanalysis.core.model.ListEdit
 import org.metanalysis.core.model.ProjectEdit.AddNode
@@ -42,7 +41,6 @@ import org.metanalysis.core.model.SourceNode.SourceEntity.Function
 import org.metanalysis.core.model.SourceNode.SourceEntity.Type
 import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
 import org.metanalysis.core.model.SourceNode.SourceUnit
-
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream

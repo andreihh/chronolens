@@ -18,12 +18,9 @@ package org.metanalysis.core.repository
 
 import org.junit.After
 import org.junit.Test
-
 import org.metanalysis.core.repository.PersistentRepository.Companion.persist
 import org.metanalysis.test.core.repository.assertEquals
-
 import java.io.File
-
 import kotlin.test.assertNull
 import kotlin.test.fail
 

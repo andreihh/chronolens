@@ -17,12 +17,10 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-
 import org.metanalysis.test.core.model.function
 import org.metanalysis.test.core.model.sourceUnit
 import org.metanalysis.test.core.model.type
 import org.metanalysis.test.core.model.variable
-
 import kotlin.test.assertEquals
 
 class UtilsTest {

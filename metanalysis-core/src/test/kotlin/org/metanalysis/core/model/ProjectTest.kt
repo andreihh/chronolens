@@ -17,7 +17,6 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-
 import org.metanalysis.core.model.SourceNode.SourceEntity.Function
 import org.metanalysis.core.model.SourceNode.SourceEntity.Type
 import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
@@ -32,7 +31,6 @@ import org.metanalysis.test.core.model.removeNode
 import org.metanalysis.test.core.model.sourceUnit
 import org.metanalysis.test.core.model.transaction
 import org.metanalysis.test.core.model.variable
-
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull

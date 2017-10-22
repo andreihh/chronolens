@@ -17,7 +17,6 @@
 package org.metanalysis
 
 import org.metanalysis.core.logging.LoggerFactory
-
 import kotlin.system.exitProcess
 
 fun usage(message: String): Nothing {

@@ -21,7 +21,6 @@ import org.metanalysis.core.parsing.Parser.Companion.getParserByLanguage
 import org.metanalysis.core.parsing.Result
 import org.metanalysis.test.core.model.UnitBuilder
 import org.metanalysis.test.core.model.sourceUnit
-
 import kotlin.test.fail
 
 abstract class JavaParserTest {

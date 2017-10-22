@@ -17,9 +17,7 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-
 import org.metanalysis.test.core.model.sourceUnit
-
 import kotlin.test.assertFailsWith
 
 class DiffUtilsTest {

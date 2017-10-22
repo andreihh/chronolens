@@ -17,12 +17,10 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-
 import org.metanalysis.core.model.ListEdit.Add
 import org.metanalysis.core.model.ListEdit.Companion.apply
 import org.metanalysis.core.model.ListEdit.Companion.diff
 import org.metanalysis.core.model.ListEdit.Remove
-
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 

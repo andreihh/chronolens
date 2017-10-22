@@ -17,7 +17,6 @@
 package org.metanalysis.core.subprocess
 
 import org.junit.Test
-
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse

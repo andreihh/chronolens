@@ -20,7 +20,6 @@ import org.metanalysis.core.logging.LoggerFactory
 import org.metanalysis.core.model.SourceNode.SourceUnit
 import org.metanalysis.core.model.Transaction
 import org.metanalysis.core.serialization.JsonModule
-
 import java.io.File
 import java.io.IOException
 import java.io.InputStream

@@ -20,13 +20,11 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
-
 import org.metanalysis.core.model.Project
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
 import org.metanalysis.test.core.model.sourceUnit
 import org.metanalysis.test.core.versioning.VcsProxyFactoryMock
-
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 

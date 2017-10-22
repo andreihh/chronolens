@@ -17,9 +17,7 @@
 package org.metanalysis.git
 
 import org.junit.Test
-
 import org.metanalysis.core.versioning.VcsProxyFactory
-
 import kotlin.test.assertNull
 
 class GitProxyWithNoRepositoryTest {

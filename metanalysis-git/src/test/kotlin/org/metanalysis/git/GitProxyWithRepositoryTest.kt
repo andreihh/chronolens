@@ -19,12 +19,9 @@ package org.metanalysis.git
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Test
-
 import org.metanalysis.core.subprocess.Subprocess.execute
 import org.metanalysis.core.versioning.VcsProxyFactory
-
 import java.io.File
-
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals

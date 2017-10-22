@@ -17,7 +17,6 @@
 package org.metanalysis.core.versioning
 
 import org.junit.Test
-
 import kotlin.test.assertFailsWith
 
 class RevisionTest {

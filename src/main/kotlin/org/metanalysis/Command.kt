@@ -21,7 +21,6 @@ import org.metanalysis.core.repository.PersistentRepository
 import org.metanalysis.core.repository.PersistentRepository.Companion.persist
 import org.metanalysis.core.repository.Repository
 import org.metanalysis.core.serialization.JsonModule.serialize
-
 import java.io.IOException
 
 sealed class Command {

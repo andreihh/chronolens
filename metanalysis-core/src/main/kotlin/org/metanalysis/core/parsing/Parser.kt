@@ -17,7 +17,6 @@
 package org.metanalysis.core.parsing
 
 import org.metanalysis.core.model.SourceNode
-
 import java.util.ServiceLoader
 
 /**

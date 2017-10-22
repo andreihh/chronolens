@@ -17,9 +17,7 @@
 package org.metanalysis.core.versioning
 
 import org.junit.Test
-
 import org.metanalysis.test.core.versioning.VcsProxyFactoryMock
-
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull

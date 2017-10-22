@@ -17,7 +17,6 @@
 package org.metanalysis.java
 
 import org.junit.Test
-
 import kotlin.test.assertEquals
 
 class JavaParserClassTest : JavaParserTest() {

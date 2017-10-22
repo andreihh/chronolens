@@ -17,12 +17,10 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-
 import org.metanalysis.core.model.ProjectEdit.EditVariable
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.editVariable
 import org.metanalysis.test.core.model.project
-
 import kotlin.test.assertFailsWith
 
 class EditVariableTest {

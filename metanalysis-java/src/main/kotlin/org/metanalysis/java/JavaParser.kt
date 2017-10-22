@@ -21,7 +21,6 @@ import org.eclipse.jdt.core.dom.AST
 import org.eclipse.jdt.core.dom.ASTParser
 import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.CompilationUnit
-
 import org.metanalysis.core.parsing.Parser
 import org.metanalysis.core.parsing.Result
 

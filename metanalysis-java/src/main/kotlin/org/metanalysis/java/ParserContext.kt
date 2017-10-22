@@ -25,7 +25,6 @@ import org.eclipse.jdt.core.dom.Initializer
 import org.eclipse.jdt.core.dom.MethodDeclaration
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
-
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.SourceNode.SourceEntity
 import org.metanalysis.core.model.SourceNode.SourceEntity.Function
