@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.test.core.versioning
+package org.metanalysis.core.versioning
 
 data class RevisionMock(
         val id: String,

@@ -23,7 +23,7 @@ import org.junit.Test
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
 import org.metanalysis.test.core.model.sourceUnit
-import org.metanalysis.test.core.versioning.VcsProxyFactoryMock
+import org.metanalysis.core.versioning.VcsProxyFactoryMock
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 

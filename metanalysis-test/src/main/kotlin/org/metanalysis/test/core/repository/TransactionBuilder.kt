@@ -14,14 +14,24 @@
  * limitations under the License.
  */
 
-package org.metanalysis.test.core.model
+package org.metanalysis.test.core.repository
 
 import org.metanalysis.core.model.ProjectEdit
 import org.metanalysis.core.model.ProjectEdit.AddNode
 import org.metanalysis.core.model.ProjectEdit.RemoveNode
 import org.metanalysis.core.repository.Transaction
+import org.metanalysis.test.core.model.EditFunctionBuilder
+import org.metanalysis.test.core.model.EditTypeBuilder
+import org.metanalysis.test.core.model.EditVariableBuilder
+import org.metanalysis.test.core.model.FunctionBuilder
+import org.metanalysis.test.core.model.TypeBuilder
+import org.metanalysis.test.core.model.UnitBuilder
+import org.metanalysis.test.core.model.VariableBuilder
+import org.metanalysis.test.core.model.function
+import org.metanalysis.test.core.model.sourceUnit
+import org.metanalysis.test.core.model.type
+import org.metanalysis.test.core.model.variable
 
-@ModelBuilderMarker
 class TransactionBuilder(private val id: String) {
     var date: Long = System.currentTimeMillis()
     var author: String = "<unknown-author>"

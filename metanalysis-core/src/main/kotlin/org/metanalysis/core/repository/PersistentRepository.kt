@@ -17,7 +17,6 @@
 package org.metanalysis.core.repository
 
 import org.metanalysis.core.model.SourceNode.SourceUnit
-import org.metanalysis.core.serialization.JsonModule
 import java.io.File
 import java.io.IOException
 import java.io.InputStream

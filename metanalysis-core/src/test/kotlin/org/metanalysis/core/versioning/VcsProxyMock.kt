@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.test.core.versioning
-
-import org.metanalysis.core.versioning.Revision
-import org.metanalysis.core.versioning.VcsProxy
+package org.metanalysis.core.versioning
 
 class VcsProxyMock(private val revisions: List<RevisionMock>) : VcsProxy {
     private val revisionsById = revisions.associateBy(RevisionMock::id)

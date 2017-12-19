@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-@file:JvmName("Builders")
-
 package org.metanalysis.test.core.model
 
 import org.metanalysis.core.model.Project
+import org.metanalysis.core.model.ProjectEdit.AddNode
+import org.metanalysis.core.model.ProjectEdit.EditFunction
+import org.metanalysis.core.model.ProjectEdit.EditType
+import org.metanalysis.core.model.ProjectEdit.EditVariable
+import org.metanalysis.core.model.ProjectEdit.RemoveNode
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.SourceNode.SourceEntity.Function
 import org.metanalysis.core.model.SourceNode.SourceEntity.Type
@@ -54,3 +57,30 @@ inline fun variable(id: String, init: VariableBuilder.() -> Unit): Variable {
     builder.init()
     return builder.build(parentId)
 }
+
+inline fun addSourceUnit(path: String, init: UnitBuilder.() -> Unit): AddNode =
+        AddNode(sourceUnit(path, init))
+
+inline fun addType(id: String, init: TypeBuilder.() -> Unit): AddNode =
+        AddNode(type(id, init))
+
+inline fun addFunction(id: String, init: FunctionBuilder.() -> Unit): AddNode =
+        AddNode(function(id, init))
+
+inline fun addVariable(id: String, init: VariableBuilder.() -> Unit): AddNode =
+        AddNode(variable(id, init))
+
+fun removeNode(id: String): RemoveNode = RemoveNode(id)
+
+inline fun editType(id: String, init: EditTypeBuilder.() -> Unit): EditType =
+        EditTypeBuilder(id).apply(init).build()
+
+inline fun editFunction(
+        id: String,
+        init: EditFunctionBuilder.() -> Unit
+): EditFunction = EditFunctionBuilder(id).apply(init).build()
+
+inline fun editVariable(
+        id: String,
+        init: EditVariableBuilder.() -> Unit
+): EditVariable = EditVariableBuilder(id).apply(init).build()

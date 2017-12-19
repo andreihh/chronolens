@@ -56,6 +56,12 @@ class SubprocessTest {
         assertEquals(expectedMessage, actual.message)
     }
 
+    @Test fun `test killed throws`() {
+        assertFailsWith<SubprocessException> {
+            execute(exitValue = 137) // UNIX SIGKILL
+        }
+    }
+
     @Test fun `test interrupt throws`() {
         Thread.currentThread().interrupt()
         assertFailsWith<SubprocessException> {

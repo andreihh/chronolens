@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.serialization
+package org.metanalysis.core.repository
 
 import org.junit.Test
-import org.metanalysis.core.repository.Transaction
-import org.metanalysis.core.serialization.JsonModule.JsonException
-import org.metanalysis.test.core.model.transaction
+import org.metanalysis.core.repository.JsonModule.JsonException
+import org.metanalysis.test.core.repository.transaction
 import java.io.ByteArrayOutputStream
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

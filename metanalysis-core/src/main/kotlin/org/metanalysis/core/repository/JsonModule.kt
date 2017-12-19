@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.serialization
+package org.metanalysis.core.repository
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude

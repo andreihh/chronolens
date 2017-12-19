@@ -14,29 +14,23 @@
  * limitations under the License.
  */
 
-package org.metanalysis.test.core.versioning
-
-import org.metanalysis.core.versioning.VcsProxy
-import org.metanalysis.core.versioning.VcsProxyFactory
+package org.metanalysis.core.versioning
 
 class VcsProxyFactoryMock : VcsProxyFactory() {
     companion object {
         private var isInitialized = false
         private var revisions = emptyList<RevisionMock>()
 
-        @JvmStatic
         fun resetRepository() {
             isInitialized = false
             revisions = emptyList()
         }
 
-        @JvmStatic
         fun setRepository(revisions: List<RevisionMock>) {
             isInitialized = true
             this.revisions = revisions
         }
 
-        @JvmStatic
         inline fun setRepository(init: HistoryBuilder.() -> Unit) {
             setRepository(HistoryBuilder().apply(init).build())
         }

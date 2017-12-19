@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package org.metanalysis.test.core.versioning
+package org.metanalysis.core.versioning
 
-class RevisionMockBuilder(private val id: String) {
-    var date: Long = System.currentTimeMillis()
-    var author: String = "<unknown-author>"
-    private val changeSet = hashMapOf<String, String?>()
+class HistoryBuilder {
+    private var id = 0
+    private val revisions = arrayListOf<RevisionMock>()
 
-    fun change(entry: Pair<String, String?>) {
-        changeSet[entry.first] = entry.second
+    fun revision(init: RevisionMockBuilder.() -> Unit) {
+        revisions += RevisionMockBuilder("${id++}").apply(init).build()
     }
 
-    fun build(): RevisionMock = RevisionMock(id, date, author, changeSet)
+    fun build(): List<RevisionMock> = revisions
 }
