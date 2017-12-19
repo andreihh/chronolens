@@ -17,6 +17,7 @@
 package org.metanalysis.core.repository
 
 import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.repository.PersistentRepository.ProgressListener
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -49,23 +50,30 @@ class PersistentRepository private constructor() : Repository {
          *
          * @return the persisted repository
          * @throws IOException if any output related errors occur
+         * @throws IllegalStateException if the state of this repository becomes
+         * corrupted
          */
         @Throws(IOException::class)
         @JvmStatic
-        fun Repository.persist(): PersistentRepository {
+        fun Repository.persist(
+                listener: ProgressListener? = null
+        ): PersistentRepository {
             if (this is PersistentRepository) {
                 return this
             }
             rootDirectory.mkdirs()
             headFile.printWriter().use { out -> out.println(getHeadId()) }
-            persistSnapshot()
-            persistHistory()
+            persistSnapshot(listener)
+            persistHistory(listener)
             return PersistentRepository()
         }
 
         /**
          * Deletes the previously persisted repository from the current working
          * directory.
+         *
+         * All `PersistentRepository` instances will become corrupted after this
+         * method is called.
          *
          * @throws IOException if any input or output related errors occur
          */
@@ -74,6 +82,16 @@ class PersistentRepository private constructor() : Repository {
         fun clean() {
             rootDirectory.deleteRecursively()
         }
+    }
+
+    /** A listener notified on the progress of persisting a repository. */
+    interface ProgressListener {
+        fun onSnapshotStart(headId: String)
+        fun onSourcePersisted(path: String)
+        fun onSnapshotEnd()
+        fun onHistoryStart()
+        fun onTransactionPersisted(id: String)
+        fun onHistoryEnd()
     }
 
     private val headId = headFile.readLines().first()
@@ -126,28 +144,27 @@ private fun getSourceUnitFile(path: String): File =
 private fun getTransactionFile(id: String): File =
         File(transactionsDirectory, "$id.json")
 
-private fun Repository.persistSourceUnit(path: String) {
-    val sourceUnit = getSourceUnit(path)
-            ?: error("'$path' couldn't be interpreted!")
-    getSourceUnitDirectory(path).mkdirs()
-    getSourceUnitFile(path).outputStream().use { out ->
+private fun persistSourceUnit(sourceUnit: SourceUnit) {
+    getSourceUnitDirectory(sourceUnit.path).mkdirs()
+    getSourceUnitFile(sourceUnit.path).outputStream().use { out ->
         JsonModule.serialize(out, sourceUnit)
     }
 }
 
-private fun Repository.persistSnapshot() {
-    print("Persisting latest repository snapshot...\n")
+private fun Repository.persistSnapshot(listener: ProgressListener?) {
+    listener?.onSnapshotStart(getHeadId())
     snapshotDirectory.mkdirs()
     sourcesFile.printWriter().use { out ->
         val sources = listSources()
-        for ((index, path) in sources.withIndex()) {
+        for (path in sources) {
+            val sourceUnit = getSourceUnit(path)
+                    ?: error("'$path' couldn't be interpreted!")
             out.println(path)
-            persistSourceUnit(path)
-            print("Persisted ${index + 1} sources...\r")
+            persistSourceUnit(sourceUnit)
+            listener?.onSourcePersisted(path)
         }
-        print("\n")
-        print("Done!\n")
     }
+    listener?.onSnapshotEnd()
 }
 
 private fun persistTransaction(transaction: Transaction) {
@@ -157,16 +174,15 @@ private fun persistTransaction(transaction: Transaction) {
     }
 }
 
-private fun Repository.persistHistory() {
-    print("Persisting repository history...\n")
+private fun Repository.persistHistory(listener: ProgressListener?) {
+    listener?.onHistoryStart()
     historyFile.printWriter().use { out ->
         transactionsDirectory.mkdirs()
-        for ((index, transaction) in getHistory().withIndex()) {
+        for (transaction in getHistory()) {
             out.println(transaction.id)
             persistTransaction(transaction)
-            print("Persisted ${index + 1} transactions...\r")
+            listener?.onTransactionPersisted(transaction.id)
         }
-        print("\n")
-        print("Done!\n")
     }
+    listener?.onHistoryEnd()
 }

@@ -20,6 +20,18 @@ import org.junit.Test
 import kotlin.test.assertFailsWith
 
 class RevisionTest {
+    @Test fun `test revision with empty id throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            Revision(id = "", date = 1, author = "<author>")
+        }
+    }
+
+    @Test fun `test revision with invalid characters in id throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            Revision(id = "HEAD~", date = 1, author = "<author>")
+        }
+    }
+
     @Test fun `test revision with negative date throws`() {
         assertFailsWith<IllegalArgumentException> {
             Revision(id = "HEAD", date = -1, author = "<author>")

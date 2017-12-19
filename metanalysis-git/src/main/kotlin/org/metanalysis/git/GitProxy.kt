@@ -24,6 +24,7 @@ internal class GitProxy(private val prefix: String) : VcsProxy {
     private val vcs = "git"
     private val headId = "HEAD"
     private val format = "--format=%ct:%an"
+    private val head = getRevision(headId) ?: error("'$headId' must exist!")
 
     private fun formatCommits(rawCommits: String): List<String> {
         val lines = rawCommits.lines()
@@ -47,8 +48,7 @@ internal class GitProxy(private val prefix: String) : VcsProxy {
         require(result.isSuccess) { "Revision '$revisionId' doesn't exist!" }
     }
 
-    override fun getHead(): Revision =
-            getRevision(headId) ?: error("'$headId' must exist!")
+    override fun getHead(): Revision = head
 
     override fun getRevision(revisionId: String): Revision? {
         val result =

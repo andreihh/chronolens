@@ -24,12 +24,18 @@ import org.metanalysis.core.model.SourceNode.SourceUnit
  * metadata and the project history.
  */
 interface Repository {
-    /** Returns the id of the `head` revision of this repository. */
+    /**
+     * Returns the id of the `head` revision of this repository.
+     *
+     * @throws IllegalStateException if this repository is in a corrupted state
+     */
     fun getHeadId(): String
 
     /**
      * Returns the set of source units from the `head` revision which can be
      * interpreted.
+     *
+     * @throws IllegalStateException if this repository is in a corrupted state
      */
     fun listSources(): Set<String>
 
@@ -44,6 +50,7 @@ interface Repository {
      * @param path the path of the requested source unit
      * @return the requested source unit, or `null` if the `path` doesn't exist
      * in the `head` revision or couldn't be interpreted
+     * @throws IllegalStateException if this repository is in a corrupted state
      */
     fun getSourceUnit(path: String): SourceUnit?
 
@@ -51,6 +58,7 @@ interface Repository {
      * Returns the snapshot of the repository, as it is found in the `head`
      * revision.
      *
+     * @throws IllegalStateException if this repository is in a corrupted state
      * @see getSourceUnit for details about how the latest source units are
      * retrieved
      */
@@ -62,6 +70,8 @@ interface Repository {
     /**
      * Returns a lazy view of the transactions applied to the repository in
      * chronological order.
+     *
+     * @throws IllegalStateException if this repository is in a corrupted state
      */
     fun getHistory(): Iterable<Transaction>
 }

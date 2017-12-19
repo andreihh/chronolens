@@ -56,7 +56,7 @@ object Subprocess {
                 // https://msdn.microsoft.com/en-us/library/cc704588.aspx for
                 // more details regarding Windows exit codes.
                 130, 131, 137, 143, -1073741510 ->
-                    throw SubprocessException(exitValue, "Subprocess killed!")
+                    throw SubprocessException(exitValue, "subprocess killed!")
                 else -> Result.Error(exitValue, error.readText())
             }
         } catch (e: InterruptedException) {

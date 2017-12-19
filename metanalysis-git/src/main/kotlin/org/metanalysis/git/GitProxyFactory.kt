@@ -30,14 +30,10 @@ class GitProxyFactory : VcsProxyFactory() {
         return rawPrefix.lines().first()
     }
 
-    private fun headExists(): Boolean =
-            execute(vcs, "cat-file", "-e", "HEAD^{commit}").isSuccess
-
     override fun isSupported(): Boolean = execute(vcs, "--version").isSuccess
 
     override fun createProxy(): VcsProxy? {
         val prefix = getPrefix() ?: return null
-        check(headExists()) { "'HEAD' commit doesn't exist!" }
         return GitProxy(prefix)
     }
 }

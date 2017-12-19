@@ -38,7 +38,7 @@ abstract class JavaParserTest {
         val result = parser.parse(path, source)
         return when (result) {
             is Result.Success -> result.sourceUnit
-            is Result.SyntaxError -> fail()
+            Result.SyntaxError -> fail()
         }
     }
 

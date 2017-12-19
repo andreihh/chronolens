@@ -77,7 +77,7 @@ class InteractiveRepository private constructor(
         val result = parseSourceUnit(getHeadId(), path)
         return when (result) {
             is Result.Success -> result.sourceUnit
-            is Result.SyntaxError -> getLatestValidSourceUnit(path)
+            Result.SyntaxError -> getLatestValidSourceUnit(path)
             null -> null
         }
     }
@@ -96,7 +96,7 @@ class InteractiveRepository private constructor(
                 val result = parseSourceUnit(revisionId, path)
                 val newUnit = when (result) {
                     is Result.Success -> result.sourceUnit
-                    is Result.SyntaxError -> oldUnit ?: SourceUnit(path)
+                    Result.SyntaxError -> oldUnit ?: SourceUnit(path)
                     null -> null
                 }
                 if (newUnit != null) {

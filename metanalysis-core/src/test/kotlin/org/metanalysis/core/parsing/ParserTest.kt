@@ -20,7 +20,6 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class ParserTest {
@@ -48,7 +47,7 @@ class ParserTest {
 
     @Test fun `test parse source with errors throws`() {
         val result = Parser.parse(path = "res.mock", source = "{ \"invalid\":2")
-        assertTrue(result is Result.SyntaxError)
+        assertEquals(Result.SyntaxError, result )
     }
 
     @Test fun `test parse invalid path throws`() {

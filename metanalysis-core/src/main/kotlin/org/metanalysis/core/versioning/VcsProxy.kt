@@ -24,11 +24,7 @@ package org.metanalysis.core.versioning
  * detected repository must be in a valid state.
  */
 interface VcsProxy {
-    /**
-     * Returns the `head` revision.
-     *
-     * @throws IllegalStateException if the `head` revision doesn't exist
-     */
+    /** Returns the `head` revision. */
     fun getHead(): Revision
 
     /**
