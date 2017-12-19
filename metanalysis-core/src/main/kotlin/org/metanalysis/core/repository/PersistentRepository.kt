@@ -17,7 +17,6 @@
 package org.metanalysis.core.repository
 
 import org.metanalysis.core.model.SourceNode.SourceUnit
-import org.metanalysis.core.repository.PersistentRepository.ProgressListener
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -48,6 +47,8 @@ class PersistentRepository private constructor() : Repository {
         /**
          * Persists this repository in the current working directory.
          *
+         * @param listener the listener which will be notified on the
+         * persistence progress, or `null` if no notification is required
          * @return the persisted repository
          * @throws IOException if any output related errors occur
          * @throws IllegalStateException if the state of this repository becomes
@@ -81,6 +82,73 @@ class PersistentRepository private constructor() : Repository {
         @JvmStatic
         fun clean() {
             rootDirectory.deleteRecursively()
+        }
+
+        @JvmStatic
+        private inline fun <T> File.use(block: (InputStream) -> T): T = try {
+            inputStream().use(block)
+        } catch (e: IOException) {
+            throw IllegalStateException(e)
+        }
+
+        private val rootDirectory = File(".metanalysis")
+        private val headFile = File(rootDirectory, "HEAD")
+        private val sourcesFile = File(rootDirectory, "SOURCES")
+        private val historyFile = File(rootDirectory, "HISTORY")
+        private val snapshotDirectory = File(rootDirectory, "snapshot")
+        private val transactionsDirectory =
+                File(rootDirectory, "transactions")
+
+        private fun getSourceUnitDirectory(path: String): File =
+                File(snapshotDirectory, path)
+
+        private fun getSourceUnitFile(path: String): File =
+                File(getSourceUnitDirectory(path), "model.json")
+
+        private fun getTransactionFile(id: String): File =
+                File(transactionsDirectory, "$id.json")
+
+        private fun persistSourceUnit(sourceUnit: SourceUnit) {
+            getSourceUnitDirectory(sourceUnit.path).mkdirs()
+            getSourceUnitFile(sourceUnit.path).outputStream().use { out ->
+                JsonModule.serialize(out, sourceUnit)
+            }
+        }
+
+        private fun Repository.persistSnapshot(listener: ProgressListener?) {
+            listener?.onSnapshotStart(getHeadId())
+            snapshotDirectory.mkdirs()
+            sourcesFile.printWriter().use { out ->
+                val sources = listSources()
+                for (path in sources) {
+                    val sourceUnit = getSourceUnit(path)
+                            ?: error("'$path' couldn't be interpreted!")
+                    out.println(path)
+                    persistSourceUnit(sourceUnit)
+                    listener?.onSourcePersisted(path)
+                }
+            }
+            listener?.onSnapshotEnd()
+        }
+
+        private fun persistTransaction(transaction: Transaction) {
+            val file = getTransactionFile(transaction.id)
+            file.outputStream().use { out ->
+                JsonModule.serialize(out, transaction)
+            }
+        }
+
+        private fun Repository.persistHistory(listener: ProgressListener?) {
+            listener?.onHistoryStart()
+            historyFile.printWriter().use { out ->
+                transactionsDirectory.mkdirs()
+                for (transaction in getHistory()) {
+                    out.println(transaction.id)
+                    persistTransaction(transaction)
+                    listener?.onTransactionPersisted(transaction.id)
+                }
+            }
+            listener?.onHistoryEnd()
         }
     }
 
@@ -120,69 +188,4 @@ class PersistentRepository private constructor() : Repository {
             history.asSequence().map(::getTransactionFile).map { file ->
                 file.use { src -> JsonModule.deserialize<Transaction>(src) }
             }.asIterable()
-}
-
-private inline fun <T> File.use(block: (InputStream) -> T): T = try {
-    inputStream().use(block)
-} catch (e: IOException) {
-    throw IllegalStateException(e)
-}
-
-private val rootDirectory = File(".metanalysis")
-private val headFile = File(rootDirectory, "HEAD")
-private val sourcesFile = File(rootDirectory, "SOURCES")
-private val historyFile = File(rootDirectory, "HISTORY")
-private val snapshotDirectory = File(rootDirectory, "snapshot")
-private val transactionsDirectory = File(rootDirectory, "transactions")
-
-private fun getSourceUnitDirectory(path: String): File =
-        File(snapshotDirectory, path)
-
-private fun getSourceUnitFile(path: String): File =
-        File(getSourceUnitDirectory(path), "model.json")
-
-private fun getTransactionFile(id: String): File =
-        File(transactionsDirectory, "$id.json")
-
-private fun persistSourceUnit(sourceUnit: SourceUnit) {
-    getSourceUnitDirectory(sourceUnit.path).mkdirs()
-    getSourceUnitFile(sourceUnit.path).outputStream().use { out ->
-        JsonModule.serialize(out, sourceUnit)
-    }
-}
-
-private fun Repository.persistSnapshot(listener: ProgressListener?) {
-    listener?.onSnapshotStart(getHeadId())
-    snapshotDirectory.mkdirs()
-    sourcesFile.printWriter().use { out ->
-        val sources = listSources()
-        for (path in sources) {
-            val sourceUnit = getSourceUnit(path)
-                    ?: error("'$path' couldn't be interpreted!")
-            out.println(path)
-            persistSourceUnit(sourceUnit)
-            listener?.onSourcePersisted(path)
-        }
-    }
-    listener?.onSnapshotEnd()
-}
-
-private fun persistTransaction(transaction: Transaction) {
-    val file = getTransactionFile(transaction.id)
-    file.outputStream().use { out ->
-        JsonModule.serialize(out, transaction)
-    }
-}
-
-private fun Repository.persistHistory(listener: ProgressListener?) {
-    listener?.onHistoryStart()
-    historyFile.printWriter().use { out ->
-        transactionsDirectory.mkdirs()
-        for (transaction in getHistory()) {
-            out.println(transaction.id)
-            persistTransaction(transaction)
-            listener?.onTransactionPersisted(transaction.id)
-        }
-    }
-    listener?.onHistoryEnd()
 }

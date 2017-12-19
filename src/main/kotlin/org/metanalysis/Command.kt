@@ -19,6 +19,7 @@ package org.metanalysis
 import org.metanalysis.core.repository.InteractiveRepository
 import org.metanalysis.core.repository.PersistentRepository
 import org.metanalysis.core.repository.PersistentRepository.Companion.persist
+import org.metanalysis.core.repository.PersistentRepository.ProgressListener
 import org.metanalysis.core.repository.Repository
 import java.io.IOException
 
@@ -153,7 +154,38 @@ sealed class Command {
         override fun execute(vararg args: String) {
             checkUsage(args.isEmpty())
             val project = getProject()
-            project.persist()
+            project.persist(object : ProgressListener {
+                private var sources = 0
+                private var transactions = 0
+
+                override fun onSnapshotStart(headId: String) {
+                    println("Persisting snapshot '$headId'...")
+                }
+
+                override fun onSourcePersisted(path: String) {
+                    sources++
+                    print("Persisted $sources sources...\r")
+                }
+
+                override fun onSnapshotEnd() {
+                    println()
+                    println("Done!")
+                }
+
+                override fun onHistoryStart() {
+                    println("Persisting transactions...")
+                }
+
+                override fun onTransactionPersisted(id: String) {
+                    transactions++
+                    print("Persisted $transactions transactions'...\r")
+                }
+
+                override fun onHistoryEnd() {
+                    println()
+                    println("Done!")
+                }
+            })
         }
     }
 

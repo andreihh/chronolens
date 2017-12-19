@@ -47,13 +47,12 @@ class InteractiveRepository private constructor(
                 VcsProxyFactory.detect()?.let(::InteractiveRepository)
     }
 
-    private val String.isParsable: Boolean
-        get() = Parser.getParser(this) != null
+    private fun canParse(path: String): Boolean = Parser.getParser(path) != null
 
     override fun getHeadId(): String = vcs.getHead().id
 
     private fun listSources(revisionId: String): Set<String> =
-            vcs.listFiles(revisionId).filter { it.isParsable }.toSet()
+            vcs.listFiles(revisionId).filter(this::canParse).toSet()
 
     override fun listSources(): Set<String> = listSources(getHeadId())
 
