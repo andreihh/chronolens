@@ -16,10 +16,14 @@
 
 package org.metanalysis.test.core.repository
 
+import org.metanalysis.core.repository.Repository
 import org.metanalysis.core.repository.Transaction
 
 inline fun transaction(
         id: String,
         init: TransactionBuilder.() -> Unit
 ): Transaction = TransactionBuilder(id).apply(init).build()
+
+inline fun repository(init: RepositoryBuilder.() -> Unit): Repository =
+        RepositoryBuilder().apply(init).build()
 
