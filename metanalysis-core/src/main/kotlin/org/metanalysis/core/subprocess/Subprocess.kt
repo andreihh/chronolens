@@ -41,14 +41,24 @@ object Subprocess {
     @JvmStatic
     fun execute(vararg command: String): Result {
         var process: Process? = null
-        return try {
+        try {
             process = ProcessBuilder().command(*command).start()
             process.outputStream.close()
             val input = process.inputStream.readText()
             val error = process.errorStream
             val exitValue = process.waitFor()
-            if (exitValue == 0) Result.Success(input)
-            else Result.Error(exitValue, error.readText())
+            return when (exitValue) {
+                0 -> Result.Success(input)
+                // See http://tldp.org/LDP/abs/html/exitcodes.html for various
+                // UNIX exit codes. See
+                // http://man7.org/linux/man-pages/man7/signal.7.html for
+                // various UNIX signal values. See
+                // https://msdn.microsoft.com/en-us/library/cc704588.aspx for
+                // more details regarding Windows exit codes.
+                130, 131, 137, 143, -1073741510 ->
+                    throw SubprocessException(exitValue, "Subprocess killed!")
+                else -> Result.Error(exitValue, error.readText())
+            }
         } catch (e: InterruptedException) {
             throw SubprocessException(e)
         } catch (e: IOException) {

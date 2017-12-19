@@ -17,7 +17,6 @@
 package org.metanalysis.core.parsing
 
 import org.junit.Test
-import org.metanalysis.test.core.parsing.ParserMock
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull

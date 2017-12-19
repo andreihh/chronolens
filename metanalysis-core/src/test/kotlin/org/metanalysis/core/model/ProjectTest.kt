@@ -40,7 +40,7 @@ class ProjectTest {
     @Test fun `test create project with duplicated unit ids throws`() {
         val unit = sourceUnit("src/Test.java") {}
         assertFailsWith<IllegalArgumentException> {
-            Project(listOf(unit, unit))
+            Project.of(listOf(unit, unit))
         }
     }
 

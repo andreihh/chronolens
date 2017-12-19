@@ -31,13 +31,15 @@ sealed class SetEdit<T> : Edit<Set<T>> {
          * @return the edited set
          * @throws IllegalStateException if this set has an invalid state and
          * the given `edits` couldn't be applied
-        */
+         */
         @JvmStatic
-        fun <T> Set<T>.apply(edits: List<SetEdit<T>>): Set<T> =
-                edits.fold(toHashSet()) { set, edit ->
-                    edit.applyOn(set)
-                    set
-                }
+        fun <T> Set<T>.apply(edits: List<SetEdit<T>>): Set<T> {
+            val result = toMutableSet()
+            for (edit in edits) {
+                edit.applyOn(result)
+            }
+            return result
+        }
 
         /** Utility method. */
         @JvmStatic
@@ -47,10 +49,8 @@ sealed class SetEdit<T> : Edit<Set<T>> {
         /**
          * Returns the edits which should be applied on this set to obtain the
          * `other` set.
-         *
-         * @param other the set which should be obtained
-         * @return the edits which should be applied on this set
          */
+        @JvmStatic
         fun <T> Set<T>.diff(other: Set<T>): List<SetEdit<T>> {
             val added = (other - this).map(::Add)
             val removed = (this - other).map(::Remove)

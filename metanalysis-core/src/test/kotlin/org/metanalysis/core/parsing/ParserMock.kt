@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package org.metanalysis.test.core.parsing
+package org.metanalysis.core.parsing
 
 import org.metanalysis.core.model.SourceNode.SourceUnit
-import org.metanalysis.core.parsing.Parser
-import org.metanalysis.core.parsing.Result
-import org.metanalysis.core.serialization.JsonException
 import org.metanalysis.core.serialization.JsonModule
+import org.metanalysis.core.serialization.JsonModule.JsonException
 
 class ParserMock : Parser {
     companion object {
@@ -28,7 +26,6 @@ class ParserMock : Parser {
     }
 
     override val language: String = LANGUAGE
-
     override val pattern: Regex = Regex(".*\\.mock")
 
     override fun parse(path: String, source: String): Result = try {

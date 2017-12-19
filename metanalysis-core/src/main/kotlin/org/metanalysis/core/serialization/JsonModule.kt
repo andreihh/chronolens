@@ -46,60 +46,11 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /** Provides JSON serialization and deserialization of arbitrary objects. */
-object JsonModule {
-    private val typeIdResolver = object : TypeIdResolverBase() {
-        private val typeToId = mapOf(
-                SourceUnit::class.java to "SourceUnit",
-                Type::class.java to "Type",
-                Function::class.java to "Function",
-                Variable::class.java to "Variable",
-                ListEdit.Add::class.java to "List.Add",
-                ListEdit.Remove::class.java to "List.Remove",
-                SetEdit.Add::class.java to "Set.Add",
-                SetEdit.Remove::class.java to "Set.Remove",
-                AddNode::class.java to "AddNode",
-                RemoveNode::class.java to "RemoveNode",
-                EditType::class.java to "EditType",
-                EditFunction::class.java to "EditFunction",
-                EditVariable::class.java to "EditVariable"
-        )
-
-        private val idToType = typeToId.map { (type, id) -> id to type }.toMap()
-
-        override fun idFromValueAndType(
-                value: Any?,
-                suggestedType: Class<*>
-        ): String = typeToId.getValue(suggestedType)
-
-        override fun idFromValue(value: Any): String =
-                typeToId.getValue(value.javaClass)
-
-        override fun typeFromId(
-                context: DatabindContext,
-                id: String
-        ): JavaType = context.typeFactory.constructType(idToType.getValue(id))
-
-        override fun getMechanism(): JsonTypeInfo.Id = JsonTypeInfo.Id.NAME
-    }.apply { init(null) }
-
-    private val typeResolver =
-            object : DefaultTypeResolverBuilder(OBJECT_AND_NON_CONCRETE) {
-                private val abstractTypes =
-                        listOf(SourceNode::class.java, Edit::class.java)
-
-                override fun useForType(t: JavaType): Boolean =
-                        abstractTypes.any { it.isAssignableFrom(t.rawClass) }
-            }.init(JsonTypeInfo.Id.NAME, typeIdResolver)
-                    .inclusion(JsonTypeInfo.As.PROPERTY)
-                    .typeProperty("@class")
-
-    private val objectMapper = jacksonObjectMapper().apply {
-        setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
-        setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-        setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-        setDefaultTyping(typeResolver)
-        enable(SerializationFeature.INDENT_OUTPUT)
-    }
+internal object JsonModule {
+    /**
+     * Signals that an error occurred while trying to read or write JSON data.
+     */
+    class JsonException(cause: Throwable) : IOException(cause)
 
     /**
      * Serializes the given object to the given stream.
@@ -110,7 +61,6 @@ object JsonModule {
      * @throws IOException if there are any output related errors
      */
     @Throws(IOException::class)
-    @JvmStatic
     fun serialize(out: OutputStream, value: Any) {
         try {
             objectMapper.writeValue(out, value)
@@ -130,7 +80,6 @@ object JsonModule {
      * @throws IOException if there are any input related errors
      */
     @Throws(IOException::class)
-    @JvmStatic
     fun <T : Any> deserialize(src: InputStream, type: Class<T>): T = try {
         objectMapper.readValue(src, type)
     } catch (e: JsonProcessingException) {
@@ -142,3 +91,56 @@ object JsonModule {
     inline fun <reified T : Any> deserialize(src: InputStream): T =
             deserialize(src, T::class.java)
 }
+
+private val typeIdResolver = object : TypeIdResolverBase() {
+    private val typeToId = mapOf(
+            SourceUnit::class.java to "SourceUnit",
+            Type::class.java to "Type",
+            Function::class.java to "Function",
+            Variable::class.java to "Variable",
+            ListEdit.Add::class.java to "List.Add",
+            ListEdit.Remove::class.java to "List.Remove",
+            SetEdit.Add::class.java to "Set.Add",
+            SetEdit.Remove::class.java to "Set.Remove",
+            AddNode::class.java to "AddNode",
+            RemoveNode::class.java to "RemoveNode",
+            EditType::class.java to "EditType",
+            EditFunction::class.java to "EditFunction",
+            EditVariable::class.java to "EditVariable"
+    )
+
+    private val idToType = typeToId.map { (type, id) -> id to type }.toMap()
+
+    override fun idFromValueAndType(
+            value: Any?,
+            suggestedType: Class<*>
+    ): String = typeToId.getValue(suggestedType)
+
+    override fun idFromValue(value: Any): String =
+            typeToId.getValue(value.javaClass)
+
+    override fun typeFromId(context: DatabindContext, id: String): JavaType =
+            context.typeFactory.constructType(idToType.getValue(id))
+
+    override fun getMechanism(): JsonTypeInfo.Id = JsonTypeInfo.Id.NAME
+}.apply { init(null) }
+
+private val typeResolver =
+        object : DefaultTypeResolverBuilder(OBJECT_AND_NON_CONCRETE) {
+            private val abstractTypes =
+                    listOf(SourceNode::class.java, Edit::class.java)
+
+            override fun useForType(t: JavaType): Boolean =
+                    abstractTypes.any { it.isAssignableFrom(t.rawClass) }
+        }.init(JsonTypeInfo.Id.NAME, typeIdResolver)
+                .inclusion(JsonTypeInfo.As.PROPERTY)
+                .typeProperty("@class")
+
+private val objectMapper = jacksonObjectMapper().apply {
+    setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
+    setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+    setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+    setDefaultTyping(typeResolver)
+    enable(SerializationFeature.INDENT_OUTPUT)
+}
+

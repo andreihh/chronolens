@@ -48,14 +48,14 @@ sealed class SourceNode {
             override val id: String,
             val entities: Collection<SourceEntity> = emptyList()
     ) : SourceNode() {
-        /** The fully qualified path of this unit, equal to [id]. */
-        val path: String
-            get() = id
-
         init {
             validateUnitId(id)
             validateChildrenIds()
         }
+
+        /** The fully qualified path of this unit, equal to [id]. */
+        val path: String
+            get() = id
     }
 
     /** Abstract representation of a source entity within a [SourceUnit]. */
@@ -78,14 +78,14 @@ sealed class SourceNode {
                 val supertypes: Set<String> = emptySet(),
                 val members: Collection<SourceEntity> = emptyList()
         ) : SourceEntity() {
-            /** The simple name of this type. */
-            val name: String
-                get() = id.substringAfterLast(ENTITY_SEPARATOR)
-
             init {
                 validateTypeId(id)
                 validateChildrenIds()
             }
+
+            /** The simple name of this type. */
+            val name: String
+                get() = id.substringAfterLast(ENTITY_SEPARATOR)
         }
 
         /**
@@ -108,6 +108,11 @@ sealed class SourceNode {
                 val parameters: List<Variable> = emptyList(),
                 val body: List<String> = emptyList()
         ) : SourceEntity() {
+            init {
+                validateFunctionId(id)
+                validateChildrenIds()
+            }
+
             /**
              * The simple signature of this function.
              *
@@ -118,11 +123,6 @@ sealed class SourceNode {
              */
             val signature: String
                 get() = id.substringAfterLast(ENTITY_SEPARATOR)
-
-            init {
-                validateFunctionId(id)
-                validateChildrenIds()
-            }
         }
 
         /**
@@ -138,13 +138,13 @@ sealed class SourceNode {
                 val modifiers: Set<String> = emptySet(),
                 val initializer: List<String> = emptyList()
         ) : SourceEntity() {
-            /** The simple name of this variable. */
-            val name: String
-                get() = id.substringAfterLast(ENTITY_SEPARATOR)
-
             init {
                 validateVariableId(id)
             }
+
+            /** The simple name of this variable. */
+            val name: String
+                get() = id.substringAfterLast(ENTITY_SEPARATOR)
         }
     }
 }

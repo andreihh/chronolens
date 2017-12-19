@@ -24,7 +24,7 @@ import org.metanalysis.test.core.model.project
 class ProjectEditCompanionTest {
     private fun assertDiff(before: Project, after: Project) {
         val edits = before.diff(after)
-        val actualAfter = Project(before.units)
+        val actualAfter = Project.of(before.units)
         actualAfter.apply(edits)
         assertEquals(after, actualAfter)
     }

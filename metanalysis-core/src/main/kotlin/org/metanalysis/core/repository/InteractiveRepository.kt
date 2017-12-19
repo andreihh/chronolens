@@ -84,7 +84,7 @@ class InteractiveRepository private constructor(
     }
 
     override fun getHistory(): Iterable<Transaction> {
-        val project = Project()
+        val project = Project.empty()
         return vcs.getHistory().asSequence().map { (revisionId, date, author) ->
             val changeSet = vcs.getChangeSet(revisionId)
             val before = hashSetOf<SourceUnit>()
@@ -104,7 +104,7 @@ class InteractiveRepository private constructor(
                     after += newUnit
                 }
             }
-            val edits = Project(before).diff(Project(after))
+            val edits = Project.of(before).diff(Project.of(after))
             project.apply(edits)
             Transaction(revisionId, date, author, edits)
         }.asIterable()

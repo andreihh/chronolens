@@ -30,6 +30,41 @@ import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
 import org.metanalysis.core.model.SourceNode.SourceUnit
 
 /**
+ * Returns the smallest edit distance between the two given arrays using the
+ * Wagner-Fischer algorithm.
+ */
+internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
+    val dp = Array(size = a.size + 1) {
+        IntArray(size = b.size + 1) { a.size + b.size }
+    }
+    dp[0] = IntArray(size = b.size + 1) { it }
+    for (i in 1..a.size) {
+        dp[i][0] = i
+        for (j in 1..b.size) {
+            dp[i][j] =
+                    if (a[i - 1] == b[j - 1]) dp[i - 1][j - 1]
+                    else 1 + minOf(dp[i - 1][j], dp[i][j - 1])
+        }
+    }
+    val edits = arrayListOf<ListEdit<Int>>()
+    var i = a.size
+    var j = b.size
+    while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && a[i - 1] == b[j - 1]) {
+            i--
+            j--
+        } else if (i > 0 && dp[i][j] == dp[i - 1][j] + 1) {
+            edits += ListEdit.Remove(i - 1)
+            i--
+        } else {
+            edits += ListEdit.Add(i, b[j - 1])
+            j--
+        }
+    }
+    return edits
+}
+
+/**
  * Returns the edit which must be applied on this source node in order to obtain
  * the `other` source node, or `null` if the two nodes are equal.
  *

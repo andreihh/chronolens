@@ -16,7 +16,6 @@
 
 package org.metanalysis
 
-import org.metanalysis.core.logging.LoggerFactory
 import kotlin.system.exitProcess
 
 fun usage(message: String): Nothing {
@@ -28,7 +27,6 @@ fun printlnErr(message: String?) {
 }
 
 fun main(args: Array<String>) {
-    val logger = LoggerFactory.getLogger("org/metanalysis")
     try {
         val command = args.firstOrNull()?.let { Command(it) }
                 ?: usage(Command.Help.help)
@@ -37,7 +35,7 @@ fun main(args: Array<String>) {
         printlnErr(e.message)
         exitProcess(1)
     } catch (e: Exception) {
-        logger.severe("${e.message}\n")
+        printlnErr(e.message)
         e.printStackTrace(System.err)
         exitProcess(1)
     }

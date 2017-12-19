@@ -31,22 +31,29 @@ class Project private constructor(
         private val unitMap: MutableMap<String, SourceUnit>,
         private val nodeMap: MutableMap<String, SourceNode>
 ) {
-    /**
-     * Creates a project from the given `units`.
-     *
-     * @param units the source units contained by the project
-     * @throws IllegalArgumentException if the given `units` contain duplicated
-     * ids
-     */
-    constructor(units: Collection<SourceUnit> = emptyList()) : this(
-            unitMap = units.associateByTo(hashMapOf(), SourceUnit::path),
-            nodeMap = buildVisit(units).toMutableMap()
-    ) {
-        units.groupBy(SourceUnit::id).forEach { id, unitsWithId ->
-            require(unitsWithId.size == 1) {
-                "Project contains duplicated unit id '$id'!"
+    companion object {
+        /**
+         * Creates and returns a project from the given source `units`.
+         *
+         * @param units the source units contained by the project
+         * @throws IllegalArgumentException if the given `units` contain
+         * duplicated ids
+         */
+        @JvmStatic
+        fun of(units: Collection<SourceUnit>): Project {
+            units.groupBy(SourceUnit::id).forEach { id, unitsWithId ->
+                require(unitsWithId.size == 1) {
+                    "Project contains duplicated unit id '$id'!"
+                }
             }
+            val unitMap = units.associateByTo(hashMapOf(), SourceUnit::path)
+            val nodeMap = buildVisit(units).toMutableMap()
+            return Project(unitMap, nodeMap)
         }
+
+        /** Creates and returns an empty project. */
+        @JvmStatic
+        fun empty(): Project = Project(hashMapOf(), hashMapOf())
     }
 
     /** The source units in this project. */

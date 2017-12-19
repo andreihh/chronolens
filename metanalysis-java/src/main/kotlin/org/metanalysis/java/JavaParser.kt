@@ -64,7 +64,7 @@ class JavaParser : Parser {
         require(path.matches(pattern)) { "'$path' can't be interpreted!" }
         val options = JavaCore.getOptions()
         JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
-        val jdtParser = ASTParser.newParser(AST.JLS8).apply {
+        val jdtParser = ASTParser.newParser(AST.JLS9).apply {
             setKind(K_COMPILATION_UNIT)
             setCompilerOptions(options)
             setIgnoreMethodBodies(true)

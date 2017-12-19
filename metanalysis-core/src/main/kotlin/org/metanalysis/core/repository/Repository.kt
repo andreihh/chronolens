@@ -57,7 +57,7 @@ interface Repository {
      */
     fun getSnapshot(): Project {
         val units = listSources().map(this::getSourceUnit).requireNoNulls()
-        return Project(units)
+        return Project.of(units)
     }
 
     /**

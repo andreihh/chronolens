@@ -53,9 +53,11 @@ sealed class ProjectEdit : Edit<Project> {
                     before == null && after != null -> AddNode(after)
                     before != null && after == null -> RemoveNode(id)
                     else -> null
-                } ?: continue
-                edits += edit
-                edit.applyOn(nodesBefore)
+                }
+                if (edit != null) {
+                    edits += edit
+                    edit.applyOn(nodesBefore)
+                }
             }
 
             for (id in nodeIds.sortedByDescending(String::length)) {
@@ -82,7 +84,7 @@ sealed class ProjectEdit : Edit<Project> {
      * @throws IllegalStateException if the node map has an invalid state and
      * this edit couldn't be applied
      */
-    internal abstract fun applyOn(nodes: MutableMap<String, SourceNode>)
+    internal abstract fun applyOn(nodes: MutableNodeMap)
 
     /**
      * Updates all the ancestors of the given `entity` from the given mutable
@@ -93,10 +95,7 @@ sealed class ProjectEdit : Edit<Project> {
      * @throws IllegalStateException if the given node map has an invalid state
      * and the ancestors of the given `entity` couldn't be updated
      */
-    protected fun updateAncestors(
-            nodes: MutableMap<String, SourceNode>,
-            entity: SourceEntity
-    ) {
+    protected fun updateAncestors(nodes: MutableNodeMap, entity: SourceEntity) {
         fun <T : SourceEntity> Collection<T>.updated(entity: T): List<T> {
             val newEntities = arrayListOf<T>()
             filterTo(newEntities) { it.id != entity.id }
@@ -137,7 +136,7 @@ sealed class ProjectEdit : Edit<Project> {
         override val id: String
             get() = node.id
 
-        override fun applyOn(nodes: MutableMap<String, SourceNode>) {
+        override fun applyOn(nodes: MutableNodeMap) {
             check(id !in nodes) { "Node '$id' already exists!" }
             nodes.putSourceTree(node)
             if (node is SourceEntity) {
@@ -156,7 +155,7 @@ sealed class ProjectEdit : Edit<Project> {
             validateNodeId(id)
         }
 
-        override fun applyOn(nodes: MutableMap<String, SourceNode>) {
+        override fun applyOn(nodes: MutableNodeMap) {
             val node = nodes[id] ?: error("Node '$id' doesn't exist!")
             nodes.removeSourceTree(node)
             if (node is SourceEntity) {
@@ -184,7 +183,7 @@ sealed class ProjectEdit : Edit<Project> {
             validateTypeId(id)
         }
 
-        override fun applyOn(nodes: MutableMap<String, SourceNode>) {
+        override fun applyOn(nodes: MutableNodeMap) {
             val type = nodes[id] as? Type? ?: error("Type '$id' doesn't exist!")
             val modifiers = type.modifiers.apply(modifierEdits)
             val supertypes = type.supertypes.apply(supertypeEdits)
@@ -216,7 +215,7 @@ sealed class ProjectEdit : Edit<Project> {
             validateFunctionId(id)
         }
 
-        override fun applyOn(nodes: MutableMap<String, SourceNode>) {
+        override fun applyOn(nodes: MutableNodeMap) {
             val function = nodes[id] as Function?
                     ?: error("Function '$id' doesn't exist!")
             val modifiers = function.modifiers.apply(modifierEdits)
@@ -253,7 +252,7 @@ sealed class ProjectEdit : Edit<Project> {
             validateVariableId(id)
         }
 
-        override fun applyOn(nodes: MutableMap<String, SourceNode>) {
+        override fun applyOn(nodes: MutableNodeMap) {
             val variable = nodes[id] as? Variable?
                     ?: error("Variable '$id' doesn't exist!")
             val modifiers = variable.modifiers.apply(modifierEdits)

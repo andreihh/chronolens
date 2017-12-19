@@ -20,7 +20,6 @@ import org.metanalysis.core.repository.InteractiveRepository
 import org.metanalysis.core.repository.PersistentRepository
 import org.metanalysis.core.repository.PersistentRepository.Companion.persist
 import org.metanalysis.core.repository.Repository
-import org.metanalysis.core.serialization.JsonModule.serialize
 import java.io.IOException
 
 sealed class Command {
@@ -116,7 +115,7 @@ sealed class Command {
             val project = getProject()
             val model = project.getSourceUnit(args[0])
             if (model != null) {
-                serialize(System.out, model)
+                println("Operation not supported yet!")
             } else {
                 printlnErr("File couldn't be interpreted!")
             }
@@ -133,7 +132,7 @@ sealed class Command {
             checkUsage(args.isEmpty())
             val project = getProject()
             for (transaction in project.getHistory()) {
-                serialize(System.out, transaction)
+                println("Operation not supported yet!")
             }
         }
     }

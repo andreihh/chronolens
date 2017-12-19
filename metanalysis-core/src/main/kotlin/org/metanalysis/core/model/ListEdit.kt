@@ -33,11 +33,13 @@ sealed class ListEdit<T> : Edit<List<T>> {
          * the given `edits` couldn't be applied
          */
         @JvmStatic
-        fun <T> List<T>.apply(edits: List<ListEdit<T>>): List<T> =
-                edits.fold(toMutableList()) { list, edit ->
-                    edit.applyOn(list)
-                    list
-                }
+        fun <T> List<T>.apply(edits: List<ListEdit<T>>): List<T> {
+            val result = toMutableList()
+            for (edit in edits) {
+                edit.applyOn(result)
+            }
+            return result
+        }
 
         /** Utility method. */
         @JvmStatic
@@ -47,48 +49,26 @@ sealed class ListEdit<T> : Edit<List<T>> {
         /**
          * Returns the edits which should be applied on this list to obtain the
          * `other` list.
-         *
-         * @param other the list which should be obtained
-         * @return the edits which should be applied on this list
          */
         @JvmStatic
         fun <T> List<T>.diff(other: List<T>): List<ListEdit<T>> {
-            var maxValue = 0
-            val values = hashMapOf<T, Int>()
-            (this + other).forEach {
-                if (it !in values) {
-                    values[it] = maxValue++
+            val objectToValue = hashMapOf<T, Int>()
+            val valueToObject = arrayListOf<T>()
+            for (it in (this + other)) {
+                if (it !in objectToValue) {
+                    objectToValue[it] = valueToObject.size
+                    valueToObject += it
                 }
             }
-            val a = map(values::getValue).toTypedArray()
-            val n = a.size
-            val b = other.map(values::getValue).toTypedArray()
-            val m = b.size
-            val dp = Array(n + 1) { IntArray(m + 1) { Int.MAX_VALUE } }
-            dp[0] = IntArray(m + 1) { it }
-            for (i in 1..n) {
-                dp[i][0] = i
-                for (j in 1..m) {
-                    dp[i][j] = if (a[i - 1] == b[j - 1]) dp[i - 1][j - 1]
-                    else 1 + minOf(dp[i - 1][j], dp[i][j - 1])
+            val a = map(objectToValue::getValue).toIntArray()
+            val b = other.map(objectToValue::getValue).toIntArray()
+            val arrayEdits = diff(a, b)
+            return arrayEdits.map { edit ->
+                when (edit) {
+                    is Add -> Add(edit.index, valueToObject[edit.value])
+                    is Remove -> Remove<T>(edit.index)
                 }
             }
-            val edits = arrayListOf<ListEdit<T>>()
-            var i = n
-            var j = m
-            while (i > 0 || j > 0) {
-                if (i > 0 && j > 0 && a[i - 1] == b[j - 1]) {
-                    i--
-                    j--
-                } else if (i > 0 && dp[i][j] == dp[i - 1][j] + 1) {
-                    edits.add(Remove(i - 1))
-                    i--
-                } else {
-                    edits.add(Add(i, other[j - 1]))
-                    j--
-                }
-            }
-            return edits
         }
     }
 

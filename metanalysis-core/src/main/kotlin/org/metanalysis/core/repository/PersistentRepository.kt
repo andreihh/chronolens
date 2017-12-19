@@ -16,7 +16,6 @@
 
 package org.metanalysis.core.repository
 
-import org.metanalysis.core.logging.LoggerFactory
 import org.metanalysis.core.model.SourceNode.SourceUnit
 import org.metanalysis.core.model.Transaction
 import org.metanalysis.core.serialization.JsonModule
@@ -33,75 +32,6 @@ import java.io.InputStream
  */
 class PersistentRepository private constructor() : Repository {
     companion object {
-        private val logger = LoggerFactory.getLogger<PersistentRepository>()
-
-        private fun getRootDirectory() = File(".metanalysis")
-
-        private fun getHeadFile() = File(getRootDirectory(), "HEAD")
-        private fun getSourcesFile() = File(getRootDirectory(), "SOURCES")
-        private fun getHistoryFile() = File(getRootDirectory(), "HISTORY")
-
-        private fun getSnapshotDirectory(headId: String) =
-                File(File(getRootDirectory(), "snapshots"), headId)
-
-        private fun getSourceUnitDirectory(headId: String, path: String) =
-                File(getSnapshotDirectory(headId), path)
-
-        private fun getSourceUnitFile(headId: String, path: String) =
-                File(getSourceUnitDirectory(headId, path), "model.json")
-
-        private fun getTransactionsDirectory() =
-                File(getRootDirectory(), "transactions")
-
-        private fun getTransactionFile(id: String) =
-                File(getTransactionsDirectory(), "$id.json")
-
-        private fun Repository.persistSourceUnit(path: String) {
-            val sourceUnit = getSourceUnit(path)
-                    ?: error("'$path' couldn't be interpreted!")
-            val headId = getHeadId()
-            getSourceUnitDirectory(headId, path).mkdirs()
-            getSourceUnitFile(headId, path).outputStream().use { out ->
-                JsonModule.serialize(out, sourceUnit)
-            }
-        }
-
-        private fun Repository.persistSnapshot() {
-            logger.info("Persisting latest repository snapshot...\n")
-            getSnapshotDirectory(getHeadId()).mkdirs()
-            getSourcesFile().printWriter().use { out ->
-                val sources = listSources()
-                for ((index, path) in sources.withIndex()) {
-                    out.println(path)
-                    persistSourceUnit(path)
-                    logger.info("Persisted ${index + 1} sources...\r")
-                }
-                logger.info("\n")
-                logger.info("Done!\n")
-            }
-        }
-
-        private fun persistTransaction(transaction: Transaction) {
-            val file = getTransactionFile(transaction.id)
-            file.outputStream().use { out ->
-                JsonModule.serialize(out, transaction)
-            }
-        }
-
-        private fun Repository.persistHistory() {
-            logger.info("Persisting repository history...\n")
-            getHistoryFile().printWriter().use { out ->
-                getTransactionsDirectory().mkdirs()
-                for ((index, transaction) in getHistory().withIndex()) {
-                    out.println(transaction.id)
-                    persistTransaction(transaction)
-                    logger.info("Persisted ${index + 1} transactions...\r")
-                }
-                logger.info("\n")
-                logger.info("Done!\n")
-            }
-        }
-
         /**
          * Returns the instance which can query the repository detected in the
          * current working directory for code metadata.
@@ -113,7 +43,7 @@ class PersistentRepository private constructor() : Repository {
         @Throws(IOException::class)
         @JvmStatic
         fun load(): PersistentRepository? =
-                if (getRootDirectory().exists()) PersistentRepository()
+                if (rootDirectory.exists()) PersistentRepository()
                 else null
 
         /**
@@ -128,8 +58,8 @@ class PersistentRepository private constructor() : Repository {
             if (this is PersistentRepository) {
                 return this
             }
-            getRootDirectory().mkdirs()
-            getHeadFile().printWriter().use { out -> out.println(getHeadId()) }
+            rootDirectory.mkdirs()
+            headFile.printWriter().use { out -> out.println(getHeadId()) }
             persistSnapshot()
             persistHistory()
             return PersistentRepository()
@@ -144,35 +74,101 @@ class PersistentRepository private constructor() : Repository {
         @Throws(IOException::class)
         @JvmStatic
         fun clean() {
-            getRootDirectory().deleteRecursively()
+            rootDirectory.deleteRecursively()
         }
     }
 
-    private val headId = getHeadFile().readLines().first()
+    private val headId = headFile.readLines().first()
     private val sources =
-            getSourcesFile().readLines().filter(String::isNotBlank).toSet()
-    private val history =
-            getHistoryFile().readLines().filter(String::isNotBlank)
+            sourcesFile.readLines().filter(String::isNotBlank).toSet()
+    private val history = historyFile.readLines().filter(String::isNotBlank)
 
-    private inline fun <T> File.use(block: (src: InputStream) -> T): T = try {
-        inputStream().use(block)
-    } catch (e: IOException) {
-        throw IllegalStateException(e)
+    init {
+        for (path in sources) {
+            check(getSourceUnitFile(path).exists()) { "'$path' doesn't exist!" }
+        }
+        for (id in history) {
+            check(getTransactionFile(id).exists()) { "'$id' doesn't exist!" }
+        }
     }
 
     override fun getHeadId(): String = headId
 
     override fun listSources(): Set<String> = sources
 
-    override fun getSourceUnit(path: String): SourceUnit? {
-        val file = getSourceUnitFile(headId, path)
-        return if (!file.exists()) null
-        else file.use(JsonModule::deserialize)
-    }
+    override fun getSourceUnit(path: String): SourceUnit? =
+            if (path !in sources) null
+            else getSourceUnitFile(path).use(JsonModule::deserialize)
 
     override fun getHistory(): Iterable<Transaction> =
-            history.asSequence().map { id ->
-                val file = getTransactionFile(id)
+            history.asSequence().map(::getTransactionFile).map { file ->
                 file.use { src -> JsonModule.deserialize<Transaction>(src) }
             }.asIterable()
+}
+
+private inline fun <T> File.use(block: (InputStream) -> T): T = try {
+    inputStream().use(block)
+} catch (e: IOException) {
+    throw IllegalStateException(e)
+}
+
+private val rootDirectory = File(".metanalysis")
+private val headFile = File(rootDirectory, "HEAD")
+private val sourcesFile = File(rootDirectory, "SOURCES")
+private val historyFile = File(rootDirectory, "HISTORY")
+private val snapshotDirectory = File(rootDirectory, "snapshot")
+private val transactionsDirectory = File(rootDirectory, "transactions")
+
+private fun getSourceUnitDirectory(path: String): File =
+        File(snapshotDirectory, path)
+
+private fun getSourceUnitFile(path: String): File =
+        File(getSourceUnitDirectory(path), "model.json")
+
+private fun getTransactionFile(id: String): File =
+        File(transactionsDirectory, "$id.json")
+
+private fun Repository.persistSourceUnit(path: String) {
+    val sourceUnit = getSourceUnit(path)
+            ?: error("'$path' couldn't be interpreted!")
+    getSourceUnitDirectory(path).mkdirs()
+    getSourceUnitFile(path).outputStream().use { out ->
+        JsonModule.serialize(out, sourceUnit)
+    }
+}
+
+private fun Repository.persistSnapshot() {
+    print("Persisting latest repository snapshot...\n")
+    snapshotDirectory.mkdirs()
+    sourcesFile.printWriter().use { out ->
+        val sources = listSources()
+        for ((index, path) in sources.withIndex()) {
+            out.println(path)
+            persistSourceUnit(path)
+            print("Persisted ${index + 1} sources...\r")
+        }
+        print("\n")
+        print("Done!\n")
+    }
+}
+
+private fun persistTransaction(transaction: Transaction) {
+    val file = getTransactionFile(transaction.id)
+    file.outputStream().use { out ->
+        JsonModule.serialize(out, transaction)
+    }
+}
+
+private fun Repository.persistHistory() {
+    print("Persisting repository history...\n")
+    historyFile.printWriter().use { out ->
+        transactionsDirectory.mkdirs()
+        for ((index, transaction) in getHistory().withIndex()) {
+            out.println(transaction.id)
+            persistTransaction(transaction)
+            print("Persisted ${index + 1} transactions...\r")
+        }
+        print("\n")
+        print("Done!\n")
+    }
 }
