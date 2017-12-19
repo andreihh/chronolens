@@ -14,12 +14,24 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.model
+package org.metanalysis.core.repository
 
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
 class TransactionTest {
+    @Test fun `test transaction with empty id throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            Transaction(id = "", date = 1L, author = "<author>")
+        }
+    }
+
+    @Test fun `test transaction with invalid characters in id throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            Transaction(id = "123aA_", date = 1L, author = "<author>")
+        }
+    }
+
     @Test fun `test transaction with negative date throws`() {
         assertFailsWith<IllegalArgumentException> {
             Transaction(id = "123", date = -1L, author = "<author>")

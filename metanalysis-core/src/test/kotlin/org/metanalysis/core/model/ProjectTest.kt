@@ -29,7 +29,6 @@ import org.metanalysis.test.core.model.editType
 import org.metanalysis.test.core.model.project
 import org.metanalysis.test.core.model.removeNode
 import org.metanalysis.test.core.model.sourceUnit
-import org.metanalysis.test.core.model.transaction
 import org.metanalysis.test.core.model.variable
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -153,22 +152,6 @@ class ProjectTest {
                     supertypes { +"Object" }
                 }
         )
-
-        assertEquals(expected, actual)
-    }
-
-    @Test fun `test apply transaction`() {
-        val expected = project {
-            sourceUnit("src/Test.java") {}
-        }
-
-        val actual = project {
-            sourceUnit("src/Main.java") {}
-        }
-        actual.apply(transaction("123") {
-            removeNode("src/Main.java")
-            addSourceUnit("src/Test.java") {}
-        })
 
         assertEquals(expected, actual)
     }

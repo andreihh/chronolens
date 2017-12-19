@@ -19,7 +19,6 @@ package org.metanalysis.core.repository
 import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.ProjectEdit.Companion.diff
 import org.metanalysis.core.model.SourceNode.SourceUnit
-import org.metanalysis.core.model.Transaction
 import org.metanalysis.core.parsing.Parser
 import org.metanalysis.core.parsing.Result
 import org.metanalysis.core.versioning.VcsProxy

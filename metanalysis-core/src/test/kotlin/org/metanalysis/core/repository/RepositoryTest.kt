@@ -154,7 +154,7 @@ abstract class RepositoryTest {
         }
         val transactions = repository.getHistory()
         val actual = project {}
-        transactions.forEach(actual::apply)
+        transactions.map(Transaction::edits).forEach(actual::apply)
         assertEquals(expected, actual)
     }
 }

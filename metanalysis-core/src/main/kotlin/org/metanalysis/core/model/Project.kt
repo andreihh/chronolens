@@ -114,9 +114,4 @@ class Project private constructor(
     fun apply(vararg edits: ProjectEdit) {
         apply(edits.asList())
     }
-
-    /** Utility method. */
-    fun apply(transaction: Transaction) {
-        apply(transaction.edits)
-    }
 }

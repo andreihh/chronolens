@@ -23,7 +23,7 @@ import org.metanalysis.core.model.ProjectEdit.EditFunction
 import org.metanalysis.core.model.ProjectEdit.EditType
 import org.metanalysis.core.model.ProjectEdit.EditVariable
 import org.metanalysis.core.model.ProjectEdit.RemoveNode
-import org.metanalysis.core.model.Transaction
+import org.metanalysis.core.repository.Transaction
 
 inline fun transaction(
         id: String,

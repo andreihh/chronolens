@@ -17,7 +17,7 @@
 package org.metanalysis.core.serialization
 
 import org.junit.Test
-import org.metanalysis.core.model.Transaction
+import org.metanalysis.core.repository.Transaction
 import org.metanalysis.core.serialization.JsonModule.JsonException
 import org.metanalysis.test.core.model.transaction
 import java.io.ByteArrayOutputStream

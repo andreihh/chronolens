@@ -19,7 +19,7 @@ package org.metanalysis.test.core.model
 import org.metanalysis.core.model.ProjectEdit
 import org.metanalysis.core.model.ProjectEdit.AddNode
 import org.metanalysis.core.model.ProjectEdit.RemoveNode
-import org.metanalysis.core.model.Transaction
+import org.metanalysis.core.repository.Transaction
 
 @ModelBuilderMarker
 class TransactionBuilder(private val id: String) {

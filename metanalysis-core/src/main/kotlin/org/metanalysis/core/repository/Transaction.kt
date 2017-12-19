@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.model
+package org.metanalysis.core.repository
+
+import org.metanalysis.core.model.Project
+import org.metanalysis.core.model.ProjectEdit
 
 /**
  * A transaction consisting of multiple changes applied to a [Project].
  *
- * @property id the unique identifier of this transaction
+ * @property id the non-empty unique identifier of this transaction consisting
+ * of alphanumeric characters
  * @property date the date at which this transaction was committed in
  * milliseconds since the Unix epoch
  * @property author the author of the transaction
  * @property edits the edits applied in this transaction
- * @throws IllegalArgumentException if `date` is negative
+ * @throws IllegalArgumentException if `id` is empty or contains
+ * non-alphanumeric characters or if `date` is negative
  */
 data class Transaction(
         val id: String,
@@ -33,6 +38,12 @@ data class Transaction(
         val edits: List<ProjectEdit> = emptyList()
 ) {
     init {
-        require(date >= 0L) { "Date '$date' can't be negative!" }
+        require(id.isNotEmpty()) { "Transaction id can't be empty!" }
+        for (character in id) {
+            require(character.isLetterOrDigit()) {
+                "'$id' contains invalid character '$character'!"
+            }
+        }
+        require(date >= 0L) { "'$id' date '$date' can't be negative!" }
     }
 }
