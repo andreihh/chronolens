@@ -46,15 +46,18 @@ class ParserTest {
     }
 
     @Test fun `test parse source with errors throws`() {
-        val result = Parser.parse(path = "res.mock", source = "{ \"invalid\":2")
+        val sourceFile =
+                SourceFile(path = "res.mock", rawSource = "{ \"invalid\":2")
+        val result = Parser.parse(sourceFile)
         assertEquals(Result.SyntaxError, result )
     }
 
     @Test fun `test parse invalid path throws`() {
         val parser = Parser.getParserByLanguage(ParserMock.LANGUAGE)
                 ?: fail("Parser not provided!")
+        val sourceFile = SourceFile(path = "res.moc", rawSource = "{}")
         assertFailsWith<IllegalArgumentException> {
-            parser.parse(path = "res.moc", source = "{}")
+            parser.parse(sourceFile)
         }
     }
 }

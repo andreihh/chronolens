@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.CompilationUnit
 import org.metanalysis.core.parsing.Parser
 import org.metanalysis.core.parsing.Result
+import org.metanalysis.core.parsing.SourceFile
 
 /** Java 8 language parser. */
 class JavaParser : Parser {
@@ -60,7 +61,8 @@ class JavaParser : Parser {
         Result.SyntaxError
     }
 
-    override fun parse(path: String, source: String): Result {
+    override fun parse(sourceFile: SourceFile): Result {
+        val (path, source) = sourceFile
         require(path.matches(pattern)) { "'$path' can't be interpreted!" }
         val options = JavaCore.getOptions()
         JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)

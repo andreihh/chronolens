@@ -19,6 +19,7 @@ package org.metanalysis.java
 import org.metanalysis.core.model.SourceNode.SourceUnit
 import org.metanalysis.core.parsing.Parser.Companion.getParserByLanguage
 import org.metanalysis.core.parsing.Result
+import org.metanalysis.core.parsing.SourceFile
 import org.metanalysis.test.core.model.UnitBuilder
 import org.metanalysis.test.core.model.sourceUnit
 import kotlin.test.fail
@@ -35,7 +36,7 @@ abstract class JavaParserTest {
             source: String,
             path: String = defaultPath
     ): SourceUnit {
-        val result = parser.parse(path, source)
+        val result = parser.parse(SourceFile(path, source))
         return when (result) {
             is Result.Success -> result.sourceUnit
             Result.SyntaxError -> fail()
@@ -45,5 +46,5 @@ abstract class JavaParserTest {
     protected fun parseResult(
             source: String,
             path: String = defaultPath
-    ): Result = parser.parse(path, source)
+    ): Result = parser.parse(SourceFile(path, source))
 }

@@ -17,24 +17,18 @@
 package org.metanalysis.core.parsing
 
 import org.metanalysis.core.model.SourceNode.SourceUnit
-import org.metanalysis.core.repository.JsonModule
-import org.metanalysis.core.repository.JsonModule.JsonException
+import org.metanalysis.core.model.validateUnitId
 
-class ParserMock : Parser {
-    companion object {
-        const val LANGUAGE: String = "Mock"
-    }
-
-    override val language: String = LANGUAGE
-    override val pattern: Regex = Regex(".*\\.mock")
-
-    override fun parse(sourceFile: SourceFile): Result = try {
-        val (path, source) = sourceFile
-        require(path.matches(pattern)) { "'$path' can't be interpreted!" }
-        val unit = JsonModule.deserialize<SourceUnit>(source.byteInputStream())
-        if (unit.id != path) Result.SyntaxError
-        else Result.Success(unit)
-    } catch (e: JsonException) {
-        Result.SyntaxError
+/**
+ * A raw source file that can be interpreted by parsers.
+ *
+ * @property path the path of the source file
+ * @property rawSource the `UTF-8` encoded raw source code
+ * @throws IllegalArgumentException if the given `path` is not a valid
+ * [SourceUnit] path
+ */
+data class SourceFile(val path: String, val rawSource: String) {
+    init {
+        validateUnitId(path)
     }
 }

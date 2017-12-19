@@ -21,6 +21,7 @@ import org.metanalysis.core.model.ProjectEdit.Companion.diff
 import org.metanalysis.core.model.SourceNode.SourceUnit
 import org.metanalysis.core.parsing.Parser
 import org.metanalysis.core.parsing.Result
+import org.metanalysis.core.parsing.SourceFile
 import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
 
@@ -58,7 +59,7 @@ class InteractiveRepository private constructor(
 
     private fun parseSourceUnit(revisionId: String, path: String): Result? {
         val source = vcs.getFile(revisionId, path) ?: return null
-        return Parser.parse(path, source)
+        return Parser.parse(SourceFile(path, source))
     }
 
     private fun getLatestValidSourceUnit(path: String): SourceUnit {

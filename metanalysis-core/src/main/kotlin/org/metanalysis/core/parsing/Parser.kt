@@ -48,12 +48,11 @@ interface Parser {
                 parsers.firstOrNull { path.fileName.matches(it.pattern) }
 
         /**
-         * Parses the given `UTF-8` encoded `source` code located at the given
-         * `path` and returns the result, or `null` if no such parser was
-         * provided.
+         * Parses the given `sourceFile` and returns the result, or `null` if no
+         * such parser was provided.
          */
-        fun parse(path: String, source: String): Result? =
-                getParser(path)?.parse(path, source)
+        fun parse(sourceFile: SourceFile): Result? =
+                getParser(sourceFile.path)?.parse(sourceFile)
     }
 
     /** The programming language which can be interpreted by this parser. */
@@ -63,11 +62,9 @@ interface Parser {
     val pattern: Regex
 
     /**
-     * Parses the given `UTF-8` encoded `source` code located at the given
-     * `path` and returns the result.
+     * Parses the given `sourceFile` and returns the result.
      *
-     * @throws IllegalArgumentException if the file name from `path` doesn't
-     * match [pattern]
+     * @throws IllegalArgumentException if the file path doesn't match [pattern]
      */
-    fun parse(path: String, source: String): Result
+    fun parse(sourceFile: SourceFile): Result
 }
