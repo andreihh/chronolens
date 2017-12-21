@@ -40,6 +40,12 @@ private val variable =
 private val entity = Regex("$function|$type|$variable")
 private val node = Regex("$unit|$entity")
 
+/** Returns whether the given source file `path` is valid. */
+internal fun isValidPath(path: String): Boolean {
+    val p = "/$path/"
+    return "//" !in p && "/./" !in p && "/../" !in p
+}
+
 /**
  * Validates the ids of the children of this node.
  *
@@ -89,6 +95,7 @@ internal fun validateEntityId(id: String) {
  * id
  */
 internal fun validateUnitId(id: String) {
+    require(isValidPath(id)) { "Invalid unit id '$id'!" } // TODO: fix regex
     require(id.matches(unit)) { "Invalid unit id '$id'!" }
 }
 

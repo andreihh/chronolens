@@ -38,12 +38,7 @@ data class Transaction(
         val edits: List<ProjectEdit> = emptyList()
 ) {
     init {
-        require(id.isNotEmpty()) { "Transaction id can't be empty!" }
-        for (character in id) {
-            require(character.isLetterOrDigit()) {
-                "'$id' contains invalid character '$character'!"
-            }
-        }
+        require(isValidTransactionId(id)) { "Invalid transaction id '$id'!" }
         require(date >= 0L) { "'$id' date '$date' can't be negative!" }
     }
 }

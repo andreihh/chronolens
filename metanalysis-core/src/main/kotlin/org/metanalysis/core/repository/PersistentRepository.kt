@@ -17,9 +17,11 @@
 package org.metanalysis.core.repository
 
 import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.serialization.JsonModule
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.util.Collections.unmodifiableSet
 
 /**
  * A wrapper around a repository which has all its interpreted data persisted on
@@ -37,6 +39,7 @@ class PersistentRepository private constructor() : Repository {
          * @return the repository instance, or `null` if no repository was
          * detected
          * @throws IOException if any input related errors occur
+         * @throws IllegalStateException if the repository state is corrupted
          */
         @Throws(IOException::class)
         @JvmStatic
@@ -51,8 +54,7 @@ class PersistentRepository private constructor() : Repository {
          * persistence progress, or `null` if no notification is required
          * @return the persisted repository
          * @throws IOException if any output related errors occur
-         * @throws IllegalStateException if the state of this repository becomes
-         * corrupted
+         * @throws IllegalStateException if the repository state is corrupted
          */
         @Throws(IOException::class)
         @JvmStatic
@@ -62,7 +64,7 @@ class PersistentRepository private constructor() : Repository {
             if (this is PersistentRepository) {
                 return this
             }
-            rootDirectory.mkdirs()
+            rootDirectory.mkdir()
             headFile.printWriter().use { out -> out.println(getHeadId()) }
             persistSnapshot(listener)
             persistHistory(listener)
@@ -117,10 +119,9 @@ class PersistentRepository private constructor() : Repository {
 
         private fun Repository.persistSnapshot(listener: ProgressListener?) {
             listener?.onSnapshotStart(getHeadId())
-            snapshotDirectory.mkdirs()
+            snapshotDirectory.mkdir()
             sourcesFile.printWriter().use { out ->
-                val sources = listSources()
-                for (path in sources) {
+                for (path in listSources()) {
                     val sourceUnit = getSourceUnit(path)
                             ?: error("'$path' couldn't be interpreted!")
                     out.println(path)
@@ -140,8 +141,8 @@ class PersistentRepository private constructor() : Repository {
 
         private fun Repository.persistHistory(listener: ProgressListener?) {
             listener?.onHistoryStart()
+            transactionsDirectory.mkdir()
             historyFile.printWriter().use { out ->
-                transactionsDirectory.mkdirs()
                 for (transaction in getHistory()) {
                     out.println(transaction.id)
                     persistTransaction(transaction)
@@ -164,28 +165,26 @@ class PersistentRepository private constructor() : Repository {
 
     private val headId = headFile.readLines().first()
     private val sources =
-            sourcesFile.readLines().filter(String::isNotBlank).toSet()
-    private val history = historyFile.readLines().filter(String::isNotBlank)
+            sourcesFile.readLines().takeWhile(String::isNotEmpty).toSet()
+    private val history = historyFile.readLines().takeWhile(String::isNotEmpty)
 
     init {
-        for (path in sources) {
-            check(getSourceUnitFile(path).exists()) { "'$path' doesn't exist!" }
-        }
-        for (id in history) {
-            check(getTransactionFile(id).exists()) { "'$id' doesn't exist!" }
-        }
+        validateTransactionId(headId)
+        sources.forEach(::validatePath)
+        validateHistory(history)
     }
 
     override fun getHeadId(): String = headId
 
-    override fun listSources(): Set<String> = sources
+    override fun listSources(): Set<String> = unmodifiableSet(sources)
 
     override fun getSourceUnit(path: String): SourceUnit? =
             if (path !in sources) null
             else getSourceUnitFile(path).use(JsonModule::deserialize)
 
     override fun getHistory(): Iterable<Transaction> =
-            history.asSequence().map(::getTransactionFile).map { file ->
+            history.mapLazy { transactionId ->
+                val file = getTransactionFile(transactionId)
                 file.use { src -> JsonModule.deserialize<Transaction>(src) }
-            }.asIterable()
+            }
 }

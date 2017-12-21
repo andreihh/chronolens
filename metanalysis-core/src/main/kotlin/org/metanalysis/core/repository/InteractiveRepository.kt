@@ -19,11 +19,14 @@ package org.metanalysis.core.repository
 import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.ProjectEdit.Companion.diff
 import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.isValidPath
 import org.metanalysis.core.parsing.Parser
 import org.metanalysis.core.parsing.Result
 import org.metanalysis.core.parsing.SourceFile
+import org.metanalysis.core.versioning.Revision
 import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
+import java.util.Collections.unmodifiableSet
 
 /**
  * A wrapper around a repository persisted in a version control system (VCS).
@@ -48,14 +51,20 @@ class InteractiveRepository private constructor(
                 VcsProxyFactory.detect()?.let(::InteractiveRepository)
     }
 
+    private val headId = vcs.getHead().id
+    private val sources = vcs.listFiles(headId).filter(this::canParse).toSet()
+    private val history = vcs.getHistory()
+
+    init {
+        sources.forEach(::validatePath)
+        validateHistory(history.map(Revision::id))
+    }
+
     private fun canParse(path: String): Boolean = Parser.getParser(path) != null
 
-    override fun getHeadId(): String = vcs.getHead().id
+    override fun getHeadId(): String = headId
 
-    private fun listSources(revisionId: String): Set<String> =
-            vcs.listFiles(revisionId).filter(this::canParse).toSet()
-
-    override fun listSources(): Set<String> = listSources(getHeadId())
+    override fun listSources(): Set<String> = unmodifiableSet(sources)
 
     private fun parseSourceUnit(revisionId: String, path: String): Result? {
         val source = vcs.getFile(revisionId, path) ?: return null
@@ -74,7 +83,8 @@ class InteractiveRepository private constructor(
     }
 
     override fun getSourceUnit(path: String): SourceUnit? {
-        val result = parseSourceUnit(getHeadId(), path)
+        if (!isValidPath(path)) return null
+        val result = parseSourceUnit(headId, path)
         return when (result) {
             is Result.Success -> result.sourceUnit
             Result.SyntaxError -> getLatestValidSourceUnit(path)
@@ -84,11 +94,12 @@ class InteractiveRepository private constructor(
 
     override fun getHistory(): Iterable<Transaction> {
         val project = Project.empty()
-        return vcs.getHistory().asSequence().map { (revisionId, date, author) ->
+        return history.mapLazy { (revisionId, date, author) ->
             val changeSet = vcs.getChangeSet(revisionId)
             val before = hashSetOf<SourceUnit>()
             val after = hashSetOf<SourceUnit>()
             for (path in changeSet) {
+                validatePath(path)
                 val oldUnit = project.find<SourceUnit>(path)
                 if (oldUnit != null) {
                     before += oldUnit
@@ -106,6 +117,6 @@ class InteractiveRepository private constructor(
             val edits = Project.of(before).diff(Project.of(after))
             project.apply(edits)
             Transaction(revisionId, date, author, edits)
-        }.asIterable()
+        }
     }
 }

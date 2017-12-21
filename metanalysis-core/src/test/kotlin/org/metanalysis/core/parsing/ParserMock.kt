@@ -17,8 +17,8 @@
 package org.metanalysis.core.parsing
 
 import org.metanalysis.core.model.SourceNode.SourceUnit
-import org.metanalysis.core.repository.JsonModule
-import org.metanalysis.core.repository.JsonModule.JsonException
+import org.metanalysis.core.serialization.JsonException
+import org.metanalysis.core.serialization.JsonModule
 
 class ParserMock : Parser {
     companion object {

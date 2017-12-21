@@ -25,16 +25,18 @@ package org.metanalysis.core.versioning
  * since the Unix epoch
  * @property author the author of this revision
  * @throws IllegalArgumentException if `id` is empty or contains
- * non-alphanumeric characters or `date` is negative
+ * non-alphanumeric characters or if `date` is negative
  */
 data class Revision(val id: String, val date: Long, val author: String) {
+    companion object {
+        /** Returns whether the given revision `id` is valid. */
+        @JvmStatic
+        internal fun isValidRevisionId(id: String): Boolean =
+                id.isNotEmpty() && id.all(Character::isLetterOrDigit)
+    }
+
     init {
-        require(id.isNotEmpty()) { "Revision id can't be empty!" }
-        for (character in id) {
-            require(character.isLetterOrDigit()) {
-                "'$id' contains invalid character '$character'!"
-            }
-        }
+        require(isValidRevisionId(id)) { "Invalid revision id '$id'!" }
         require(date >= 0L) { "'$id' date '$date' can't be negative!" }
     }
 }

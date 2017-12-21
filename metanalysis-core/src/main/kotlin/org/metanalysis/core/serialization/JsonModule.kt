@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.core.repository
+package org.metanalysis.core.serialization
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -46,12 +46,7 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /** Provides JSON serialization and deserialization of arbitrary objects. */
-internal object JsonModule {
-    /**
-     * Signals that an error occurred while trying to read or write JSON data.
-     */
-    class JsonException(cause: Throwable) : IOException(cause)
-
+object JsonModule {
     private val typeIdResolver = object : TypeIdResolverBase() {
         private val typeToId = mapOf(
                 SourceUnit::class.java to "SourceUnit",
@@ -115,6 +110,7 @@ internal object JsonModule {
      * @throws IOException if there are any output related errors
      */
     @Throws(IOException::class)
+    @JvmStatic
     fun serialize(out: OutputStream, value: Any) {
         try {
             objectMapper.writeValue(out, value)
@@ -134,6 +130,7 @@ internal object JsonModule {
      * @throws IOException if there are any input related errors
      */
     @Throws(IOException::class)
+    @JvmStatic
     fun <T : Any> deserialize(src: InputStream, type: Class<T>): T = try {
         objectMapper.readValue(src, type)
     } catch (e: JsonProcessingException) {

@@ -18,6 +18,7 @@ package org.metanalysis.core.model
 
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.SourceNode.SourceUnit
+import java.util.Collections.unmodifiableCollection
 
 /**
  * A snapshot of a project containing a [SourceUnit] set at a specific point in
@@ -28,8 +29,8 @@ import org.metanalysis.core.model.SourceNode.SourceUnit
  * @property units the source units in this project
  */
 class Project private constructor(
-        private val unitMap: MutableMap<String, SourceUnit>,
-        private val nodeMap: MutableMap<String, SourceNode>
+        private val unitMap: HashMap<String, SourceUnit>,
+        private val nodeMap: HashMap<String, SourceNode>
 ) {
     companion object {
         /**
@@ -41,13 +42,14 @@ class Project private constructor(
          */
         @JvmStatic
         fun of(units: Collection<SourceUnit>): Project {
-            units.groupBy(SourceUnit::id).forEach { id, unitsWithId ->
-                require(unitsWithId.size == 1) {
-                    "Project contains duplicated unit id '$id'!"
+            val unitMap = hashMapOf<String, SourceUnit>()
+            for (unit in units) {
+                require(unit.id !in unitMap) {
+                    "Project contains duplicated unit id '${unit.id}'!"
                 }
+                unitMap[unit.id] = unit
             }
-            val unitMap = units.associateByTo(hashMapOf(), SourceUnit::path)
-            val nodeMap = buildVisit(units).toMutableMap()
+            val nodeMap = HashMap(buildVisit(units))
             return Project(unitMap, nodeMap)
         }
 
@@ -58,10 +60,11 @@ class Project private constructor(
 
     /** The source units in this project. */
     val units: Collection<SourceUnit>
-        get() = unitMap.values
+        get() = unmodifiableCollection(unitMap.values)
 
     /** Returns all the source nodes in this project. */
-    fun findAll(): Collection<SourceNode> = nodeMap.values
+    fun findAll(): Collection<SourceNode> =
+            unmodifiableCollection(nodeMap.values)
 
     /**
      * Returns the node with the specified `id`.
