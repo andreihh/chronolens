@@ -25,8 +25,8 @@ import org.metanalysis.core.model.SourceNode.SourceEntity.Function
 import org.metanalysis.core.model.SourceNode.SourceEntity.Type
 import org.metanalysis.core.model.SourceNode.SourceUnit
 
-/** A mutable map from ids to source nodes. */
-internal typealias MutableNodeMap = MutableMap<String, SourceNode>
+/** A hash map from ids to source nodes. */
+internal typealias NodeHashMap = HashMap<String, SourceNode>
 
 /** The id of the [SourceNode] which contains this entity. */
 val SourceEntity.parentId: String
@@ -54,15 +54,15 @@ fun SourceNode.walkSourceTree(): List<SourceNode> {
     return nodes
 }
 
-internal fun MutableNodeMap.putSourceTree(root: SourceNode) {
+internal fun NodeHashMap.putSourceTree(root: SourceNode) {
     this += root.walkSourceTree().associateBy(SourceNode::id)
 }
 
-internal fun MutableNodeMap.removeSourceTree(root: SourceNode) {
+internal fun NodeHashMap.removeSourceTree(root: SourceNode) {
     this -= root.walkSourceTree().map(SourceNode::id)
 }
 
-internal fun buildVisit(units: Collection<SourceUnit>): MutableNodeMap {
+internal fun buildVisit(units: Collection<SourceUnit>): NodeHashMap {
     val nodes = hashMapOf<String, SourceNode>()
     units.forEach(nodes::putSourceTree)
     return nodes

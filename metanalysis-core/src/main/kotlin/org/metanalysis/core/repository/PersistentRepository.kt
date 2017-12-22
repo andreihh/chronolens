@@ -169,18 +169,20 @@ class PersistentRepository private constructor() : Repository {
     private val history = historyFile.readLines().takeWhile(String::isNotEmpty)
 
     init {
-        validateTransactionId(headId)
-        sources.forEach(::validatePath)
-        validateHistory(history)
+        checkValidTransactionId(headId)
+        sources.forEach(::checkValidPath)
+        checkValidHistory(history)
     }
 
     override fun getHeadId(): String = headId
 
     override fun listSources(): Set<String> = unmodifiableSet(sources)
 
-    override fun getSourceUnit(path: String): SourceUnit? =
-            if (path !in sources) null
-            else getSourceUnitFile(path).use(JsonModule::deserialize)
+    override fun getSourceUnit(path: String): SourceUnit? {
+        validatePath(path)
+        return if (path !in sources) null
+        else getSourceUnitFile(path).use(JsonModule::deserialize)
+    }
 
     override fun getHistory(): Iterable<Transaction> =
             history.mapLazy { transactionId ->

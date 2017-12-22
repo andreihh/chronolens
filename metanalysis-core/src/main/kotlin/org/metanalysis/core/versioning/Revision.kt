@@ -19,24 +19,14 @@ package org.metanalysis.core.versioning
 /**
  * A revision in a version control system (commit, tag, branch etc.).
  *
- * @property id the non-empty unique id of this revision consisting of
- * alphanumeric characters
+ * @property id the unique id of this revision
  * @property date the date at which this revision was committed in milliseconds
  * since the Unix epoch
  * @property author the author of this revision
- * @throws IllegalArgumentException if `id` is empty or contains
- * non-alphanumeric characters or if `date` is negative
+ * @throws IllegalArgumentException if `date` is negative
  */
 data class Revision(val id: String, val date: Long, val author: String) {
-    companion object {
-        /** Returns whether the given revision `id` is valid. */
-        @JvmStatic
-        internal fun isValidRevisionId(id: String): Boolean =
-                id.isNotEmpty() && id.all(Character::isLetterOrDigit)
-    }
-
     init {
-        require(isValidRevisionId(id)) { "Invalid revision id '$id'!" }
         require(date >= 0L) { "'$id' date '$date' can't be negative!" }
     }
 }

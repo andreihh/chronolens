@@ -50,6 +50,7 @@ interface Repository {
      * @param path the path of the requested source unit
      * @return the requested source unit, or `null` if the `path` doesn't exist
      * in the `head` revision or couldn't be interpreted
+     * @throws IllegalArgumentException if the given `path` is invalid
      * @throws IllegalStateException if this repository is in a corrupted state
      */
     fun getSourceUnit(path: String): SourceUnit?

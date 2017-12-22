@@ -19,11 +19,19 @@ package org.metanalysis.core.subprocess
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 /** A subprocess executor. */
 object Subprocess {
+    private val builder = ProcessBuilder()
+    private val executor = Executors.newSingleThreadExecutor()
+
     private fun InputStream.readText(): String =
             reader().use(InputStreamReader::readText)
+
+    private fun <T> submit(task: () -> T): Future<T> = executor.submit(task)
 
     /**
      * Executes the given `command` in a subprocess and returns its result.
@@ -42,10 +50,10 @@ object Subprocess {
     fun execute(vararg command: String): Result {
         var process: Process? = null
         try {
-            process = ProcessBuilder().command(*command).start()
+            process = builder.command(*command).start()
             process.outputStream.close()
+            val error = submit { process.errorStream.readText() }
             val input = process.inputStream.readText()
-            val error = process.errorStream
             val exitValue = process.waitFor()
             return when (exitValue) {
                 0 -> Result.Success(input)
@@ -57,9 +65,11 @@ object Subprocess {
                 // more details regarding Windows exit codes.
                 130, 131, 137, 143, -1073741510 ->
                     throw SubprocessException(exitValue, "subprocess killed!")
-                else -> Result.Error(exitValue, error.readText())
+                else -> Result.Error(exitValue, error.get())
             }
         } catch (e: InterruptedException) {
+            throw SubprocessException(e)
+        } catch (e: ExecutionException) {
             throw SubprocessException(e)
         } catch (e: IOException) {
             throw SubprocessException(e)

@@ -19,7 +19,6 @@ package org.metanalysis.core.repository
 import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.ProjectEdit.Companion.diff
 import org.metanalysis.core.model.SourceNode.SourceUnit
-import org.metanalysis.core.model.isValidPath
 import org.metanalysis.core.parsing.Parser
 import org.metanalysis.core.parsing.Result
 import org.metanalysis.core.parsing.SourceFile
@@ -56,8 +55,9 @@ class InteractiveRepository private constructor(
     private val history = vcs.getHistory()
 
     init {
-        sources.forEach(::validatePath)
-        validateHistory(history.map(Revision::id))
+        checkValidTransactionId(headId)
+        sources.forEach(::checkValidPath)
+        checkValidHistory(history.map(Revision::id))
     }
 
     private fun canParse(path: String): Boolean = Parser.getParser(path) != null
@@ -67,11 +67,14 @@ class InteractiveRepository private constructor(
     override fun listSources(): Set<String> = unmodifiableSet(sources)
 
     private fun parseSourceUnit(revisionId: String, path: String): Result? {
+        checkValidTransactionId(revisionId)
+        checkValidPath(path)
         val source = vcs.getFile(revisionId, path) ?: return null
         return Parser.parse(SourceFile(path, source))
     }
 
     private fun getLatestValidSourceUnit(path: String): SourceUnit {
+        checkValidPath(path)
         val revisions = vcs.getHistory(path).asReversed()
         for ((revisionId, _, _) in revisions) {
             val result = parseSourceUnit(revisionId, path)
@@ -83,7 +86,7 @@ class InteractiveRepository private constructor(
     }
 
     override fun getSourceUnit(path: String): SourceUnit? {
-        if (!isValidPath(path)) return null
+        validatePath(path)
         val result = parseSourceUnit(headId, path)
         return when (result) {
             is Result.Success -> result.sourceUnit
@@ -99,7 +102,6 @@ class InteractiveRepository private constructor(
             val before = hashSetOf<SourceUnit>()
             val after = hashSetOf<SourceUnit>()
             for (path in changeSet) {
-                validatePath(path)
                 val oldUnit = project.find<SourceUnit>(path)
                 if (oldUnit != null) {
                     before += oldUnit

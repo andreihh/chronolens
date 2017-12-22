@@ -38,7 +38,7 @@ data class Transaction(
         val edits: List<ProjectEdit> = emptyList()
 ) {
     init {
-        require(isValidTransactionId(id)) { "Invalid transaction id '$id'!" }
+        validateTransactionId(id)
         require(date >= 0L) { "'$id' date '$date' can't be negative!" }
     }
 }
