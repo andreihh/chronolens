@@ -178,7 +178,7 @@ sealed class Command {
 
                 override fun onTransactionPersisted(id: String) {
                     transactions++
-                    print("Persisted $transactions transactions'...\r")
+                    print("Persisted $transactions transactions...\r")
                 }
 
                 override fun onHistoryEnd() {

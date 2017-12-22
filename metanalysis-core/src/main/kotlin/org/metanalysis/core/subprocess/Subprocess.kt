@@ -20,13 +20,23 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.util.concurrent.ExecutionException
-import java.util.concurrent.Executors
+import java.util.concurrent.Executors.defaultThreadFactory
+import java.util.concurrent.Executors.newSingleThreadExecutor
 import java.util.concurrent.Future
+import java.util.concurrent.ThreadFactory
 
 /** A subprocess executor. */
 object Subprocess {
     private val builder = ProcessBuilder()
-    private val executor = Executors.newSingleThreadExecutor()
+    private val executor = newSingleThreadExecutor(object : ThreadFactory {
+        private val defaultFactory = defaultThreadFactory()
+
+        override fun newThread(r: Runnable): Thread {
+            val thread = defaultFactory.newThread(r)
+            thread.isDaemon = true
+            return thread
+        }
+    })
 
     private fun InputStream.readText(): String =
             reader().use(InputStreamReader::readText)

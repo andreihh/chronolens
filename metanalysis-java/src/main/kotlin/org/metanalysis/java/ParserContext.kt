@@ -47,9 +47,11 @@ internal data class ParserContext(
     private fun List<ASTNode>.toModifierSet(): Set<String> =
             map { it.toSource() }.requireDistinct()
 
+    // TODO: fix if javadoc contains `{`
     private fun MethodDeclaration.body(): List<String> =
             toSource().dropWhile { it != '{' }.toBlock()
 
+    // TODO: fix if javadoc contains `=`
     private fun VariableDeclaration.initializer(): List<String> =
             toSource().substringAfter(
                     delimiter = '=',
