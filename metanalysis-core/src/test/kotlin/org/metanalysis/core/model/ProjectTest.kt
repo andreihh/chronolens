@@ -29,7 +29,6 @@ import org.metanalysis.test.core.model.variable
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
-import kotlin.test.fail
 
 class ProjectTest {
     @Test fun `test create project with duplicated unit ids throws`() {
@@ -39,7 +38,7 @@ class ProjectTest {
         }
     }
 
-    @Test fun `test find all returns structurally equal nodes`() {
+    @Test fun `test source tree returns structurally equal nodes`() {
         val classVersion = Variable(
             id = "src/Test.java:IClass:version",
             initializer = listOf("1")
@@ -75,12 +74,12 @@ class ProjectTest {
                 variable("version") { +"2" }
             }
         }
-        val actualNodes = project.findAll().toSet()
+        val actualNodes = project.sourceTree.toSet()
 
         assertEquals(expectedNodes, actualNodes)
     }
 
-    @Test fun `test find node returns structurally equal node`() {
+    @Test fun `test get node returns structurally equal node`() {
         val expectedNode =
             variable("src/Test.java:IClass:version") { +"1" }
 
@@ -95,25 +94,24 @@ class ProjectTest {
                 variable("version") { +"2" }
             }
         }
-        val actualNode = project.find<Variable>("src/Test.java:IClass:version")
-            ?: fail("Node '${expectedNode.id}' not found!")
+        val actualNode = project.get<Variable>("src/Test.java:IClass:version")
 
         assertEquals(expectedNode, actualNode)
     }
 
-    @Test fun `test find id with incorrect type throws`() {
+    @Test fun `test get id with incorrect type throws`() {
         val project = project {
             sourceUnit("src/Test.java") {
                 type("IClass") {}
             }
         }
 
-        assertFailsWith<IllegalArgumentException> {
-            project.find<Variable>("src/Test.java:IClass")
+        assertFailsWith<IllegalStateException> {
+            project.get<Variable>("src/Test.java:IClass")
         }
     }
 
-    @Test fun `test find non-existing id returns null`() {
+    @Test fun `test get non-existing id throws`() {
         val project = project {
             sourceUnit("src/Test.java") {
                 type("IClass") {}
@@ -121,7 +119,20 @@ class ProjectTest {
             }
         }
 
-        assertNull(project.find<Function>("src/Test.java:getVersion()"))
+        assertFailsWith<IllegalStateException> {
+            project.get<Function>("src/Test.java:getVersion()")
+        }
+    }
+
+    @Test fun `test get non-existing id returns null`() {
+        val project = project {
+            sourceUnit("src/Test.java") {
+                type("IClass") {}
+                variable("version") { +"1" }
+            }
+        }
+
+        assertNull(project.get<Function?>("src/Test.java:getVersion()"))
     }
 
     @Test fun `test apply chained edits`() {
@@ -138,7 +149,7 @@ class ProjectTest {
         val actual = project {
             sourceUnit("src/Main.java") {}
         }
-        actual.apply(
+        actual.apply(listOf(
             removeNode("src/Main.java"),
             addSourceUnit("src/Test.java") {},
             addType("src/Test.java:Test") {},
@@ -147,7 +158,7 @@ class ProjectTest {
                 modifiers { +"abstract" }
                 supertypes { +"Object" }
             }
-        )
+        ))
 
         assertEquals(expected, actual)
     }

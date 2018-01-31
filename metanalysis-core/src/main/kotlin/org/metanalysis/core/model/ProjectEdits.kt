@@ -40,15 +40,15 @@ sealed class ProjectEdit : Edit<Project> {
          */
         @JvmStatic
         fun Project.diff(other: Project): List<ProjectEdit> {
-            val thisSources = sources.map(SourceUnit::id)
+            val thisSources = this.sources.map(SourceUnit::id)
             val otherSources = other.sources.map(SourceUnit::id)
             val allSources = thisSources.union(otherSources)
 
             val nodesBefore = hashMapOf<String, SourceNode>()
             val nodesAfter = hashMapOf<String, SourceNode>()
             for (path in allSources) {
-                find(path)?.let(nodesBefore::putSourceTree)
-                other.find(path)?.let(nodesAfter::putSourceTree)
+                this[path]?.let(nodesBefore::putSourceTree)
+                other[path]?.let(nodesAfter::putSourceTree)
             }
 
             val nodeIds = nodesBefore.keys + nodesAfter.keys

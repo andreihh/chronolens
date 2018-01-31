@@ -34,55 +34,47 @@ class Project private constructor(
         get() = unmodifiableCollection(unitMap.values)
 
     /** Returns all the source nodes in this project. */
-    fun findAll(): Collection<SourceNode> =
+    val sourceTree: Iterable<SourceNode> =
         unmodifiableCollection(nodeMap.values)
 
     /**
      * Returns the node with the specified [id], or `null` if no such node was
      * found.
-     *
-     * @throws IllegalArgumentException if the given [id] is not a valid node id
      */
-    fun find(id: String): SourceNode? {
-        validateNodeId(id)
-        return nodeMap[id]
+    operator fun get(id: String): SourceNode? = nodeMap[id]
+
+    /**
+     * Returns the node of type [T] with the specified [id], or `null` if no
+     * such node was found and [T] is a nullable type.
+     *
+     * @throws IllegalStateException if the requested node is not of type [T]
+     */
+    @JvmName("getNode")
+    inline fun <reified T : SourceNode?> get(id: String): T {
+        val node = get(id)
+        check(node is T) { "'$id' is not of type '${T::class}'!" }
+        return node as T
     }
 
     /**
-     * Returns the node with the specified [id] and type [T], or `null` if no
-     * such node was found.
-     *
-     * @throws IllegalArgumentException if the given [id] is not a valid node id
-     * or if the requested node is not of type [T]
-     */
-    @JvmName("findNode")
-    inline fun <reified T : SourceNode> find(id: String): T? {
-        val node = find(id)
-        require(node is T?) { "'$id' is not of type '${T::class}'!" }
-        return node as T?
-    }
-
-    /**
-     * Applies the given [edits] to this project.
+     * Applies the given [edit] to this project.
      *
      * @throws IllegalStateException if this project has an invalid state and
-     * the given [edits] couldn't be applied
+     * the given [edit] couldn't be applied
      */
-    fun apply(edits: List<ProjectEdit>) {
-        for (edit in edits) {
-            val parentUnitId = edit.sourcePath
-            unitMap -= parentUnitId
-            edit.applyOn(nodeMap)
-            val newParentUnit = nodeMap[parentUnitId] as SourceUnit?
-            if (newParentUnit != null) {
-                unitMap[parentUnitId] = newParentUnit
-            }
+    fun apply(edit: ProjectEdit) {
+        val parentUnitId = edit.sourcePath
+        unitMap -= parentUnitId
+        edit.applyOn(nodeMap)
+        val newParentUnit = get<SourceUnit?>(parentUnitId)
+        if (newParentUnit != null) {
+            unitMap[parentUnitId] = newParentUnit
         }
     }
 
     /** Utility method. */
-    fun apply(vararg edits: ProjectEdit) {
-        apply(edits.asList())
+    fun apply(edits: List<ProjectEdit>) {
+        edits.forEach(::apply)
     }
 
     companion object {

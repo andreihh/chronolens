@@ -22,7 +22,7 @@ package org.metanalysis.core.model
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.SourceNode.Companion.PATH_SEPARATOR
 
-private val separators = "$PATH_SEPARATOR$ENTITY_SEPARATOR"
+private const val separators = "$PATH_SEPARATOR$ENTITY_SEPARATOR"
 private val identifier = Regex("(?>[^$separators()]++)")
 private val signature = Regex("(?>$identifier\\([^$separators]*\\))")
 

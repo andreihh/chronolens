@@ -129,4 +129,10 @@ class ListEditTest {
         val dst = "republican"
         assertDiff(src, dst)
     }
+
+    @Test fun `test diff with empty list`() {
+        val src = "democrats"
+        val dst = ""
+        assertDiff(src, dst)
+    }
 }

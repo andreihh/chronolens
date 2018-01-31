@@ -87,7 +87,7 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
             val before = hashSetOf<SourceUnit>()
             val after = hashSetOf<SourceUnit>()
             for (path in changeSet) {
-                val oldUnit = project.find<SourceUnit>(path)
+                val oldUnit = project.get<SourceUnit?>(path)
                 if (oldUnit != null) {
                     before += oldUnit
                 }

@@ -45,7 +45,7 @@ class RepositoryBuilder {
         override fun getHeadId(): String = history.last().id
 
         override fun getSource(path: String): SourceUnit? =
-            snapshot.find<SourceUnit>(path)
+            snapshot.get<SourceUnit?>(path)
 
         override fun listSources(): Set<String> =
             snapshot.sources.map(SourceUnit::path).toSet()

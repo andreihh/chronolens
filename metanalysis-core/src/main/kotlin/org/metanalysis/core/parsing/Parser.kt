@@ -49,7 +49,7 @@ abstract class Parser {
         val (path, rawSource) = sourceFile
         require(canParse(path)) { "Can't interpreted the given file '$path'!" }
         val unit = parse(path, rawSource)
-        check(unit.path == path)
+        check(unit.path == path) { "'$unit' must be located at '$path'!" }
         Result.Success(unit)
     } catch (e: SyntaxErrorException) {
         Result.SyntaxError
