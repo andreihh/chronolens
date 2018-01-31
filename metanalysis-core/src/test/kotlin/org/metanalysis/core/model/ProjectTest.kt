@@ -17,10 +17,6 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
-import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
-import org.metanalysis.core.model.SourceNode.SourceUnit
 import org.metanalysis.test.core.model.addFunction
 import org.metanalysis.test.core.model.addSourceUnit
 import org.metanalysis.test.core.model.addType
@@ -45,28 +41,28 @@ class ProjectTest {
 
     @Test fun `test find all returns structurally equal nodes`() {
         val classVersion = Variable(
-                id = "src/Test.java:IClass:version",
-                initializer = listOf("1")
+            id = "src/Test.java:IClass:version",
+            initializer = listOf("1")
         )
         val classFunction = Function(
-                id = "src/Test.java:IClass:getVersion()"
+            id = "src/Test.java:IClass:getVersion()"
         )
         val classType = Type(
-                id = "src/Test.java:IClass",
-                modifiers = setOf("interface"),
-                supertypes = setOf("Object"),
-                members = listOf(classVersion, classFunction)
+            id = "src/Test.java:IClass",
+            modifiers = setOf("interface"),
+            supertypes = setOf("Object"),
+            members = listOf(classVersion, classFunction)
         )
         val version = Variable(
-                id = "src/Test.java:version",
-                initializer = listOf("2")
+            id = "src/Test.java:version",
+            initializer = listOf("2")
         )
         val testUnit = SourceUnit(
-                id = "src/Test.java",
-                entities = listOf(classType, version)
+            id = "src/Test.java",
+            entities = listOf(classType, version)
         )
         val expectedNodes =
-                setOf(testUnit, version, classType, classVersion, classFunction)
+            setOf(testUnit, version, classType, classVersion, classFunction)
 
         val project = project {
             sourceUnit("src/Test.java") {
@@ -86,7 +82,7 @@ class ProjectTest {
 
     @Test fun `test find node returns structurally equal node`() {
         val expectedNode =
-                variable("src/Test.java:IClass:version") { +"1" }
+            variable("src/Test.java:IClass:version") { +"1" }
 
         val project = project {
             sourceUnit("src/Test.java") {
@@ -100,7 +96,7 @@ class ProjectTest {
             }
         }
         val actualNode = project.find<Variable>("src/Test.java:IClass:version")
-                ?: fail("Node '${expectedNode.id}' not found!")
+            ?: fail("Node '${expectedNode.id}' not found!")
 
         assertEquals(expectedNode, actualNode)
     }
@@ -143,14 +139,14 @@ class ProjectTest {
             sourceUnit("src/Main.java") {}
         }
         actual.apply(
-                removeNode("src/Main.java"),
-                addSourceUnit("src/Test.java") {},
-                addType("src/Test.java:Test") {},
-                addFunction("src/Test.java:Test:getVersion()") {},
-                editType("src/Test.java:Test") {
-                    modifiers { +"abstract" }
-                    supertypes { +"Object" }
-                }
+            removeNode("src/Main.java"),
+            addSourceUnit("src/Test.java") {},
+            addType("src/Test.java:Test") {},
+            addFunction("src/Test.java:Test:getVersion()") {},
+            editType("src/Test.java:Test") {
+                modifiers { +"abstract" }
+                supertypes { +"Object" }
+            }
         )
 
         assertEquals(expected, actual)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-package org.metanalysis.test.core.model
+package org.metanalysis.test.core
 
-@DslMarker
-internal annotation class ModelBuilderMarker
+typealias Init<T> = T.() -> Any?
+
+internal inline fun <T> T.apply(init: Init<T>): T {
+    init(this)
+    return this
+}

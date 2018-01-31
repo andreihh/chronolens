@@ -17,7 +17,7 @@
 package org.metanalysis.core.repository
 
 import org.metanalysis.core.model.Project
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
 
 /**
  * A wrapper which connects to a repository and allows querying source code
@@ -40,32 +40,30 @@ interface Repository {
     fun listSources(): Set<String>
 
     /**
-     * Returns the source unit found at the given `path`, as it is found in the
-     * `head` revision.
+     * Returns the source unit found at the given [path] as it is found in the
+     * `head` revision, or `null` if the [path] doesn't exist in the `head`
+     * revision or couldn't be interpreted.
      *
      * If the source contains syntax errors, then the most recent version which
      * can be parsed without errors will be returned. If all versions of the
      * source contain errors, then the empty source unit will be returned.
      *
-     * @param path the path of the requested source unit
-     * @return the requested source unit, or `null` if the `path` doesn't exist
-     * in the `head` revision or couldn't be interpreted
-     * @throws IllegalArgumentException if the given `path` is invalid
+     * @throws IllegalArgumentException if the given [path] is invalid
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun getSourceUnit(path: String): SourceUnit?
+    fun getSource(path: String): SourceUnit?
 
     /**
      * Returns the snapshot of the repository, as it is found in the `head`
      * revision.
      *
      * @throws IllegalStateException if this repository is in a corrupted state
-     * @see getSourceUnit for details about how the latest source units are
+     * @see getSource for details about how the latest source units are
      * retrieved
      */
     fun getSnapshot(): Project {
-        val units = listSources().map(this::getSourceUnit).requireNoNulls()
-        return Project.of(units)
+        val sources = listSources().map(::getSource).requireNoNulls()
+        return Project.of(sources)
     }
 
     /**

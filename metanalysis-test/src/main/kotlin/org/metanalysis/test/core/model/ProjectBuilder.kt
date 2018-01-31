@@ -17,13 +17,17 @@
 package org.metanalysis.test.core.model
 
 import org.metanalysis.core.model.Project
+import org.metanalysis.test.core.BuilderMarker
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 
-@ModelBuilderMarker
+@BuilderMarker
 class ProjectBuilder {
     private val units = arrayListOf<UnitBuilder>()
 
-    fun sourceUnit(path: String, init: UnitBuilder.() -> Unit) {
+    fun sourceUnit(path: String, init: Init<UnitBuilder>): ProjectBuilder {
         units += UnitBuilder(path).apply(init)
+        return this
     }
 
     fun build(): Project = Project.of(units.map(UnitBuilder::build))

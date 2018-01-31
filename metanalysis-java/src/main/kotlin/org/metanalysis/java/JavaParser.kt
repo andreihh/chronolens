@@ -21,12 +21,29 @@ import org.eclipse.jdt.core.dom.AST
 import org.eclipse.jdt.core.dom.ASTParser
 import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.CompilationUnit
+import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.parsing.Parser
-import org.metanalysis.core.parsing.Result
-import org.metanalysis.core.parsing.SourceFile
 
 /** Java 8 language parser. */
-class JavaParser : Parser {
+class JavaParser : Parser() {
+    override val language: String get() = LANGUAGE
+
+    override fun canParse(path: String): Boolean = path.endsWith(".java")
+
+    override fun parse(path: String, rawSource: String): SourceUnit {
+        val options = JavaCore.getOptions()
+        JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
+        val jdtParser = ASTParser.newParser(AST.JLS9).apply {
+            setKind(K_COMPILATION_UNIT)
+            setCompilerOptions(options)
+            setIgnoreMethodBodies(true)
+            setSource(rawSource.toCharArray())
+        }
+        val compilationUnit = jdtParser.createAST(null) as CompilationUnit
+        return ParserContext(unitId = path, source = rawSource, parentId = "")
+            .visit(compilationUnit)
+    }
+
     companion object {
         /** The `Java` programming language supported by this parser. */
         const val LANGUAGE: String = "Java"
@@ -39,39 +56,6 @@ class JavaParser : Parser {
          */
         @JvmStatic
         fun String.toBlock(): List<String> =
-                lines().filter(String::isNotBlank).map(String::trim)
-    }
-
-    override val language: String
-        get() = LANGUAGE
-
-    override val pattern: Regex = Regex(".*\\.java")
-
-    private fun ASTParser.parse(path: String, source: String): Result = try {
-        val compilationUnit = createAST(null) as CompilationUnit
-        val sourceUnit = ParserContext(
-                unitId = path,
-                source = source,
-                parentId = ""
-        ).visit(compilationUnit)
-        Result.Success(sourceUnit)
-    } catch (e: SyntaxErrorException) {
-        Result.SyntaxError
-    } catch (e: NotImplementedError) {
-        Result.SyntaxError
-    }
-
-    override fun parse(sourceFile: SourceFile): Result {
-        val (path, source) = sourceFile
-        require(path.matches(pattern)) { "'$path' can't be interpreted!" }
-        val options = JavaCore.getOptions()
-        JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
-        val jdtParser = ASTParser.newParser(AST.JLS9).apply {
-            setKind(K_COMPILATION_UNIT)
-            setCompilerOptions(options)
-            setIgnoreMethodBodies(true)
-            setSource(source.toCharArray())
-        }
-        return jdtParser.parse(path, source)
+            lines().filter(String::isNotBlank).map(String::trim)
     }
 }

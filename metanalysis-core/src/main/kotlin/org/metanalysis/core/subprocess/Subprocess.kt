@@ -39,20 +39,19 @@ object Subprocess {
     })
 
     private fun InputStream.readText(): String =
-            reader().use(InputStreamReader::readText)
+        reader().use(InputStreamReader::readText)
 
     private fun <T> submit(task: () -> T): Future<T> = executor.submit(task)
 
     /**
-     * Executes the given `command` in a subprocess and returns its result.
+     * Executes the given [command] in a subprocess and returns its result.
      *
-     * The `command` output to `stdout` and `stderr` must be `UTF-8` encoded
+     * The [command]'s output to `stdout` and `stderr` must be `UTF-8` encoded
      * text.
      *
-     * @param command the command which should be executed
      * @return the parsed input from `stdout` (if the subprocess terminated
      * normally) or from `stderr` (if the subprocess terminated abnormally)
-     * @throws SubprocessException if the given `command` is invalid or if the
+     * @throws SubprocessException if the given [command] is invalid or if the
      * current thread is interrupted while waiting for the subprocess to
      * terminate or if any input related errors occur
      */

@@ -17,10 +17,6 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
-import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
-import org.metanalysis.core.model.SourceNode.SourceUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 

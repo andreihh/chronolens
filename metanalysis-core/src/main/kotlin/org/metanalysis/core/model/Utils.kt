@@ -20,19 +20,25 @@
 package org.metanalysis.core.model
 
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
-import org.metanalysis.core.model.SourceNode.SourceEntity
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
-import org.metanalysis.core.model.SourceNode.SourceUnit
 
 /** A hash map from ids to source nodes. */
 internal typealias NodeHashMap = HashMap<String, SourceNode>
 
-/** The id of the [SourceNode] which contains this entity. */
+/** The id of the [SourceNode] which contains [this] entity. */
 val SourceEntity.parentId: String
     get() = id.substringBeforeLast(ENTITY_SEPARATOR)
 
-/** The child source nodes contained in this source node. */
+/** The path of the [SourceUnit] which contains [this] node. */
+internal val SourceNode.sourcePath: String
+    get() = id.substringBefore(ENTITY_SEPARATOR)
+
+/**
+ * The path of the [SourceUnit] which contains the node affected by [this] edit.
+ */
+internal val ProjectEdit.sourcePath: String
+    get() = id.substringBefore(ENTITY_SEPARATOR)
+
+/** The child source nodes contained in [this] source node. */
 val SourceNode.children: Collection<SourceEntity>
     get() = when (this) {
         is SourceUnit -> entities
@@ -42,7 +48,8 @@ val SourceNode.children: Collection<SourceEntity>
     }
 
 /**
- * Returns all the source nodes contained in this source tree in top-down order.
+ * Returns all the source nodes contained in [this] source tree in top-down
+ * order.
  */
 fun SourceNode.walkSourceTree(): List<SourceNode> {
     val nodes = arrayListOf(this)
@@ -62,8 +69,8 @@ internal fun NodeHashMap.removeSourceTree(root: SourceNode) {
     this -= root.walkSourceTree().map(SourceNode::id)
 }
 
-internal fun buildVisit(units: Collection<SourceUnit>): NodeHashMap {
+internal fun buildVisit(sources: Iterable<SourceUnit>): NodeHashMap {
     val nodes = hashMapOf<String, SourceNode>()
-    units.forEach(nodes::putSourceTree)
+    sources.forEach(nodes::putSourceTree)
     return nodes
 }

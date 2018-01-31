@@ -17,7 +17,6 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-import org.metanalysis.core.model.ProjectEdit.EditType
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.editType
 import org.metanalysis.test.core.model.project

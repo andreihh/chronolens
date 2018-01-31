@@ -16,25 +16,22 @@
 
 package org.metanalysis.core.parsing
 
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.serialization.JsonException
 import org.metanalysis.core.serialization.JsonModule
 
-class ParserMock : Parser {
+class ParserMock : Parser() {
     companion object {
         const val LANGUAGE: String = "Mock"
     }
 
     override val language: String = LANGUAGE
-    override val pattern: Regex = Regex(".*\\.mock")
 
-    override fun parse(sourceFile: SourceFile): Result = try {
-        val (path, source) = sourceFile
-        require(path.matches(pattern)) { "'$path' can't be interpreted!" }
-        val unit = JsonModule.deserialize<SourceUnit>(source.byteInputStream())
-        if (unit.id != path) Result.SyntaxError
-        else Result.Success(unit)
+    override fun canParse(path: String): Boolean = path.endsWith(".mock")
+
+    override fun parse(path: String, rawSource: String): SourceUnit = try {
+        JsonModule.deserialize(rawSource.byteInputStream())
     } catch (e: JsonException) {
-        Result.SyntaxError
+        throw SyntaxErrorException(e)
     }
 }

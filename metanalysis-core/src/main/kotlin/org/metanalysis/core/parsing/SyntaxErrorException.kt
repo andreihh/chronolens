@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-package org.metanalysis.java
+package org.metanalysis.core.parsing
 
-import org.junit.runner.RunWith
-import org.junit.runners.Suite
-import org.junit.runners.Suite.SuiteClasses
-
-@RunWith(Suite::class)
-@SuiteClasses(
-        JavaParserClassTest::class,
-        JavaParserInterfaceTest::class,
-        JavaParserEnumTest::class,
-        JavaParserAnnotationTest::class,
-        JavaParserErrorTest::class,
-        JavaParserIntegrationTest::class
-)
-class JavaParserTestSuite
+/** Signals that a syntax error was encountered while parsing a source file. */
+class SyntaxErrorException : Exception {
+    constructor(message: String) : super(message)
+    constructor(cause: Throwable) : super(cause)
+}

@@ -16,25 +16,29 @@
 
 package org.metanalysis.test.core.model
 
+import org.metanalysis.core.model.Function
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 
 class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
     private var modifiers = setOf<String>()
     private val parameters = arrayListOf<VariableBuilder>()
     private val body = arrayListOf<String>()
 
-    fun modifiers(vararg modifiers: String) {
-        modifiers.groupBy { it }.forEach { (modifier, occurrences) ->
-            require(occurrences.size == 1) {
-                "Duplicated modifier '$modifier'!"
-            }
-        }
-        this.modifiers = modifiers.toSet()
+    fun modifiers(vararg modifiers: String): FunctionBuilder {
+        this.modifiers = modifiers.requireNoDuplicates()
+        return this
     }
 
-    fun parameter(name: String, init: VariableBuilder.() -> Unit) {
+    fun parameter(name: String, init: Init<VariableBuilder>): FunctionBuilder {
         parameters += VariableBuilder(name).apply(init)
+        return this
+    }
+
+    fun body(vararg bodyLines: String): FunctionBuilder {
+        body += bodyLines
+        return this
     }
 
     operator fun String.unaryPlus() {

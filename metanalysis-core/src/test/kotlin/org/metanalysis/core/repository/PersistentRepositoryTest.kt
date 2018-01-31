@@ -26,8 +26,8 @@ import kotlin.test.fail
 
 class PersistentRepositoryTest : RepositoryTest() {
     override fun createRepository(): PersistentRepository =
-            InteractiveRepository.connect()?.persist()
-                    ?: fail("Couldn't connect to VCS repository!")
+        InteractiveRepository.connect()?.persist()
+            ?: fail("Couldn't connect to VCS repository!")
 
     @Test fun `test load after clean returns null`() {
         PersistentRepository.clean()
@@ -37,7 +37,7 @@ class PersistentRepositoryTest : RepositoryTest() {
     @Test fun `test load returns equal repository`() {
         val expected = repository
         val actual = PersistentRepository.load()
-                ?: fail("Couldn't load persisted repository!")
+            ?: fail("Couldn't load persisted repository!")
         assertEquals(expected, actual)
     }
 

@@ -39,5 +39,5 @@ class VcsProxyFactoryMock : VcsProxyFactory() {
     override fun isSupported(): Boolean = true
 
     override fun createProxy(): VcsProxy? =
-            if (isInitialized) VcsProxyMock(revisions) else null
+        if (isInitialized) VcsProxyMock(revisions) else null
 }

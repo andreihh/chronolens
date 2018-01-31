@@ -17,11 +17,12 @@
 package org.metanalysis.core.versioning
 
 data class RevisionMock(
-        val id: String,
-        val date: Long,
-        val author: String,
-        val changeSet: Map<String, String?>
+    val id: String,
+    val date: Long,
+    val author: String,
+    val changeSet: Map<String, String?>
 ) {
+
     init {
         require(date >= 0) { "Date '$date' can't be negative!" }
     }

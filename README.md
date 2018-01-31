@@ -96,7 +96,7 @@ There are three ways to process data from a repository:
 ```java
 // Process all sources individually.
 for (final String path : repository.listSources()) {
-    final SourceUnit sourceUnit = repository.getSourceUnit(path);
+    final SourceUnit sourceUnit = repository.getSource(path);
     // ...
 }
 

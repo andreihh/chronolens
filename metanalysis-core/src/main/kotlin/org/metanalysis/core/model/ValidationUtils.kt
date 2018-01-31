@@ -21,11 +21,6 @@ package org.metanalysis.core.model
 
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.SourceNode.Companion.PATH_SEPARATOR
-import org.metanalysis.core.model.SourceNode.SourceEntity
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
-import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
-import org.metanalysis.core.model.SourceNode.SourceUnit
 
 private val separators = "$PATH_SEPARATOR$ENTITY_SEPARATOR"
 private val identifier = Regex("(?>[^$separators()]++)")
@@ -35,7 +30,7 @@ private val unit = Regex("$identifier($PATH_SEPARATOR$identifier)*+")
 private val type = Regex("$unit($ENTITY_SEPARATOR$identifier)+?")
 private val function = Regex("($type|$unit)$ENTITY_SEPARATOR$signature")
 private val variable =
-        Regex("($function|$type|$unit)$ENTITY_SEPARATOR$identifier")
+    Regex("($function|$type|$unit)$ENTITY_SEPARATOR$identifier")
 
 private val entity = Regex("$function|$type|$variable")
 private val node = Regex("$unit|$entity")
@@ -60,10 +55,9 @@ internal fun SourceNode.validateChildrenIds() {
 }
 
 /**
- * Validates the given [SourceNode] `id`.
+ * Validates the given [SourceNode] [id].
  *
- * @param id the id which should be validated
- * @throws IllegalArgumentException if the given `id` is not a valid source node
+ * @throws IllegalArgumentException if the given [id] is not a valid source node
  * id
  */
 internal fun validateNodeId(id: String) {
@@ -71,10 +65,9 @@ internal fun validateNodeId(id: String) {
 }
 
 /**
- * Validates the given [SourceEntity] `id`.
+ * Validates the given [SourceEntity] [id].
  *
- * @param id the id which should be validated
- * @throws IllegalArgumentException if the given `id` is not a valid source
+ * @throws IllegalArgumentException if the given [id] is not a valid source
  * entity id
  */
 internal fun validateEntityId(id: String) {
@@ -82,10 +75,9 @@ internal fun validateEntityId(id: String) {
 }
 
 /**
- * Validates the given [SourceUnit] `id`.
+ * Validates the given [SourceUnit] [id].
  *
- * @param id the id which should be validated
- * @throws IllegalArgumentException if the given `id` is not a valid source unit
+ * @throws IllegalArgumentException if the given [id] is not a valid source unit
  * id
  */
 internal fun validateUnitId(id: String) {
@@ -93,30 +85,27 @@ internal fun validateUnitId(id: String) {
 }
 
 /**
- * Validates the given [Type] `id`.
+ * Validates the given [Type] [id].
  *
- * @param id the id which should be validated
- * @throws IllegalArgumentException if the given `id` is not a valid type id
+ * @throws IllegalArgumentException if the given [id] is not a valid type id
  */
 internal fun validateTypeId(id: String) {
     require(id.matches(type)) { "Invalid type id '$id'!" }
 }
 
 /**
- * Validates the given [Function] `id`.
+ * Validates the given [Function] [id].
  *
- * @param id the id which should be validated
- * @throws IllegalArgumentException if the given `id` is not a valid function id
+ * @throws IllegalArgumentException if the given [id] is not a valid function id
  */
 internal fun validateFunctionId(id: String) {
     require(id.matches(function)) { "Invalid function id '$id'!" }
 }
 
 /**
- * Validates the given [Variable] `id`.
+ * Validates the given [Variable] [id].
  *
- * @param id the id which should be validated
- * @throws IllegalArgumentException if the given `id` is not a valid variable id
+ * @throws IllegalArgumentException if the given [id] is not a valid variable id
  */
 internal fun validateVariableId(id: String) {
     require(id.matches(variable)) { "Invalid variable id '$id'!" }

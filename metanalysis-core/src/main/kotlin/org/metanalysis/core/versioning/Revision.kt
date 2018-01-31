@@ -23,7 +23,7 @@ package org.metanalysis.core.versioning
  * @property date the date at which this revision was committed in milliseconds
  * since the Unix epoch
  * @property author the author of this revision
- * @throws IllegalArgumentException if `date` is negative
+ * @throws IllegalArgumentException if [date] is negative
  */
 data class Revision(val id: String, val date: Long, val author: String) {
     init {

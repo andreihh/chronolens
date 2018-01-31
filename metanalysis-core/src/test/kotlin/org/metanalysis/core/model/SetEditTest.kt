@@ -57,14 +57,7 @@ class SetEditTest {
     @Test fun `test chained edits`() {
         val expected = setOf(1, 2, 3, 4, 6, 7)
         val actual = setOf(1, 4).apply(
-                Remove(4),
-                Add(2),
-                Add(3),
-                Add(4),
-                Add(5),
-                Add(6),
-                Add(7),
-                Remove(5)
+            Remove(4), Add(2), Add(3), Add(4), Add(5), Add(6), Add(7), Remove(5)
         )
         assertEquals(expected, actual)
     }

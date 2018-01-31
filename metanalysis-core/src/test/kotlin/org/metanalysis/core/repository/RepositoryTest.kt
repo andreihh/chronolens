@@ -98,17 +98,17 @@ abstract class RepositoryTest {
         val expected = sourceUnit("src/Main.mock") {
             type("Main") {}
         }
-        val actual = repository.getSourceUnit("src/Main.mock")
+        val actual = repository.getSource("src/Main.mock")
         assertEquals(expected, actual)
     }
 
     @Test fun `test get non-existing source unit returns null`() {
-        val actual = repository.getSourceUnit("src/Test.mock")
+        val actual = repository.getSource("src/Test.mock")
         assertNull(actual)
     }
 
     @Test fun `test get non-parsable source unit returns null`() {
-        val actual = repository.getSourceUnit("README.md")
+        val actual = repository.getSource("README.md")
         assertNull(actual)
     }
 
@@ -116,13 +116,13 @@ abstract class RepositoryTest {
         val expected = sourceUnit("src/Worksheet.mock") {
             function("println()") {}
         }
-        val actual = repository.getSourceUnit("src/Worksheet.mock")
+        val actual = repository.getSource("src/Worksheet.mock")
         assertEquals(expected, actual)
     }
 
     @Test fun `test get invalid source unit with no history returns empty`() {
         val expected = sourceUnit("src/Error.mock") {}
-        val actual = repository.getSourceUnit("src/Error.mock")
+        val actual = repository.getSource("src/Error.mock")
         assertEquals(expected, actual)
     }
 

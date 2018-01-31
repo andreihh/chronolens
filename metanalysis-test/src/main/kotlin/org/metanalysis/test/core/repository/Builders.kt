@@ -18,12 +18,11 @@ package org.metanalysis.test.core.repository
 
 import org.metanalysis.core.repository.Repository
 import org.metanalysis.core.repository.Transaction
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 
-inline fun transaction(
-        id: String,
-        init: TransactionBuilder.() -> Unit
-): Transaction = TransactionBuilder(id).apply(init).build()
+fun transaction(id: String, init: Init<TransactionBuilder>): Transaction =
+    TransactionBuilder(id).apply(init).build()
 
-inline fun repository(init: RepositoryBuilder.() -> Unit): Repository =
-        RepositoryBuilder().apply(init).build()
-
+fun repository(init: Init<RepositoryBuilder>): Repository =
+    RepositoryBuilder().apply(init).build()

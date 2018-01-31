@@ -31,22 +31,25 @@ import org.eclipse.jdt.core.dom.Type
 import org.eclipse.jdt.core.dom.TypeDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment
+import org.metanalysis.core.parsing.SyntaxErrorException
 
 internal fun <T> Collection<T>.requireDistinct(): Set<T> {
-    val unique = toSet()
-    if (size != unique.size) {
-        throw SyntaxErrorException()
+    val unique = linkedSetOf<T>()
+    for (element in this) {
+        if (element in unique) {
+            throw SyntaxErrorException("Duplicated element '$element'!")
+        }
+        unique += element
     }
     return unique
 }
 
-internal inline fun <reified T> List<*>.requireIsInstance(): List<T> {
-    if (any { it !is T }) {
-        throw SyntaxErrorException()
+@Suppress("UNCHECKED_CAST")
+internal inline fun <reified T> List<*>.requireIsInstance(): List<T> = onEach {
+    if (it !is T) {
+        throw SyntaxErrorException("'$it' is not of type '${T::class}'!")
     }
-    @Suppress("UNCHECKED_CAST")
-    return this as List<T>
-}
+} as List<T>
 
 internal fun AbstractTypeDeclaration.supertypes(): List<Type> = when (this) {
     is AnnotationTypeDeclaration -> emptyList()
@@ -56,7 +59,7 @@ internal fun AbstractTypeDeclaration.supertypes(): List<Type> = when (this) {
 }.requireIsInstance<Type?>().filterNotNull()
 
 private fun List<*>.toModifiers(): List<ASTNode> =
-        requireIsInstance<IExtendedModifier>().requireIsInstance()
+    requireIsInstance<IExtendedModifier>().requireIsInstance()
 
 internal fun AbstractTypeDeclaration.getTypeModifier(): String = when (this) {
     is AnnotationTypeDeclaration -> "@interface"
@@ -66,19 +69,21 @@ internal fun AbstractTypeDeclaration.getTypeModifier(): String = when (this) {
 }
 
 internal fun getModifiers(variable: VariableDeclaration): List<ASTNode> =
-        when (variable) {
-            is SingleVariableDeclaration -> variable.modifiers().toModifiers()
-            is VariableDeclarationFragment ->
-                (variable.parent as? FieldDeclaration)
-                        ?.modifiers()?.toModifiers() ?: emptyList()
-            else -> throw AssertionError("Unknown variable '$variable'!")
-        }
+    when (variable) {
+        is SingleVariableDeclaration -> variable.modifiers().toModifiers()
+        is VariableDeclarationFragment ->
+            (variable.parent as? FieldDeclaration)
+                ?.modifiers()
+                ?.toModifiers()
+                ?: emptyList()
+        else -> throw AssertionError("Unknown variable '$variable'!")
+    }
 
 internal fun getModifiers(type: AbstractTypeDeclaration): List<ASTNode> =
-        type.modifiers().toModifiers()
+    type.modifiers().toModifiers()
 
 internal fun getModifiers(method: MethodDeclaration): List<ASTNode> =
-        method.modifiers().toModifiers()
+    method.modifiers().toModifiers()
 
 /**
  * Returns the list of all members of this type.
@@ -112,6 +117,6 @@ internal fun VariableDeclaration.name(): String = name.identifier
 
 internal fun requireNotMalformed(node: ASTNode) {
     if ((node.flags and (ASTNode.MALFORMED or ASTNode.RECOVERED)) != 0) {
-        throw SyntaxErrorException()
+        throw SyntaxErrorException("Malformed AST node!")
     }
 }

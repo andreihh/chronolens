@@ -21,7 +21,7 @@ class SubprocessException : RuntimeException {
     constructor(cause: Throwable) : super(cause)
 
     constructor(
-            exitValue: Int,
-            message: String
+        exitValue: Int,
+        message: String
     ) : super("Subprocess exited with code $exitValue: $message")
 }

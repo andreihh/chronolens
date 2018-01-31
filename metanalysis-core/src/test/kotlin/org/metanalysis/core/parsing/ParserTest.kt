@@ -23,16 +23,6 @@ import kotlin.test.assertNull
 import kotlin.test.fail
 
 class ParserTest {
-    @Test fun `test get provided parser by language returns implementation`() {
-        val parser = Parser.getParserByLanguage(ParserMock.LANGUAGE)
-        assertEquals(ParserMock.LANGUAGE, parser?.language)
-    }
-
-    @Test fun `test get provided parser returns implementation`() {
-        val parser = Parser.getParser("Test.mock")
-        assertEquals(ParserMock.LANGUAGE, parser?.language)
-    }
-
     @Test fun `test get unprovided parser by language returns null`() {
         assertNull(Parser.getParserByLanguage("Java"))
     }
@@ -47,14 +37,14 @@ class ParserTest {
 
     @Test fun `test parse source with errors throws`() {
         val sourceFile =
-                SourceFile(path = "res.mock", rawContent = "{ \"invalid\":2")
+            SourceFile(path = "res.mock", rawContent = "{ \"invalid\":2")
         val result = Parser.parse(sourceFile)
         assertEquals(Result.SyntaxError, result )
     }
 
     @Test fun `test parse invalid path throws`() {
         val parser = Parser.getParserByLanguage(ParserMock.LANGUAGE)
-                ?: fail("Parser not provided!")
+            ?: fail("Parser not provided!")
         val sourceFile = SourceFile(path = "res.moc", rawContent = "{}")
         assertFailsWith<IllegalArgumentException> {
             parser.parse(sourceFile)

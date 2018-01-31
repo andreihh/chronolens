@@ -16,27 +16,28 @@
 
 package org.metanalysis.test.core.model
 
+import org.metanalysis.core.model.EditVariable
 import org.metanalysis.core.model.ListEdit
-import org.metanalysis.core.model.ProjectEdit.EditVariable
 import org.metanalysis.core.model.SetEdit
+import org.metanalysis.test.core.BuilderMarker
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 
-@ModelBuilderMarker
+@BuilderMarker
 class EditVariableBuilder(private val id: String) {
     private val modifierEdits = arrayListOf<SetEdit<String>>()
     private val initializerEdits = arrayListOf<ListEdit<String>>()
 
-    fun modifiers(init: SetEditsBuilder<String>.() -> Unit) {
-        val setEditsBuilder = SetEditsBuilder<String>()
-        setEditsBuilder.init()
-        modifierEdits += setEditsBuilder.build()
+    fun modifiers(init: Init<SetEditsBuilder<String>>): EditVariableBuilder {
+        modifierEdits += SetEditsBuilder<String>().apply(init).build()
+        return this
     }
 
-    fun initializer(init: ListEditsBuilder<String>.() -> Unit) {
-        val listEditsBuilder = ListEditsBuilder<String>()
-        listEditsBuilder.init()
-        initializerEdits += listEditsBuilder.build()
+    fun initializer(init: Init<ListEditsBuilder<String>>): EditVariableBuilder {
+        initializerEdits += ListEditsBuilder<String>().apply(init).build()
+        return this
     }
 
     fun build(): EditVariable =
-            EditVariable(id, modifierEdits, initializerEdits)
+        EditVariable(id, modifierEdits, initializerEdits)
 }

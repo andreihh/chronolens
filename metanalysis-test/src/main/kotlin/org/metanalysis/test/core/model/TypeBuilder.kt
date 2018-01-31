@@ -17,50 +17,49 @@
 package org.metanalysis.test.core.model
 
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
+import org.metanalysis.core.model.Type
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 
 class TypeBuilder(private val name: String) : EntityBuilder<Type> {
     private var modifiers = setOf<String>()
     private var supertypes = setOf<String>()
     private val members = arrayListOf<EntityBuilder<*>>()
 
-    fun modifiers(vararg modifiers: String) {
-        modifiers.groupBy { it }.forEach { (modifier, occurrences) ->
-            require(occurrences.size == 1) {
-                "Duplicated modifier '$modifier'!"
-            }
-        }
-        this.modifiers = modifiers.toSet()
+    private inline fun <reified T : EntityBuilder<*>> addMember(
+        simpleId: String,
+        init: Init<T>
+    ): TypeBuilder {
+        members += newBuilder<T>(simpleId).apply(init)
+        return this
     }
 
-    fun supertypes(vararg supertypes: String) {
-        supertypes.groupBy { it }.forEach { (supertype, occurrences) ->
-            require(occurrences.size == 1) {
-                "Duplicated supertype '$supertype'!"
-            }
-        }
-        this.supertypes = supertypes.toSet()
+    fun modifiers(vararg modifiers: String): TypeBuilder {
+        this.modifiers = modifiers.requireNoDuplicates()
+        return this
     }
 
-    fun type(name: String, init: TypeBuilder.() -> Unit) {
-        members += TypeBuilder(name).apply(init)
+    fun supertypes(vararg supertypes: String): TypeBuilder {
+        this.supertypes = supertypes.requireNoDuplicates()
+        return this
     }
 
-    fun function(signature: String, init: FunctionBuilder.() -> Unit) {
-        members += FunctionBuilder(signature).apply(init)
-    }
+    fun type(name: String, init: Init<TypeBuilder>): TypeBuilder =
+        addMember(name, init)
 
-    fun variable(name: String, init: VariableBuilder.() -> Unit) {
-        members += VariableBuilder(name).apply(init)
-    }
+    fun function(signature: String, init: Init<FunctionBuilder>): TypeBuilder =
+        addMember(signature, init)
+
+    fun variable(name: String, init: Init<VariableBuilder>): TypeBuilder =
+        addMember(name, init)
 
     override fun build(parentId: String): Type {
         val id = "$parentId$ENTITY_SEPARATOR$name"
         return Type(
-                id = id,
-                modifiers = modifiers,
-                supertypes = supertypes,
-                members = members.map { it.build(id) }
+            id = id,
+            modifiers = modifiers,
+            supertypes = supertypes,
+            members = members.map { it.build(id) }
         )
     }
 }

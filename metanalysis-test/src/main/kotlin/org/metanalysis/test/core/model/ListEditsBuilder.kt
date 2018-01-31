@@ -21,12 +21,14 @@ import org.metanalysis.core.model.ListEdit
 class ListEditsBuilder<T> {
     private val listEdits = arrayListOf<ListEdit<T>>()
 
-    fun add(index: Int, value: T) {
+    fun add(index: Int, value: T): ListEditsBuilder<T> {
         listEdits += ListEdit.Add(index, value)
+        return this
     }
 
-    fun remove(index: Int) {
+    fun remove(index: Int): ListEditsBuilder<T> {
         listEdits += ListEdit.Remove(index)
+        return this
     }
 
     fun build(): List<ListEdit<T>> = listEdits

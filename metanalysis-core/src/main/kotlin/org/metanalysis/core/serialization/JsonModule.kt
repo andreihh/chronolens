@@ -28,19 +28,19 @@ import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.OBJECT_AND_NON_
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import org.metanalysis.core.model.AddNode
 import org.metanalysis.core.model.Edit
+import org.metanalysis.core.model.EditFunction
+import org.metanalysis.core.model.EditType
+import org.metanalysis.core.model.EditVariable
+import org.metanalysis.core.model.Function
 import org.metanalysis.core.model.ListEdit
-import org.metanalysis.core.model.ProjectEdit.AddNode
-import org.metanalysis.core.model.ProjectEdit.EditFunction
-import org.metanalysis.core.model.ProjectEdit.EditType
-import org.metanalysis.core.model.ProjectEdit.EditVariable
-import org.metanalysis.core.model.ProjectEdit.RemoveNode
+import org.metanalysis.core.model.RemoveNode
 import org.metanalysis.core.model.SetEdit
 import org.metanalysis.core.model.SourceNode
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
-import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.Type
+import org.metanalysis.core.model.Variable
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -49,49 +49,49 @@ import java.io.OutputStream
 object JsonModule {
     private val typeIdResolver = object : TypeIdResolverBase() {
         private val typeToId = mapOf(
-                SourceUnit::class.java to "SourceUnit",
-                Type::class.java to "Type",
-                Function::class.java to "Function",
-                Variable::class.java to "Variable",
-                ListEdit.Add::class.java to "List.Add",
-                ListEdit.Remove::class.java to "List.Remove",
-                SetEdit.Add::class.java to "Set.Add",
-                SetEdit.Remove::class.java to "Set.Remove",
-                AddNode::class.java to "AddNode",
-                RemoveNode::class.java to "RemoveNode",
-                EditType::class.java to "EditType",
-                EditFunction::class.java to "EditFunction",
-                EditVariable::class.java to "EditVariable"
+            SourceUnit::class.java to "SourceUnit",
+            Type::class.java to "Type",
+            Function::class.java to "Function",
+            Variable::class.java to "Variable",
+            ListEdit.Add::class.java to "List.Add",
+            ListEdit.Remove::class.java to "List.Remove",
+            SetEdit.Add::class.java to "Set.Add",
+            SetEdit.Remove::class.java to "Set.Remove",
+            AddNode::class.java to "AddNode",
+            RemoveNode::class.java to "RemoveNode",
+            EditType::class.java to "EditType",
+            EditFunction::class.java to "EditFunction",
+            EditVariable::class.java to "EditVariable"
         )
 
         private val idToType = typeToId.map { (type, id) -> id to type }.toMap()
 
         override fun idFromValueAndType(
-                value: Any?,
-                suggestedType: Class<*>
+            value: Any?,
+            suggestedType: Class<*>
         ): String = typeToId.getValue(suggestedType)
 
         override fun idFromValue(value: Any): String =
-                typeToId.getValue(value.javaClass)
+            typeToId.getValue(value.javaClass)
 
         override fun typeFromId(
-                context: DatabindContext,
-                id: String
+            context: DatabindContext,
+            id: String
         ): JavaType = context.typeFactory.constructType(idToType.getValue(id))
 
         override fun getMechanism(): JsonTypeInfo.Id = JsonTypeInfo.Id.NAME
     }.apply { init(null) }
 
     private val typeResolver =
-            object : DefaultTypeResolverBuilder(OBJECT_AND_NON_CONCRETE) {
-                private val abstractTypes =
-                        listOf(SourceNode::class.java, Edit::class.java)
+        object : DefaultTypeResolverBuilder(OBJECT_AND_NON_CONCRETE) {
+            private val abstractTypes =
+                listOf(SourceNode::class.java, Edit::class.java)
 
-                override fun useForType(t: JavaType): Boolean =
-                        abstractTypes.any { it.isAssignableFrom(t.rawClass) }
-            }.init(JsonTypeInfo.Id.NAME, typeIdResolver)
-                    .inclusion(JsonTypeInfo.As.PROPERTY)
-                    .typeProperty("@class")
+            override fun useForType(t: JavaType): Boolean =
+                abstractTypes.any { it.isAssignableFrom(t.rawClass) }
+        }.init(JsonTypeInfo.Id.NAME, typeIdResolver)
+            .inclusion(JsonTypeInfo.As.PROPERTY)
+            .typeProperty("@class")
 
     private val objectMapper = jacksonObjectMapper().apply {
         setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
@@ -102,10 +102,8 @@ object JsonModule {
     }
 
     /**
-     * Serializes the given object to the given stream.
+     * Serializes the given [value] object to the given [out] stream.
      *
-     * @param out the stream to which the object is serialized
-     * @param value the object which should be serialized
      * @throws JsonException if there are any serialization errors
      * @throws IOException if there are any output related errors
      */
@@ -120,12 +118,9 @@ object JsonModule {
     }
 
     /**
-     * Deserializes an object of the given `type` from the given stream.
+     * Deserializes an object of the given non-generic [type] from the given
+     * [src] stream.
      *
-     * @param T the type of the deserialized object; must not be generic
-     * @param src the stream from which the object is deserialized
-     * @param type the class object of the deserialized object
-     * @return the deserialized object
      * @throws JsonException if there are any deserialization errors
      * @throws IOException if there are any input related errors
      */
@@ -139,6 +134,7 @@ object JsonModule {
 
     /** Inline utility method. */
     @Throws(IOException::class)
+    @JvmStatic
     inline fun <reified T : Any> deserialize(src: InputStream): T =
-            deserialize(src, T::class.java)
+        deserialize(src, T::class.java)
 }

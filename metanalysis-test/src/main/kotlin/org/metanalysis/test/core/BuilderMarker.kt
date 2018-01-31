@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-package org.metanalysis.git
+package org.metanalysis.test.core
 
-import org.junit.runner.RunWith
-import org.junit.runners.Suite
-import org.junit.runners.Suite.SuiteClasses
-
-@RunWith(Suite::class)
-@SuiteClasses(
-        GitProxyWithNoRepositoryTest::class,
-        GitProxyWithEmptyRepositoryTest::class,
-        GitProxyWithRepositoryTest::class
-)
-class GitProxyTestSuite
+@DslMarker
+internal annotation class BuilderMarker

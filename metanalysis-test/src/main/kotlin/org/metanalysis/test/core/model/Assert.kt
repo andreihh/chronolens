@@ -19,15 +19,15 @@
 package org.metanalysis.test.core.model
 
 import org.metanalysis.core.model.Project
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
 import kotlin.test.assertEquals as assertEqualsKt
 
 fun assertEquals(
-        expected: Project?,
-        actual: Project?,
-        message: String? = null
+    expected: Project?,
+    actual: Project?,
+    message: String? = null
 ) {
-    val expectedUnits = expected?.units?.toList()?.sortedBy(SourceUnit::id)
-    val actualUnits = actual?.units?.toList()?.sortedBy(SourceUnit::id)
+    val expectedUnits = expected?.sources?.toList()?.sortedBy(SourceUnit::id)
+    val actualUnits = actual?.sources?.toList()?.sortedBy(SourceUnit::id)
     assertEqualsKt(expectedUnits, actualUnits, message)
 }

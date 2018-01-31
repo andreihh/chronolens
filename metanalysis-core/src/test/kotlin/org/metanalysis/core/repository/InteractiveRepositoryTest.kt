@@ -22,8 +22,8 @@ import kotlin.test.fail
 
 class InteractiveRepositoryTest : RepositoryTest() {
     override fun createRepository(): InteractiveRepository =
-            InteractiveRepository.connect()
-                    ?: fail("Couldn't connect to VCS repository!")
+        InteractiveRepository.connect()
+            ?: fail("Couldn't connect to VCS repository!")
 
     @Test fun `test connect with empty repository returns null`() {
         resetVcsRepository()

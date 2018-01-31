@@ -26,10 +26,10 @@ import kotlin.test.assertFailsWith
 
 class ListEditTest {
     private fun String.apply(edits: List<ListEdit<Char>>): String =
-            toList().apply(edits).joinToString(separator = "")
+        toList().apply(edits).joinToString(separator = "")
 
     private fun String.apply(vararg edits: ListEdit<Char>): String =
-            toList().apply(*edits).joinToString(separator = "")
+        toList().apply(*edits).joinToString(separator = "")
 
     private fun assertDiff(src: String, dst: String) {
         assertEquals(dst, src.apply(src.toList().diff(dst.toList())))
@@ -105,21 +105,21 @@ class ListEditTest {
     @Test fun `test chained edits`() {
         val expected = "republican"
         val actual = "democrats".apply(
-                Remove(8), // democrat
-                Remove(7), // democra
-                Add(index = 7, value = 'n'), // democran
-                Remove(5), // democan
-                Add(index = 5, value = 'c'), // democcan
-                Remove(4), // democan
-                Add(index = 4, value = 'i'), // demoican
-                Remove(3), // demican
-                Add(index = 3, value = 'l'), // demlican
-                Remove(2), // delican
-                Add(index = 2, value = 'b'), // deblican
-                Add(index = 2, value = 'u'), // deublican
-                Add(index = 2, value = 'p'), // depublican
-                Remove(0), // epublican
-                Add(index = 0, value = 'r') // republican
+            Remove(8), // democrat
+            Remove(7), // democra
+            Add(index = 7, value = 'n'), // democran
+            Remove(5), // democan
+            Add(index = 5, value = 'c'), // democcan
+            Remove(4), // democan
+            Add(index = 4, value = 'i'), // demoican
+            Remove(3), // demican
+            Add(index = 3, value = 'l'), // demlican
+            Remove(2), // delican
+            Add(index = 2, value = 'b'), // deblican
+            Add(index = 2, value = 'u'), // deublican
+            Add(index = 2, value = 'p'), // depublican
+            Remove(0), // epublican
+            Add(index = 0, value = 'r') // republican
         )
         assertEquals(expected, actual)
     }

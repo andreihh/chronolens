@@ -16,7 +16,7 @@
 
 package org.metanalysis.core.parsing
 
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
 
 /** The result from parsing a source file. */
 sealed class Result {

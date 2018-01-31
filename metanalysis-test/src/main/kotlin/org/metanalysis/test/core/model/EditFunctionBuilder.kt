@@ -16,34 +16,34 @@
 
 package org.metanalysis.test.core.model
 
+import org.metanalysis.core.model.EditFunction
 import org.metanalysis.core.model.ListEdit
-import org.metanalysis.core.model.ProjectEdit.EditFunction
 import org.metanalysis.core.model.SetEdit
+import org.metanalysis.test.core.BuilderMarker
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 
-@ModelBuilderMarker
+@BuilderMarker
 class EditFunctionBuilder(private val id: String) {
     private val modifierEdits = arrayListOf<SetEdit<String>>()
     private val parameterEdits = arrayListOf<ListEdit<String>>()
     private val bodyEdits = arrayListOf<ListEdit<String>>()
 
-    fun modifiers(init: SetEditsBuilder<String>.() -> Unit) {
-        val setEditsBuilder = SetEditsBuilder<String>()
-        setEditsBuilder.init()
-        modifierEdits += setEditsBuilder.build()
+    fun modifiers(init: Init<SetEditsBuilder<String>>): EditFunctionBuilder {
+        modifierEdits += SetEditsBuilder<String>().apply(init).build()
+        return this
     }
 
-    fun parameters(init: ListEditsBuilder<String>.() -> Unit) {
-        val listEditsBuilder = ListEditsBuilder<String>()
-        listEditsBuilder.init()
-        parameterEdits += listEditsBuilder.build()
+    fun parameters(init: Init<ListEditsBuilder<String>>): EditFunctionBuilder {
+        parameterEdits += ListEditsBuilder<String>().apply(init).build()
+        return this
     }
 
-    fun body(init: ListEditsBuilder<String>.() -> Unit) {
-        val listEditsBuilder = ListEditsBuilder<String>()
-        listEditsBuilder.init()
-        bodyEdits += listEditsBuilder.build()
+    fun body(init: Init<ListEditsBuilder<String>>): EditFunctionBuilder {
+        bodyEdits += ListEditsBuilder<String>().apply(init).build()
+        return this
     }
 
     fun build(): EditFunction =
-            EditFunction(id, modifierEdits, parameterEdits, bodyEdits)
+        EditFunction(id, modifierEdits, parameterEdits, bodyEdits)
 }

@@ -16,7 +16,7 @@
 
 package org.metanalysis.core.parsing
 
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.model.validateUnitId
 
 /**
@@ -24,7 +24,7 @@ import org.metanalysis.core.model.validateUnitId
  *
  * @property path the path of the source file
  * @property rawContent the `UTF-8` encoded content of the file
- * @throws IllegalArgumentException if the given `path` is not a valid
+ * @throws IllegalArgumentException if the given [path] is not a valid
  * [SourceUnit] path
  */
 data class SourceFile(val path: String, val rawContent: String) {

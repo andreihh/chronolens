@@ -25,89 +25,89 @@ import org.eclipse.jdt.core.dom.Initializer
 import org.eclipse.jdt.core.dom.MethodDeclaration
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
+import org.metanalysis.core.model.Function
+import org.metanalysis.core.model.SourceEntity
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
-import org.metanalysis.core.model.SourceNode.SourceEntity
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
-import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.Type
+import org.metanalysis.core.model.Variable
 import org.metanalysis.java.JavaParser.Companion.toBlock
 
 internal data class ParserContext(
-        private val unitId: String,
-        private val source: String,
-        private val parentId: String
+    private val unitId: String,
+    private val source: String,
+    private val parentId: String
 ) {
+
     private fun ASTNode.toSource(): String =
-            source.substring(startPosition, startPosition + length)
+        source.substring(startPosition, startPosition + length)
 
     private fun List<ASTNode>.toSupertypeSet(): Set<String> =
-            map { it.toSource() }.requireDistinct()
+        map { it.toSource() }.requireDistinct()
 
     private fun List<ASTNode>.toModifierSet(): Set<String> =
-            map { it.toSource() }.requireDistinct()
+        map { it.toSource() }.requireDistinct()
 
     // TODO: fix if javadoc contains `{`
     private fun MethodDeclaration.body(): List<String> =
-            toSource().dropWhile { it != '{' }.toBlock()
+        toSource().dropWhile { it != '{' }.toBlock()
 
     // TODO: fix if javadoc contains `=`
     private fun VariableDeclaration.initializer(): List<String> =
-            toSource().substringAfter(
-                    delimiter = '=',
-                    missingDelimiterValue = ""
-            ).toBlock()
+        toSource()
+            .substringAfter(delimiter = '=', missingDelimiterValue = "")
+            .toBlock()
 
     private fun EnumConstantDeclaration.initializer(): List<String> =
-            toSource().toBlock()
+        toSource().toBlock()
 
     private fun AnnotationTypeMemberDeclaration.defaultValue(): List<String> =
-            default?.toSource()?.toBlock() ?: emptyList()
+        default?.toSource()?.toBlock() ?: emptyList()
 
     private fun getEntityId(simpleId: String): String =
-            "$parentId$ENTITY_SEPARATOR$simpleId"
+        "$parentId$ENTITY_SEPARATOR$simpleId"
 
     private fun visit(node: AbstractTypeDeclaration): Type {
         requireNotMalformed(node)
         val id = getEntityId(node.name())
         val childContext = copy(parentId = id)
-        val members = node.members().map { member ->
+        val members = node.members().mapNotNull { member ->
             when (member) {
                 is AbstractTypeDeclaration -> childContext.visit(member)
                 is AnnotationTypeMemberDeclaration -> childContext.visit(member)
                 is EnumConstantDeclaration -> childContext.visit(member)
                 is VariableDeclaration -> childContext.visit(member)
                 is MethodDeclaration -> childContext.visit(member)
-                is Initializer -> TODO("Can't parse initializers!")
+                is Initializer -> null // TODO: parse initializers
                 else -> throw AssertionError("Unknown declaration $member!")
             }
         }
         members.map(SourceEntity::id).requireDistinct()
         val modifiers =
-                getModifiers(node).toModifierSet() + node.getTypeModifier()
+            getModifiers(node).toModifierSet() + node.getTypeModifier()
         return Type(
-                id = id,
-                supertypes = node.supertypes().toSupertypeSet(),
-                modifiers = modifiers,
-                members = members
+            id = id,
+            supertypes = node.supertypes().toSupertypeSet(),
+            modifiers = modifiers,
+            members = members
         )
     }
 
     private fun visit(node: AnnotationTypeMemberDeclaration): Variable {
         requireNotMalformed(node)
         return Variable(
-                id = getEntityId(node.name()),
-                modifiers = emptySet(),
-                initializer = node.defaultValue()
+            id = getEntityId(node.name()),
+            modifiers = emptySet(),
+            initializer = node.defaultValue()
         )
     }
 
     private fun visit(node: EnumConstantDeclaration): Variable {
         requireNotMalformed(node)
         return Variable(
-                id = getEntityId(node.name()),
-                modifiers = emptySet(),
-                initializer = node.initializer()
+            id = getEntityId(node.name()),
+            modifiers = emptySet(),
+            initializer = node.initializer()
         )
     }
 

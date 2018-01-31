@@ -32,19 +32,21 @@ import kotlin.test.fail
 class GitProxyWithRepositoryTest {
     companion object {
         @BeforeClass
-        @JvmStatic fun cloneRepository() {
+        @JvmStatic
+        fun cloneRepository() {
             val url = "https://github.com/andreihh/metanalysis.git"
             execute("git", "clone", url, "./")
         }
 
         @AfterClass
-        @JvmStatic fun cleanRepository() {
+        @JvmStatic
+        fun cleanRepository() {
             File("./").listFiles().forEach { it.deleteRecursively() }
         }
     }
 
     private val git = GitProxyFactory().connect()
-            ?: fail("Couldn't connect to git repository!")
+        ?: fail("Couldn't connect to git repository!")
 
     @Test fun `test detect`() {
         assertTrue(VcsProxyFactory.detect() is GitProxy)
@@ -69,9 +71,9 @@ class GitProxyWithRepositoryTest {
 
     @Test fun `test list files`() {
         val expected = File("./")
-                .walk().onEnter { it.name != ".git" }
-                .filter { it.isFile }
-                .mapTo(hashSetOf()) { it.path.removePrefix("./") }
+            .walk().onEnter { it.name != ".git" }
+            .filter(File::isFile)
+            .mapTo(hashSetOf()) { it.path.removePrefix("./") }
         val headId = git.getHead().id
         val actual = git.listFiles(headId)
         assertEquals(expected, actual)

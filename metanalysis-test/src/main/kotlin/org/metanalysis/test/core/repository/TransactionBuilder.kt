@@ -16,10 +16,12 @@
 
 package org.metanalysis.test.core.repository
 
+import org.metanalysis.core.model.AddNode
 import org.metanalysis.core.model.ProjectEdit
-import org.metanalysis.core.model.ProjectEdit.AddNode
-import org.metanalysis.core.model.ProjectEdit.RemoveNode
+import org.metanalysis.core.model.RemoveNode
 import org.metanalysis.core.repository.Transaction
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 import org.metanalysis.test.core.model.EditFunctionBuilder
 import org.metanalysis.test.core.model.EditTypeBuilder
 import org.metanalysis.test.core.model.EditVariableBuilder
@@ -37,36 +39,69 @@ class TransactionBuilder(private val id: String) {
     var author: String = "<unknown-author>"
     private val edits = arrayListOf<ProjectEdit>()
 
-    fun addSourceUnit(path: String, init: UnitBuilder.() -> Unit) {
+    fun date(value: Long): TransactionBuilder {
+        date = value
+        return this
+    }
+
+    fun author(value: String): TransactionBuilder {
+        author = value
+        return this
+    }
+
+    fun addSourceUnit(
+        path: String,
+        init: Init<UnitBuilder>
+    ): TransactionBuilder {
         edits += AddNode(sourceUnit(path, init))
+        return this
     }
 
-    fun addType(id: String, init: TypeBuilder.() -> Unit) {
+    fun addType(id: String, init: Init<TypeBuilder>): TransactionBuilder {
         edits += AddNode(type(id, init))
+        return this
     }
 
-    fun addFunction(id: String, init: FunctionBuilder.() -> Unit) {
+    fun addFunction(
+        id: String,
+        init: Init<FunctionBuilder>
+    ): TransactionBuilder {
         edits += AddNode(function(id, init))
+        return this
     }
 
-    fun addVariable(id: String, init: VariableBuilder.() -> Unit) {
+    fun addVariable(
+        id: String,
+        init: Init<VariableBuilder>
+    ): TransactionBuilder {
         edits += AddNode(variable(id, init))
+        return this
     }
 
-    fun removeNode(id: String) {
+    fun removeNode(id: String): TransactionBuilder {
         edits += RemoveNode(id)
+        return this
     }
 
-    fun editType(id: String, init: EditTypeBuilder.() -> Unit) {
+    fun editType(id: String, init: Init<EditTypeBuilder>): TransactionBuilder {
         edits += EditTypeBuilder(id).apply(init).build()
+        return this
     }
 
-    fun editFunction(id: String, init: EditFunctionBuilder.() -> Unit) {
+    fun editFunction(
+        id: String,
+        init: Init<EditFunctionBuilder>
+    ): TransactionBuilder {
         edits += EditFunctionBuilder(id).apply(init).build()
+        return this
     }
 
-    fun editVariable(id: String, init: EditVariableBuilder.() -> Unit) {
+    fun editVariable(
+        id: String,
+        init: Init<EditVariableBuilder>
+    ): TransactionBuilder {
         edits += EditVariableBuilder(id).apply(init).build()
+        return this
     }
 
     fun build(): Transaction = Transaction(id, date, author, edits)

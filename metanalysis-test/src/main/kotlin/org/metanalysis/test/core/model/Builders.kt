@@ -14,73 +14,79 @@
  * limitations under the License.
  */
 
+@file:JvmName("Builders")
+
 package org.metanalysis.test.core.model
 
+import org.metanalysis.core.model.AddNode
+import org.metanalysis.core.model.EditFunction
+import org.metanalysis.core.model.EditType
+import org.metanalysis.core.model.EditVariable
+import org.metanalysis.core.model.Function
 import org.metanalysis.core.model.Project
-import org.metanalysis.core.model.ProjectEdit.AddNode
-import org.metanalysis.core.model.ProjectEdit.EditFunction
-import org.metanalysis.core.model.ProjectEdit.EditType
-import org.metanalysis.core.model.ProjectEdit.EditVariable
-import org.metanalysis.core.model.ProjectEdit.RemoveNode
+import org.metanalysis.core.model.RemoveNode
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
-import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.Type
+import org.metanalysis.core.model.Variable
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 
-inline fun project(init: ProjectBuilder.() -> Unit): Project =
-        ProjectBuilder().apply(init).build()
+fun project(init: Init<ProjectBuilder>): Project =
+    ProjectBuilder().apply(init).build()
 
-inline fun sourceUnit(path: String, init: UnitBuilder.() -> Unit): SourceUnit =
-        UnitBuilder(path).apply(init).build()
+fun sourceUnit(path: String, init: Init<UnitBuilder>): SourceUnit =
+    UnitBuilder(path).apply(init).build()
 
-inline fun type(id: String, init: TypeBuilder.() -> Unit): Type {
+fun type(id: String, init: Init<TypeBuilder>): Type {
     val parentId = id.substringBeforeLast(ENTITY_SEPARATOR)
     val name = id.substringAfterLast(ENTITY_SEPARATOR)
-    val builder = TypeBuilder(name)
-    builder.init()
-    return builder.build(parentId)
+    return TypeBuilder(name).apply(init).build(parentId)
 }
 
-inline fun function(id: String, init: FunctionBuilder.() -> Unit): Function {
+fun function(id: String, init: Init<FunctionBuilder>): Function {
     val parentId = id.substringBeforeLast(ENTITY_SEPARATOR)
     val signature = id.substringAfterLast(ENTITY_SEPARATOR)
-    val builder = FunctionBuilder(signature)
-    builder.init()
-    return builder.build(parentId)
+    return FunctionBuilder(signature).apply(init).build(parentId)
 }
 
-inline fun variable(id: String, init: VariableBuilder.() -> Unit): Variable {
+fun variable(id: String, init: Init<VariableBuilder>): Variable {
     val parentId = id.substringBeforeLast(ENTITY_SEPARATOR)
     val name = id.substringAfterLast(ENTITY_SEPARATOR)
-    val builder = VariableBuilder(name)
-    builder.init()
-    return builder.build(parentId)
+    return VariableBuilder(name).apply(init).build(parentId)
 }
 
-inline fun addSourceUnit(path: String, init: UnitBuilder.() -> Unit): AddNode =
-        AddNode(sourceUnit(path, init))
+fun addSourceUnit(path: String, init: Init<UnitBuilder>): AddNode =
+    AddNode(sourceUnit(path, init))
 
-inline fun addType(id: String, init: TypeBuilder.() -> Unit): AddNode =
-        AddNode(type(id, init))
+fun addType(id: String, init: Init<TypeBuilder>): AddNode =
+    AddNode(type(id, init))
 
-inline fun addFunction(id: String, init: FunctionBuilder.() -> Unit): AddNode =
-        AddNode(function(id, init))
+fun addFunction(id: String, init: Init<FunctionBuilder>): AddNode =
+    AddNode(function(id, init))
 
-inline fun addVariable(id: String, init: VariableBuilder.() -> Unit): AddNode =
-        AddNode(variable(id, init))
+fun addVariable(id: String, init: Init<VariableBuilder>): AddNode =
+    AddNode(variable(id, init))
 
 fun removeNode(id: String): RemoveNode = RemoveNode(id)
 
-inline fun editType(id: String, init: EditTypeBuilder.() -> Unit): EditType =
-        EditTypeBuilder(id).apply(init).build()
+fun editType(id: String, init: Init<EditTypeBuilder>): EditType =
+    EditTypeBuilder(id).apply(init).build()
 
-inline fun editFunction(
-        id: String,
-        init: EditFunctionBuilder.() -> Unit
-): EditFunction = EditFunctionBuilder(id).apply(init).build()
+fun editFunction(id: String, init: Init<EditFunctionBuilder>): EditFunction =
+    EditFunctionBuilder(id).apply(init).build()
 
-inline fun editVariable(
-        id: String,
-        init: EditVariableBuilder.() -> Unit
-): EditVariable = EditVariableBuilder(id).apply(init).build()
+fun editVariable(id: String, init: Init<EditVariableBuilder>): EditVariable =
+    EditVariableBuilder(id).apply(init).build()
+
+internal inline fun <reified T> newBuilder(simpleId: String): T =
+    T::class.java.getConstructor(String::class.java).newInstance(simpleId)
+
+internal fun <T> Array<T>.requireNoDuplicates(): Set<T> {
+    val set = mutableSetOf<T>()
+    for (element in this) {
+        require(element !in set) { "Duplicated element '$element'!" }
+        set += element
+    }
+    return set
+}

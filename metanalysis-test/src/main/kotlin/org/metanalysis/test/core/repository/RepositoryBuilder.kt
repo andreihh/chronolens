@@ -17,18 +17,24 @@
 package org.metanalysis.test.core.repository
 
 import org.metanalysis.core.model.Project
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.repository.Repository
 import org.metanalysis.core.repository.Transaction
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 
 class RepositoryBuilder {
     private val history = arrayListOf<Transaction>()
     private val snapshot = Project.empty()
 
-    fun transaction(id: String, init: TransactionBuilder.() -> Unit) {
+    fun transaction(
+        id: String,
+        init: Init<TransactionBuilder>
+    ): RepositoryBuilder {
         val transaction = TransactionBuilder(id).apply(init).build()
         history += transaction
         snapshot.apply(transaction.edits)
+        return this
     }
 
     fun build(): Repository = object : Repository {
@@ -38,11 +44,11 @@ class RepositoryBuilder {
 
         override fun getHeadId(): String = history.last().id
 
-        override fun getSourceUnit(path: String): SourceUnit? =
+        override fun getSource(path: String): SourceUnit? =
             snapshot.find<SourceUnit>(path)
 
         override fun listSources(): Set<String> =
-                snapshot.units.map(SourceUnit::path).toSet()
+            snapshot.sources.map(SourceUnit::path).toSet()
 
         override fun getHistory(): Iterable<Transaction> = history
     }

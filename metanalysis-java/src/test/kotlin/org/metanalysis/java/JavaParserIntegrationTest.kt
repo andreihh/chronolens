@@ -27,7 +27,7 @@ class JavaParserIntegrationTest : JavaParserTest() {
 
     @Test fun `test network`() {
         val source = URL("https://raw.githubusercontent.com/spring-projects/spring-framework/master/spring-core/src/main/java/org/springframework/core/GenericTypeResolver.java")
-                .readText()
+            .readText()
         println(parse(source))
     }
 }

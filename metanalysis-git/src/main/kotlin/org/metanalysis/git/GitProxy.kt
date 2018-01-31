@@ -35,13 +35,13 @@ internal class GitProxy(private val prefix: String) : VcsProxy {
 
     private fun parseCommit(formattedCommit: String): Revision {
         val (id, rawDate, author) =
-                formattedCommit.split(delimiters = *charArrayOf(':'), limit = 3)
+            formattedCommit.split(delimiters = *charArrayOf(':'), limit = 3)
         val date = rawDate.toLong() * 1000
         return Revision(id, date, author)
     }
 
     private fun parseFiles(rawFileSet: String): Set<String> =
-            rawFileSet.lines().filter(String::isNotBlank).toSet()
+        rawFileSet.lines().filter(String::isNotBlank).toSet()
 
     private fun validateRevision(revisionId: String) {
         val result = execute(vcs, "cat-file", "-e", "$revisionId^{commit}")
@@ -52,7 +52,7 @@ internal class GitProxy(private val prefix: String) : VcsProxy {
 
     override fun getRevision(revisionId: String): Revision? {
         val result =
-                execute(vcs, "rev-list", "-1", format, "$revisionId^{commit}")
+            execute(vcs, "rev-list", "-1", format, "$revisionId^{commit}")
         val rawCommit = result.getOrNull() ?: return null
         val formattedCommit = formatCommits(rawCommit).single()
         return parseCommit(formattedCommit)
@@ -61,9 +61,9 @@ internal class GitProxy(private val prefix: String) : VcsProxy {
     override fun getChangeSet(revisionId: String): Set<String> {
         validateRevision(revisionId)
         val result = execute(
-                vcs, "diff-tree", "-m", "-r", "--root",
-                "--name-only", "--relative", "--no-commit-id",
-                revisionId
+            vcs, "diff-tree", "-m", "-r", "--root",
+            "--name-only", "--relative", "--no-commit-id",
+            revisionId
         )
         val rawChangeSet = result.get()
         return parseFiles(rawChangeSet)
@@ -79,16 +79,16 @@ internal class GitProxy(private val prefix: String) : VcsProxy {
     override fun getFile(revisionId: String, path: String): String? {
         validateRevision(revisionId)
         return execute(vcs, "cat-file", "blob", "$revisionId:$prefix$path")
-                .getOrNull()
+            .getOrNull()
     }
 
     override fun getHistory(path: String): List<Revision> {
         val result = execute(
-                vcs, "rev-list", "--first-parent", "--reverse", format,
-                headId, "--", path
+            vcs, "rev-list", "--first-parent", "--reverse", format,
+            headId, "--", path
         )
         val rawCommits = result.get()
         val formattedCommits = formatCommits(rawCommits)
-        return formattedCommits.map(this::parseCommit)
+        return formattedCommits.map(::parseCommit)
     }
 }

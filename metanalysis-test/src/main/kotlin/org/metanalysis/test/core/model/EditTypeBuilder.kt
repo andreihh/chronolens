@@ -16,24 +16,25 @@
 
 package org.metanalysis.test.core.model
 
-import org.metanalysis.core.model.ProjectEdit.EditType
+import org.metanalysis.core.model.EditType
 import org.metanalysis.core.model.SetEdit
+import org.metanalysis.test.core.BuilderMarker
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 
-@ModelBuilderMarker
+@BuilderMarker
 class EditTypeBuilder(private val id: String) {
     private val modifierEdits = arrayListOf<SetEdit<String>>()
     private val supertypeEdits = arrayListOf<SetEdit<String>>()
 
-    fun modifiers(init: SetEditsBuilder<String>.() -> Unit) {
-        val setEditsBuilder = SetEditsBuilder<String>()
-        setEditsBuilder.init()
-        modifierEdits += setEditsBuilder.build()
+    fun modifiers(init: Init<SetEditsBuilder<String>>): EditTypeBuilder {
+        modifierEdits += SetEditsBuilder<String>().apply(init).build()
+        return this
     }
 
-    fun supertypes(init: SetEditsBuilder<String>.() -> Unit) {
-        val setEditsBuilder = SetEditsBuilder<String>()
-        setEditsBuilder.init()
-        supertypeEdits += setEditsBuilder.build()
+    fun supertypes(init: Init<SetEditsBuilder<String>>): EditTypeBuilder {
+        supertypeEdits += SetEditsBuilder<String>().apply(init).build()
+        return this
     }
 
     fun build(): EditType = EditType(id, modifierEdits, supertypeEdits)

@@ -22,20 +22,15 @@ import kotlin.test.assertFailsWith
 
 class SubprocessTest {
     private val script =
-            "src/test/resources/org/metanalysis/core/subprocess/test_script.py"
+        "src/test/resources/org/metanalysis/core/subprocess/test_script.py"
 
     private fun execute(
-            out: String = "",
-            err: String = "",
-            delaySeconds: Int = 0,
-            exitValue: Int = 0
+        out: String = "",
+        err: String = "",
+        delaySeconds: Int = 0,
+        exitValue: Int = 0
     ): Result = Subprocess.execute(
-            "python",
-            script,
-            out,
-            err,
-            "$delaySeconds",
-            "$exitValue"
+        "python", script, out, err, "$delaySeconds", "$exitValue"
     )
 
     @Test fun `test get output`() {
@@ -49,8 +44,8 @@ class SubprocessTest {
         val expectedMessage = "Hello, error!"
         val expectedExitValue = 1
         val actual = execute(
-                err = expectedMessage,
-                exitValue = expectedExitValue
+            err = expectedMessage,
+            exitValue = expectedExitValue
         ) as Result.Error
         assertEquals(expectedExitValue, actual.exitValue)
         assertEquals(expectedMessage, actual.message)

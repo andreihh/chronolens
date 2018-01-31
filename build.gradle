@@ -1,9 +1,9 @@
 buildscript {
     ext {
-        kotlin_version = '1.2.10'
+        kotlin_version = '1.2.21'
         dokka_version = '0.9.15'
-        jackson_version = '2.9.2'
-        jdt_version = '3.13.50'
+        jackson_version = '2.9.4'
+        jdt_version = '3.13.100'
         junit_version = '4.12'
     }
 
@@ -40,8 +40,6 @@ allprojects {
         testImplementation "junit:junit:$junit_version"
     }
 
-    test.exclude '**/*Suite.class'
-
     jar {
         from rootProject.file('LICENSE')
         from rootProject.file('NOTICE')
@@ -61,7 +59,6 @@ allprojects {
 subprojects {
     apply plugin: 'java-library'
     apply plugin: 'org.jetbrains.dokka'
-    apply plugin: 'maven'
 
     dokka {
         moduleName = project.name

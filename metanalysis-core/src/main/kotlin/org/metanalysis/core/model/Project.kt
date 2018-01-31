@@ -16,8 +16,6 @@
 
 package org.metanalysis.core.model
 
-import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
-import org.metanalysis.core.model.SourceNode.SourceUnit
 import java.util.Collections.unmodifiableCollection
 
 /**
@@ -25,53 +23,25 @@ import java.util.Collections.unmodifiableCollection
  * time.
  *
  * It indexes all contained source nodes to allow fast access by id.
- *
- * @property units the source units in this project
  */
 class Project private constructor(
-        private val unitMap: HashMap<String, SourceUnit>,
-        private val nodeMap: HashMap<String, SourceNode>
+    private val unitMap: HashMap<String, SourceUnit>,
+    private val nodeMap: HashMap<String, SourceNode>
 ) {
-    companion object {
-        /**
-         * Creates and returns a project from the given source `units`.
-         *
-         * @param units the source units contained by the project
-         * @throws IllegalArgumentException if the given `units` contain
-         * duplicated ids
-         */
-        @JvmStatic
-        fun of(units: Collection<SourceUnit>): Project {
-            val unitMap = hashMapOf<String, SourceUnit>()
-            for (unit in units) {
-                require(unit.id !in unitMap) {
-                    "Project contains duplicated unit id '${unit.id}'!"
-                }
-                unitMap[unit.id] = unit
-            }
-            val nodeMap = HashMap(buildVisit(units))
-            return Project(unitMap, nodeMap)
-        }
-
-        /** Creates and returns an empty project. */
-        @JvmStatic
-        fun empty(): Project = Project(hashMapOf(), hashMapOf())
-    }
 
     /** The source units in this project. */
-    val units: Collection<SourceUnit>
+    val sources: Collection<SourceUnit>
         get() = unmodifiableCollection(unitMap.values)
 
     /** Returns all the source nodes in this project. */
     fun findAll(): Collection<SourceNode> =
-            unmodifiableCollection(nodeMap.values)
+        unmodifiableCollection(nodeMap.values)
 
     /**
-     * Returns the node with the specified `id`.
+     * Returns the node with the specified [id], or `null` if no such node was
+     * found.
      *
-     * @param id the fully qualified identifier of the requested node
-     * @return the requested node, or `null` if no such node was found
-     * @throws IllegalArgumentException if the given `id` is not a valid node id
+     * @throws IllegalArgumentException if the given [id] is not a valid node id
      */
     fun find(id: String): SourceNode? {
         validateNodeId(id)
@@ -79,13 +49,11 @@ class Project private constructor(
     }
 
     /**
-     * Returns the node with the specified `id`.
+     * Returns the node with the specified [id] and type [T], or `null` if no
+     * such node was found.
      *
-     * @param T the type of the requested node
-     * @param id the fully qualified identifier of the requested node
-     * @return the requested node, or `null` if no such node was found
-     * @throws IllegalArgumentException if the given `id` is not a valid node id
-     * or if the requested node is not of type `T`
+     * @throws IllegalArgumentException if the given [id] is not a valid node id
+     * or if the requested node is not of type [T]
      */
     @JvmName("findNode")
     inline fun <reified T : SourceNode> find(id: String): T? {
@@ -95,15 +63,14 @@ class Project private constructor(
     }
 
     /**
-     * Applies the given `edits` to this project.
+     * Applies the given [edits] to this project.
      *
-     * @param edits the edits which should be applied
      * @throws IllegalStateException if this project has an invalid state and
-     * the given `edits` couldn't be applied
+     * the given [edits] couldn't be applied
      */
     fun apply(edits: List<ProjectEdit>) {
         for (edit in edits) {
-            val parentUnitId = edit.id.substringBefore(ENTITY_SEPARATOR)
+            val parentUnitId = edit.sourcePath
             unitMap -= parentUnitId
             edit.applyOn(nodeMap)
             val newParentUnit = nodeMap[parentUnitId] as SourceUnit?
@@ -116,5 +83,30 @@ class Project private constructor(
     /** Utility method. */
     fun apply(vararg edits: ProjectEdit) {
         apply(edits.asList())
+    }
+
+    companion object {
+        /**
+         * Creates and returns a project from the given source [units].
+         *
+         * @throws IllegalArgumentException if the given [units] contain
+         * duplicate ids
+         */
+        @JvmStatic
+        fun of(units: Collection<SourceUnit>): Project {
+            val unitMap = hashMapOf<String, SourceUnit>()
+            for (unit in units) {
+                require(unit.id !in unitMap) {
+                    "Project contains duplicate unit id '${unit.id}'!"
+                }
+                unitMap[unit.id] = unit
+            }
+            val nodeMap = HashMap(buildVisit(units))
+            return Project(unitMap, nodeMap)
+        }
+
+        /** Creates and returns an empty project. */
+        @JvmStatic
+        fun empty(): Project = Project(hashMapOf(), hashMapOf())
     }
 }

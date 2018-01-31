@@ -16,24 +16,32 @@
 
 package org.metanalysis.test.core.model
 
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.test.core.BuilderMarker
+import org.metanalysis.test.core.Init
+import org.metanalysis.test.core.apply
 
-@ModelBuilderMarker
+@BuilderMarker
 class UnitBuilder(private val path: String) {
     private val entities = arrayListOf<EntityBuilder<*>>()
 
-    fun type(name: String, init: TypeBuilder.() -> Unit) {
-        entities += TypeBuilder(name).apply(init)
+    private inline fun <reified T : EntityBuilder<*>> addEntity(
+        simpleId: String,
+        init: Init<T>
+    ): UnitBuilder {
+        entities += newBuilder<T>(simpleId).apply(init)
+        return this
     }
 
-    fun function(signature: String, init: FunctionBuilder.() -> Unit) {
-        entities += FunctionBuilder(signature).apply(init)
-    }
+    fun type(name: String, init: Init<TypeBuilder>): UnitBuilder =
+        addEntity(name, init)
 
-    fun variable(name: String, init: VariableBuilder.() -> Unit) {
-        entities += VariableBuilder(name).apply(init)
-    }
+    fun function(signature: String, init: Init<FunctionBuilder>): UnitBuilder =
+        addEntity(signature, init)
+
+    fun variable(name: String, init: Init<VariableBuilder>): UnitBuilder =
+        addEntity(name, init)
 
     fun build(): SourceUnit =
-            SourceUnit(id = path, entities = entities.map { it.build(path) })
+        SourceUnit(id = path, entities = entities.map { it.build(path) })
 }

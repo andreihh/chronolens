@@ -16,7 +16,7 @@
 
 package org.metanalysis.java
 
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.parsing.Parser.Companion.getParserByLanguage
 import org.metanalysis.core.parsing.Result
 import org.metanalysis.core.parsing.SourceFile
@@ -27,14 +27,14 @@ import kotlin.test.fail
 abstract class JavaParserTest {
     private val defaultPath = "Test.java"
     private val parser = getParserByLanguage(JavaParser.LANGUAGE)
-            ?: fail("Couldn't retrieve Java parser!")
+        ?: fail("Couldn't retrieve Java parser!")
 
     protected fun sourceUnit(init: UnitBuilder.() -> Unit): SourceUnit =
-            sourceUnit(defaultPath, init)
+        sourceUnit(defaultPath, init)
 
     protected fun parse(
-            source: String,
-            path: String = defaultPath
+        source: String,
+        path: String = defaultPath
     ): SourceUnit {
         val result = parser.parse(SourceFile(path, source))
         return when (result) {
@@ -44,7 +44,7 @@ abstract class JavaParserTest {
     }
 
     protected fun parseResult(
-            source: String,
-            path: String = defaultPath
+        source: String,
+        path: String = defaultPath
     ): Result = parser.parse(SourceFile(path, source))
 }

@@ -36,27 +36,27 @@ class VcsProxyMock(private val revisions: List<RevisionMock>) : VcsProxy {
     private fun RevisionMock.toRevision(): Revision = Revision(id, date, author)
 
     private fun getRevisionMock(id: String): RevisionMock =
-            requireNotNull(revisionsById[id]) {
-                "Revision '$id' doesn't exist!"
-            }
+        requireNotNull(revisionsById[id]) {
+            "Revision '$id' doesn't exist!"
+        }
 
     override fun getHead(): Revision =
-            checkNotNull(revisions.lastOrNull()).toRevision()
+        checkNotNull(revisions.lastOrNull()).toRevision()
 
     override fun listFiles(revisionId: String): Set<String> =
-            checkNotNull(files[getRevisionMock(revisionId).id]).keys
+        checkNotNull(files[getRevisionMock(revisionId).id]).keys
 
     override fun getRevision(revisionId: String): Revision =
-            getRevisionMock(revisionId).toRevision()
+        getRevisionMock(revisionId).toRevision()
 
     override fun getChangeSet(revisionId: String): Set<String> =
-            getRevisionMock(revisionId).changeSet.keys
+        getRevisionMock(revisionId).changeSet.keys
 
     override fun getFile(revisionId: String, path: String): String? =
-            checkNotNull(files[getRevisionMock(revisionId).id])[path]
+        checkNotNull(files[getRevisionMock(revisionId).id])[path]
 
     override fun getHistory(path: String): List<Revision> =
-            revisions.filter { commit ->
-                commit.changeSet.keys.any { file -> file.startsWith(path) }
-            }.map { it.toRevision() }
+        revisions.filter { commit ->
+            commit.changeSet.keys.any { file -> file.startsWith(path) }
+        }.map { it.toRevision() }
 }

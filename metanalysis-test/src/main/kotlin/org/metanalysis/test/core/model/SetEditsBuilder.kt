@@ -21,8 +21,18 @@ import org.metanalysis.core.model.SetEdit
 class SetEditsBuilder<T> {
     private val setEdits = arrayListOf<SetEdit<T>>()
 
+    fun add(value: T): SetEditsBuilder<T> {
+        setEdits += SetEdit.Add(value)
+        return this
+    }
+
     operator fun T.unaryPlus() {
         setEdits += SetEdit.Add(this)
+    }
+
+    fun remove(value: T): SetEditsBuilder<T> {
+        setEdits += SetEdit.Remove(value)
+        return this
     }
 
     operator fun T.unaryMinus() {

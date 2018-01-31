@@ -17,19 +17,20 @@
 package org.metanalysis.test.core.model
 
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
-import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
+import org.metanalysis.core.model.Variable
 
 class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
     private var modifiers = setOf<String>()
     private val initializer = arrayListOf<String>()
 
-    fun modifiers(vararg modifiers: String) {
-        modifiers.groupBy { it }.forEach { (modifier, occurrences) ->
-            require(occurrences.size == 1) {
-                "Duplicated modifier '$modifier'!"
-            }
-        }
-        this.modifiers = modifiers.toSet()
+    fun modifiers(vararg modifiers: String): VariableBuilder {
+        this.modifiers = modifiers.requireNoDuplicates()
+        return this
+    }
+
+    fun initializer(vararg initializerLines: String): VariableBuilder {
+        initializer += initializerLines
+        return this
     }
 
     operator fun String.unaryPlus() {
@@ -37,8 +38,8 @@ class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
     }
 
     override fun build(parentId: String): Variable = Variable(
-            id = "$parentId$ENTITY_SEPARATOR$name",
-            modifiers = modifiers,
-            initializer = initializer
+        id = "$parentId$ENTITY_SEPARATOR$name",
+        modifiers = modifiers,
+        initializer = initializer
     )
 }

@@ -22,15 +22,20 @@ package org.metanalysis.core.model
  * @param T the type of the elements of the edited list
  */
 sealed class ListEdit<T> : Edit<List<T>> {
+    /**
+     * Applies this edit on the given mutable [subject].
+     *
+     * @throws IllegalStateException if the [subject] has an invalid state and
+     * this edit couldn't be applied
+     */
+    protected abstract fun applyOn(subject: MutableList<T>)
+
     companion object {
         /**
-         * Applies the given `edits` on this list and returns the result.
+         * Applies the given [edits] on [this] list and returns the result.
          *
-         * @param T the type of the elements of the edited list
-         * @param edits the edits which should be applied
-         * @return the edited list
          * @throws IllegalStateException if this list has an invalid state and
-         * the given `edits` couldn't be applied
+         * the given [edits] couldn't be applied
          */
         @JvmStatic
         fun <T> List<T>.apply(edits: List<ListEdit<T>>): List<T> {
@@ -44,11 +49,11 @@ sealed class ListEdit<T> : Edit<List<T>> {
         /** Utility method. */
         @JvmStatic
         fun <T> List<T>.apply(vararg edits: ListEdit<T>): List<T> =
-                apply(edits.asList())
+            apply(edits.asList())
 
         /**
-         * Returns the edits which should be applied on this list to obtain the
-         * `other` list.
+         * Returns the edits which should be applied on [this] list to obtain
+         * the [other] list.
          */
         @JvmStatic
         fun <T> List<T>.diff(other: List<T>): List<ListEdit<T>> {
@@ -73,21 +78,12 @@ sealed class ListEdit<T> : Edit<List<T>> {
     }
 
     /**
-     * Applies this edit on the given mutable list.
-     *
-     * @param subject the list which should be edited
-     * @throws IllegalStateException if the list has an invalid state and this
-     * edit couldn't be applied
-     */
-    protected abstract fun applyOn(subject: MutableList<T>)
-
-    /**
      * Indicates that an element should be added to the edited list.
      *
      * @param T the type of the elements of the edited list
      * @property index the index at which the element should be inserted
      * @property value the element which should be added
-     * @throws IllegalArgumentException if `index` is negative
+     * @throws IllegalArgumentException if [index] is negative
      */
     data class Add<T>(val index: Int, val value: T) : ListEdit<T>() {
         init {
@@ -107,7 +103,7 @@ sealed class ListEdit<T> : Edit<List<T>> {
      *
      * @param T the type of the elements of the edited list
      * @property index the index of the element which should be removed
-     * @throws IllegalArgumentException if `index` is negative
+     * @throws IllegalArgumentException if [index] is negative
      */
     data class Remove<T>(val index: Int) : ListEdit<T>() {
         init {

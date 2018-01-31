@@ -18,7 +18,7 @@ package org.metanalysis.core.repository
 
 import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.ProjectEdit.Companion.diff
-import org.metanalysis.core.model.SourceNode.SourceUnit
+import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.parsing.Parser
 import org.metanalysis.core.parsing.Result
 import org.metanalysis.core.parsing.SourceFile
@@ -32,26 +32,11 @@ import java.util.Collections.unmodifiableSet
  *
  * All queries retrieve and interpret the data from a VCS subprocess.
  */
-class InteractiveRepository private constructor(
-        private val vcs: VcsProxy
-): Repository {
-    companion object {
-        /**
-         * Returns the instance which can query the repository detected in the
-         * current working directory for code metadata.
-         *
-         * @return the repository instance, or `null` if no supported VCS
-         * repository could be unambiguously detected
-         * @throws IllegalStateException if the detected repository is corrupted
-         * or empty (doesn't have a `head` revision)
-         */
-        @JvmStatic
-        fun connect(): InteractiveRepository? =
-                VcsProxyFactory.detect()?.let(::InteractiveRepository)
-    }
+class InteractiveRepository private constructor(private val vcs: VcsProxy) :
+    Repository {
 
     private val headId = vcs.getHead().id
-    private val sources = vcs.listFiles(headId).filter(this::canParse).toSet()
+    private val sources = vcs.listFiles(headId).filter(::canParse).toSet()
     private val history = vcs.getHistory()
 
     init {
@@ -66,7 +51,7 @@ class InteractiveRepository private constructor(
 
     override fun listSources(): Set<String> = unmodifiableSet(sources)
 
-    private fun parseSourceUnit(revisionId: String, path: String): Result? {
+    private fun parseSource(revisionId: String, path: String): Result? {
         checkValidTransactionId(revisionId)
         checkValidPath(path)
         val source = vcs.getFile(revisionId, path) ?: return null
@@ -77,7 +62,7 @@ class InteractiveRepository private constructor(
         checkValidPath(path)
         val revisions = vcs.getHistory(path).asReversed()
         for ((revisionId, _, _) in revisions) {
-            val result = parseSourceUnit(revisionId, path)
+            val result = parseSource(revisionId, path)
             if (result is Result.Success) {
                 return result.sourceUnit
             }
@@ -85,9 +70,9 @@ class InteractiveRepository private constructor(
         return SourceUnit(path)
     }
 
-    override fun getSourceUnit(path: String): SourceUnit? {
+    override fun getSource(path: String): SourceUnit? {
         validatePath(path)
-        val result = parseSourceUnit(headId, path)
+        val result = parseSource(headId, path)
         return when (result) {
             is Result.Success -> result.sourceUnit
             Result.SyntaxError -> getLatestValidSourceUnit(path)
@@ -106,7 +91,7 @@ class InteractiveRepository private constructor(
                 if (oldUnit != null) {
                     before += oldUnit
                 }
-                val result = parseSourceUnit(revisionId, path)
+                val result = parseSource(revisionId, path)
                 val newUnit = when (result) {
                     is Result.Success -> result.sourceUnit
                     Result.SyntaxError -> oldUnit ?: SourceUnit(path)
@@ -120,5 +105,19 @@ class InteractiveRepository private constructor(
             project.apply(edits)
             Transaction(revisionId, date, author, edits)
         }
+    }
+
+    companion object {
+        /**
+         * Returns the instance which can query the repository detected in the
+         * current working directory for code metadata, or `null` if no
+         * supported VCS repository could be unambiguously detected
+         *
+         * @throws IllegalStateException if the detected repository is corrupted
+         * or empty (doesn't have a `head` revision)
+         */
+        @JvmStatic
+        fun connect(): InteractiveRepository? =
+            VcsProxyFactory.detect()?.let(::InteractiveRepository)
     }
 }

@@ -66,7 +66,7 @@ class JavaParserErrorTest : JavaParserTest() {
         assertEquals(Result.SyntaxError, result)
     }
 
-    @Test fun `test initializers not supported`() {
+    @Test fun `test initializers are ignored`() {
         val source = """
         class Type {
             int i;
@@ -75,7 +75,13 @@ class JavaParserErrorTest : JavaParserTest() {
             }
         }
         """.trimIndent()
+        val expected = sourceUnit {
+            type("Type") {
+                modifiers("class")
+                variable("i") {}
+            }
+        }
         val result = parseResult(source)
-        assertEquals(Result.SyntaxError, result)
+        assertEquals(Result.Success(expected), result)
     }
 }

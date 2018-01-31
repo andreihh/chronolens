@@ -20,14 +20,7 @@
 package org.metanalysis.core.model
 
 import org.metanalysis.core.model.ListEdit.Companion.diff
-import org.metanalysis.core.model.ProjectEdit.EditFunction
-import org.metanalysis.core.model.ProjectEdit.EditType
-import org.metanalysis.core.model.ProjectEdit.EditVariable
 import org.metanalysis.core.model.SetEdit.Companion.diff
-import org.metanalysis.core.model.SourceNode.SourceEntity.Function
-import org.metanalysis.core.model.SourceNode.SourceEntity.Type
-import org.metanalysis.core.model.SourceNode.SourceEntity.Variable
-import org.metanalysis.core.model.SourceNode.SourceUnit
 
 /**
  * Returns the smallest edit distance between the two given arrays using the
@@ -42,8 +35,8 @@ internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
         dp[i][0] = i
         for (j in 1..b.size) {
             dp[i][j] =
-                    if (a[i - 1] == b[j - 1]) dp[i - 1][j - 1]
-                    else 1 + minOf(dp[i - 1][j], dp[i][j - 1])
+                if (a[i - 1] == b[j - 1]) dp[i - 1][j - 1]
+                else 1 + minOf(dp[i - 1][j], dp[i][j - 1])
         }
     }
     val edits = arrayListOf<ListEdit<Int>>()
@@ -66,7 +59,7 @@ internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
 
 /**
  * Returns the edit which must be applied on this source node in order to obtain
- * the `other` source node, or `null` if the two nodes are equal.
+ * the [other] source node, or `null` if the two nodes are equal.
  *
  * @throws IllegalArgumentException if the two source nodes have different ids
  */
@@ -85,9 +78,9 @@ internal fun SourceNode.diff(other: SourceNode): ProjectEdit? {
 private fun Type.diff(other: Type): EditType? {
     val modifierEdits = modifiers.diff(other.modifiers)
     val supertypeEdits = supertypes.diff(other.supertypes)
+    val edit = EditType(id, modifierEdits, supertypeEdits)
     val isChanged = modifierEdits.isNotEmpty() || supertypeEdits.isNotEmpty()
-    return EditType(id, modifierEdits, supertypeEdits)
-            .takeIf { isChanged }
+    return if (isChanged) edit else null
 }
 
 private fun Function.diff(other: Function): EditFunction? {
@@ -96,17 +89,17 @@ private fun Function.diff(other: Function): EditFunction? {
     val otherParameterNames = other.parameters.map(Variable::name)
     val parameterEdits = parameterNames.diff(otherParameterNames)
     val bodyEdits = body.diff(other.body)
+    val edit = EditFunction(id, modifierEdits, parameterEdits, bodyEdits)
     val isChanged = modifierEdits.isNotEmpty()
-            || parameterEdits.isNotEmpty()
-            || bodyEdits.isNotEmpty()
-    return EditFunction(id, modifierEdits, parameterEdits, bodyEdits)
-            .takeIf { isChanged }
+        || parameterEdits.isNotEmpty()
+        || bodyEdits.isNotEmpty()
+    return if (isChanged) edit else null
 }
 
 private fun Variable.diff(other: Variable): EditVariable? {
     val modifierEdits = modifiers.diff(other.modifiers)
     val initializerEdits = initializer.diff(other.initializer)
+    val edit = EditVariable(id, modifierEdits, initializerEdits)
     val isChanged = modifierEdits.isNotEmpty() || initializerEdits.isNotEmpty()
-    return EditVariable(id, modifierEdits, initializerEdits)
-            .takeIf { isChanged }
+    return if (isChanged) edit else null
 }

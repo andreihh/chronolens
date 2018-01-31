@@ -22,15 +22,20 @@ package org.metanalysis.core.model
  * @param T the type of the elements of the edited set
  */
 sealed class SetEdit<T> : Edit<Set<T>> {
+    /**
+     * Applies this edit on the given mutable [subject].
+     *
+     * @throws IllegalStateException if the [subject] has an invalid state and
+     * this edit couldn't be applied
+     */
+    protected abstract fun applyOn(subject: MutableSet<T>)
+
     companion object {
         /**
-         * Applies the given `edits` on this set and returns the result.
+         * Applies the given [edits] on [this] set and returns the result.
          *
-         * @param T the type of the elements of the edited set
-         * @param edits the edits which should be applied
-         * @return the edited set
          * @throws IllegalStateException if this set has an invalid state and
-         * the given `edits` couldn't be applied
+         * the given [edits] couldn't be applied
          */
         @JvmStatic
         fun <T> Set<T>.apply(edits: List<SetEdit<T>>): Set<T> {
@@ -44,11 +49,11 @@ sealed class SetEdit<T> : Edit<Set<T>> {
         /** Utility method. */
         @JvmStatic
         fun <T> Set<T>.apply(vararg edits: SetEdit<T>): Set<T> =
-                apply(edits.asList())
+            apply(edits.asList())
 
         /**
-         * Returns the edits which should be applied on this set to obtain the
-         * `other` set.
+         * Returns the edits which should be applied on [this] set to obtain the
+         * [other] set.
          */
         @JvmStatic
         fun <T> Set<T>.diff(other: Set<T>): List<SetEdit<T>> {
@@ -57,15 +62,6 @@ sealed class SetEdit<T> : Edit<Set<T>> {
             return added + removed
         }
     }
-
-    /**
-     * Applies this edit on the given mutable set.
-     *
-     * @param subject the set which should be edited
-     * @throws IllegalStateException if the set has an invalid state and this
-     * edit couldn't be applied
-     */
-    protected abstract fun applyOn(subject: MutableSet<T>)
 
     /**
      * Indicates that an element should be added to the edited set.

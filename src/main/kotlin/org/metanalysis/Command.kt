@@ -26,10 +26,10 @@ import java.io.IOException
 sealed class Command {
     companion object {
         private val commands =
-                listOf(Version, Help, List, Model, History, Persist, Clean)
+            listOf(Version, Help, List, Model, History, Persist, Clean)
 
         operator fun invoke(name: String): Command? =
-                commands.firstOrNull { it.name == name }
+            commands.firstOrNull { it.name == name }
     }
 
     abstract val name: String
@@ -45,7 +45,7 @@ sealed class Command {
     }
 
     protected fun getProject(): Repository = InteractiveRepository.connect()
-            ?: throw IOException("Repository not found!")
+        ?: throw IOException("Repository not found!")
 
     object Version : Command() {
         override val name: String = "version"
@@ -114,7 +114,7 @@ sealed class Command {
         override fun execute(vararg args: String) {
             checkUsage(args.size == 1)
             val project = getProject()
-            val model = project.getSourceUnit(args[0])
+            val model = project.getSource(args[0])
             if (model != null) {
                 println("Operation not supported yet!")
             } else {

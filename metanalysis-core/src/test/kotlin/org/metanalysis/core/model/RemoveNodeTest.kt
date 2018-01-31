@@ -17,7 +17,6 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-import org.metanalysis.core.model.ProjectEdit.RemoveNode
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
 import org.metanalysis.test.core.model.removeNode

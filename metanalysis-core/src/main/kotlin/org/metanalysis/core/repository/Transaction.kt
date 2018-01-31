@@ -28,15 +28,16 @@ import org.metanalysis.core.model.ProjectEdit
  * milliseconds since the Unix epoch
  * @property author the author of the transaction
  * @property edits the edits applied in this transaction
- * @throws IllegalArgumentException if `id` is empty or contains
- * non-alphanumeric characters or if `date` is negative
+ * @throws IllegalArgumentException if [id] is empty or contains
+ * non-alphanumeric characters or if [date] is negative
  */
 data class Transaction(
-        val id: String,
-        val date: Long,
-        val author: String,
-        val edits: List<ProjectEdit> = emptyList()
+    val id: String,
+    val date: Long,
+    val author: String,
+    val edits: List<ProjectEdit> = emptyList()
 ) {
+
     init {
         validateTransactionId(id)
         require(date >= 0L) { "'$id' date '$date' can't be negative!" }
