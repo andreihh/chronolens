@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.CompilationUnit
 import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.parsing.Parser
+import org.metanalysis.core.parsing.SyntaxErrorException
 
 /** Java 8 language parser. */
 class JavaParser : Parser() {
@@ -30,6 +31,7 @@ class JavaParser : Parser() {
 
     override fun canParse(path: String): Boolean = path.endsWith(".java")
 
+    @Throws(SyntaxErrorException::class)
     override fun parse(path: String, rawSource: String): SourceUnit {
         val options = JavaCore.getOptions()
         JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)

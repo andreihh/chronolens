@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:JvmName("Builders")
+
 package org.metanalysis.test.core.repository
 
 import org.metanalysis.core.repository.Repository
