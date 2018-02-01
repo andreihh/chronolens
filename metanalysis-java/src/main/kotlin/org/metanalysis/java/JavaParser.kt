@@ -38,7 +38,6 @@ class JavaParser : Parser() {
         val jdtParser = ASTParser.newParser(AST.JLS9).apply {
             setKind(K_COMPILATION_UNIT)
             setCompilerOptions(options)
-            setIgnoreMethodBodies(true)
             setSource(rawSource.toCharArray())
         }
         val compilationUnit = jdtParser.createAST(null) as CompilationUnit
@@ -49,15 +48,5 @@ class JavaParser : Parser() {
     companion object {
         /** The `Java` programming language supported by this parser. */
         const val LANGUAGE: String = "Java"
-
-        /**
-         * Formats this string to a block of code by splitting it into lines
-         * (delimited by `\n`), removing blank lines (those which consist only
-         * of whitespaces) and trims leading and trailing whitespaces from all
-         * lines.
-         */
-        @JvmStatic
-        fun String.toBlock(): List<String> =
-            lines().filter(String::isNotBlank).map(String::trim)
     }
 }

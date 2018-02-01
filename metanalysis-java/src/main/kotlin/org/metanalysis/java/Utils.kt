@@ -33,6 +33,15 @@ import org.eclipse.jdt.core.dom.VariableDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment
 import org.metanalysis.core.parsing.SyntaxErrorException
 
+/**
+ * Formats this string to a block of code by splitting it into lines
+ * (delimited by `\n`), removing blank lines (those which consist only
+ * of whitespaces) and trims leading and trailing whitespaces from all
+ * lines.
+ */
+fun String.toBlock(): List<String> =
+    lines().filter(String::isNotBlank).map(String::trim)
+
 internal fun <T> Collection<T>.requireDistinct(): Set<T> {
     val unique = linkedSetOf<T>()
     for (element in this) {

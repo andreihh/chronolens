@@ -31,7 +31,6 @@ import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.model.Type
 import org.metanalysis.core.model.Variable
-import org.metanalysis.java.JavaParser.Companion.toBlock
 
 internal data class ParserContext(
     private val unitId: String,
@@ -48,18 +47,14 @@ internal data class ParserContext(
     private fun List<ASTNode>.toModifierSet(): Set<String> =
         map { it.toSource() }.requireDistinct()
 
-    // TODO: fix if javadoc contains `{`
     private fun MethodDeclaration.body(): List<String> =
-        toSource().dropWhile { it != '{' }.toBlock()
+        body?.toSource()?.toBlock() ?: emptyList()
 
-    // TODO: fix if javadoc contains `=`
     private fun VariableDeclaration.initializer(): List<String> =
-        toSource()
-            .substringAfter(delimiter = '=', missingDelimiterValue = "")
-            .toBlock()
+        initializer?.toSource()?.toBlock() ?: emptyList()
 
     private fun EnumConstantDeclaration.initializer(): List<String> =
-        toSource().toBlock()
+        anonymousClassDeclaration?.toSource()?.toBlock() ?: emptyList()
 
     private fun AnnotationTypeMemberDeclaration.defaultValue(): List<String> =
         default?.toSource()?.toBlock() ?: emptyList()
@@ -72,7 +67,7 @@ internal data class ParserContext(
         val id = getEntityId(node.name())
         val childContext = copy(parentId = id)
         val members = node.members().mapNotNull { member ->
-            when (member) {
+            val visitedMember = when (member) {
                 is AbstractTypeDeclaration -> childContext.visit(member)
                 is AnnotationTypeMemberDeclaration -> childContext.visit(member)
                 is EnumConstantDeclaration -> childContext.visit(member)
@@ -81,6 +76,7 @@ internal data class ParserContext(
                 is Initializer -> null // TODO: parse initializers
                 else -> throw AssertionError("Unknown declaration $member!")
             }
+            visitedMember
         }
         members.map(SourceEntity::id).requireDistinct()
         val modifiers =

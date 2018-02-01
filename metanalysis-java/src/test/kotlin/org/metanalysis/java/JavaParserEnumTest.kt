@@ -44,9 +44,9 @@ class JavaParserEnumTest : JavaParserTest() {
         val expected = sourceUnit {
             type("Color") {
                 modifiers("enum")
-                variable("RED") { +"RED" }
-                variable("GREEN") { +"GREEN" }
-                variable("BLUE") { +"BLUE" }
+                variable("RED") {}
+                variable("GREEN") {}
+                variable("BLUE") {}
             }
         }
         assertEquals(expected, parse(source))
@@ -66,9 +66,9 @@ class JavaParserEnumTest : JavaParserTest() {
         val expected = sourceUnit {
             type("Color") {
                 modifiers("enum")
-                variable("RED") { +"RED" }
-                variable("GREEN") { +"GREEN" }
-                variable("BLUE") { +"BLUE" }
+                variable("RED") {}
+                variable("GREEN") {}
+                variable("BLUE") {}
                 variable("format") {
                     modifiers("public", "final")
 
@@ -95,6 +95,9 @@ class JavaParserEnumTest : JavaParserTest() {
                     return "#00FF00";
                 }
             },
+            /**
+             * This is a sample {@code Java=Doc}.
+             */
             BLUE() {
                 @Override String getCode() {
                     return "#0000FF";
@@ -109,7 +112,7 @@ class JavaParserEnumTest : JavaParserTest() {
                 modifiers("enum")
 
                 variable("RED") {
-                    +"RED() {"
+                    +"{"
                     +"@Override String getCode() {"
                     +"return \"#FF0000\";"
                     +"}"
@@ -117,7 +120,7 @@ class JavaParserEnumTest : JavaParserTest() {
                 }
 
                 variable("GREEN") {
-                    +"GREEN() {"
+                    +"{"
                     +"@Override String getCode() {"
                     +"return \"#00FF00\";"
                     +"}"
@@ -125,7 +128,7 @@ class JavaParserEnumTest : JavaParserTest() {
                 }
 
                 variable("BLUE") {
-                    +"BLUE() {"
+                    +"{"
                     +"@Override String getCode() {"
                     +"return \"#0000FF\";"
                     +"}"
@@ -139,5 +142,4 @@ class JavaParserEnumTest : JavaParserTest() {
         }
         assertEquals(expected, parse(source))
     }
-
 }

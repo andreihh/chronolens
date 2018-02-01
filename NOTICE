@@ -1,11 +1,11 @@
 =========================================================================
 ==  NOTICE file corresponding to the section 4 d of                    ==
 ==  the Apache License, Version 2.0,                                   ==
-==  in this case for the Algostorm engine distribution.                ==
+==  in this case for the Metanalysis distribution.                     ==
 =========================================================================
 
 Metanalysis
-Copyright 2017 Andrei Heidelbacher
+Copyright 2018 Andrei Heidelbacher
 
 This product includes software developed by Andrei Heidelbacher
 (andrei.heidelbacher@gmail.com).
@@ -14,7 +14,7 @@ This product uses a series of third-party software libraries.
 
 The Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 applies to the following third-party libraries:
-- kotlin-stdlib, Copyright JetBrains s.r.o.
+- kotlin-stdlib-jdk8, Copyright JetBrains s.r.o.
 - kotlin-reflect, Copyright JetBrains s.r.o.
 - kotlin-test, Copyright JetBrains s.r.o.
 - jackson-module-kotlin, Copyright FasterXML

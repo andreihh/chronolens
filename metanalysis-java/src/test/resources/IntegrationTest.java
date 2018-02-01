@@ -15,16 +15,29 @@ abstract class IClass {
 class SampleClass extends IClass implements IEnumeration {
     private int i = 0;
 
+    /**
+     * This is a simple {@code Java=doc}.
+     */
     private static class StaticInnerClass {
         public StaticInnerClass(final int i) {
         }
 
+        /**
+         * This is a simple {@code Java=doc}.
+         */
         @interface Ann {
             String stringField();
+
+            /**
+             * This is a simple {@code Java=doc}.
+             */
             int version() default 1;
         }
     }
 
+    /**
+     * This is a simple {@code Java=doc}.
+     */
     public void countTo(
 
             int target
@@ -42,6 +55,9 @@ class SampleClass extends IClass implements IEnumeration {
                     .println(
                             i
                     );}
+        /**
+         * This is a simple {@code Java=doc}.
+         */
         return
                 0;
 
@@ -55,11 +71,20 @@ class SampleClass extends IClass implements IEnumeration {
         MARS    (6.421e+23, 3.3972e6),
         JUPITER (1.9e+27,   7.1492e7),
         SATURN  (5.688e+26, 6.0268e7),
+        /**
+         * This is a simple {@code Java=doc}.
+         */
         URANUS  (8.686e+25, 2.5559e7),
         NEPTUNE (1.024e+26, 2.4746e7);
 
         public enum Currency {
+            /**
+             * This is a simple {@code Java=doc}.
+             */
             PENNY(1) {
+                /**
+                 * This is a simple {@code Java=doc}.
+                 */
                 @Override
                 public String color() {
                     return "copper";
