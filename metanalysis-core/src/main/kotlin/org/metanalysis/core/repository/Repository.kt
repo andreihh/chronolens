@@ -41,17 +41,20 @@ interface Repository {
 
     /**
      * Returns the source unit found at the given [path] as it is found in the
-     * `head` revision, or `null` if the [path] doesn't exist in the `head`
-     * revision or couldn't be interpreted.
+     * revision with the specified [transactionId], or `null` if the [path]
+     * doesn't exist in the specified revision or couldn't be interpreted.
      *
      * If the source contains syntax errors, then the most recent version which
      * can be parsed without errors will be returned. If all versions of the
      * source contain errors, then the empty source unit will be returned.
      *
-     * @throws IllegalArgumentException if the given [path] is invalid
+     * @throws IllegalArgumentException if [path] or [transactionId] are invalid
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun getSource(path: String): SourceUnit?
+    fun getSource(
+        path: String,
+        transactionId: String = getHeadId()
+    ): SourceUnit?
 
     /**
      * Returns the snapshot of the repository, as it is found in the `head`
@@ -62,7 +65,7 @@ interface Repository {
      * retrieved
      */
     fun getSnapshot(): Project {
-        val sources = listSources().map(::getSource).requireNoNulls()
+        val sources = listSources().map { getSource(it) }.requireNoNulls()
         return Project.of(sources)
     }
 

@@ -16,6 +16,7 @@
 
 package org.metanalysis.core.repository
 
+import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.repository.PersistentRepository.ProgressListener
 import org.metanalysis.core.serialization.JsonModule
@@ -45,10 +46,31 @@ class PersistentRepository private constructor() : Repository {
 
     override fun listSources(): Set<String> = unmodifiableSet(sources)
 
-    override fun getSource(path: String): SourceUnit? {
+    private fun getLatestValidSource(
+        path: String,
+        transactionId: String
+    ): SourceUnit? {
+        val snapshot = Project.empty()
+        for (transaction in getHistory()) {
+            if (transaction.id.startsWith(path)) {
+                snapshot.apply(transaction.edits)
+            }
+            if (transaction.id == transactionId) {
+                break
+            }
+        }
+        return snapshot.get<SourceUnit?>(path)
+    }
+
+    override fun getSource(path: String, transactionId: String): SourceUnit? {
         validatePath(path)
-        return if (path !in sources) null
-        else JsonModule.deserialize(getSourceUnitFile(path))
+        validateTransactionId(transactionId)
+        return when {
+            transactionId == headId && path !in sources -> null
+            transactionId == headId && path in sources ->
+                JsonModule.deserialize(getSourceUnitFile(path))
+            else -> getLatestValidSource(path, transactionId)
+        }
     }
 
     override fun getHistory(): Iterable<Transaction> =

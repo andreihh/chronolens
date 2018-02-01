@@ -105,20 +105,21 @@ sealed class Command {
     object Model : Command() {
         override val name: String = "model"
         override val help: String = """
-        Usage: metanalysis model <path>
+        Usage: metanalysis model <path> [<revision>]
 
         Prints the interpreted code metadata from the file located at the given
         <path> in the project detected in the current working directory.
         """.trimIndent()
 
         override fun execute(vararg args: String) {
-            checkUsage(args.size == 1)
+            checkUsage(args.size in 1..2)
             val project = getProject()
-            val model = project.getSource(args[0])
+            val revision = if (args.size == 2) args[1] else project.getHeadId()
+            val model = project.getSource(args[0], revision)
             if (model != null) {
                 PrettyPrinterVisitor(System.out).visit(model)
             } else {
-                printlnErr("File couldn't be interpreted!")
+                printlnErr("File couldn't be interpreted or doesn't exist!")
             }
         }
     }

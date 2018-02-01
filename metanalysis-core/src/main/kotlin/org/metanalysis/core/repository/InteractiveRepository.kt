@@ -58,11 +58,17 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
         return Parser.parse(SourceFile(path, source))
     }
 
-    private fun getLatestValidSourceUnit(path: String): SourceUnit {
+    private fun getLatestValidSource(
+        revisionId: String,
+        path: String
+    ): SourceUnit {
+        checkValidTransactionId(revisionId)
         checkValidPath(path)
-        val revisions = vcs.getHistory(path).asReversed()
-        for ((revisionId, _, _) in revisions) {
-            val result = parseSource(revisionId, path)
+        val revisions = vcs.getHistory(path)
+            .asReversed()
+            .dropWhile { it.id != revisionId }
+        for ((id, _, _) in revisions) {
+            val result = parseSource(id, path)
             if (result is Result.Success) {
                 return result.sourceUnit
             }
@@ -70,12 +76,13 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
         return SourceUnit(path)
     }
 
-    override fun getSource(path: String): SourceUnit? {
+    override fun getSource(path: String, transactionId: String): SourceUnit? {
         validatePath(path)
-        val result = parseSource(headId, path)
+        validateTransactionId(transactionId)
+        val result = parseSource(transactionId, path)
         return when (result) {
             is Result.Success -> result.sourceUnit
-            Result.SyntaxError -> getLatestValidSourceUnit(path)
+            Result.SyntaxError -> getLatestValidSource(transactionId, path)
             null -> null
         }
     }

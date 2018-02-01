@@ -44,8 +44,24 @@ class RepositoryBuilder {
 
         override fun getHeadId(): String = history.last().id
 
-        override fun getSource(path: String): SourceUnit? =
-            snapshot.get<SourceUnit?>(path)
+        override fun getSource(
+            path: String,
+            transactionId: String
+        ): SourceUnit? =
+            if (transactionId == getHeadId()) {
+                snapshot.get<SourceUnit?>(path)
+            } else {
+                val temporarySnapshot = Project.empty()
+                for (transaction in history) {
+                    if (transaction.id.startsWith(path)) {
+                        temporarySnapshot.apply(transaction.edits)
+                    }
+                    if (transaction.id == transactionId) {
+                        break
+                    }
+                }
+                temporarySnapshot.get<SourceUnit?>(path)
+            }
 
         override fun listSources(): Set<String> =
             snapshot.sources.map(SourceUnit::path).toSet()
