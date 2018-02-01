@@ -116,7 +116,7 @@ sealed class Command {
             val project = getProject()
             val model = project.getSource(args[0])
             if (model != null) {
-                println("Operation not supported yet!")
+                PrettyPrinterVisitor(System.out).visit(model)
             } else {
                 printlnErr("File couldn't be interpreted!")
             }
