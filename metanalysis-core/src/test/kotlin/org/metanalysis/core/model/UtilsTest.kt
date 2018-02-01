@@ -49,4 +49,15 @@ class UtilsTest {
         val variable = variable("src/Test.java:VERSION") {}
         assertEquals(emptyList(), variable.children.toList())
     }
+
+    @Test fun `test source path of unit`() {
+        val unit = sourceUnit("src/Test.java") {}
+        assertEquals(unit.path, unit.sourcePath)
+    }
+
+    @Test fun `test source path of node`() {
+        val path = "src/Test.java"
+        val node = variable("$path:getVersion(String):name") {}
+        assertEquals(path, node.sourcePath)
+    }
 }

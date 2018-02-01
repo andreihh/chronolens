@@ -29,14 +29,12 @@ val SourceEntity.parentId: String
     get() = id.substringBeforeLast(ENTITY_SEPARATOR)
 
 /** The path of the [SourceUnit] which contains [this] node. */
-internal val SourceNode.sourcePath: String
-    get() = id.substringBefore(ENTITY_SEPARATOR)
+val SourceNode.sourcePath: String get() = id.substringBefore(ENTITY_SEPARATOR)
 
 /**
  * The path of the [SourceUnit] which contains the node affected by [this] edit.
  */
-internal val ProjectEdit.sourcePath: String
-    get() = id.substringBefore(ENTITY_SEPARATOR)
+val ProjectEdit.sourcePath: String get() = id.substringBefore(ENTITY_SEPARATOR)
 
 /** The child source nodes contained in [this] source node. */
 val SourceNode.children: Collection<SourceEntity>

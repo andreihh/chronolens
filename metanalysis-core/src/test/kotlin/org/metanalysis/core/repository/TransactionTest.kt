@@ -17,6 +17,11 @@
 package org.metanalysis.core.repository
 
 import org.junit.Test
+import org.metanalysis.core.model.AddNode
+import org.metanalysis.core.model.EditType
+import org.metanalysis.core.model.RemoveNode
+import org.metanalysis.core.model.Type
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class TransactionTest {
@@ -36,5 +41,20 @@ class TransactionTest {
         assertFailsWith<IllegalArgumentException> {
             Transaction(id = "123", date = -1L, author = "<author>")
         }
+    }
+
+    @Test fun `test change set`() {
+        val expected = setOf("Main.java", "Test.java", "MainTest.java")
+        val actual = Transaction(
+            id = "123",
+            date = 1L,
+            author = "<author>",
+            edits = listOf(
+                AddNode(Type("Main.java:Main:MainType")),
+                RemoveNode("Test.java:Test:TestType"),
+                EditType("MainTest.java:MainTest")
+            )
+        ).changeSet
+        assertEquals(expected, actual)
     }
 }

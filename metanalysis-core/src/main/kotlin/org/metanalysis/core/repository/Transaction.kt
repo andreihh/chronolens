@@ -18,6 +18,8 @@ package org.metanalysis.core.repository
 
 import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.ProjectEdit
+import org.metanalysis.core.model.sourcePath
+import java.util.Collections.unmodifiableSet
 
 /**
  * A transaction consisting of multiple changes applied to a [Project].
@@ -42,4 +44,8 @@ data class Transaction(
         validateTransactionId(id)
         require(date >= 0L) { "'$id' date '$date' can't be negative!" }
     }
+
+    /** The set of source files modified in this transaction. */
+    val changeSet: Set<String>
+        get() = unmodifiableSet(edits.map(ProjectEdit::sourcePath).toSet())
 }
