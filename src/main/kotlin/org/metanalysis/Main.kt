@@ -29,7 +29,7 @@ fun printlnErr(message: String?) {
 fun main(args: Array<String>) {
     try {
         val command = args.firstOrNull()?.let { Command(it) }
-                ?: usage(Command.Help.help)
+                ?: usage(Help.help)
         command.execute(*args.drop(1).toTypedArray())
     } catch (e: IllegalUsageException) {
         printlnErr(e.message)

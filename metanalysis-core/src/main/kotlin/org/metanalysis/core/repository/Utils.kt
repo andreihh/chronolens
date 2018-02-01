@@ -16,15 +16,8 @@
 
 package org.metanalysis.core.repository
 
-/** Returns whether the given source file [path] is valid. */
-fun isValidPath(path: String): Boolean {
-    val p = "/$path/"
-    return "//" !in p && "/./" !in p && "/../" !in p
-}
-
-/** Returns whether the given transaction [id] is valid. */
-private fun isValidTransactionId(id: String): Boolean =
-    id.isNotEmpty() && id.all(Character::isLetterOrDigit)
+import org.metanalysis.core.repository.Repository.Companion.isValidPath
+import org.metanalysis.core.repository.Repository.Companion.isValidTransactionId
 
 /**
  * Validates the given transaction [id].

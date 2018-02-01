@@ -25,6 +25,7 @@ import org.metanalysis.test.core.model.project
 import org.metanalysis.test.core.model.sourceUnit
 import org.metanalysis.core.versioning.VcsProxyFactoryMock
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 @Ignore
@@ -124,6 +125,24 @@ abstract class RepositoryTest {
         val expected = sourceUnit("src/Error.mock") {}
         val actual = repository.getSource("src/Error.mock")
         assertEquals(expected, actual)
+    }
+
+    @Test fun `test get invalid path throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            repository.getSource("src/../Main.mock")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            repository.getSource("src/./Main.mock")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            repository.getSource("src//Main.mock")
+        }
+    }
+
+    @Test fun `test get path from invalid revision throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            repository.getSource("src/Main.mock", "^-+")
+        }
     }
 
     @Test fun `test get snapshot`() {

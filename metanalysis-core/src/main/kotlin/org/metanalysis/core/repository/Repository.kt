@@ -76,4 +76,16 @@ interface Repository {
      * @throws IllegalStateException if this repository is in a corrupted state
      */
     fun getHistory(): Iterable<Transaction>
+
+    companion object {
+        /** Returns whether the given source file [path] is valid. */
+        fun isValidPath(path: String): Boolean {
+            val p = "/$path/"
+            return "//" !in p && "/./" !in p && "/../" !in p
+        }
+
+        /** Returns whether the given transaction [id] is valid. */
+        fun isValidTransactionId(id: String): Boolean =
+            id.isNotEmpty() && id.all(Character::isLetterOrDigit)
+    }
 }
