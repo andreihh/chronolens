@@ -25,6 +25,7 @@ import org.metanalysis.core.parsing.SourceFile
 import org.metanalysis.core.versioning.Revision
 import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
+import java.util.Collections.unmodifiableList
 import java.util.Collections.unmodifiableSet
 
 /**
@@ -35,21 +36,32 @@ import java.util.Collections.unmodifiableSet
 class InteractiveRepository private constructor(private val vcs: VcsProxy) :
     Repository {
 
-    private val headId = vcs.getHead().id
-    private val sources = vcs.listFiles(headId).filter(::canParse).toSet()
-    private val history = vcs.getHistory()
-
-    init {
-        checkValidTransactionId(headId)
-        sources.forEach(::checkValidPath)
-        checkValidHistory(history.map(Revision::id))
-    }
+    private val headId = vcs.getHead().id.apply(::checkValidTransactionId)
+    private val headSources = listSources(headId)
+    private val history = vcs.getHistory().apply(::checkValidHistory)
 
     private fun canParse(path: String): Boolean = Parser.getParser(path) != null
 
     override fun getHeadId(): String = headId
 
-    override fun listSources(): Set<String> = unmodifiableSet(sources)
+    /**
+     * Returns the set of source units which can be interpreted from the
+     * revision with the specified [revisionId].
+     *
+     * @throws IllegalArgumentException if the given [revisionId] is invalid
+     * @throws IllegalStateException if this repository is in a corrupted state
+     */
+    fun listSources(revisionId: String): Set<String> {
+        validateTransactionId(revisionId)
+        val sources = vcs.listFiles(revisionId).filter(::canParse).toSet()
+        sources.forEach(::checkValidPath)
+        return unmodifiableSet(sources)
+    }
+
+    override fun listSources(): Set<String> = headSources
+
+    override fun listRevisions(): List<String> =
+        unmodifiableList(history.map(Revision::id))
 
     private fun parseSource(revisionId: String, path: String): Result? {
         checkValidTransactionId(revisionId)
@@ -76,16 +88,30 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
         return SourceUnit(path)
     }
 
-    override fun getSource(path: String, transactionId: String): SourceUnit? {
+    /**
+     * Returns the source unit found at the given [path] as it is found in the
+     * revision with the specified [revisionId], or `null` if the [path] doesn't
+     * exist in the specified revision or couldn't be interpreted.
+     *
+     * If the source contains syntax errors, then the most recent version which
+     * can be parsed without errors will be returned. If all versions of the
+     * source contain errors, then the empty source unit will be returned.
+     *
+     * @throws IllegalArgumentException if [path] or [revisionId] are invalid
+     * @throws IllegalStateException if this repository is in a corrupted state
+     */
+    fun getSource(path: String, revisionId: String): SourceUnit? {
         validatePath(path)
-        validateTransactionId(transactionId)
-        val result = parseSource(transactionId, path)
+        validateTransactionId(revisionId)
+        val result = parseSource(revisionId, path)
         return when (result) {
             is Result.Success -> result.sourceUnit
-            Result.SyntaxError -> getLatestValidSource(transactionId, path)
+            Result.SyntaxError -> getLatestValidSource(revisionId, path)
             null -> null
         }
     }
+
+    override fun getSource(path: String): SourceUnit? = getSource(path, headId)
 
     override fun getHistory(): Iterable<Transaction> {
         val project = Project.empty()

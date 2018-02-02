@@ -95,6 +95,12 @@ abstract class RepositoryTest {
         assertEquals(expected, actual)
     }
 
+    @Test fun `test list revisions`() {
+        val expected = listOf("0", "1")
+        val actual = repository.listRevisions()
+        assertEquals(expected, actual)
+    }
+
     @Test fun `test get source unit`() {
         val expected = sourceUnit("src/Main.mock") {
             type("Main") {}
@@ -136,12 +142,6 @@ abstract class RepositoryTest {
         }
         assertFailsWith<IllegalArgumentException> {
             repository.getSource("src//Main.mock")
-        }
-    }
-
-    @Test fun `test get path from invalid revision throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            repository.getSource("src/Main.mock", "^-+")
         }
     }
 

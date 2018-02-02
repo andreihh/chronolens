@@ -40,21 +40,26 @@ interface Repository {
     fun listSources(): Set<String>
 
     /**
+     * Returns the list of revisions from this repository in chronological
+     * order.
+     *
+     * @throws IllegalStateException if this repository is in a corrupted state
+     */
+    fun listRevisions(): List<String>
+
+    /**
      * Returns the source unit found at the given [path] as it is found in the
-     * revision with the specified [transactionId], or `null` if the [path]
-     * doesn't exist in the specified revision or couldn't be interpreted.
+     * `head` revision, or `null` if the [path] doesn't exist in the `head`
+     * revision or couldn't be interpreted.
      *
      * If the source contains syntax errors, then the most recent version which
      * can be parsed without errors will be returned. If all versions of the
      * source contain errors, then the empty source unit will be returned.
      *
-     * @throws IllegalArgumentException if [path] or [transactionId] are invalid
+     * @throws IllegalArgumentException if the given [path] is invalid
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun getSource(
-        path: String,
-        transactionId: String = getHeadId()
-    ): SourceUnit?
+    fun getSource(path: String): SourceUnit?
 
     /**
      * Returns the snapshot of the repository, as it is found in the `head`

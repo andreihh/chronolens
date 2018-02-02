@@ -16,12 +16,12 @@
 
 package org.metanalysis.core.repository
 
-import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.repository.PersistentRepository.ProgressListener
 import org.metanalysis.core.serialization.JsonModule
 import java.io.File
 import java.io.IOException
+import java.util.Collections.unmodifiableList
 import java.util.Collections.unmodifiableSet
 
 /**
@@ -46,31 +46,12 @@ class PersistentRepository private constructor() : Repository {
 
     override fun listSources(): Set<String> = unmodifiableSet(sources)
 
-    private fun getLatestValidSource(
-        path: String,
-        transactionId: String
-    ): SourceUnit? {
-        val snapshot = Project.empty()
-        for (transaction in getHistory()) {
-            if (transaction.id.startsWith(path)) {
-                snapshot.apply(transaction.edits)
-            }
-            if (transaction.id == transactionId) {
-                break
-            }
-        }
-        return snapshot.get<SourceUnit?>(path)
-    }
+    override fun listRevisions(): List<String> = unmodifiableList(history)
 
-    override fun getSource(path: String, transactionId: String): SourceUnit? {
+    override fun getSource(path: String): SourceUnit? {
         validatePath(path)
-        validateTransactionId(transactionId)
-        return when {
-            transactionId == headId && path !in sources -> null
-            transactionId == headId && path in sources ->
-                JsonModule.deserialize(getSourceUnitFile(path))
-            else -> getLatestValidSource(path, transactionId)
-        }
+        return if (path !in sources) null
+        else JsonModule.deserialize(getSourceUnitFile(path))
     }
 
     override fun getHistory(): Iterable<Transaction> =
@@ -135,10 +116,10 @@ class PersistentRepository private constructor() : Repository {
 
     /** A listener notified on the progress of persisting a repository. */
     interface ProgressListener {
-        fun onSnapshotStart(headId: String)
+        fun onSnapshotStart(headId: String, sourceCount: Int)
         fun onSourcePersisted(path: String)
         fun onSnapshotEnd()
-        fun onHistoryStart()
+        fun onHistoryStart(revisionCount: Int)
         fun onTransactionPersisted(id: String)
         fun onHistoryEnd()
     }
@@ -179,7 +160,7 @@ private fun persistSource(source: SourceUnit) {
 }
 
 private fun Repository.persistSnapshot(listener: ProgressListener?) {
-    listener?.onSnapshotStart(getHeadId())
+    listener?.onSnapshotStart(getHeadId(), listSources().size)
     snapshotDirectory.mkdir()
     sourcesFile.printWriter().use { out ->
         for (path in listSources()) {
@@ -201,7 +182,7 @@ private fun persistTransaction(transaction: Transaction) {
 }
 
 private fun Repository.persistHistory(listener: ProgressListener?) {
-    listener?.onHistoryStart()
+    listener?.onHistoryStart(listRevisions().size)
     transactionsDirectory.mkdir()
     historyFile.printWriter().use { out ->
         for (transaction in getHistory()) {

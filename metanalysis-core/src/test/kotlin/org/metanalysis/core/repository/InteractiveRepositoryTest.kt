@@ -17,6 +17,7 @@
 package org.metanalysis.core.repository
 
 import org.junit.Test
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.fail
 
@@ -28,5 +29,12 @@ class InteractiveRepositoryTest : RepositoryTest() {
     @Test fun `test connect with empty repository returns null`() {
         resetVcsRepository()
         assertNull(InteractiveRepository.connect())
+    }
+
+    @Test fun `test get source from invalid revision throws`() {
+        assertFailsWith<IllegalArgumentException> {
+            (repository as InteractiveRepository)
+                .getSource(path = "src/Main.mock", revisionId = "^-+")
+        }
     }
 }

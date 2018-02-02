@@ -20,7 +20,6 @@ import org.metanalysis.core.repository.InteractiveRepository
 import org.metanalysis.core.repository.PersistentRepository
 import org.metanalysis.core.repository.PersistentRepository.Companion.persist
 import org.metanalysis.core.repository.PersistentRepository.ProgressListener
-import org.metanalysis.core.repository.Repository
 import org.metanalysis.core.repository.Repository.Companion.isValidPath
 import org.metanalysis.core.repository.Repository.Companion.isValidTransactionId
 import java.io.IOException
@@ -48,8 +47,9 @@ sealed class Command {
         }
     }
 
-    protected fun getProject(): Repository = InteractiveRepository.connect()
-        ?: throw IOException("Repository not found!")
+    protected fun getProject(): InteractiveRepository =
+        InteractiveRepository.connect()
+            ?: throw IOException("Repository not found!")
 }
 
 object Version : Command() {
@@ -94,16 +94,35 @@ object Help : Command() {
 object List : Command() {
     override val name: String = "list"
     override val help: String = """
-        Usage: metanalysis list
+        Usage: metanalysis list [<revision>]
 
         Prints all the interpretable files in the project detected in the
-        current working directory.
+        current working directory from the specified <revision> (default value
+        is the <head> revision).
+        """.trimIndent()
+
+    override fun execute(vararg args: String) {
+        checkUsage(args.size in 0..1)
+        val project = getProject()
+        val revision = if (args.size == 1) args[0] else project.getHeadId()
+        checkUsage(isValidTransactionId(revision))
+        project.listSources(revision).forEach(::println)
+    }
+}
+
+object RevList : Command() {
+    override val name: String = "rev-list"
+    override val help: String = """
+        Usage: metanalysis rev-list
+
+        Prints all the revisions in the project detected in the current working
+        directory.
         """.trimIndent()
 
     override fun execute(vararg args: String) {
         checkUsage(args.isEmpty())
         val project = getProject()
-        project.listSources().forEach(::println)
+        project.listRevisions().forEach(::println)
     }
 }
 
@@ -153,14 +172,17 @@ object Persist : Command() {
         project.persist(object : ProgressListener {
             private var sources = 0
             private var transactions = 0
+            private var i = 0
 
-            override fun onSnapshotStart(headId: String) {
+            override fun onSnapshotStart(headId: String, sourceCount: Int) {
                 println("Persisting snapshot '$headId'...")
+                sources = sourceCount
+                i = 0
             }
 
             override fun onSourcePersisted(path: String) {
-                sources++
-                print("Persisted $sources sources...\r")
+                i++
+                print("Persisted $i / $sources sources...\r")
             }
 
             override fun onSnapshotEnd() {
@@ -168,13 +190,15 @@ object Persist : Command() {
                 println("Done!")
             }
 
-            override fun onHistoryStart() {
+            override fun onHistoryStart(revisionCount: Int) {
                 println("Persisting transactions...")
+                transactions = revisionCount
+                i = 0
             }
 
             override fun onTransactionPersisted(id: String) {
-                transactions++
-                print("Persisted $transactions transactions...\r")
+                i++
+                print("Persisted $i / $transactions transactions...\r")
             }
 
             override fun onHistoryEnd() {

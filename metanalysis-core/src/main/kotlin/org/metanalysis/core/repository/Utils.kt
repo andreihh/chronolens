@@ -18,6 +18,7 @@ package org.metanalysis.core.repository
 
 import org.metanalysis.core.repository.Repository.Companion.isValidPath
 import org.metanalysis.core.repository.Repository.Companion.isValidTransactionId
+import org.metanalysis.core.versioning.Revision
 
 /**
  * Validates the given transaction [id].
@@ -67,6 +68,16 @@ internal fun checkValidHistory(history: List<String>) {
         checkValidTransactionId(id)
         transactionIds += id
     }
+}
+
+/**
+ * Checks that the given list of revisions represent a valid [history].
+ *
+ * @throws IllegalStateException if the given [history] is invalid
+ */
+@JvmName("checkValidRevisionHistory")
+internal fun checkValidHistory(history: List<Revision>) {
+    checkValidHistory(history.map(Revision::id))
 }
 
 /**
