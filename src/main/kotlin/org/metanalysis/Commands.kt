@@ -28,7 +28,7 @@ sealed class Command {
     companion object {
         @JvmStatic
         protected val commands =
-            listOf(Version, Help, List, Model, Persist, Clean)
+            listOf(Version, Help, List, RevList, Model, Persist, Clean)
 
         @JvmStatic
         operator fun invoke(name: String): Command? =
