@@ -48,16 +48,16 @@ internal data class ParserContext(
         map { it.toSource() }.requireDistinct()
 
     private fun MethodDeclaration.body(): List<String> =
-        body?.toSource()?.toBlock() ?: emptyList()
+        body?.toSource().toBlock()
 
     private fun VariableDeclaration.initializer(): List<String> =
-        initializer?.toSource()?.toBlock() ?: emptyList()
+        initializer?.toSource().toBlock()
 
     private fun EnumConstantDeclaration.initializer(): List<String> =
-        anonymousClassDeclaration?.toSource()?.toBlock() ?: emptyList()
+        anonymousClassDeclaration?.toSource().toBlock()
 
     private fun AnnotationTypeMemberDeclaration.defaultValue(): List<String> =
-        default?.toSource()?.toBlock() ?: emptyList()
+        default?.toSource().toBlock()
 
     private fun getEntityId(simpleId: String): String =
         "$parentId$ENTITY_SEPARATOR$simpleId"

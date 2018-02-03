@@ -34,13 +34,13 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment
 import org.metanalysis.core.parsing.SyntaxErrorException
 
 /**
- * Formats this string to a block of code by splitting it into lines
- * (delimited by `\n`), removing blank lines (those which consist only
- * of whitespaces) and trims leading and trailing whitespaces from all
- * lines.
+ * Formats [this] string to a block of code by splitting it into lines, removing
+ * blank lines (those which consist only of whitespaces) and trims leading and
+ * trailing whitespaces from all lines.
  */
-fun String.toBlock(): List<String> =
-    lines().filter(String::isNotBlank).map(String::trim)
+internal fun String?.toBlock(): List<String> =
+    if (this == null) emptyList()
+    else lines().filter(String::isNotBlank).map(String::trim)
 
 internal fun <T> Collection<T>.requireDistinct(): Set<T> {
     val unique = linkedSetOf<T>()
@@ -59,6 +59,12 @@ internal inline fun <reified T> List<*>.requireIsInstance(): List<T> = onEach {
         throw SyntaxErrorException("'$it' is not of type '${T::class}'!")
     }
 } as List<T>
+
+internal fun requireNotMalformed(node: ASTNode) {
+    if ((node.flags and (ASTNode.MALFORMED or ASTNode.RECOVERED)) != 0) {
+        throw SyntaxErrorException("Malformed AST node!")
+    }
+}
 
 internal fun AbstractTypeDeclaration.supertypes(): List<Type> = when (this) {
     is AnnotationTypeDeclaration -> emptyList()
@@ -123,9 +129,3 @@ internal fun AnnotationTypeMemberDeclaration.name(): String = name.identifier
 internal fun EnumConstantDeclaration.name(): String = name.identifier
 internal fun MethodDeclaration.name(): String = name.identifier
 internal fun VariableDeclaration.name(): String = name.identifier
-
-internal fun requireNotMalformed(node: ASTNode) {
-    if ((node.flags and (ASTNode.MALFORMED or ASTNode.RECOVERED)) != 0) {
-        throw SyntaxErrorException("Malformed AST node!")
-    }
-}
