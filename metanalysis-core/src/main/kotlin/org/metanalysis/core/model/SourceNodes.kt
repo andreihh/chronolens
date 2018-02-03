@@ -27,7 +27,8 @@ sealed class SourceNode {
      *
      * The fully qualified identifier of a nested node will be the fully
      * qualified identifier of the enclosing node followed by the corresponding
-     * separator and then followed by the simple identifier of the node.
+     * separator and then followed by the simple identifier of the node. The
+     * simple identifiers must not contain `/`, `:`, `'`, `"` or `\`.
      */
     abstract val id: String
 
