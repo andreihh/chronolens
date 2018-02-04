@@ -34,8 +34,8 @@ class Project private constructor(
         get() = unmodifiableCollection(unitMap.values)
 
     /** Returns all the source nodes in this project. */
-    val sourceTree: Iterable<SourceNode> =
-        unmodifiableCollection(nodeMap.values)
+    val sourceTree: Iterable<SourceNode>
+        get() = unmodifiableCollection(nodeMap.values)
 
     /**
      * Returns the node with the specified [id], or `null` if no such node was
