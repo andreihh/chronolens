@@ -24,25 +24,25 @@ import java.util.Collections.unmodifiableSet
 /**
  * A transaction consisting of multiple changes applied to a [Project].
  *
- * @property id the non-empty unique identifier of this transaction consisting
- * of alphanumeric characters
- * @property date the date at which this transaction was committed in
- * milliseconds since the Unix epoch
- * @property author the author of the transaction
+ * @property revisionId the non-empty unique identifier of the revision
+ * corresponding to this transaction, consisting of alphanumeric characters
+ * @property date the date when the revision corresponding to this transaction
+ * was committed in milliseconds since the Unix epoch
+ * @property author the author of the revision corresponding to this transaction
  * @property edits the edits applied in this transaction
- * @throws IllegalArgumentException if [id] is empty or contains
+ * @throws IllegalArgumentException if [revisionId] is empty or contains
  * non-alphanumeric characters or if [date] is negative
  */
 data class Transaction(
-    val id: String,
+    val revisionId: String,
     val date: Long,
     val author: String,
     val edits: List<ProjectEdit> = emptyList()
 ) {
 
     init {
-        validateTransactionId(id)
-        require(date >= 0L) { "'$id' date '$date' can't be negative!" }
+        validateRevisionId(revisionId)
+        require(date >= 0L) { "'$revisionId' date '$date' can't be negative!" }
     }
 
     /** The set of source files modified in this transaction. */

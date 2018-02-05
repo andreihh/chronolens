@@ -34,7 +34,7 @@ import org.metanalysis.test.core.model.sourceUnit
 import org.metanalysis.test.core.model.type
 import org.metanalysis.test.core.model.variable
 
-class TransactionBuilder(private val id: String) {
+class TransactionBuilder(private val revisionId: String) {
     var date: Long = System.currentTimeMillis()
     var author: String = "<unknown-author>"
     private val edits = arrayListOf<ProjectEdit>()
@@ -104,5 +104,5 @@ class TransactionBuilder(private val id: String) {
         return this
     }
 
-    fun build(): Transaction = Transaction(id, date, author, edits)
+    fun build(): Transaction = Transaction(revisionId, date, author, edits)
 }

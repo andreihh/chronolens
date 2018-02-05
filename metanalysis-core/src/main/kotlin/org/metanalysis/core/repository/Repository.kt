@@ -89,8 +89,8 @@ interface Repository {
             return "//" !in p && "/./" !in p && "/../" !in p
         }
 
-        /** Returns whether the given transaction [id] is valid. */
-        fun isValidTransactionId(id: String): Boolean =
+        /** Returns whether the given revision [id] is valid. */
+        fun isValidRevisionId(id: String): Boolean =
             id.isNotEmpty() && id.all(Character::isLetterOrDigit)
     }
 }

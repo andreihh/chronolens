@@ -28,10 +28,10 @@ class RepositoryBuilder {
     private val snapshot = Project.empty()
 
     fun transaction(
-        id: String,
+        revisionId: String,
         init: Init<TransactionBuilder>
     ): RepositoryBuilder {
-        val transaction = TransactionBuilder(id).apply(init).build()
+        val transaction = TransactionBuilder(revisionId).apply(init).build()
         history += transaction
         snapshot.apply(transaction.edits)
         return this
@@ -42,13 +42,13 @@ class RepositoryBuilder {
             check(history.isNotEmpty())
         }
 
-        override fun getHeadId(): String = history.last().id
+        override fun getHeadId(): String = history.last().revisionId
 
         override fun listSources(): Set<String> =
             snapshot.sources.map(SourceUnit::path).toSet()
 
         override fun listRevisions(): List<String> =
-            history.map(Transaction::id)
+            history.map(Transaction::revisionId)
 
         override fun getSource(path: String): SourceUnit? =
             snapshot.get<SourceUnit?>(path)

@@ -36,7 +36,7 @@ import java.util.Collections.unmodifiableSet
 class InteractiveRepository private constructor(private val vcs: VcsProxy) :
     Repository {
 
-    private val headId = vcs.getHead().id.apply(::checkValidTransactionId)
+    private val headId = vcs.getHead().id.apply(::checkValidRevisionId)
     private val headSources = listSources(headId)
     private val history = vcs.getHistory().apply(::checkValidHistory)
 
@@ -52,7 +52,7 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
      * @throws IllegalStateException if this repository is in a corrupted state
      */
     fun listSources(revisionId: String): Set<String> {
-        validateTransactionId(revisionId)
+        validateRevisionId(revisionId)
         val sources = vcs.listFiles(revisionId).filter(::canParse).toSet()
         sources.forEach(::checkValidPath)
         return unmodifiableSet(sources)
@@ -64,7 +64,7 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
         unmodifiableList(history.map(Revision::id))
 
     private fun parseSource(revisionId: String, path: String): Result? {
-        checkValidTransactionId(revisionId)
+        checkValidRevisionId(revisionId)
         checkValidPath(path)
         val source = vcs.getFile(revisionId, path) ?: return null
         return Parser.parse(SourceFile(path, source))
@@ -74,7 +74,7 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
         revisionId: String,
         path: String
     ): SourceUnit {
-        checkValidTransactionId(revisionId)
+        checkValidRevisionId(revisionId)
         checkValidPath(path)
         val revisions = vcs.getHistory(path)
             .asReversed()
@@ -102,7 +102,7 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
      */
     fun getSource(path: String, revisionId: String): SourceUnit? {
         validatePath(path)
-        validateTransactionId(revisionId)
+        validateRevisionId(revisionId)
         val result = parseSource(revisionId, path)
         return when (result) {
             is Result.Success -> result.sourceUnit

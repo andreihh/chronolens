@@ -23,8 +23,10 @@ import org.metanalysis.core.repository.Transaction
 import org.metanalysis.test.core.Init
 import org.metanalysis.test.core.apply
 
-fun transaction(id: String, init: Init<TransactionBuilder>): Transaction =
-    TransactionBuilder(id).apply(init).build()
+fun transaction(
+    revisionId: String,
+    init: Init<TransactionBuilder>
+): Transaction = TransactionBuilder(revisionId).apply(init).build()
 
 fun repository(init: Init<RepositoryBuilder>): Repository =
     RepositoryBuilder().apply(init).build()

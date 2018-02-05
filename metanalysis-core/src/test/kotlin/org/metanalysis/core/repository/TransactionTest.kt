@@ -27,26 +27,26 @@ import kotlin.test.assertFailsWith
 class TransactionTest {
     @Test fun `test transaction with empty id throws`() {
         assertFailsWith<IllegalArgumentException> {
-            Transaction(id = "", date = 1L, author = "<author>")
+            Transaction(revisionId = "", date = 1L, author = "<author>")
         }
     }
 
     @Test fun `test transaction with invalid characters in id throws`() {
         assertFailsWith<IllegalArgumentException> {
-            Transaction(id = "123aA_", date = 1L, author = "<author>")
+            Transaction(revisionId = "123aA_", date = 1L, author = "<author>")
         }
     }
 
     @Test fun `test transaction with negative date throws`() {
         assertFailsWith<IllegalArgumentException> {
-            Transaction(id = "123", date = -1L, author = "<author>")
+            Transaction(revisionId = "123", date = -1L, author = "<author>")
         }
     }
 
     @Test fun `test change set`() {
         val expected = setOf("Main.java", "Test.java", "MainTest.java")
         val actual = Transaction(
-            id = "123",
+            revisionId = "123",
             date = 1L,
             author = "<author>",
             edits = listOf(

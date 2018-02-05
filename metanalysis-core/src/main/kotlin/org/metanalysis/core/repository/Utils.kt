@@ -17,25 +17,25 @@
 package org.metanalysis.core.repository
 
 import org.metanalysis.core.repository.Repository.Companion.isValidPath
-import org.metanalysis.core.repository.Repository.Companion.isValidTransactionId
+import org.metanalysis.core.repository.Repository.Companion.isValidRevisionId
 import org.metanalysis.core.versioning.Revision
 
 /**
- * Validates the given transaction [id].
+ * Validates the given revision [id].
  *
  * @throws IllegalArgumentException if the given [id] is not valid
  */
-internal fun validateTransactionId(id: String) {
-    require(isValidTransactionId(id)) { "Invalid transaction id '$id'!" }
+internal fun validateRevisionId(id: String) {
+    require(isValidRevisionId(id)) { "Invalid revision id '$id'!" }
 }
 
 /**
- * Checks that the given transaction [id] is valid.
+ * Checks that the given revision [id] is valid.
  *
  * @throws IllegalStateException if the given [id] is not valid
  */
-internal fun checkValidTransactionId(id: String) {
-    check(isValidTransactionId(id)) { "Invalid transaction id '$id'!" }
+internal fun checkValidRevisionId(id: String) {
+    check(isValidRevisionId(id)) { "Invalid revision id '$id'!" }
 }
 
 /**
@@ -62,11 +62,11 @@ internal fun checkValidPath(path: String) {
  * @throws IllegalStateException if the given [history] is invalid
  */
 internal fun checkValidHistory(history: List<String>) {
-    val transactionIds = hashSetOf<String>()
+    val revisionIds = hashSetOf<String>()
     for (id in history) {
-        check(id !in transactionIds) { "Duplicated transaction id '$id'!" }
-        checkValidTransactionId(id)
-        transactionIds += id
+        check(id !in revisionIds) { "Duplicated revision id '$id'!" }
+        checkValidRevisionId(id)
+        revisionIds += id
     }
 }
 

@@ -21,7 +21,7 @@ import org.metanalysis.core.repository.PersistentRepository
 import org.metanalysis.core.repository.PersistentRepository.Companion.persist
 import org.metanalysis.core.repository.PersistentRepository.ProgressListener
 import org.metanalysis.core.repository.Repository.Companion.isValidPath
-import org.metanalysis.core.repository.Repository.Companion.isValidTransactionId
+import org.metanalysis.core.repository.Repository.Companion.isValidRevisionId
 import java.io.IOException
 
 sealed class Command {
@@ -105,7 +105,7 @@ object List : Command() {
         checkUsage(args.size in 0..1)
         val project = getProject()
         val revision = if (args.size == 1) args[0] else project.getHeadId()
-        checkUsage(isValidTransactionId(revision))
+        checkUsage(isValidRevisionId(revision))
         project.listSources(revision).forEach(::println)
     }
 }
@@ -143,7 +143,7 @@ object Model : Command() {
         val path = args[0]
         val revision = if (args.size == 2) args[1] else project.getHeadId()
         checkUsage(isValidPath(path))
-        checkUsage(isValidTransactionId(revision))
+        checkUsage(isValidRevisionId(revision))
         val model = project.getSource(path, revision)
         if (model != null) {
             PrettyPrinterVisitor(System.out).visit(model)

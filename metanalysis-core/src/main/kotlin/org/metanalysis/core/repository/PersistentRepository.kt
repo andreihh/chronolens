@@ -37,7 +37,7 @@ class PersistentRepository private constructor() : Repository {
     private val history = historyFile.readFileLines()
 
     init {
-        checkValidTransactionId(headId)
+        checkValidRevisionId(headId)
         sources.forEach(::checkValidPath)
         checkValidHistory(history)
     }
@@ -175,7 +175,7 @@ private fun Repository.persistSnapshot(listener: ProgressListener?) {
 }
 
 private fun persistTransaction(transaction: Transaction) {
-    val file = getTransactionFile(transaction.id)
+    val file = getTransactionFile(transaction.revisionId)
     file.outputStream().use { out ->
         JsonModule.serialize(out, transaction)
     }
@@ -186,9 +186,9 @@ private fun Repository.persistHistory(listener: ProgressListener?) {
     transactionsDirectory.mkdir()
     historyFile.printWriter().use { out ->
         for (transaction in getHistory()) {
-            out.println(transaction.id)
+            out.println(transaction.revisionId)
             persistTransaction(transaction)
-            listener?.onTransactionPersisted(transaction.id)
+            listener?.onTransactionPersisted(transaction.revisionId)
         }
     }
     listener?.onHistoryEnd()
