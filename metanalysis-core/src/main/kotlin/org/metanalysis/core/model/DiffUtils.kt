@@ -62,9 +62,10 @@ internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
  * the [other] source node, or `null` if the two nodes are equal.
  *
  * @throws IllegalArgumentException if the two source nodes have different ids
+ * or different types
  */
 internal fun SourceNode.diff(other: SourceNode): ProjectEdit? {
-    require(id == other.id) {
+    require(id == other.id && this::class == other::class) {
         "Can't compute diff between '$id' and '${other.id}'!"
     }
     return when (this) {
@@ -79,8 +80,8 @@ private fun Type.diff(other: Type): EditType? {
     val modifierEdits = modifiers.diff(other.modifiers)
     val supertypeEdits = supertypes.diff(other.supertypes)
     val edit = EditType(id, modifierEdits, supertypeEdits)
-    val isChanged = modifierEdits.isNotEmpty() || supertypeEdits.isNotEmpty()
-    return if (isChanged) edit else null
+    val changed = modifierEdits.isNotEmpty() || supertypeEdits.isNotEmpty()
+    return if (changed) edit else null
 }
 
 private fun Function.diff(other: Function): EditFunction? {
@@ -90,16 +91,16 @@ private fun Function.diff(other: Function): EditFunction? {
     val parameterEdits = parameterNames.diff(otherParameterNames)
     val bodyEdits = body.diff(other.body)
     val edit = EditFunction(id, modifierEdits, parameterEdits, bodyEdits)
-    val isChanged = modifierEdits.isNotEmpty()
+    val changed = modifierEdits.isNotEmpty()
         || parameterEdits.isNotEmpty()
         || bodyEdits.isNotEmpty()
-    return if (isChanged) edit else null
+    return if (changed) edit else null
 }
 
 private fun Variable.diff(other: Variable): EditVariable? {
     val modifierEdits = modifiers.diff(other.modifiers)
     val initializerEdits = initializer.diff(other.initializer)
     val edit = EditVariable(id, modifierEdits, initializerEdits)
-    val isChanged = modifierEdits.isNotEmpty() || initializerEdits.isNotEmpty()
-    return if (isChanged) edit else null
+    val changed = modifierEdits.isNotEmpty() || initializerEdits.isNotEmpty()
+    return if (changed) edit else null
 }
