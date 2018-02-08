@@ -142,4 +142,28 @@ class JavaParserEnumTest : JavaParserTest() {
         }
         assertEquals(expected, parse(source))
     }
+
+    @Test fun `test enum with annotation on constant`() {
+        val source = """
+            enum Color {
+                @IntColor
+                RED,
+                GREEN,
+                BLUE
+            }
+        """.trimIndent()
+        val expected = sourceUnit {
+            type("Color") {
+                modifiers("enum")
+
+                variable("RED") {
+                    modifiers("@IntColor")
+                }
+
+                variable("GREEN") {}
+                variable("BLUE") {}
+            }
+        }
+        assertEquals(expected, parse(source))
+    }
 }

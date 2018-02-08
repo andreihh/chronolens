@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.dom.ASTNode
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeMemberDeclaration
+import org.eclipse.jdt.core.dom.BodyDeclaration
 import org.eclipse.jdt.core.dom.EnumConstantDeclaration
 import org.eclipse.jdt.core.dom.EnumDeclaration
 import org.eclipse.jdt.core.dom.FieldDeclaration
@@ -39,8 +40,7 @@ import org.metanalysis.core.parsing.SyntaxErrorException
  * trailing whitespaces from all lines.
  */
 internal fun String?.toBlock(): List<String> =
-    if (this == null) emptyList()
-    else lines().filter(String::isNotBlank).map(String::trim)
+    orEmpty().lines().filter(String::isNotBlank).map(String::trim)
 
 internal fun <T> Collection<T>.requireDistinct(): Set<T> {
     val unique = linkedSetOf<T>()
@@ -66,39 +66,19 @@ internal fun requireNotMalformed(node: ASTNode) {
     }
 }
 
-internal fun AbstractTypeDeclaration.supertypes(): List<Type> = when (this) {
-    is AnnotationTypeDeclaration -> emptyList()
-    is EnumDeclaration -> superInterfaceTypes()
-    is TypeDeclaration -> superInterfaceTypes() + superclassType
-    else -> throw AssertionError("Unknown declaration '$this'!")
-}.requireIsInstance<Type?>().filterNotNull()
+/** Returns the name of this node. */
+internal fun AbstractTypeDeclaration.name(): String = name.identifier
+internal fun AnnotationTypeMemberDeclaration.name(): String = name.identifier
+internal fun EnumConstantDeclaration.name(): String = name.identifier
+internal fun VariableDeclaration.name(): String = name.identifier
 
-private fun List<*>.toModifiers(): List<ASTNode> =
-    requireIsInstance<IExtendedModifier>().requireIsInstance()
-
-internal fun AbstractTypeDeclaration.getTypeModifier(): String = when (this) {
-    is AnnotationTypeDeclaration -> "@interface"
-    is EnumDeclaration -> "enum"
-    is TypeDeclaration -> if (isInterface) "interface" else "class"
-    else -> throw AssertionError("Unknown declaration '$this'!")
-}
-
-internal fun getModifiers(variable: VariableDeclaration): List<ASTNode> =
-    when (variable) {
-        is SingleVariableDeclaration -> variable.modifiers().toModifiers()
-        is VariableDeclarationFragment ->
-            (variable.parent as? FieldDeclaration)
-                ?.modifiers()
-                ?.toModifiers()
-                ?: emptyList()
-        else -> throw AssertionError("Unknown variable '$variable'!")
+internal fun MethodDeclaration.signature(): String {
+    val parameterList = getParameters(this).joinToString { parameter ->
+        val postfix = if (parameter.isVarargs) "..." else ""
+        "${parameter.type}$postfix"
     }
-
-internal fun getModifiers(type: AbstractTypeDeclaration): List<ASTNode> =
-    type.modifiers().toModifiers()
-
-internal fun getModifiers(method: MethodDeclaration): List<ASTNode> =
-    method.modifiers().toModifiers()
+    return "${name.identifier}($parameterList)"
+}
 
 /**
  * Returns the list of all members of this type.
@@ -123,9 +103,27 @@ internal fun AbstractTypeDeclaration.members(): List<*> {
     return declarations
 }
 
-/** Returns the name of this node. */
-internal fun AbstractTypeDeclaration.name(): String = name.identifier
-internal fun AnnotationTypeMemberDeclaration.name(): String = name.identifier
-internal fun EnumConstantDeclaration.name(): String = name.identifier
-internal fun MethodDeclaration.name(): String = name.identifier
-internal fun VariableDeclaration.name(): String = name.identifier
+internal fun AbstractTypeDeclaration.supertypes(): List<Type> = when (this) {
+    is AnnotationTypeDeclaration -> emptyList()
+    is EnumDeclaration -> superInterfaceTypes()
+    is TypeDeclaration -> superInterfaceTypes() + superclassType
+    else -> throw AssertionError("Unknown declaration '$this'!")
+}.requireIsInstance<Type?>().filterNotNull()
+
+internal fun AbstractTypeDeclaration.typeModifier(): String = when (this) {
+    is AnnotationTypeDeclaration -> "@interface"
+    is EnumDeclaration -> "enum"
+    is TypeDeclaration -> if (isInterface) "interface" else "class"
+    else -> throw AssertionError("Unknown declaration '$this'!")
+}
+
+internal fun getParameters(
+    method: MethodDeclaration
+): List<SingleVariableDeclaration> = method.parameters().requireIsInstance()
+
+internal fun getModifiers(node: ASTNode): List<ASTNode> = when (node) {
+    is BodyDeclaration -> node.modifiers()
+    is SingleVariableDeclaration -> node.modifiers()
+    is VariableDeclarationFragment -> getModifiers(node.parent)
+    else -> emptyList()
+}.requireIsInstance()

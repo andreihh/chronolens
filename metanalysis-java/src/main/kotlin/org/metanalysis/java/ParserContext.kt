@@ -23,7 +23,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit
 import org.eclipse.jdt.core.dom.EnumConstantDeclaration
 import org.eclipse.jdt.core.dom.Initializer
 import org.eclipse.jdt.core.dom.MethodDeclaration
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
 import org.metanalysis.core.model.Function
 import org.metanalysis.core.model.SourceEntity
@@ -41,11 +40,11 @@ internal data class ParserContext(
     private fun ASTNode.toSource(): String =
         source.substring(startPosition, startPosition + length)
 
-    private fun List<ASTNode>.toSupertypeSet(): Set<String> =
-        map { it.toSource() }.requireDistinct()
+    private fun ASTNode.modifierSet(): Set<String> =
+        getModifiers(this).map { it.toSource() }.requireDistinct()
 
-    private fun List<ASTNode>.toModifierSet(): Set<String> =
-        map { it.toSource() }.requireDistinct()
+    private fun AbstractTypeDeclaration.supertypeSet(): Set<String> =
+        supertypes().map { it.toSource() }.requireDistinct()
 
     private fun MethodDeclaration.body(): List<String> =
         body?.toSource().toBlock()
@@ -62,29 +61,26 @@ internal data class ParserContext(
     private fun getEntityId(simpleId: String): String =
         "$parentId$ENTITY_SEPARATOR$simpleId"
 
+    private fun visitMember(node: Any?): SourceEntity? = when (node) {
+        is AbstractTypeDeclaration -> visit(node)
+        is AnnotationTypeMemberDeclaration -> visit(node)
+        is EnumConstantDeclaration -> visit(node)
+        is VariableDeclaration -> visit(node)
+        is MethodDeclaration -> visit(node)
+        is Initializer -> null // TODO: parse initializers
+        else -> throw AssertionError("Unknown declaration $node!")
+    }
+
     private fun visit(node: AbstractTypeDeclaration): Type {
         requireNotMalformed(node)
         val id = getEntityId(node.name())
         val childContext = copy(parentId = id)
-        val members = node.members().mapNotNull { member ->
-            val visitedMember = when (member) {
-                is AbstractTypeDeclaration -> childContext.visit(member)
-                is AnnotationTypeMemberDeclaration -> childContext.visit(member)
-                is EnumConstantDeclaration -> childContext.visit(member)
-                is VariableDeclaration -> childContext.visit(member)
-                is MethodDeclaration -> childContext.visit(member)
-                is Initializer -> null // TODO: parse initializers
-                else -> throw AssertionError("Unknown declaration $member!")
-            }
-            visitedMember
-        }
+        val members = node.members().mapNotNull(childContext::visitMember)
         members.map(SourceEntity::id).requireDistinct()
-        val modifiers =
-            getModifiers(node).toModifierSet() + node.getTypeModifier()
         return Type(
             id = id,
-            supertypes = node.supertypes().toSupertypeSet(),
-            modifiers = modifiers,
+            supertypes = node.supertypeSet(),
+            modifiers = node.modifierSet() + node.typeModifier(),
             members = members
         )
     }
@@ -93,7 +89,7 @@ internal data class ParserContext(
         requireNotMalformed(node)
         return Variable(
             id = getEntityId(node.name()),
-            modifiers = emptySet(),
+            modifiers = node.modifierSet(),
             initializer = node.defaultValue()
         )
     }
@@ -102,7 +98,7 @@ internal data class ParserContext(
         requireNotMalformed(node)
         return Variable(
             id = getEntityId(node.name()),
-            modifiers = emptySet(),
+            modifiers = node.modifierSet(),
             initializer = node.initializer()
         )
     }
@@ -110,29 +106,23 @@ internal data class ParserContext(
     private fun visit(node: VariableDeclaration): Variable {
         requireNotMalformed(node)
         return Variable(
-                id = getEntityId(node.name()),
-                modifiers = getModifiers(node).toModifierSet(),
-                initializer = node.initializer()
+            id = getEntityId(node.name()),
+            modifiers = node.modifierSet(),
+            initializer = node.initializer()
         )
     }
 
     private fun visit(node: MethodDeclaration): Function {
         requireNotMalformed(node)
-        val parameterNodes =
-                node.parameters().requireIsInstance<SingleVariableDeclaration>()
-        val parameterTypes = parameterNodes.map {
-            "${it.type}${if (it.isVarargs) "..." else ""}"
-        }
-        val signature = "${node.name()}(${parameterTypes.joinToString()})"
-        val id = getEntityId(signature)
+        val id = getEntityId(node.signature())
         val childContext = copy(parentId = id)
-        val parameters = parameterNodes.map(childContext::visit)
+        val parameters = getParameters(node).map(childContext::visit)
         parameters.map(Variable::id).requireDistinct()
         return Function(
-                id = id,
-                parameters = parameters,
-                modifiers = getModifiers(node).toModifierSet(),
-                body = node.body()
+            id = id,
+            parameters = parameters,
+            modifiers = node.modifierSet(),
+            body = node.body()
         )
     }
 
@@ -140,8 +130,8 @@ internal data class ParserContext(
         requireNotMalformed(node)
         val childContext = copy(parentId = unitId)
         return node.types()
-                .requireIsInstance<AbstractTypeDeclaration>()
-                .map(childContext::visit)
-                .let { SourceUnit(unitId, it) }
+            .requireIsInstance<AbstractTypeDeclaration>()
+            .map(childContext::visit)
+            .let { SourceUnit(unitId, it) }
     }
 }
