@@ -84,10 +84,8 @@ interface Repository {
 
     companion object {
         /** Returns whether the given source file [path] is valid. */
-        fun isValidPath(path: String): Boolean {
-            val p = "/$path/"
-            return "//" !in p && "/./" !in p && "/../" !in p
-        }
+        fun isValidPath(path: String): Boolean =
+            "/$path/".indexOfAny(listOf("//", "/./", "/../")) == -1
 
         /** Returns whether the given revision [id] is valid. */
         fun isValidRevisionId(id: String): Boolean =
