@@ -24,7 +24,6 @@ import org.eclipse.jdt.core.dom.BodyDeclaration
 import org.eclipse.jdt.core.dom.EnumConstantDeclaration
 import org.eclipse.jdt.core.dom.EnumDeclaration
 import org.eclipse.jdt.core.dom.FieldDeclaration
-import org.eclipse.jdt.core.dom.IExtendedModifier
 import org.eclipse.jdt.core.dom.Initializer
 import org.eclipse.jdt.core.dom.MethodDeclaration
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration

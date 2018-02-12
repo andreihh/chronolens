@@ -228,6 +228,15 @@ data class EditVariable(
  * the ancestors of the given [entity] couldn't be updated
  */
 private fun updateAncestors(nodes: NodeHashMap, entity: SourceEntity) {
+    fun <T : SourceEntity> Set<T>.updated(entity: T): Set<T> {
+        val newEntities = hashSetOf<T>()
+        filterTo(newEntities) { it.id != entity.id }
+        if (entity.id in nodes) {
+            newEntities += entity
+        }
+        return newEntities
+    }
+
     fun <T : SourceEntity> Collection<T>.updated(entity: T): List<T> {
         val newEntities = arrayListOf<T>()
         filterTo(newEntities) { it.id != entity.id }

@@ -54,7 +54,7 @@ sealed class SourceEntity : SourceNode()
  */
 data class SourceUnit(
     override val id: String,
-    val entities: Collection<SourceEntity> = emptyList()
+    val entities: Set<SourceEntity> = emptySet()
 ) : SourceNode() {
 
     init {
@@ -81,7 +81,7 @@ data class Type(
     override val id: String,
     val modifiers: Set<String> = emptySet(),
     val supertypes: Set<String> = emptySet(),
-    val members: Collection<SourceEntity> = emptyList()
+    val members: Set<SourceEntity> = emptySet()
 ) : SourceEntity() {
 
     init {

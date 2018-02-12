@@ -59,7 +59,7 @@ class TypeBuilder(private val name: String) : EntityBuilder<Type> {
             id = id,
             modifiers = modifiers,
             supertypes = supertypes,
-            members = members.map { it.build(id) }
+            members = members.map { it.build(id) }.toSet()
         )
     }
 }

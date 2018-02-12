@@ -23,7 +23,7 @@ import kotlin.test.assertFailsWith
 class SourceNodeTest {
     @Test fun `test duplicated entity in unit throws`() {
         val id = "src/Test.java"
-        val entities = listOf(Type("$id:type"), Variable("$id:type"))
+        val entities = setOf(Type("$id:type"), Variable("$id:type"))
         assertFailsWith<IllegalArgumentException> {
             SourceUnit(id = id, entities = entities)
         }
@@ -31,7 +31,7 @@ class SourceNodeTest {
 
     @Test fun `test invalid entity id in unit throws`() {
         val id = "src/Test.java"
-        val entities = listOf(Type("src/Test:type"))
+        val entities = setOf(Type("src/Test:type"))
         assertFailsWith<IllegalArgumentException> {
             SourceUnit(id = id, entities = entities)
         }
@@ -39,7 +39,7 @@ class SourceNodeTest {
 
     @Test fun `test duplicated entity in type throws`() {
         val id = "src/Test.java:Type"
-        val members = listOf(Type("$id:member"), Variable("$id:member"))
+        val members = setOf(Type("$id:member"), Variable("$id:member"))
         assertFailsWith<IllegalArgumentException> {
             Type(id = id, members = members)
         }
@@ -47,7 +47,7 @@ class SourceNodeTest {
 
     @Test fun `test invalid entity id in type throws`() {
         val id = "src/Test.java:Type"
-        val members = listOf(Type("src/Test.java:type"))
+        val members = setOf(Type("src/Test.java:type"))
         assertFailsWith<IllegalArgumentException> {
             Type(id = id, members = members)
         }

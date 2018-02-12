@@ -50,7 +50,7 @@ class ProjectTest {
             id = "src/Test.java:IClass",
             modifiers = setOf("interface"),
             supertypes = setOf("Object"),
-            members = listOf(classVersion, classFunction)
+            members = setOf(classVersion, classFunction)
         )
         val version = Variable(
             id = "src/Test.java:version",
@@ -58,7 +58,7 @@ class ProjectTest {
         )
         val testUnit = SourceUnit(
             id = "src/Test.java",
-            entities = listOf(classType, version)
+            entities = setOf(classType, version)
         )
         val expectedNodes =
             setOf(testUnit, version, classType, classVersion, classFunction)

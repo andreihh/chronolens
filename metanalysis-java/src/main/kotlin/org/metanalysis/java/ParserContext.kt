@@ -81,7 +81,7 @@ internal data class ParserContext(
             id = id,
             supertypes = node.supertypeSet(),
             modifiers = node.modifierSet() + node.typeModifier(),
-            members = members
+            members = members.toSet()
         )
     }
 
@@ -129,9 +129,10 @@ internal data class ParserContext(
     fun visit(node: CompilationUnit): SourceUnit {
         requireNotMalformed(node)
         val childContext = copy(parentId = unitId)
-        return node.types()
+        val entities = node.types()
             .requireIsInstance<AbstractTypeDeclaration>()
             .map(childContext::visit)
-            .let { SourceUnit(unitId, it) }
+        entities.map(Type::id).requireDistinct()
+        return SourceUnit(unitId, entities.toSet())
     }
 }
