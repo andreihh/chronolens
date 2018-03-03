@@ -17,6 +17,8 @@
 package org.metanalysis.java
 
 import org.junit.Test
+import org.metanalysis.core.model.returnTypeModifierOf
+import org.metanalysis.core.model.typeModifierOf
 import kotlin.test.assertEquals
 
 class JavaParserEnumTest : JavaParserTest() {
@@ -70,12 +72,12 @@ class JavaParserEnumTest : JavaParserTest() {
                 variable("GREEN") {}
                 variable("BLUE") {}
                 variable("format") {
-                    modifiers("public", "final")
+                    modifiers("public", "final", typeModifierOf("String"))
 
                     +"\"hex\""
                 }
                 variable("i") {
-                    modifiers("public", "static")
+                    modifiers("public", "static", typeModifierOf("int"))
                 }
             }
         }
@@ -136,7 +138,7 @@ class JavaParserEnumTest : JavaParserTest() {
                 }
 
                 function("getCode()") {
-                    modifiers("abstract")
+                    modifiers("abstract", returnTypeModifierOf("String"))
                 }
             }
         }

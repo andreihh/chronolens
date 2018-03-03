@@ -30,6 +30,8 @@ import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.model.Type
 import org.metanalysis.core.model.Variable
+import org.metanalysis.core.model.returnTypeModifierOf
+import org.metanalysis.core.model.typeModifierOf
 
 internal data class ParserContext(
     private val unitId: String,
@@ -40,8 +42,18 @@ internal data class ParserContext(
     private fun ASTNode.toSource(): String =
         source.substring(startPosition, startPosition + length)
 
-    private fun ASTNode.modifierSet(): Set<String> =
-        getModifiers(this).map { it.toSource() }.requireDistinct()
+    private fun ASTNode.modifierSet(): Set<String> {
+        val additionalModifier = when (this) {
+            is AbstractTypeDeclaration -> typeModifier()
+            is MethodDeclaration -> returnType()?.let(::returnTypeModifierOf)
+            else -> type()?.let(::typeModifierOf)
+        }
+        val modifiers = getModifiers(this)
+            .map { it.toSource() }
+            .requireDistinct()
+        return if (additionalModifier == null) modifiers
+        else modifiers + additionalModifier
+    }
 
     private fun AbstractTypeDeclaration.supertypeSet(): Set<String> =
         supertypes().map { it.toSource() }.requireDistinct()
@@ -80,7 +92,7 @@ internal data class ParserContext(
         return Type(
             id = id,
             supertypes = node.supertypeSet(),
-            modifiers = node.modifierSet() + node.typeModifier(),
+            modifiers = node.modifierSet(),
             members = members.toSet()
         )
     }

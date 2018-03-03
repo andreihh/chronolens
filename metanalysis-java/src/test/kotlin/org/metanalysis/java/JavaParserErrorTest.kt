@@ -17,6 +17,7 @@
 package org.metanalysis.java
 
 import org.junit.Test
+import org.metanalysis.core.model.typeModifierOf
 import org.metanalysis.core.parsing.Result
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -78,7 +79,9 @@ class JavaParserErrorTest : JavaParserTest() {
         val expected = sourceUnit {
             type("Type") {
                 modifiers("class")
-                variable("i") {}
+                variable("i") {
+                    modifiers(typeModifierOf("int"))
+                }
             }
         }
         val result = parseResult(source)

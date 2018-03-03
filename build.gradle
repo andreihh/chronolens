@@ -1,8 +1,8 @@
 buildscript {
     ext {
-        kotlin_version = '1.2.21'
-        dokka_version = '0.9.15'
-        jackson_version = '2.9.4'
+        kotlin_version = '1.2.30'
+        dokka_version = '0.9.16'
+        jackson_version = '2.9.4.1'
         jdt_version = '3.13.100'
         junit_version = '4.12'
     }

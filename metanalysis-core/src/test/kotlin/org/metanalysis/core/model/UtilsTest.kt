@@ -22,6 +22,7 @@ import org.metanalysis.test.core.model.sourceUnit
 import org.metanalysis.test.core.model.type
 import org.metanalysis.test.core.model.variable
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class UtilsTest {
     @Test fun `test children of unit are equal to entities`() {
@@ -59,5 +60,31 @@ class UtilsTest {
         val path = "src/Test.java"
         val node = variable("$path:getVersion(String):name") {}
         assertEquals(path, node.sourcePath)
+    }
+
+    @Test fun `test return type`() {
+        val returnType = "int"
+        val function = function("src/Test.java:getVersion()") {
+            modifiers("public", returnTypeModifierOf(returnType))
+        }
+        assertEquals(returnType, function.returnType)
+    }
+
+    @Test fun `test null return type`() {
+        val function = function("src/Test.java:getVersion()") {}
+        assertNull(function.returnType)
+    }
+
+    @Test fun `test variable type`() {
+        val variableType = "String"
+        val variable = variable("src/Test.java:VERSION") {
+            modifiers("public", typeModifierOf(variableType))
+        }
+        assertEquals(variableType, variable.type)
+    }
+
+    @Test fun `test null variable type`() {
+        val variable = variable("src/Test.java:VERSION") {}
+        assertNull(variable.type)
     }
 }

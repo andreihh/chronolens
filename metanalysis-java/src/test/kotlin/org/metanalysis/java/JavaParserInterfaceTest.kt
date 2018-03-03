@@ -17,6 +17,8 @@
 package org.metanalysis.java
 
 import org.junit.Test
+import org.metanalysis.core.model.returnTypeModifierOf
+import org.metanalysis.core.model.typeModifierOf
 import kotlin.test.assertEquals
 
 class JavaParserInterfaceTest : JavaParserTest() {
@@ -43,8 +45,14 @@ class JavaParserInterfaceTest : JavaParserTest() {
         val expected = sourceUnit {
             type("IInterface") {
                 modifiers("interface")
-                variable("name") { +"null" }
-                variable("version") { +"1" }
+                variable("name") {
+                    modifiers(typeModifierOf("String"))
+                    +"null"
+                }
+                variable("version") {
+                    modifiers(typeModifierOf("int"))
+                    +"1"
+                }
             }
         }
         assertEquals(expected, parse(source))
@@ -60,8 +68,12 @@ class JavaParserInterfaceTest : JavaParserTest() {
         val expected = sourceUnit {
             type("IInterface") {
                 modifiers("interface")
-                function("getName()") {}
-                function("getVersion()") {}
+                function("getName()") {
+                    modifiers(returnTypeModifierOf("String"))
+                }
+                function("getVersion()") {
+                    modifiers(returnTypeModifierOf("int"))
+                }
             }
         }
         assertEquals(expected, parse(source))
@@ -79,9 +91,11 @@ class JavaParserInterfaceTest : JavaParserTest() {
         val expected = sourceUnit {
             type("IInterface") {
                 modifiers("interface")
-                function("getName()") {}
+                function("getName()") {
+                    modifiers(returnTypeModifierOf("String"))
+                }
                 function("getVersion()") {
-                    modifiers("default")
+                    modifiers("default", returnTypeModifierOf("int"))
 
                     +"{"
                     +"return 1;"

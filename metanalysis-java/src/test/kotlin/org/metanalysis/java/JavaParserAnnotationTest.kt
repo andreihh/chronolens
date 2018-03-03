@@ -17,6 +17,7 @@
 package org.metanalysis.java
 
 import org.junit.Test
+import org.metanalysis.core.model.typeModifierOf
 import kotlin.test.assertEquals
 
 class JavaParserAnnotationTest : JavaParserTest() {
@@ -43,8 +44,12 @@ class JavaParserAnnotationTest : JavaParserTest() {
         val expected = sourceUnit {
             type("AnnotationClass") {
                 modifiers("@interface")
-                variable("name") {}
-                variable("version") {}
+                variable("name") {
+                    modifiers(typeModifierOf("String"))
+                }
+                variable("version") {
+                    modifiers(typeModifierOf("int"))
+                }
             }
         }
         assertEquals(expected, parse(source))
@@ -60,8 +65,13 @@ class JavaParserAnnotationTest : JavaParserTest() {
         val expected = sourceUnit {
             type("AnnotationClass") {
                 modifiers("@interface")
-                variable("name") {}
-                variable("version") { +"1" }
+                variable("name") {
+                    modifiers(typeModifierOf("String"))
+                }
+                variable("version") {
+                    modifiers(typeModifierOf("int"))
+                    +"1"
+                }
             }
         }
         assertEquals(expected, parse(source))

@@ -71,10 +71,37 @@ internal fun AnnotationTypeMemberDeclaration.name(): String = name.identifier
 internal fun EnumConstantDeclaration.name(): String = name.identifier
 internal fun VariableDeclaration.name(): String = name.identifier
 
+private fun Type?.asString(
+    extraDimensions: Int = 0,
+    isVarargs: Boolean = false
+): String? {
+    val suffix = "[]".repeat(extraDimensions) + if (isVarargs) "..." else ""
+    return if (this == null) null else "$this$suffix" // TODO: stringify type
+}
+
+private fun getBaseType(node: ASTNode): Type? = when (node) {
+    is FieldDeclaration -> node.type
+    is AnnotationTypeMemberDeclaration -> node.type
+    is SingleVariableDeclaration -> node.type
+    is VariableDeclarationFragment -> getBaseType(node.parent)
+    else -> null
+}
+
+internal fun ASTNode.type(): String? = when (this) {
+    is SingleVariableDeclaration ->
+        getBaseType(this).asString(extraDimensions, isVarargs)
+    is VariableDeclarationFragment ->
+        getBaseType(this).asString(extraDimensions)
+    else -> getBaseType(this).asString()
+}
+
+internal fun MethodDeclaration.returnType(): String? =
+    returnType2.asString(extraDimensions)
+
 internal fun MethodDeclaration.signature(): String {
     val parameterList = getParameters(this).joinToString { parameter ->
-        val postfix = if (parameter.isVarargs) "..." else ""
-        "${parameter.type}$postfix"
+        parameter.type()
+            ?: throw AssertionError("'$parameter' must have specified type!")
     }
     return "${name.identifier}($parameterList)"
 }

@@ -17,6 +17,8 @@
 package org.metanalysis.java
 
 import org.junit.Test
+import org.metanalysis.core.model.returnTypeModifierOf
+import org.metanalysis.core.model.typeModifierOf
 import kotlin.test.assertEquals
 
 class JavaParserClassTest : JavaParserTest() {
@@ -46,9 +48,15 @@ class JavaParserClassTest : JavaParserTest() {
                 modifiers("abstract", "class")
 
                 function("println(String...)") {
-                    parameter("args") {}
+                    modifiers(
+                        "@Override",
+                        "abstract",
+                        returnTypeModifierOf("void")
+                    )
 
-                    modifiers("abstract", "@Override")
+                    parameter("args") {
+                        modifiers(typeModifierOf("String..."))
+                    }
                 }
             }
         }
