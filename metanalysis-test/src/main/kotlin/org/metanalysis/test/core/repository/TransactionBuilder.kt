@@ -37,7 +37,7 @@ import org.metanalysis.test.core.model.variable
 class TransactionBuilder(private val revisionId: String) {
     var date: Long = System.currentTimeMillis()
     var author: String = "<unknown-author>"
-    private val edits = arrayListOf<ProjectEdit>()
+    private val edits = mutableListOf<ProjectEdit>()
 
     fun date(value: Long): TransactionBuilder {
         date = value

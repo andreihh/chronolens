@@ -86,19 +86,19 @@ class Project private constructor(
          */
         @JvmStatic
         fun of(units: Collection<SourceUnit>): Project {
-            val unitMap = hashMapOf<String, SourceUnit>()
+            val unitMap = HashMap<String, SourceUnit>(units.size)
             for (unit in units) {
                 require(unit.id !in unitMap) {
                     "Project contains duplicate unit id '${unit.id}'!"
                 }
                 unitMap[unit.id] = unit
             }
-            val nodeMap = HashMap(buildVisit(units))
+            val nodeMap = buildVisit(units)
             return Project(unitMap, nodeMap)
         }
 
         /** Creates and returns an empty project. */
         @JvmStatic
-        fun empty(): Project = Project(hashMapOf(), hashMapOf())
+        fun empty(): Project = Project(HashMap(0), HashMap(0))
     }
 }

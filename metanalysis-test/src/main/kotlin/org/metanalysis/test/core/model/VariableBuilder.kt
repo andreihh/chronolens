@@ -20,8 +20,8 @@ import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.Variable
 
 class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
-    private var modifiers = setOf<String>()
-    private val initializer = arrayListOf<String>()
+    private var modifiers = emptySet<String>()
+    private val initializer = mutableListOf<String>()
 
     fun modifiers(vararg modifiers: String): VariableBuilder {
         this.modifiers = modifiers.requireNoDuplicates()

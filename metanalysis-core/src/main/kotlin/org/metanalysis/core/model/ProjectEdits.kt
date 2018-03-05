@@ -44,15 +44,15 @@ sealed class ProjectEdit : Edit<Project> {
             val otherSources = other.sources.map(SourceUnit::id)
             val allSources = thisSources.union(otherSources)
 
-            val nodesBefore = hashMapOf<String, SourceNode>()
-            val nodesAfter = hashMapOf<String, SourceNode>()
+            val nodesBefore = NodeHashMap()
+            val nodesAfter = NodeHashMap()
             for (path in allSources) {
                 this[path]?.let(nodesBefore::putSourceTree)
                 other[path]?.let(nodesAfter::putSourceTree)
             }
 
             val nodeIds = nodesBefore.keys + nodesAfter.keys
-            val edits = arrayListOf<ProjectEdit>()
+            val edits = mutableListOf<ProjectEdit>()
 
             for (id in nodeIds.sortedBy(String::length)) {
                 val before = nodesBefore[id]
@@ -229,21 +229,13 @@ data class EditVariable(
  */
 private fun updateAncestors(nodes: NodeHashMap, entity: SourceEntity) {
     fun <T : SourceEntity> Set<T>.updated(entity: T): Set<T> {
-        val newEntities = hashSetOf<T>()
-        filterTo(newEntities) { it.id != entity.id }
-        if (entity.id in nodes) {
-            newEntities += entity
-        }
-        return newEntities
+        val newEntities = filter { it.id != entity.id }.toSet()
+        return if (entity.id in nodes) newEntities + entity else newEntities
     }
 
     fun <T : SourceEntity> Collection<T>.updated(entity: T): List<T> {
-        val newEntities = arrayListOf<T>()
-        filterTo(newEntities) { it.id != entity.id }
-        if (entity.id in nodes) {
-            newEntities += entity
-        }
-        return newEntities
+        val newEntities = filter { it.id != entity.id }
+        return if (entity.id in nodes) newEntities + entity else newEntities
     }
 
     fun SourceUnit.updated(): SourceUnit =

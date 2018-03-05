@@ -19,7 +19,7 @@ package org.metanalysis.test.core.model
 import org.metanalysis.core.model.SetEdit
 
 class SetEditsBuilder<T> {
-    private val setEdits = arrayListOf<SetEdit<T>>()
+    private val setEdits = mutableListOf<SetEdit<T>>()
 
     fun add(value: T): SetEditsBuilder<T> {
         setEdits += SetEdit.Add(value)

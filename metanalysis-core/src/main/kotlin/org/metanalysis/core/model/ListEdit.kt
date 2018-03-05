@@ -57,8 +57,8 @@ sealed class ListEdit<T> : Edit<List<T>> {
          */
         @JvmStatic
         fun <T> List<T>.diff(other: List<T>): List<ListEdit<T>> {
-            val objectToValue = hashMapOf<T, Int>()
-            val valueToObject = arrayListOf<T>()
+            val objectToValue = mutableMapOf<T, Int>()
+            val valueToObject = mutableListOf<T>()
             for (it in (this + other)) {
                 if (it !in objectToValue) {
                     objectToValue[it] = valueToObject.size

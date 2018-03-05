@@ -24,7 +24,7 @@ import org.metanalysis.test.core.Init
 import org.metanalysis.test.core.apply
 
 class RepositoryBuilder {
-    private val history = arrayListOf<Transaction>()
+    private val history = mutableListOf<Transaction>()
     private val snapshot = Project.empty()
 
     fun transaction(

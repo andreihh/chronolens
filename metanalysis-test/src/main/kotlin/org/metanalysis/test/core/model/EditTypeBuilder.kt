@@ -24,8 +24,8 @@ import org.metanalysis.test.core.apply
 
 @BuilderMarker
 class EditTypeBuilder(private val id: String) {
-    private val modifierEdits = arrayListOf<SetEdit<String>>()
-    private val supertypeEdits = arrayListOf<SetEdit<String>>()
+    private val modifierEdits = mutableListOf<SetEdit<String>>()
+    private val supertypeEdits = mutableListOf<SetEdit<String>>()
 
     fun modifiers(init: Init<SetEditsBuilder<String>>): EditTypeBuilder {
         modifierEdits += SetEditsBuilder<String>().apply(init).build()

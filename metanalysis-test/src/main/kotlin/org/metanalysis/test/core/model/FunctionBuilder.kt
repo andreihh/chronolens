@@ -22,9 +22,9 @@ import org.metanalysis.test.core.Init
 import org.metanalysis.test.core.apply
 
 class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
-    private var modifiers = setOf<String>()
-    private val parameters = arrayListOf<VariableBuilder>()
-    private val body = arrayListOf<String>()
+    private var modifiers = emptySet<String>()
+    private val parameters = mutableListOf<VariableBuilder>()
+    private val body = mutableListOf<String>()
 
     fun modifiers(vararg modifiers: String): FunctionBuilder {
         this.modifiers = modifiers.requireNoDuplicates()

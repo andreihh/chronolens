@@ -42,7 +42,7 @@ internal fun String?.toBlock(): List<String> =
     orEmpty().lines().filter(String::isNotBlank).map(String::trim)
 
 internal fun <T> Collection<T>.requireDistinct(): Set<T> {
-    val unique = linkedSetOf<T>()
+    val unique = mutableSetOf<T>()
     for (element in this) {
         if (element in unique) {
             throw SyntaxErrorException("Duplicated element '$element'!")
@@ -118,7 +118,7 @@ internal fun MethodDeclaration.signature(): String {
  * - [Initializer]
  */
 internal fun AbstractTypeDeclaration.members(): List<*> {
-    val declarations = arrayListOf<Any?>()
+    val declarations = mutableListOf<Any?>()
     if (this is EnumDeclaration) {
         declarations.addAll(enumConstants())
     }

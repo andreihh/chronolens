@@ -73,7 +73,7 @@ class GitProxyWithRepositoryTest {
         val expected = File("./")
             .walk().onEnter { it.name != ".git" }
             .filter(File::isFile)
-            .mapTo(hashSetOf()) { it.path.removePrefix("./") }
+            .mapTo(mutableSetOf()) { it.path.removePrefix("./") }
         val headId = git.getHead().id
         val actual = git.listFiles(headId)
         assertEquals(expected, actual)

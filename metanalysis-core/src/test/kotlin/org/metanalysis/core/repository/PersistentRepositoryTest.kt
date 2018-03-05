@@ -59,8 +59,8 @@ class PersistentRepositoryTest : RepositoryTest() {
             var state = ProgressListenerState.IDLE
                 private set
 
-            private val sources = hashSetOf<String>()
-            private val revisions = arrayListOf<String>()
+            private val sources = mutableSetOf<String>()
+            private val revisions = mutableListOf<String>()
 
             override fun onSnapshotStart(headId: String, sourceCount: Int) {
                 sources += repository.listSources()

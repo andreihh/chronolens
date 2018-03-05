@@ -22,11 +22,12 @@ package org.metanalysis.core.model
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.SourceNode.Companion.PATH_SEPARATOR
 
-private const val separators = "$PATH_SEPARATOR$ENTITY_SEPARATOR'\"\\\\"
+private const val separators = "$PATH_SEPARATOR$ENTITY_SEPARATOR\"\\\\"
+private val file = Regex("(?>[^$separators]++)")
 private val identifier = Regex("(?>[^$separators()]++)")
 private val signature = Regex("(?>$identifier\\([^$separators]*\\))")
 
-private val unit = Regex("$identifier($PATH_SEPARATOR$identifier)*+")
+private val unit = Regex("$file($PATH_SEPARATOR$file)*+")
 private val type = Regex("$unit($ENTITY_SEPARATOR$identifier)+?")
 private val function = Regex("($type|$unit)$ENTITY_SEPARATOR$signature")
 private val variable =
@@ -42,7 +43,7 @@ private val node = Regex("$unit|$entity")
  * with the id of this node or if this node contains duplicated children ids
  */
 internal fun SourceNode.validateChildrenIds() {
-    val ids = hashSetOf<String>()
+    val ids = mutableSetOf<String>()
     for (child in children) {
         require(child.id.startsWith(id)) {
             "Node '$id' contains invalid child id '$id'!"

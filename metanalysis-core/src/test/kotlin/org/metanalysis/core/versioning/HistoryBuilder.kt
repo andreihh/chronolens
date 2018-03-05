@@ -18,7 +18,7 @@ package org.metanalysis.core.versioning
 
 class HistoryBuilder {
     private var id = 0
-    private val revisions = arrayListOf<RevisionMock>()
+    private val revisions = mutableListOf<RevisionMock>()
 
     fun revision(init: RevisionMockBuilder.() -> Unit) {
         revisions += RevisionMockBuilder("${id++}").apply(init).build()

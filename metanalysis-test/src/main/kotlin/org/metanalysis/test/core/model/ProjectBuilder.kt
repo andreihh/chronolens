@@ -23,7 +23,7 @@ import org.metanalysis.test.core.apply
 
 @BuilderMarker
 class ProjectBuilder {
-    private val units = arrayListOf<UnitBuilder>()
+    private val units = mutableListOf<UnitBuilder>()
 
     fun sourceUnit(path: String, init: Init<UnitBuilder>): ProjectBuilder {
         units += UnitBuilder(path).apply(init)

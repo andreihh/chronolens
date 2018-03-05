@@ -50,7 +50,7 @@ val SourceNode.children: Collection<SourceEntity>
  * order.
  */
 fun SourceNode.walkSourceTree(): List<SourceNode> {
-    val nodes = arrayListOf(this)
+    val nodes = mutableListOf(this)
     var i = 0
     while (i < nodes.size) {
         nodes += nodes[i].children
@@ -90,7 +90,7 @@ internal fun NodeHashMap.removeSourceTree(root: SourceNode) {
 }
 
 internal fun buildVisit(sources: Iterable<SourceUnit>): NodeHashMap {
-    val nodes = hashMapOf<String, SourceNode>()
+    val nodes = NodeHashMap()
     sources.forEach(nodes::putSourceTree)
     return nodes
 }

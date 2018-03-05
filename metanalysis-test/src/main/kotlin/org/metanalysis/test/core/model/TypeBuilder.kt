@@ -22,9 +22,9 @@ import org.metanalysis.test.core.Init
 import org.metanalysis.test.core.apply
 
 class TypeBuilder(private val name: String) : EntityBuilder<Type> {
-    private var modifiers = setOf<String>()
-    private var supertypes = setOf<String>()
-    private val members = arrayListOf<EntityBuilder<*>>()
+    private var modifiers = emptySet<String>()
+    private var supertypes = emptySet<String>()
+    private val members = mutableListOf<EntityBuilder<*>>()
 
     private inline fun <reified T : EntityBuilder<*>> addMember(
         simpleId: String,

@@ -23,7 +23,7 @@ import org.metanalysis.test.core.apply
 
 @BuilderMarker
 class UnitBuilder(private val path: String) {
-    private val entities = arrayListOf<EntityBuilder<*>>()
+    private val entities = mutableListOf<EntityBuilder<*>>()
 
     private inline fun <reified T : EntityBuilder<*>> addEntity(
         simpleId: String,

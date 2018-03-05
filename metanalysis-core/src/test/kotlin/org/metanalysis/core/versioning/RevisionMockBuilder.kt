@@ -19,7 +19,7 @@ package org.metanalysis.core.versioning
 class RevisionMockBuilder(private val id: String) {
     var date: Long = System.currentTimeMillis()
     var author: String = "<unknown-author>"
-    private val changeSet = hashMapOf<String, String?>()
+    private val changeSet = mutableMapOf<String, String?>()
 
     fun change(entry: Pair<String, String?>) {
         changeSet[entry.first] = entry.second
