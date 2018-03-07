@@ -117,8 +117,8 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
         val project = Project.empty()
         return history.mapLazy { (revisionId, date, author) ->
             val changeSet = vcs.getChangeSet(revisionId)
-            val before = mutableSetOf<SourceUnit>()
-            val after = mutableSetOf<SourceUnit>()
+            val before = HashSet<SourceUnit>(changeSet.size)
+            val after = HashSet<SourceUnit>(changeSet.size)
             for (path in changeSet) {
                 val oldUnit = project.get<SourceUnit?>(path)
                 if (oldUnit != null) {

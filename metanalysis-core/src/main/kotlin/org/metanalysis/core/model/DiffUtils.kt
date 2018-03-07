@@ -39,7 +39,7 @@ internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
                 else 1 + minOf(dp[i - 1][j], dp[i][j - 1])
         }
     }
-    val edits = mutableListOf<ListEdit<Int>>()
+    val edits = arrayListOf<ListEdit<Int>>()
     var i = a.size
     var j = b.size
     while (i > 0 || j > 0) {

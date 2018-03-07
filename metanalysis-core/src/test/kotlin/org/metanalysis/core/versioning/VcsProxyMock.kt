@@ -21,8 +21,8 @@ class VcsProxyMock(private val revisions: List<RevisionMock>) : VcsProxy {
     private val files: Map<String, Map<String, String?>>
 
     init {
-        val fileHistory = mutableMapOf<String, Map<String, String?>>()
         val currentFiles = mutableMapOf<String, String?>()
+        val fileHistory = mutableMapOf<String, Map<String, String?>>()
         val ids = mutableSetOf<String>()
         for ((id, _, _, changeSet) in revisions) {
             require(id !in ids) { "Duplicated revision id '$id'!" }

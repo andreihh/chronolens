@@ -35,12 +35,12 @@ class TypeBuilder(private val name: String) : EntityBuilder<Type> {
     }
 
     fun modifiers(vararg modifiers: String): TypeBuilder {
-        this.modifiers = modifiers.requireNoDuplicates()
+        this.modifiers = modifiers.requireDistinct()
         return this
     }
 
     fun supertypes(vararg supertypes: String): TypeBuilder {
-        this.supertypes = supertypes.requireNoDuplicates()
+        this.supertypes = supertypes.requireDistinct()
         return this
     }
 

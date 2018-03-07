@@ -43,7 +43,7 @@ private val node = Regex("$unit|$entity")
  * with the id of this node or if this node contains duplicated children ids
  */
 internal fun SourceNode.validateChildrenIds() {
-    val ids = mutableSetOf<String>()
+    val ids = HashSet<String>(children.size)
     for (child in children) {
         require(child.id.startsWith(id)) {
             "Node '$id' contains invalid child id '$id'!"

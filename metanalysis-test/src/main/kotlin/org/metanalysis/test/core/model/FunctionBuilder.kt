@@ -27,7 +27,7 @@ class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
     private val body = mutableListOf<String>()
 
     fun modifiers(vararg modifiers: String): FunctionBuilder {
-        this.modifiers = modifiers.requireNoDuplicates()
+        this.modifiers = modifiers.requireDistinct()
         return this
     }
 

@@ -24,7 +24,7 @@ class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
     private val initializer = mutableListOf<String>()
 
     fun modifiers(vararg modifiers: String): VariableBuilder {
-        this.modifiers = modifiers.requireNoDuplicates()
+        this.modifiers = modifiers.requireDistinct()
         return this
     }
 

@@ -42,7 +42,7 @@ internal fun String?.toBlock(): List<String> =
     orEmpty().lines().filter(String::isNotBlank).map(String::trim)
 
 internal fun <T> Collection<T>.requireDistinct(): Set<T> {
-    val unique = mutableSetOf<T>()
+    val unique = LinkedHashSet<T>(size)
     for (element in this) {
         if (element in unique) {
             throw SyntaxErrorException("Duplicated element '$element'!")

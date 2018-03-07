@@ -62,7 +62,7 @@ internal fun checkValidPath(path: String) {
  * @throws IllegalStateException if the given [history] is invalid
  */
 internal fun checkValidHistory(history: List<String>) {
-    val revisionIds = mutableSetOf<String>()
+    val revisionIds = HashSet<String>(history.size)
     for (id in history) {
         check(id !in revisionIds) { "Duplicated revision id '$id'!" }
         checkValidRevisionId(id)

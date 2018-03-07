@@ -82,8 +82,8 @@ fun editVariable(id: String, init: Init<EditVariableBuilder>): EditVariable =
 internal inline fun <reified T> newBuilder(simpleId: String): T =
     T::class.java.getConstructor(String::class.java).newInstance(simpleId)
 
-internal fun <T> Array<T>.requireNoDuplicates(): Set<T> {
-    val set = mutableSetOf<T>()
+internal fun <T> Array<T>.requireDistinct(): Set<T> {
+    val set = LinkedHashSet<T>(size)
     for (element in this) {
         require(element !in set) { "Duplicated element '$element'!" }
         set += element

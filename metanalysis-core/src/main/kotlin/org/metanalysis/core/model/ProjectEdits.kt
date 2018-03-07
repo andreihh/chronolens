@@ -52,7 +52,7 @@ sealed class ProjectEdit : Edit<Project> {
             }
 
             val nodeIds = nodesBefore.keys + nodesAfter.keys
-            val edits = mutableListOf<ProjectEdit>()
+            val edits = arrayListOf<ProjectEdit>()
 
             for (id in nodeIds.sortedBy(String::length)) {
                 val before = nodesBefore[id]
