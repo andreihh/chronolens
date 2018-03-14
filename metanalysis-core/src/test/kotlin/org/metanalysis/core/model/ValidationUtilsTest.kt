@@ -113,6 +113,10 @@ class ValidationUtilsTest {
         validateNodeId("src/Test.java:IClass")
     }
 
+    @Test fun `test valid function id is valid entity id`() {
+        validateEntityId("src/Test.java:IClass:getVersion()")
+    }
+
     @Test fun `test valid unit id is invalid entity id`() {
         assertFailsWith<IllegalArgumentException> {
             validateEntityId("src/Test.java")

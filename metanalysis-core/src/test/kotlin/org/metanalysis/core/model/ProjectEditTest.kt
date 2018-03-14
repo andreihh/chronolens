@@ -37,6 +37,10 @@ class ProjectEditTest {
                     function("getVersion(String)") {
                         parameters("name")
                     }
+                    variable("VERSION") {
+                        modifiers("final", "static")
+                        +"1"
+                    }
                 }
             }
         }
@@ -46,6 +50,10 @@ class ProjectEditTest {
                 type("Main") {
                     function("getVersion(String)") {
                         parameters("name")
+                    }
+                    variable("VERSION") {
+                        modifiers("final", "static")
+                        +"1"
                     }
                 }
             }

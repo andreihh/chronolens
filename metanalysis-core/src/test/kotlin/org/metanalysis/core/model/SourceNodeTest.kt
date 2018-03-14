@@ -81,4 +81,11 @@ class SourceNodeTest {
         val function = Function(id)
         assertEquals(signature, function.signature)
     }
+
+    @Test fun `test name equals simple variable id`() {
+        val name = "VERSION"
+        val id = "src/Test.java:$name"
+        val variable = Variable(id)
+        assertEquals(name, variable.name)
+    }
 }
