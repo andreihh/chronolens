@@ -16,27 +16,21 @@
 
 package org.metanalysis
 
+import picocli.CommandLine
+import picocli.CommandLine.RunAll
 import kotlin.system.exitProcess
 
-fun usage(message: String): Nothing {
-    throw IllegalUsageException(message)
-}
-
-fun printlnErr(message: String?) {
+fun exit(message: String): Nothing {
     System.err.println(message)
+    exitProcess(1)
 }
 
-fun main(args: Array<String>) {
+fun main(vararg args: String) {
     try {
-        val command = args.firstOrNull()?.let { Command(it) }
-                ?: usage(Help.help)
-        command.execute(*args.drop(1).toTypedArray())
-    } catch (e: IllegalUsageException) {
-        printlnErr(e.message)
-        exitProcess(1)
+        CommandLine(MainCommand()).parseWithHandler(RunAll(), System.err, *args)
     } catch (e: Exception) {
-        printlnErr(e.message)
-        e.printStackTrace(System.err)
+        System.err.println(e.message)
+        e.printStackTrace()
         exitProcess(1)
     }
 }

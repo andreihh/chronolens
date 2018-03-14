@@ -16,160 +16,140 @@
 
 package org.metanalysis
 
+import org.metanalysis.MainCommand.Subcommand
 import org.metanalysis.core.repository.InteractiveRepository
 import org.metanalysis.core.repository.PersistentRepository
 import org.metanalysis.core.repository.PersistentRepository.Companion.persist
 import org.metanalysis.core.repository.PersistentRepository.ProgressListener
 import org.metanalysis.core.repository.Repository.Companion.isValidPath
 import org.metanalysis.core.repository.Repository.Companion.isValidRevisionId
-import java.io.IOException
+import picocli.CommandLine.Command
+import picocli.CommandLine.Option
+import picocli.CommandLine.ParentCommand
 
-sealed class Command {
-    companion object {
-        @JvmStatic
-        protected val commands =
-            listOf(Version, Help, List, RevList, Model, Persist, Clean)
-
-        @JvmStatic
-        operator fun invoke(name: String): Command? =
-            commands.firstOrNull { it.name == name }
-    }
-
-    abstract val name: String
-
-    abstract val help: String
-
-    abstract fun execute(vararg args: String)
-
-    protected fun checkUsage(value: Boolean) {
-        if (!value) {
-            usage(help)
-        }
-    }
-
-    protected fun getProject(): InteractiveRepository =
-        InteractiveRepository.connect()
-            ?: throw IOException("Repository not found!")
+abstract class AbstractCommand : Runnable {
+    @Option(
+        names = ["-h", "--help"],
+        usageHelp = true,
+        description = ["display this help message"]
+    )
+    private var usageRequested: Boolean = false
 }
 
-object Version : Command() {
-    override val name: String = "version"
-    override val help: String = """
-        Usage: metanalysis version
+@Command(
+    name = "metanalysis",
+    version = ["0.2"],
+    description = [
+        "Metanalysis is a software evolution analysis tool that inspects the "
+            + "repository detected in the current working directory."
+    ],
+    subcommands = [
+        List::class, RevList::class, Model::class, Persist::class, Clean::class
+    ]
+)
+class MainCommand : AbstractCommand() {
+    @Option(
+        names = ["-V", "--version"],
+        versionHelp = true,
+        description = ["display version information and exit"]
+    )
+    private var versionRequested: Boolean = false
 
-        Prints the installed version of metanalysis.
-        """.trimIndent()
+    internal lateinit var repository: InteractiveRepository
+        private set
 
-    override fun execute(vararg args: String) {
-        println("metanalysis 0.2")
+    override fun run() {
+        repository = InteractiveRepository.connect()
+            ?: exit("Repository not found!")
     }
-}
 
-object Help : Command() {
-    override val name: String = "help"
-    override val help: String = """
-        Usage: metanalysis help [<command>]
+    abstract class Subcommand : AbstractCommand() {
+        @ParentCommand
+        private lateinit var parent: MainCommand
 
-        Show usage instructions for the given <command>, or list the available
-        commands if no arguments are provided.
-        """.trimIndent()
-
-    override fun execute(vararg args: String) {
-        checkUsage(args.size <= 1)
-        if (args.isEmpty()) {
-            println("Usage: metanalysis <command> <args>")
-            println("\nAvailable commands:")
-            commands.map(Command::name).forEach { println("- $it") }
-        } else {
-            val command = Command(args[0])
-            if (command != null) {
-                println(command.help)
-            } else {
-                printlnErr("Unknown command!")
-            }
-        }
+        protected val repository: InteractiveRepository
+            get() = parent.repository
     }
 }
 
-object List : Command() {
-    override val name: String = "list"
-    override val help: String = """
-        Usage: metanalysis list [<revision>]
+@Command(
+    name = "list",
+    description = [
+        "Prints all the interpretable files of the repository from the "
+            + "specified <revision>."
+    ]
+)
+class List : Subcommand() {
+    @Option(
+        names = ["-r", "--revision"],
+        description = ["the inspected revision (default: the <head> revision)"]
+    )
+    private var revisionId: String? = null
+    private val revision: String get() = revisionId ?: repository.getHeadId()
 
-        Prints all the interpretable files in the project detected in the
-        current working directory from the specified <revision> (default value
-        is the <head> revision).
-        """.trimIndent()
-
-    override fun execute(vararg args: String) {
-        checkUsage(args.size in 0..1)
-        val project = getProject()
-        val revision = if (args.size == 1) args[0] else project.getHeadId()
-        checkUsage(isValidRevisionId(revision))
-        project.listSources(revision).forEach(::println)
+    override fun run() {
+        if (!isValidRevisionId(revision)) exit("Invalid revision '$revision'!")
+        repository.listSources(revision).forEach(::println)
     }
 }
 
-object RevList : Command() {
-    override val name: String = "rev-list"
-    override val help: String = """
-        Usage: metanalysis rev-list
-
-        Prints all the revisions in the project detected in the current working
-        directory.
-        """.trimIndent()
-
-    override fun execute(vararg args: String) {
-        checkUsage(args.isEmpty())
-        val project = getProject()
-        project.listRevisions().forEach(::println)
+@Command(
+    name = "rev-list",
+    description = ["Prints all revisions of the repository."]
+)
+class RevList : Subcommand() {
+    override fun run() {
+        repository.listRevisions().forEach(::println)
     }
 }
 
-object Model : Command() {
-    override val name: String = "model"
-    override val help: String = """
-        Usage: metanalysis model <path> [<revision>]
+@Command(
+    name = "model",
+    description = [
+        "Prints the interpreted code metadata from the file located at the "
+            + "given <path> as it is found in the given <revision> of the "
+            + "repository."
+    ]
+)
+class Model : Subcommand() {
+    @Option(
+        names = ["-f", "--file"],
+        description = ["the inspected file"],
+        required = true
+    )
+    private lateinit var path: String
 
-        Prints the interpreted code metadata from the file located at the given
-        <path> as it is found in the given <revision> (the default value is the
-        <head> revision) of the project detected in the current working
-        directory.
-        """.trimIndent()
+    @Option(
+        names = ["-r", "--revision"],
+        description = ["the inspected revision (default: the <head> revision)"]
+    )
+    private var revisionId: String? = null
+    private val revision: String get() = revisionId ?: repository.getHeadId()
 
-    override fun execute(vararg args: String) {
-        checkUsage(args.size in 1..2)
-        val project = getProject()
-        val path = args[0]
-        val revision = if (args.size == 2) args[1] else project.getHeadId()
-        checkUsage(isValidPath(path))
-        checkUsage(isValidRevisionId(revision))
-        val model = project.getSource(path, revision)
+    override fun run() {
+        if (!isValidPath(path)) exit("Invalid file path '$path'!")
+        if (!isValidRevisionId(revision)) exit("Invalid revision '$revision'!")
+        val model = repository.getSource(path, revision)
         if (model != null) {
             PrettyPrinterVisitor(System.out).visit(model)
         } else {
-            printlnErr("File couldn't be interpreted or doesn't exist!")
+            exit("File couldn't be interpreted or doesn't exist!")
         }
     }
 }
 
-object Persist : Command() {
-    override val name: String = "persist"
-    override val help: String = """
-        Usage: metanalysis persist
-
-        Connects to the repository detected in the current working directory and
-        persists the code metadata and history from all the files which can be
-        interpreted.
-
-        The project is persisted in the '.metanalysis' directory from the
-        current working directory.
-        """.trimIndent()
-
-    override fun execute(vararg args: String) {
-        checkUsage(args.isEmpty())
-        val project = getProject()
-        project.persist(object : ProgressListener {
+@Command(
+    name = "persist",
+    description = [
+        "Connects to the repository and persists the code and history metadata "
+            + "from all the files that can be interpreted.",
+        "The repository is persisted in the '.metanalysis' directory from the "
+            + "current working directory."
+    ]
+)
+class Persist : Subcommand() {
+    override fun run() {
+        repository.persist(object : ProgressListener {
             private var sources = 0
             private var transactions = 0
             private var i = 0
@@ -209,17 +189,15 @@ object Persist : Command() {
     }
 }
 
-object Clean : Command() {
-    override val name: String = "clean"
-    override val help: String = """
-        Usage: metanalysis clean
-
-        Deletes the previously persisted project from the current working
-        directory, if it exists.
-        """.trimIndent()
-
-    override fun execute(vararg args: String) {
-        checkUsage(args.isEmpty())
+@Command(
+    name = "clean",
+    description = [
+        "Deletes the previously persisted repository from the current working "
+            + "directory, if it exists."
+    ]
+)
+class Clean : Subcommand() {
+    override fun run() {
         PersistentRepository.clean()
     }
 }

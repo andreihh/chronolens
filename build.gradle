@@ -5,6 +5,7 @@ buildscript {
         jackson_version = '2.9.4.1'
         jdt_version = '3.13.100'
         junit_version = '4.12'
+        picocli_version = '2.3.0'
     }
 
     repositories {
@@ -99,6 +100,7 @@ apply plugin: 'application'
 mainClassName = 'org.metanalysis.MainKt'
 
 dependencies {
+    implementation "info.picocli:picocli:$picocli_version"
     implementation project(':metanalysis-core')
     runtimeOnly project(':metanalysis-git')
     runtimeOnly project(':metanalysis-java')
