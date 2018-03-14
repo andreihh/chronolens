@@ -55,15 +55,7 @@ class SourceNodeTest {
 
     @Test fun `test duplicated parameter in function throws`() {
         val id = "src/Test.java:getVersion(int, int)"
-        val parameters = listOf(Variable("$id:param"), Variable("$id:param"))
-        assertFailsWith<IllegalArgumentException> {
-            Function(id = id, parameters = parameters)
-        }
-    }
-
-    @Test fun `test invalid parameter id in function throws`() {
-        val id = "src/Test.java:getVersion(int, int)"
-        val parameters = listOf(Variable("src/Test:getVersion():code"))
+        val parameters = listOf("param", "param")
         assertFailsWith<IllegalArgumentException> {
             Function(id = id, parameters = parameters)
         }

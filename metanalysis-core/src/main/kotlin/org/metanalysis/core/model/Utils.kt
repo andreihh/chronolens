@@ -41,8 +41,7 @@ val SourceNode.children: Collection<SourceEntity>
     get() = when (this) {
         is SourceUnit -> entities
         is Type -> members
-        is Function -> parameters
-        else -> emptyList()
+        else -> emptySet()
     }
 
 /**

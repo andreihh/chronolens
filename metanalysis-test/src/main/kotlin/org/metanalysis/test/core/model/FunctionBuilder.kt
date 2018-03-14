@@ -23,7 +23,7 @@ import org.metanalysis.test.core.apply
 
 class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
     private var modifiers = emptySet<String>()
-    private val parameters = mutableListOf<VariableBuilder>()
+    private var parameters = emptyList<String>()
     private val body = mutableListOf<String>()
 
     fun modifiers(vararg modifiers: String): FunctionBuilder {
@@ -31,8 +31,8 @@ class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
         return this
     }
 
-    fun parameter(name: String, init: Init<VariableBuilder>): FunctionBuilder {
-        parameters += VariableBuilder(name).apply(init)
+    fun parameters(vararg parameters: String): FunctionBuilder {
+        this.parameters = parameters.requireDistinct().toList()
         return this
     }
 
@@ -47,11 +47,6 @@ class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
 
     override fun build(parentId: String): Function {
         val id = "$parentId$ENTITY_SEPARATOR$signature"
-        return Function(
-            id = id,
-            modifiers = modifiers,
-            parameters = parameters.map { it.build(id) },
-            body = body
-        )
+        return Function(id, modifiers, parameters, body)
     }
 }

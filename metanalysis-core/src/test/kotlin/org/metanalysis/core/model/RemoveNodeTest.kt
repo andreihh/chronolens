@@ -38,13 +38,37 @@ class RemoveNodeTest {
             sourceUnit("src/Main.java") {
                 type("Main") {
                     function("getVersion(String)") {
-                        parameter("name") {}
+                        parameters("name")
                     }
                 }
             }
             sourceUnit("src/Test.java") {}
         }
         actual.apply(removeNode("src/Main.java"))
+
+        assertEquals(expected, actual)
+    }
+
+    @Test fun `test remove function from type`() {
+        val expected = project {
+            sourceUnit("src/Main.java") {
+                type("Main") {
+                    variable("version") {}
+                }
+            }
+        }
+
+        val actual = project {
+            sourceUnit("src/Main.java") {
+                type("Main") {
+                    variable("version") {}
+                    function("getVersion(String)") {
+                        parameters("name")
+                    }
+                }
+            }
+        }
+        actual.apply(removeNode("src/Main.java:Main:getVersion(String)"))
 
         assertEquals(expected, actual)
     }
@@ -60,28 +84,5 @@ class RemoveNodeTest {
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
         }
-    }
-
-    @Test fun `test remove parameter from function`() {
-        val expected = project {
-            sourceUnit("src/Test.java") {
-                type("Test") {
-                    function("getVersion()") {}
-                }
-            }
-        }
-
-        val actual = project {
-            sourceUnit("src/Test.java") {
-                type("Test") {
-                    function("getVersion()") {
-                        parameter("name") {}
-                    }
-                }
-            }
-        }
-        actual.apply(removeNode("src/Test.java:Test:getVersion():name"))
-
-        assertEquals(expected, actual)
     }
 }

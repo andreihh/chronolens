@@ -30,8 +30,7 @@ private val signature = Regex("(?>$identifier\\([^$separators]*\\))")
 private val unit = Regex("$file($PATH_SEPARATOR$file)*+")
 private val type = Regex("$unit($ENTITY_SEPARATOR$identifier)+?")
 private val function = Regex("($type|$unit)$ENTITY_SEPARATOR$signature")
-private val variable =
-    Regex("($function|$type|$unit)$ENTITY_SEPARATOR$identifier")
+private val variable = Regex("($type|$unit)$ENTITY_SEPARATOR$identifier")
 
 private val entity = Regex("$function|$type|$variable")
 private val node = Regex("$unit|$entity")
@@ -52,6 +51,22 @@ internal fun SourceNode.validateChildrenIds() {
             "Node '$id' contains duplicated child id '$id'!"
         }
         ids += child.id
+    }
+}
+
+/**
+ * Validates the names of the parameters of this function.
+ *
+ * @throws IllegalArgumentException if this function has duplicated parameter
+ * names
+ */
+internal fun Function.validateParameterNames() {
+    val names = HashSet<String>(parameters.size)
+    for (name in parameters) {
+        require(name !in names) {
+            "Function '$id' contains duplicated parameter '$name'!"
+        }
+        names += name
     }
 }
 

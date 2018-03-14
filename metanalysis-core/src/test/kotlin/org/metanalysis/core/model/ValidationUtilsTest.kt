@@ -99,10 +99,6 @@ class ValidationUtilsTest {
         }
     }
 
-    @Test fun `test variable id as function parameter is valid`() {
-        validateVariableId("src/Test.java:IClass:getVersion(String):name")
-    }
-
     @Test fun `test invalid function id is invalid node id`() {
         assertFailsWith<IllegalArgumentException> {
             validateNodeId("src/Test.java:IClass/getVersion()")
@@ -121,9 +117,5 @@ class ValidationUtilsTest {
         assertFailsWith<IllegalArgumentException> {
             validateEntityId("src/Test.java")
         }
-    }
-
-    @Test fun `test valid parameter id is valid entity id`() {
-        validateEntityId("src/Test.java:IClass:getVersion(String):name")
     }
 }

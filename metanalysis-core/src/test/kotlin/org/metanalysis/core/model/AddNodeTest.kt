@@ -40,29 +40,6 @@ class AddNodeTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test add parameter to method`() {
-        val expected = project {
-            sourceUnit("src/Test.java") {
-                type("Test") {
-                    function("getVersion()") {
-                        parameter("name") {}
-                    }
-                }
-            }
-        }
-
-        val actual = project {
-            sourceUnit("src/Test.java") {
-                type("Test") {
-                    function("getVersion()") {}
-                }
-            }
-        }
-        actual.apply(addVariable("src/Test.java:Test:getVersion():name") {})
-
-        assertEquals(expected, actual)
-    }
-
     @Test fun `test add function to type`() {
         val expected = project {
             sourceUnit("src/Test.java") {
@@ -82,12 +59,12 @@ class AddNodeTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test add type with method with parameter`() {
+    @Test fun `test add type with function with parameter`() {
         val expected = project {
             sourceUnit("src/Test.java") {
                 type("Test") {
                     function("getV(String)") {
-                        parameter("name") {}
+                        parameters("name")
                     }
                 }
             }
@@ -98,7 +75,7 @@ class AddNodeTest {
         }
         actual.apply(addType("src/Test.java:Test") {
             function("getV(String)") {
-                parameter("name") {}
+                parameters("name")
             }
         })
 
@@ -118,19 +95,6 @@ class AddNodeTest {
         }
     }
 
-    @Test fun `test add parameter to non-existing function throws`() {
-        val project = project {
-            sourceUnit("src/Test.java") {
-                function("getVersion()") {}
-            }
-        }
-        val edit = addVariable("src/Test.java:getV():name") {}
-
-        assertFailsWith<IllegalStateException> {
-            project.apply(edit)
-        }
-    }
-
     @Test fun `test add entity to variable throws`() {
         val project = project {
             sourceUnit("src/Test.java") {
@@ -138,6 +102,17 @@ class AddNodeTest {
             }
         }
         val edit = addFunction("src/Test.java:version:getVersion()") {}
+
+        assertFailsWith<IllegalStateException> {
+            project.apply(edit)
+        }
+    }
+
+    @Test fun `test add node to non-existing parent throws`() {
+        val project = project {
+            sourceUnit("src/Main.java") {}
+        }
+        val edit = addFunction("src/Main.java:Main:getVersion()") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

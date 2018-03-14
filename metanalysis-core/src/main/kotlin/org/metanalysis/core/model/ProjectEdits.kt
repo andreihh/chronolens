@@ -18,7 +18,6 @@ package org.metanalysis.core.model
 
 import org.metanalysis.core.model.ListEdit.Companion.apply
 import org.metanalysis.core.model.SetEdit.Companion.apply
-import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 
 /** An atomic change which should be applied to a [Project]. */
 sealed class ProjectEdit : Edit<Project> {
@@ -175,13 +174,7 @@ data class EditFunction(
         val function = nodes[id] as Function?
             ?: error("Function '$id' doesn't exist!")
         val modifiers = function.modifiers.apply(modifierEdits)
-        val parameters = function.parameters
-            .map(Variable::name)
-            .apply(parameterEdits)
-            .map { name ->
-                nodes["$id$ENTITY_SEPARATOR$name"] as? Variable
-                    ?: error("Invalid parameter '$name'!")
-            }
+        val parameters = function.parameters.apply(parameterEdits)
         val body = function.body.apply(bodyEdits)
         val newFunction = Function(id, modifiers, parameters, body)
         nodes[id] = newFunction
@@ -229,13 +222,12 @@ data class EditVariable(
  */
 private fun updateAncestors(nodes: NodeHashMap, entity: SourceEntity) {
     fun <T : SourceEntity> Set<T>.updated(entity: T): Set<T> {
-        val newEntities = filter { it.id != entity.id }.toSet()
-        return if (entity.id in nodes) newEntities + entity else newEntities
-    }
-
-    fun <T : SourceEntity> Collection<T>.updated(entity: T): List<T> {
-        val newEntities = filter { it.id != entity.id }
-        return if (entity.id in nodes) newEntities + entity else newEntities
+        val newEntities = LinkedHashSet<T>(size)
+        this.filterTo(newEntities) { it.id != entity.id }
+        if (entity.id in nodes) {
+            newEntities += entity
+        }
+        return newEntities
     }
 
     fun SourceUnit.updated(): SourceUnit =
@@ -244,15 +236,11 @@ private fun updateAncestors(nodes: NodeHashMap, entity: SourceEntity) {
     fun Type.updated(): Type =
         copy(members = members.updated(entity))
 
-    fun Function.updated(): Function =
-        copy(parameters = parameters.updated(entity as Variable))
-
     val parent = nodes[entity.parentId]
         ?: error("Parent '${entity.parentId}' doesn't exist!")
     val newParent = when (parent) {
         is SourceUnit -> parent.updated()
         is Type -> parent.updated()
-        is Function -> parent.updated()
         else -> error("Unknown container '${parent::class}'!")
     }
     nodes[parent.id] = newParent

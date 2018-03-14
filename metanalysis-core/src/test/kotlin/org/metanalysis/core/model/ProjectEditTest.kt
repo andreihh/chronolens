@@ -35,7 +35,7 @@ class ProjectEditTest {
             sourceUnit("src/Main.java") {
                 type("Main") {
                     function("getVersion(String)") {
-                        parameter("name") {}
+                        parameters("name")
                     }
                 }
             }
@@ -45,7 +45,7 @@ class ProjectEditTest {
             sourceUnit("src/Main.java") {
                 type("Main") {
                     function("getVersion(String)") {
-                        parameter("name") {}
+                        parameters("name")
                     }
                 }
             }
@@ -113,8 +113,7 @@ class ProjectEditTest {
         val before = project {
             sourceUnit("src/Test.java") {
                 function("getVersion(String, int)") {
-                    parameter("name") {}
-                    parameter("revision") {}
+                    parameters("name", "revision")
                 }
             }
         }
@@ -122,8 +121,7 @@ class ProjectEditTest {
         val after = project {
             sourceUnit("src/Test.java") {
                 function("getVersion(String, int)") {
-                    parameter("className") {}
-                    parameter("revision") {}
+                    parameters("className", "revision")
                 }
             }
         }

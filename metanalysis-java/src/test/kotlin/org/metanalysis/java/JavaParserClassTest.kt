@@ -48,15 +48,12 @@ class JavaParserClassTest : JavaParserTest() {
                 modifiers("abstract", "class")
 
                 function("println(String...)") {
+                    parameters("args")
                     modifiers(
                         "@Override",
                         "abstract",
                         returnTypeModifierOf("void")
                     )
-
-                    parameter("args") {
-                        modifiers(typeModifierOf("String..."))
-                    }
                 }
             }
         }

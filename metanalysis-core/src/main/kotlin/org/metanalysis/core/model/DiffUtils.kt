@@ -86,9 +86,7 @@ private fun Type.diff(other: Type): EditType? {
 
 private fun Function.diff(other: Function): EditFunction? {
     val modifierEdits = modifiers.diff(other.modifiers)
-    val parameterNames = parameters.map(Variable::name)
-    val otherParameterNames = other.parameters.map(Variable::name)
-    val parameterEdits = parameterNames.diff(otherParameterNames)
+    val parameterEdits = parameters.diff(other.parameters)
     val bodyEdits = body.diff(other.body)
     val edit = EditFunction(id, modifierEdits, parameterEdits, bodyEdits)
     val changed = modifierEdits.isNotEmpty()

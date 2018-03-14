@@ -29,25 +29,21 @@ class EditVariableTest {
         }
     }
 
-    @Test fun `test add modifier to parameter`() {
+    @Test fun `test add modifier to variable`() {
         val expected = project {
             sourceUnit("src/Test.java") {
-                function("getVersion()") {
-                    parameter("name") {
-                        modifiers("@NotNull")
-                    }
+                variable("name") {
+                    modifiers("@NotNull")
                 }
             }
         }
 
         val actual = project {
             sourceUnit("src/Test.java") {
-                function("getVersion()") {
-                    parameter("name") {}
-                }
+                variable("name") {}
             }
         }
-        actual.apply(editVariable("src/Test.java:getVersion():name") {
+        actual.apply(editVariable("src/Test.java:name") {
             modifiers { +"@NotNull" }
         })
 

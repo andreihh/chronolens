@@ -100,7 +100,7 @@ data class Type(
  *
  * @property id the fully qualified signature of this function
  * @property modifiers the modifiers of this function
- * @property parameters the parameters of this function
+ * @property parameters the names of the parameters of this function
  * @property body the body lines of this function, or an empty list if it
  * doesn't have a body
  * @throws IllegalArgumentException if the [id] is not valid or if the ids of
@@ -109,13 +109,13 @@ data class Type(
 data class Function(
     override val id: String,
     val modifiers: Set<String> = emptySet(),
-    val parameters: List<Variable> = emptyList(),
+    val parameters: List<String> = emptyList(),
     val body: List<String> = emptyList()
 ) : SourceEntity() {
 
     init {
         validateFunctionId(id)
-        validateChildrenIds()
+        validateParameterNames()
     }
 
     /**

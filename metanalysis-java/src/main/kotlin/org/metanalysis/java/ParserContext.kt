@@ -126,12 +126,10 @@ internal data class ParserContext(
 
     private fun visit(node: MethodDeclaration): Function {
         requireNotMalformed(node)
-        val id = getEntityId(node.signature())
-        val childContext = copy(parentId = id)
-        val parameters = getParameters(node).map(childContext::visit)
-        parameters.map(Variable::id).requireDistinct()
+        val parameters = getParameters(node).map { it.name() }
+        parameters.requireDistinct()
         return Function(
-            id = id,
+            id = getEntityId(node.signature()),
             parameters = parameters,
             modifiers = node.modifierSet(),
             body = node.body()

@@ -23,6 +23,7 @@ import org.metanalysis.test.core.model.type
 import org.metanalysis.test.core.model.variable
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class UtilsTest {
     @Test fun `test children of unit are equal to entities`() {
@@ -39,16 +40,16 @@ class UtilsTest {
         assertEquals(type.members, type.children)
     }
 
-    @Test fun `test children of function are equal to parameters`() {
+    @Test fun `test children of function is empty collection`() {
         val function = function("src/Test.java:getVersion(String)") {
-            parameter("name") {}
+            parameters("name")
         }
-        assertEquals(function.parameters, function.children)
+        assertTrue(function.children.isEmpty())
     }
 
-    @Test fun `test children of variable are equal to empty collection`() {
+    @Test fun `test children of variable is empty collection`() {
         val variable = variable("src/Test.java:VERSION") {}
-        assertEquals(emptyList(), variable.children.toList())
+        assertTrue(variable.children.isEmpty())
     }
 
     @Test fun `test source path of unit`() {
@@ -58,7 +59,7 @@ class UtilsTest {
 
     @Test fun `test source path of node`() {
         val path = "src/Test.java"
-        val node = variable("$path:getVersion(String):name") {}
+        val node = function("$path:getVersion(String)") {}
         assertEquals(path, node.sourcePath)
     }
 

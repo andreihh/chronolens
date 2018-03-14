@@ -58,8 +58,7 @@ class EditFunctionTest {
         val expected = project {
             sourceUnit("src/Test.java") {
                 function("getValue(int, int)") {
-                    parameter("x") {}
-                    parameter("y") {}
+                    parameters("x", "y")
                 }
             }
         }
@@ -67,8 +66,7 @@ class EditFunctionTest {
         val actual = project {
             sourceUnit("src/Test.java") {
                 function("getValue(int, int)") {
-                    parameter("y") {}
-                    parameter("x") {}
+                    parameters("y", "x")
                 }
             }
         }
@@ -99,15 +97,13 @@ class EditFunctionTest {
         val project = project {
             sourceUnit("src/Test.java") {
                 function("getValue(int, int)") {
-                    parameter("y") {}
-                    parameter("x") {}
+                    parameters("y", "x")
                 }
             }
         }
         val edit = editFunction("src/Test.java:getValue(int, int)") {
             parameters {
-                remove(0)
-                add(index = 1, value = "z")
+                remove(2)
             }
         }
 
