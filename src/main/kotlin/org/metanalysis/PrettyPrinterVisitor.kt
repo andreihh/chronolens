@@ -109,7 +109,7 @@ class PrettyPrinterVisitor(private val out: PrintStream) {
         }
     }
 
-    fun visit(unit: SourceUnit) {
-        Context(newIndent = "", indent = "").visit(unit)
+    fun visit(node: SourceNode) {
+        Context(newIndent = "", indent = "").visit(node)
     }
 }

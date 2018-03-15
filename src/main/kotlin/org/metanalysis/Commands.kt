@@ -17,6 +17,8 @@
 package org.metanalysis
 
 import org.metanalysis.MainCommand.Subcommand
+import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
+import org.metanalysis.core.model.walkSourceTree
 import org.metanalysis.core.repository.InteractiveRepository
 import org.metanalysis.core.repository.PersistentRepository
 import org.metanalysis.core.repository.PersistentRepository.Companion.persist
@@ -95,7 +97,11 @@ class List : Subcommand() {
 
 @Command(
     name = "rev-list",
-    description = ["Prints all revisions of the repository."]
+    description = [
+        "Prints all revisions on the path from the currently checked-out "
+            + "(<head>) revision to the root of the revision tree / graph in "
+            + "chronological order."
+    ]
 )
 class RevList : Subcommand() {
     override fun run() {
@@ -106,18 +112,18 @@ class RevList : Subcommand() {
 @Command(
     name = "model",
     description = [
-        "Prints the interpreted code metadata from the file located at the "
-            + "given <path> as it is found in the given <revision> of the "
+        "Prints the interpreted code metadata of the source node with the "
+            + "specified <id> as it is found in the given <revision> of the "
             + "repository."
     ]
 )
 class Model : Subcommand() {
     @Option(
-        names = ["-f", "--file"],
-        description = ["the inspected file"],
+        names = ["--id"],
+        description = ["the inspected source node"],
         required = true
     )
-    private lateinit var path: String
+    private lateinit var id: String
 
     @Option(
         names = ["-r", "--revision"],
@@ -127,14 +133,14 @@ class Model : Subcommand() {
     private val revision: String get() = revisionId ?: repository.getHeadId()
 
     override fun run() {
+        val path = id.substringBefore(ENTITY_SEPARATOR)
         if (!isValidPath(path)) exit("Invalid file path '$path'!")
         if (!isValidRevisionId(revision)) exit("Invalid revision '$revision'!")
         val model = repository.getSource(path, revision)
-        if (model != null) {
-            PrettyPrinterVisitor(System.out).visit(model)
-        } else {
-            exit("File couldn't be interpreted or doesn't exist!")
-        }
+            ?: exit("File '$path' couldn't be interpreted or doesn't exist!")
+        val node = model.walkSourceTree().find { it.id == id }
+            ?: exit("Source node '$id' doesn't exist!")
+        PrettyPrinterVisitor(System.out).visit(node)
     }
 }
 
