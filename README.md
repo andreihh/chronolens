@@ -29,16 +29,16 @@ The following is an example session of commands that inspect a remote `git`
 repository:
 ```
 # clones the repository to the current working directory
-git clone $URL .  
+git clone $URL .
 
 # prints help and lists the available commands
-metanalysis --help  
+metanalysis --help
 
 # prints the metadata for the specified file as it is found in the HEAD revision
 metanalysis model --file src/main/Main.java --revision HEAD
 
 # persists the repository metadata
-metanalysis persist  
+metanalysis persist
 
 # run various analyses that make use of the persisted metadata
 ...
@@ -118,7 +118,7 @@ There are three ways to process data from a repository:
 ```java
 // Process all sources individually.
 for (final String path : repository.listSources()) {
-    final SourceUnit sourceUnit = repository.getSource(path);
+    final SourceFile source = repository.getSource(path);
     // ...
 }
 
@@ -134,14 +134,14 @@ final Iterable<Transaction> history = repository.getHistory();
 Processing a `SourceNode` can be achieved using the `Visitor` pattern:
 ```java
 abstract class NodeVisitor {
-    public abstract void visit(SourceUnit sourceUnit);
+    public abstract void visit(SourceFile sourceFile);
     public abstract void visit(Type type);
     public abstract void visit(Function function);
     public abstract void visit(Variable variable);
     public final void visit(SourceNode node) {
         // safe to use `instanceof` because the class hierarchy is sealed
-        if (node instanceof SourceUnit) {
-            visit((SourceUnit) node);
+        if (node instanceof SourceFile) {
+            visit((SourceFile) node);
         } else if (node instanceof Type) {
             visit((Type) node);
         } else if (node instanceof Function) {

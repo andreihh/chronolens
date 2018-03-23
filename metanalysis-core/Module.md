@@ -18,14 +18,10 @@ Serialization utils.
 
 Subprocess interaction utils.
 
-# Package org.metanalysis.core.logging
-
-Logging utils.
-
 # Package org.metanalysis.core.versioning
 
 VCS API.
 
 # Package org.metanalysis.core.repository
 
-Project interaction API.
+Repository interaction API.
