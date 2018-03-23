@@ -41,12 +41,12 @@ abstract class Parser {
     protected abstract fun parse(path: String, rawSource: String): SourceUnit
 
     /**
-     * Parses the given [sourceFile] and returns the result.
+     * Parses the given [rawSourceFile] and returns the result.
      *
      * @throws IllegalArgumentException if the file can't be interpreted
      */
-    fun parse(sourceFile: SourceFile): Result = try {
-        val (path, rawSource) = sourceFile
+    fun parse(rawSourceFile: RawSourceFile): Result = try {
+        val (path, rawSource) = rawSourceFile
         require(canParse(path)) { "Can't interpreted the given file '$path'!" }
         val unit = parse(path, rawSource)
         check(unit.path == path) { "'$unit' must be located at '$path'!" }
@@ -74,10 +74,10 @@ abstract class Parser {
             parsers.firstOrNull { it.canParse(path) }
 
         /**
-         * Parses the given [sourceFile] and returns the result, or `null` if no
-         * such parser was provided.
+         * Parses the given [rawSourceFile] and returns the result, or `null` if
+         * no such parser was provided.
          */
-        fun parse(sourceFile: SourceFile): Result? =
-            getParser(sourceFile.path)?.parse(sourceFile)
+        fun parse(rawSourceFile: RawSourceFile): Result? =
+            getParser(rawSourceFile.path)?.parse(rawSourceFile)
     }
 }

@@ -20,8 +20,8 @@ import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.ProjectEdit.Companion.diff
 import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.parsing.Parser
+import org.metanalysis.core.parsing.RawSourceFile
 import org.metanalysis.core.parsing.Result
-import org.metanalysis.core.parsing.SourceFile
 import org.metanalysis.core.versioning.Revision
 import org.metanalysis.core.versioning.VcsProxy
 import org.metanalysis.core.versioning.VcsProxyFactory
@@ -67,7 +67,7 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
         checkValidRevisionId(revisionId)
         checkValidPath(path)
         val source = vcs.getFile(revisionId, path) ?: return null
-        return Parser.parse(SourceFile(path, source))
+        return Parser.parse(RawSourceFile(path, source))
     }
 
     private fun getLatestValidSource(

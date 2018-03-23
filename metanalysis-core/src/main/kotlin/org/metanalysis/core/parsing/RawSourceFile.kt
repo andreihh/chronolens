@@ -23,11 +23,11 @@ import org.metanalysis.core.model.validateUnitId
  * A raw source file that can be interpreted by parsers.
  *
  * @property path the path of the source file
- * @property rawContent the `UTF-8` encoded content of the file
+ * @property content the `UTF-8` encoded content of the file
  * @throws IllegalArgumentException if the given [path] is not a valid
  * [SourceUnit] path
  */
-data class SourceFile(val path: String, val rawContent: String) {
+data class RawSourceFile(val path: String, val content: String) {
     init {
         validateUnitId(path)
     }
