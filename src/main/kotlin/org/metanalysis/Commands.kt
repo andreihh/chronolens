@@ -26,6 +26,7 @@ import org.metanalysis.core.repository.PersistentRepository.ProgressListener
 import org.metanalysis.core.repository.Repository.Companion.isValidPath
 import org.metanalysis.core.repository.Repository.Companion.isValidRevisionId
 import picocli.CommandLine.Command
+import picocli.CommandLine.HelpCommand
 import picocli.CommandLine.Option
 import picocli.CommandLine.ParentCommand
 
@@ -38,7 +39,8 @@ import picocli.CommandLine.ParentCommand
             + "repository detected in the current working directory."
     ],
     subcommands = [
-        List::class, RevList::class, Model::class, Persist::class, Clean::class
+        List::class, RevList::class, Model::class, Persist::class, Clean::class,
+        HelpCommand::class
     ]
 )
 class MainCommand : Runnable {
@@ -63,7 +65,7 @@ class MainCommand : Runnable {
     name = "list",
     description = [
         "Prints all the interpretable files of the repository from the "
-            + "specified <revision>."
+            + "specified revision."
     ]
 )
 class List : Subcommand() {
@@ -98,7 +100,7 @@ class RevList : Subcommand() {
     name = "model",
     description = [
         "Prints the interpreted code metadata of the source node with the "
-            + "specified <id> as it is found in the given <revision> of the "
+            + "specified id as it is found in the given revision of the "
             + "repository."
     ]
 )
