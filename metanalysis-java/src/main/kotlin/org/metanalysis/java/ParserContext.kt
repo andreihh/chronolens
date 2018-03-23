@@ -51,8 +51,7 @@ internal data class ParserContext(
         val modifiers = getModifiers(this)
             .map { it.toSource() }
             .requireDistinct()
-        return if (additionalModifier == null) modifiers
-        else modifiers + additionalModifier
+        return modifiers + listOfNotNull(additionalModifier)
     }
 
     private fun AbstractTypeDeclaration.supertypeSet(): Set<String> =

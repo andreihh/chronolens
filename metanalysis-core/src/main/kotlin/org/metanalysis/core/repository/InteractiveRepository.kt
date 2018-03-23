@@ -119,18 +119,14 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
             val after = HashSet<SourceFile>(changeSet.size)
             for (path in changeSet) {
                 val oldSource = project.get<SourceFile?>(path)
-                if (oldSource != null) {
-                    before += oldSource
-                }
+                before += listOfNotNull(oldSource)
                 val result = parseSource(revisionId, path)
                 val newSource = when (result) {
                     is Result.Success -> result.source
                     Result.SyntaxError -> oldSource ?: SourceFile(path)
                     null -> null
                 }
-                if (newSource != null) {
-                    after += newSource
-                }
+                after += listOfNotNull(newSource)
             }
             val edits = Project.of(before).diff(Project.of(after))
             project.apply(edits)
