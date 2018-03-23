@@ -26,13 +26,13 @@ class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
     private var parameters = emptyList<String>()
     private val body = mutableListOf<String>()
 
-    fun modifiers(vararg modifiers: String): FunctionBuilder {
-        this.modifiers = modifiers.requireDistinct()
+    fun parameters(vararg parameters: String): FunctionBuilder {
+        this.parameters = parameters.requireDistinct().toList()
         return this
     }
 
-    fun parameters(vararg parameters: String): FunctionBuilder {
-        this.parameters = parameters.requireDistinct().toList()
+    fun modifiers(vararg modifiers: String): FunctionBuilder {
+        this.modifiers = modifiers.requireDistinct()
         return this
     }
 
@@ -47,6 +47,6 @@ class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
 
     override fun build(parentId: String): Function {
         val id = "$parentId$ENTITY_SEPARATOR$signature"
-        return Function(id, modifiers, parameters, body)
+        return Function(id, parameters, modifiers, body)
     }
 }

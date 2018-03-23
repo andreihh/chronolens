@@ -61,13 +61,13 @@ fun SourceNode.walkSourceTree(): List<SourceNode> {
 private const val typePrefix = "@type:"
 private const val returnTypePrefix = "@return:"
 
-/** Returns the type of this variable, or `null` if not specified. */
+/** Returns the type of [this] variable, or `null` if not specified. */
 val Variable.type: String?
     get() = modifiers
         .singleOrNull { it.startsWith(typePrefix) }
         ?.removePrefix(typePrefix)
 
-/** Returns the return type of this function, or `null` if not specified. */
+/** Returns the return type of [this] function, or `null` if not specified. */
 val Function.returnType: String?
     get() = modifiers
         .singleOrNull { it.startsWith(returnTypePrefix) }

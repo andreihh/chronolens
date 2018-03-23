@@ -18,6 +18,7 @@ package org.metanalysis.core.model
 
 import org.metanalysis.core.model.ListEdit.Companion.apply
 import org.metanalysis.core.model.SetEdit.Companion.apply
+import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 
 /** An atomic change which should be applied to a [Project]. */
 sealed class ProjectEdit : Edit<Project> {
@@ -50,34 +51,24 @@ sealed class ProjectEdit : Edit<Project> {
                 other[path]?.let(nodesAfter::putSourceTree)
             }
 
-            val nodeIds = nodesBefore.keys + nodesAfter.keys
-            val edits = arrayListOf<ProjectEdit>()
+            fun parentExists(id: String): Boolean {
+                val parentId = id.parentId
+                return parentId.isEmpty()
+                    || (parentId in nodesBefore && parentId in nodesAfter)
+            }
 
-            for (id in nodeIds.sortedBy(String::length)) {
+            val nodeIds = nodesBefore.keys + nodesAfter.keys
+            return nodeIds.filter(::parentExists).mapNotNull { id ->
                 val before = nodesBefore[id]
                 val after = nodesAfter[id]
                 val edit = when {
                     before == null && after != null -> AddNode(after)
                     before != null && after == null -> RemoveNode(id)
-                    else -> null
+                    before != null && after != null -> before.diff(after)
+                    else -> throw AssertionError("Node '$id' doesn't exist!")
                 }
-                if (edit != null) {
-                    edits += edit
-                    edit.applyOn(nodesBefore)
-                }
+                edit
             }
-
-            for (id in nodeIds.sortedByDescending(String::length)) {
-                val before = nodesBefore[id]
-                val after = nodesAfter[id]
-                if (before != null && after != null) {
-                    val edit = before.diff(after) ?: continue
-                    edits += edit
-                    edit.applyOn(nodesBefore)
-                }
-            }
-
-            return edits
         }
     }
 }
@@ -121,16 +112,16 @@ data class RemoveNode(override val id: String) : ProjectEdit() {
 /**
  * Indicates that the properties of a [Type] within a project should be edited.
  *
- * @property modifierEdits the edits which should be applied to the
- * [Type.modifiers] of the type with the given [id]
  * @property supertypeEdits the edits which should be applied to the
  * [Type.supertypes] of the type with the given [id]
+ * @property modifierEdits the edits which should be applied to the
+ * [Type.modifiers] of the type with the given [id]
  * @throws IllegalArgumentException if the [id] is not a valid type id
  */
 data class EditType(
     override val id: String,
-    val modifierEdits: List<SetEdit<String>> = emptyList(),
-    val supertypeEdits: List<SetEdit<String>> = emptyList()
+    val supertypeEdits: List<SetEdit<String>> = emptyList(),
+    val modifierEdits: List<SetEdit<String>> = emptyList()
 ) : ProjectEdit() {
 
     init {
@@ -139,9 +130,9 @@ data class EditType(
 
     override fun applyOn(nodes: NodeHashMap) {
         val type = nodes[id] as? Type? ?: error("Type '$id' doesn't exist!")
-        val modifiers = type.modifiers.apply(modifierEdits)
         val supertypes = type.supertypes.apply(supertypeEdits)
-        val newType = Type(id, modifiers, supertypes, type.members)
+        val modifiers = type.modifiers.apply(modifierEdits)
+        val newType = Type(id, supertypes, modifiers, type.members)
         nodes[id] = newType
         updateAncestors(nodes, newType)
     }
@@ -151,18 +142,18 @@ data class EditType(
  * Indicates that the properties of a [Function] within a project should be
  * edited.
  *
- * @property modifierEdits the edits which should be applied to the
- * [Function.modifiers] of the function with the given [id]
  * @property parameterEdits the edits which should be applied to the
  * [Function.parameters] of the function with the given [id]
+ * @property modifierEdits the edits which should be applied to the
+ * [Function.modifiers] of the function with the given [id]
  * @property bodyEdits the edits which should be applied to the [Function.body]
  * of the function with the given [id]
  * @throws IllegalArgumentException if the [id] is not a valid function id
  */
 data class EditFunction(
     override val id: String,
-    val modifierEdits: List<SetEdit<String>> = emptyList(),
     val parameterEdits: List<ListEdit<String>> = emptyList(),
+    val modifierEdits: List<SetEdit<String>> = emptyList(),
     val bodyEdits: List<ListEdit<String>> = emptyList()
 ) : ProjectEdit() {
 
@@ -173,10 +164,10 @@ data class EditFunction(
     override fun applyOn(nodes: NodeHashMap) {
         val function = nodes[id] as Function?
             ?: error("Function '$id' doesn't exist!")
-        val modifiers = function.modifiers.apply(modifierEdits)
         val parameters = function.parameters.apply(parameterEdits)
+        val modifiers = function.modifiers.apply(modifierEdits)
         val body = function.body.apply(bodyEdits)
-        val newFunction = Function(id, modifiers, parameters, body)
+        val newFunction = Function(id, parameters, modifiers, body)
         nodes[id] = newFunction
         updateAncestors(nodes, newFunction)
     }
@@ -213,6 +204,9 @@ data class EditVariable(
     }
 }
 
+private val String.parentId: String
+    get() = substringBeforeLast(ENTITY_SEPARATOR, missingDelimiterValue = "")
+
 /**
  * Updates all the ancestors of the given modified [entity] from the given
  * mutable map of [nodes]
@@ -230,11 +224,8 @@ private fun updateAncestors(nodes: NodeHashMap, entity: SourceEntity) {
         return newEntities
     }
 
-    fun SourceUnit.updated(): SourceUnit =
-        copy(entities = entities.updated(entity))
-
-    fun Type.updated(): Type =
-        copy(members = members.updated(entity))
+    fun SourceUnit.updated() = copy(entities = entities.updated(entity))
+    fun Type.updated() = copy(members = members.updated(entity))
 
     val parent = nodes[entity.parentId]
         ?: error("Parent '${entity.parentId}' doesn't exist!")

@@ -48,8 +48,8 @@ class ProjectTest {
         )
         val classType = Type(
             id = "src/Test.java:IClass",
-            modifiers = setOf("interface"),
             supertypes = setOf("Object"),
+            modifiers = setOf("interface"),
             members = setOf(classVersion, classFunction)
         )
         val version = Variable(

@@ -77,20 +77,20 @@ internal fun SourceNode.diff(other: SourceNode): ProjectEdit? {
 }
 
 private fun Type.diff(other: Type): EditType? {
-    val modifierEdits = modifiers.diff(other.modifiers)
     val supertypeEdits = supertypes.diff(other.supertypes)
-    val edit = EditType(id, modifierEdits, supertypeEdits)
-    val changed = modifierEdits.isNotEmpty() || supertypeEdits.isNotEmpty()
+    val modifierEdits = modifiers.diff(other.modifiers)
+    val edit = EditType(id, supertypeEdits, modifierEdits)
+    val changed = supertypeEdits.isNotEmpty() || modifierEdits.isNotEmpty()
     return if (changed) edit else null
 }
 
 private fun Function.diff(other: Function): EditFunction? {
-    val modifierEdits = modifiers.diff(other.modifiers)
     val parameterEdits = parameters.diff(other.parameters)
+    val modifierEdits = modifiers.diff(other.modifiers)
     val bodyEdits = body.diff(other.body)
-    val edit = EditFunction(id, modifierEdits, parameterEdits, bodyEdits)
-    val changed = modifierEdits.isNotEmpty()
-        || parameterEdits.isNotEmpty()
+    val edit = EditFunction(id, parameterEdits, modifierEdits, bodyEdits)
+    val changed = parameterEdits.isNotEmpty()
+        || modifierEdits.isNotEmpty()
         || bodyEdits.isNotEmpty()
     return if (changed) edit else null
 }

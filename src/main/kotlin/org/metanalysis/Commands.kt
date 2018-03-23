@@ -29,18 +29,10 @@ import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 import picocli.CommandLine.ParentCommand
 
-abstract class AbstractCommand : Runnable {
-    @Option(
-        names = ["-h", "--help"],
-        usageHelp = true,
-        description = ["display this help message"]
-    )
-    private var usageRequested: Boolean = false
-}
-
 @Command(
     name = "metanalysis",
     version = ["0.2"],
+    mixinStandardHelpOptions = true,
     description = [
         "Metanalysis is a software evolution analysis tool that inspects the "
             + "repository detected in the current working directory."
@@ -49,14 +41,7 @@ abstract class AbstractCommand : Runnable {
         List::class, RevList::class, Model::class, Persist::class, Clean::class
     ]
 )
-class MainCommand : AbstractCommand() {
-    @Option(
-        names = ["-V", "--version"],
-        versionHelp = true,
-        description = ["display version information and exit"]
-    )
-    private var versionRequested: Boolean = false
-
+class MainCommand : Runnable {
     internal lateinit var repository: InteractiveRepository
         private set
 
@@ -65,7 +50,7 @@ class MainCommand : AbstractCommand() {
             ?: exit("Repository not found!")
     }
 
-    abstract class Subcommand : AbstractCommand() {
+    abstract class Subcommand : Runnable {
         @ParentCommand
         private lateinit var parent: MainCommand
 
@@ -83,7 +68,7 @@ class MainCommand : AbstractCommand() {
 )
 class List : Subcommand() {
     @Option(
-        names = ["-r", "--revision"],
+        names = ["--rev"],
         description = ["the inspected revision (default: the <head> revision)"]
     )
     private var revisionId: String? = null
@@ -126,7 +111,7 @@ class Model : Subcommand() {
     private lateinit var id: String
 
     @Option(
-        names = ["-r", "--revision"],
+        names = ["--rev"],
         description = ["the inspected revision (default: the <head> revision)"]
     )
     private var revisionId: String? = null

@@ -70,8 +70,8 @@ data class SourceUnit(
  * A type declaration found inside a [SourceUnit].
  *
  * @property id the fully qualified name of this type
- * @property modifiers the modifiers of this type
  * @property supertypes the supertypes of this type
+ * @property modifiers the modifiers of this type
  * @property members the members of this type (functions, variables and
  * contained types)
  * @throws IllegalArgumentException if the [id] is not valid or if the ids of
@@ -79,8 +79,8 @@ data class SourceUnit(
  */
 data class Type(
     override val id: String,
-    val modifiers: Set<String> = emptySet(),
     val supertypes: Set<String> = emptySet(),
+    val modifiers: Set<String> = emptySet(),
     val members: Set<SourceEntity> = emptySet()
 ) : SourceEntity() {
 
@@ -99,8 +99,8 @@ data class Type(
  * The parameters of a function must have unique names.
  *
  * @property id the fully qualified signature of this function
- * @property modifiers the modifiers of this function
  * @property parameters the names of the parameters of this function
+ * @property modifiers the modifiers of this function
  * @property body the body lines of this function, or an empty list if it
  * doesn't have a body
  * @throws IllegalArgumentException if the [id] is not valid or if the ids of
@@ -108,8 +108,8 @@ data class Type(
  */
 data class Function(
     override val id: String,
-    val modifiers: Set<String> = emptySet(),
     val parameters: List<String> = emptyList(),
+    val modifiers: Set<String> = emptySet(),
     val body: List<String> = emptyList()
 ) : SourceEntity() {
 

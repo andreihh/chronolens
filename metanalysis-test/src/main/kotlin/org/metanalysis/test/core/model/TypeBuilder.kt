@@ -22,8 +22,8 @@ import org.metanalysis.test.core.Init
 import org.metanalysis.test.core.apply
 
 class TypeBuilder(private val name: String) : EntityBuilder<Type> {
-    private var modifiers = emptySet<String>()
     private var supertypes = emptySet<String>()
+    private var modifiers = emptySet<String>()
     private val members = mutableListOf<EntityBuilder<*>>()
 
     private inline fun <reified T : EntityBuilder<*>> addMember(
@@ -34,13 +34,13 @@ class TypeBuilder(private val name: String) : EntityBuilder<Type> {
         return this
     }
 
-    fun modifiers(vararg modifiers: String): TypeBuilder {
-        this.modifiers = modifiers.requireDistinct()
+    fun supertypes(vararg supertypes: String): TypeBuilder {
+        this.supertypes = supertypes.requireDistinct()
         return this
     }
 
-    fun supertypes(vararg supertypes: String): TypeBuilder {
-        this.supertypes = supertypes.requireDistinct()
+    fun modifiers(vararg modifiers: String): TypeBuilder {
+        this.modifiers = modifiers.requireDistinct()
         return this
     }
 
@@ -57,8 +57,8 @@ class TypeBuilder(private val name: String) : EntityBuilder<Type> {
         val id = "$parentId$ENTITY_SEPARATOR$name"
         return Type(
             id = id,
-            modifiers = modifiers,
             supertypes = supertypes,
+            modifiers = modifiers,
             members = members.map { it.build(id) }.toSet()
         )
     }

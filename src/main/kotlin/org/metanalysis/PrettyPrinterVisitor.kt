@@ -69,8 +69,8 @@ class PrettyPrinterVisitor(private val out: PrintStream) {
     private fun Context.visit(type: Type) {
         out.println("${newIndent}type ${type.name}")
         visit(
-            "modifiers" to type.modifiers,
             "supertypes" to type.supertypes,
+            "modifiers" to type.modifiers,
             "members" to type.members
         )
     }
@@ -78,8 +78,8 @@ class PrettyPrinterVisitor(private val out: PrintStream) {
     private fun Context.visit(function: Function) {
         out.println("${newIndent}function ${function.signature}")
         visit(
-            "modifiers" to function.modifiers,
             "parameters" to function.parameters,
+            "modifiers" to function.modifiers,
             "body" to when (function.body.size) {
                 0 -> "<none>"
                 1 -> "\"${function.body[0]}\""

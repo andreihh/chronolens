@@ -70,7 +70,7 @@ interface Repository {
      * retrieved
      */
     fun getSnapshot(): Project {
-        val sources = listSources().map { getSource(it) }.requireNoNulls()
+        val sources = listSources().map(::getSource).requireNoNulls()
         return Project.of(sources)
     }
 

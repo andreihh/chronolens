@@ -29,13 +29,13 @@ class EditFunctionBuilder(private val id: String) {
     private val parameterEdits = mutableListOf<ListEdit<String>>()
     private val bodyEdits = mutableListOf<ListEdit<String>>()
 
-    fun modifiers(init: Init<SetEditsBuilder<String>>): EditFunctionBuilder {
-        modifierEdits += SetEditsBuilder<String>().apply(init).build()
+    fun parameters(init: Init<ListEditsBuilder<String>>): EditFunctionBuilder {
+        parameterEdits += ListEditsBuilder<String>().apply(init).build()
         return this
     }
 
-    fun parameters(init: Init<ListEditsBuilder<String>>): EditFunctionBuilder {
-        parameterEdits += ListEditsBuilder<String>().apply(init).build()
+    fun modifiers(init: Init<SetEditsBuilder<String>>): EditFunctionBuilder {
+        modifierEdits += SetEditsBuilder<String>().apply(init).build()
         return this
     }
 
@@ -45,5 +45,5 @@ class EditFunctionBuilder(private val id: String) {
     }
 
     fun build(): EditFunction =
-        EditFunction(id, modifierEdits, parameterEdits, bodyEdits)
+        EditFunction(id, parameterEdits, modifierEdits, bodyEdits)
 }
