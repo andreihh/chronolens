@@ -29,20 +29,20 @@ class RemoveNodeTest {
         }
     }
 
-    @Test fun `test remove source unit`() {
+    @Test fun `test remove source file`() {
         val expected = project {
-            sourceUnit("src/Test.java") {}
+            sourceFile("src/Test.java") {}
         }
 
         val actual = project {
-            sourceUnit("src/Main.java") {
+            sourceFile("src/Main.java") {
                 type("Main") {
                     function("getVersion(String)") {
                         parameters("name")
                     }
                 }
             }
-            sourceUnit("src/Test.java") {}
+            sourceFile("src/Test.java") {}
         }
         actual.apply(removeNode("src/Main.java"))
 
@@ -51,7 +51,7 @@ class RemoveNodeTest {
 
     @Test fun `test remove function from type`() {
         val expected = project {
-            sourceUnit("src/Main.java") {
+            sourceFile("src/Main.java") {
                 type("Main") {
                     variable("version") {}
                 }
@@ -59,7 +59,7 @@ class RemoveNodeTest {
         }
 
         val actual = project {
-            sourceUnit("src/Main.java") {
+            sourceFile("src/Main.java") {
                 type("Main") {
                     variable("version") {}
                     function("getVersion(String)") {
@@ -75,7 +75,7 @@ class RemoveNodeTest {
 
     @Test fun `test remove non-existing node throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("getVersion()") {}
             }
         }

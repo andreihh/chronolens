@@ -19,19 +19,18 @@ package org.metanalysis.core.model
 import java.util.Collections.unmodifiableCollection
 
 /**
- * A snapshot of a project containing a [SourceUnit] set at a specific point in
- * time.
+ * A snapshot of a project at a specific point in time.
  *
  * It indexes all contained source nodes to allow fast access by id.
  */
 class Project private constructor(
-    private val unitMap: HashMap<String, SourceUnit>,
+    private val sourceMap: HashMap<String, SourceFile>,
     private val nodeMap: HashMap<String, SourceNode>
 ) {
 
-    /** The source units in this project. */
-    val sources: Collection<SourceUnit>
-        get() = unmodifiableCollection(unitMap.values)
+    /** The source files in this project. */
+    val sources: Collection<SourceFile>
+        get() = unmodifiableCollection(sourceMap.values)
 
     /** Returns all the source nodes in this project. */
     val sourceTree: Iterable<SourceNode>
@@ -63,12 +62,12 @@ class Project private constructor(
      * the given [edit] couldn't be applied
      */
     fun apply(edit: ProjectEdit) {
-        val parentUnitId = edit.sourcePath
-        unitMap -= parentUnitId
+        val sourcePath = edit.sourcePath
+        sourceMap -= sourcePath
         edit.applyOn(nodeMap)
-        val newParentUnit = get<SourceUnit?>(parentUnitId)
-        if (newParentUnit != null) {
-            unitMap[parentUnitId] = newParentUnit
+        val newSource = get<SourceFile?>(sourcePath)
+        if (newSource != null) {
+            sourceMap[sourcePath] = newSource
         }
     }
 
@@ -79,22 +78,22 @@ class Project private constructor(
 
     companion object {
         /**
-         * Creates and returns a project from the given source [units].
+         * Creates and returns a project from the given [sources].
          *
-         * @throws IllegalArgumentException if the given [units] contain
+         * @throws IllegalArgumentException if the given [sources] contain
          * duplicate ids
          */
         @JvmStatic
-        fun of(units: Collection<SourceUnit>): Project {
-            val unitMap = HashMap<String, SourceUnit>(units.size)
-            for (unit in units) {
-                require(unit.id !in unitMap) {
-                    "Project contains duplicate unit id '${unit.id}'!"
+        fun of(sources: Collection<SourceFile>): Project {
+            val sourceMap = HashMap<String, SourceFile>(sources.size)
+            for (source in sources) {
+                require(source.id !in sourceMap) {
+                    "Project contains duplicate source id '${source.id}'!"
                 }
-                unitMap[unit.id] = unit
+                sourceMap[source.id] = source
             }
-            val nodeMap = buildVisit(units)
-            return Project(unitMap, nodeMap)
+            val nodeMap = buildVisit(sources)
+            return Project(sourceMap, nodeMap)
         }
 
         /** Creates and returns an empty project. */

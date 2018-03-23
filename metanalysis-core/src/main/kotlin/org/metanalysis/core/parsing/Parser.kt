@@ -16,7 +16,7 @@
 
 package org.metanalysis.core.parsing
 
-import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.SourceFile
 import java.util.ServiceLoader
 
 /**
@@ -26,58 +26,57 @@ import java.util.ServiceLoader
  * `META-INF/services/org.metanalysis.core.parsing.Parser` configuration file.
  */
 abstract class Parser {
-    /** The programming language which can be interpreted by this parser. */
-    protected abstract val language: String
-
     /** Returns whether this parser can interpret the given file [path]. */
     protected abstract fun canParse(path: String): Boolean
 
     /**
-     * Parses the given [rawSource] assuming it is located at the given [path].
+     * Parses the given `UTF-8` encoded [rawSource] assuming it is located at
+     * the specified [path].
      *
      * @throws SyntaxErrorException if the [rawSource] contains errors
+     * @throws IllegalArgumentException if the given [path] is not a valid
+     * [SourceFile] path
      */
     @Throws(SyntaxErrorException::class)
-    protected abstract fun parse(path: String, rawSource: String): SourceUnit
-
-    /**
-     * Parses the given [rawSourceFile] and returns the result.
-     *
-     * @throws IllegalArgumentException if the file can't be interpreted
-     */
-    fun parse(rawSourceFile: RawSourceFile): Result = try {
-        val (path, rawSource) = rawSourceFile
-        require(canParse(path)) { "Can't interpreted the given file '$path'!" }
-        val unit = parse(path, rawSource)
-        check(unit.path == path) { "'$unit' must be located at '$path'!" }
-        Result.Success(unit)
-    } catch (e: SyntaxErrorException) {
-        Result.SyntaxError
-    }
+    protected abstract fun parse(path: String, rawSource: String): SourceFile
 
     companion object {
         private val parsers = ServiceLoader.load(Parser::class.java)
-        private val parsersByLanguage = parsers.associateBy(Parser::language)
-
-        /**
-         * Returns a parser which can interpret the given programming
-         * [language], or `null` if no such parser was provided.
-         */
-        fun getParserByLanguage(language: String): Parser? =
-            parsersByLanguage[language]
 
         /**
          * Returns a parser which can interpret the given file [path], or `null`
          * if no such parser was provided.
          */
-        fun getParser(path: String): Parser? =
+        private fun getParser(path: String): Parser? =
             parsers.firstOrNull { it.canParse(path) }
 
         /**
-         * Parses the given [rawSourceFile] and returns the result, or `null` if
-         * no such parser was provided.
+         * Returns whether a provided parser can interpret the given file
+         * [path].
          */
-        fun parse(rawSourceFile: RawSourceFile): Result? =
-            getParser(rawSourceFile.path)?.parse(rawSourceFile)
+        fun canParse(path: String): Boolean = getParser(path) != null
+
+        /**
+         * Parses the given `UTF-8` encoded [rawSource] assuming it is located
+         * at the specified [path] and returns the result, or `null` if no such
+         * parser was provided.
+         *
+         * @throws IllegalArgumentException if the given [path] is not a valid
+         * [SourceFile] path
+         * @throws IllegalStateException if the parsed source file has a
+         * different path than the given [path]
+         */
+        fun parse(path: String, rawSource: String): Result? {
+            val parser = getParser(path) ?: return null
+            return try {
+                val source = parser.parse(path, rawSource)
+                check(source.path == path) {
+                    "Source '${source.path}' must be located at '$path'!"
+                }
+                Result.Success(source)
+            } catch (e: SyntaxErrorException) {
+                Result.SyntaxError
+            }
+        }
     }
 }

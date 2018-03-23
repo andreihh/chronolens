@@ -5,7 +5,7 @@
   "edits" : [ {
     "@class" : "AddNode",
     "node" : {
-      "@class" : "SourceUnit",
+      "@class" : "SourceFile",
       "id" : "res",
       "entities" : [ {
         "@class" : "Variable",

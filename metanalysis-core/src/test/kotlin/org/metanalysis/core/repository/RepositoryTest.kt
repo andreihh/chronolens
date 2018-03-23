@@ -20,10 +20,10 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
+import org.metanalysis.core.versioning.VcsProxyFactoryMock
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
-import org.metanalysis.test.core.model.sourceUnit
-import org.metanalysis.core.versioning.VcsProxyFactoryMock
+import org.metanalysis.test.core.model.sourceFile
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
@@ -40,7 +40,7 @@ abstract class RepositoryTest {
                 change("src/Main.mock" to "{")
                 change("src/Worksheet.mock" to """{
                         "id": "src/Worksheet.mock",
-                        "@class": "SourceUnit",
+                        "@class": "SourceFile",
                         "entities": [{
                             "id": "src/Worksheet.mock:println()",
                             "@class": "Function"
@@ -48,11 +48,11 @@ abstract class RepositoryTest {
                 }""")
                 change("src/Test.mock" to """{
                         "id": "src/Test.mock",
-                        "@class": "SourceUnit"
+                        "@class": "SourceFile"
                 }""")
                 change("src/BuildVersion.mock" to """
                         "id": "src/BuildVersion.mock",
-                        "@class": "SourceUnit"
+                        "@class": "SourceFile"
                 """)
                 change("README.md" to "## Mock repository\n")
             }
@@ -60,7 +60,7 @@ abstract class RepositoryTest {
             revision {
                 change("src/Main.mock" to """{
                         "id": "src/Main.mock",
-                        "@class": "SourceUnit",
+                        "@class": "SourceFile",
                         "entities": [{
                             "id": "src/Main.mock:Main",
                             "@class": "Type"
@@ -101,34 +101,34 @@ abstract class RepositoryTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test get source unit`() {
-        val expected = sourceUnit("src/Main.mock") {
+    @Test fun `test get source`() {
+        val expected = sourceFile("src/Main.mock") {
             type("Main") {}
         }
         val actual = repository.getSource("src/Main.mock")
         assertEquals(expected, actual)
     }
 
-    @Test fun `test get non-existing source unit returns null`() {
+    @Test fun `test get non-existing source returns null`() {
         val actual = repository.getSource("src/Test.mock")
         assertNull(actual)
     }
 
-    @Test fun `test get non-parsable source unit returns null`() {
+    @Test fun `test get non-parsable source returns null`() {
         val actual = repository.getSource("README.md")
         assertNull(actual)
     }
 
-    @Test fun `test get invalid source unit returns latest valid version`() {
-        val expected = sourceUnit("src/Worksheet.mock") {
+    @Test fun `test get invalid source returns latest valid version`() {
+        val expected = sourceFile("src/Worksheet.mock") {
             function("println()") {}
         }
         val actual = repository.getSource("src/Worksheet.mock")
         assertEquals(expected, actual)
     }
 
-    @Test fun `test get invalid source unit with no history returns empty`() {
-        val expected = sourceUnit("src/Error.mock") {}
+    @Test fun `test get invalid source with no history returns empty`() {
+        val expected = sourceFile("src/Error.mock") {}
         val actual = repository.getSource("src/Error.mock")
         assertEquals(expected, actual)
     }
@@ -147,14 +147,14 @@ abstract class RepositoryTest {
 
     @Test fun `test get snapshot`() {
         val expected = project {
-            sourceUnit("src/Main.mock") {
+            sourceFile("src/Main.mock") {
                 type("Main") {}
             }
-            sourceUnit("src/BuildVersion.mock") {}
-            sourceUnit("src/Worksheet.mock") {
+            sourceFile("src/BuildVersion.mock") {}
+            sourceFile("src/Worksheet.mock") {
                 function("println()") {}
             }
-            sourceUnit("src/Error.mock") {}
+            sourceFile("src/Error.mock") {}
         }
         val actual = repository.getSnapshot()
         assertEquals(expected, actual)
@@ -162,14 +162,14 @@ abstract class RepositoryTest {
 
     @Test fun `test get history`() {
         val expected = project {
-            sourceUnit("src/Main.mock") {
+            sourceFile("src/Main.mock") {
                 type("Main") {}
             }
-            sourceUnit("src/BuildVersion.mock") {}
-            sourceUnit("src/Worksheet.mock") {
+            sourceFile("src/BuildVersion.mock") {}
+            sourceFile("src/Worksheet.mock") {
                 function("println()") {}
             }
-            sourceUnit("src/Error.mock") {}
+            sourceFile("src/Error.mock") {}
         }
         val transactions = repository.getHistory()
         val actual = project {}

@@ -31,7 +31,7 @@ class EditVariableTest {
 
     @Test fun `test add modifier to variable`() {
         val expected = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 variable("name") {
                     modifiers("@NotNull")
                 }
@@ -39,7 +39,7 @@ class EditVariableTest {
         }
 
         val actual = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 variable("name") {}
             }
         }
@@ -52,7 +52,7 @@ class EditVariableTest {
 
     @Test fun `test edit non-existing variable throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 variable("DEBUG") {}
             }
         }
@@ -65,7 +65,7 @@ class EditVariableTest {
 
     @Test fun `test edit type throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("Test") {}
             }
         }

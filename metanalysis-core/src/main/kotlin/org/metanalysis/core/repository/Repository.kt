@@ -17,7 +17,7 @@
 package org.metanalysis.core.repository
 
 import org.metanalysis.core.model.Project
-import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.SourceFile
 
 /**
  * A wrapper which connects to a repository and allows querying source code
@@ -32,7 +32,7 @@ interface Repository {
     fun getHeadId(): String
 
     /**
-     * Returns the set of source units from the `head` revision which can be
+     * Returns the set of source files from the `head` revision which can be
      * interpreted.
      *
      * @throws IllegalStateException if this repository is in a corrupted state
@@ -48,26 +48,25 @@ interface Repository {
     fun listRevisions(): List<String>
 
     /**
-     * Returns the source unit found at the given [path] as it is found in the
+     * Returns the source file found at the given [path] as it is found in the
      * `head` revision, or `null` if the [path] doesn't exist in the `head`
      * revision or couldn't be interpreted.
      *
      * If the source contains syntax errors, then the most recent version which
      * can be parsed without errors will be returned. If all versions of the
-     * source contain errors, then the empty source unit will be returned.
+     * source contain errors, then the empty source file will be returned.
      *
      * @throws IllegalArgumentException if the given [path] is invalid
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun getSource(path: String): SourceUnit?
+    fun getSource(path: String): SourceFile?
 
     /**
      * Returns the snapshot of the repository, as it is found in the `head`
      * revision.
      *
      * @throws IllegalStateException if this repository is in a corrupted state
-     * @see getSource for details about how the latest source units are
-     * retrieved
+     * @see getSource for details about how the latest sources are retrieved
      */
     fun getSnapshot(): Project {
         val sources = listSources().map(::getSource).requireNoNulls()

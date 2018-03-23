@@ -23,17 +23,17 @@ import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.metanalysis.core.model.SourceNode.Companion.PATH_SEPARATOR
 
 private const val separators = "$PATH_SEPARATOR$ENTITY_SEPARATOR\"\\\\"
-private val file = Regex("(?>[^$separators]++)")
+private val fileComponent = Regex("(?>[^$separators]++)")
 private val identifier = Regex("(?>[^$separators()]++)")
 private val signature = Regex("(?>$identifier\\([^$separators]*\\))")
 
-private val unit = Regex("$file($PATH_SEPARATOR$file)*+")
-private val type = Regex("$unit($ENTITY_SEPARATOR$identifier)+?")
-private val function = Regex("($type|$unit)$ENTITY_SEPARATOR$signature")
-private val variable = Regex("($type|$unit)$ENTITY_SEPARATOR$identifier")
+private val file = Regex("$fileComponent($PATH_SEPARATOR$fileComponent)*+")
+private val type = Regex("$file($ENTITY_SEPARATOR$identifier)+?")
+private val function = Regex("($type|$file)$ENTITY_SEPARATOR$signature")
+private val variable = Regex("($type|$file)$ENTITY_SEPARATOR$identifier")
 
 private val entity = Regex("$function|$type|$variable")
-private val node = Regex("$unit|$entity")
+private val node = Regex("$file|$entity")
 
 /**
  * Validates the ids of the children of this node.
@@ -91,13 +91,13 @@ internal fun validateEntityId(id: String) {
 }
 
 /**
- * Validates the given [SourceUnit] [id].
+ * Validates the given [SourceFile] [id].
  *
- * @throws IllegalArgumentException if the given [id] is not a valid source unit
+ * @throws IllegalArgumentException if the given [id] is not a valid source file
  * id
  */
-internal fun validateUnitId(id: String) {
-    require(id.matches(unit)) { "Invalid unit id '$id'!" }
+internal fun validateFileId(id: String) {
+    require(id.matches(file)) { "Invalid file id '$id'!" }
 }
 
 /**

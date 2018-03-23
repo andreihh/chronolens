@@ -23,12 +23,15 @@ import org.metanalysis.test.core.apply
 
 @BuilderMarker
 class ProjectBuilder {
-    private val units = mutableListOf<UnitBuilder>()
+    private val sources = mutableListOf<SourceFileBuilder>()
 
-    fun sourceUnit(path: String, init: Init<UnitBuilder>): ProjectBuilder {
-        units += UnitBuilder(path).apply(init)
+    fun sourceFile(
+        path: String,
+        init: Init<SourceFileBuilder>
+    ): ProjectBuilder {
+        sources += SourceFileBuilder(path).apply(init)
         return this
     }
 
-    fun build(): Project = Project.of(units.map(UnitBuilder::build))
+    fun build(): Project = Project.of(sources.map(SourceFileBuilder::build))
 }

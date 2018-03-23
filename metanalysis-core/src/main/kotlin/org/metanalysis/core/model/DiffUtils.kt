@@ -69,7 +69,7 @@ internal fun SourceNode.diff(other: SourceNode): ProjectEdit? {
         "Can't compute diff between '$id' and '${other.id}'!"
     }
     return when (this) {
-        is SourceUnit -> null
+        is SourceFile -> null
         is Type -> diff(other as Type)
         is Function -> diff(other as Function)
         is Variable -> diff(other as Variable)

@@ -33,7 +33,7 @@ sealed class SourceNode {
     abstract val id: String
 
     companion object {
-        /** Paths in [SourceUnit] ids are separated by `/`. */
+        /** Paths in [SourceFile] ids are separated by `/`. */
         const val PATH_SEPARATOR: Char = '/'
 
         /** Identifiers in [SourceEntity] ids are separated by `:`. */
@@ -41,33 +41,33 @@ sealed class SourceNode {
     }
 }
 
-/** An abstract representation of a source entity within a [SourceUnit]. */
+/** An abstract representation of a source entity within a [SourceFile]. */
 sealed class SourceEntity : SourceNode()
 
 /**
  * The source code metadata of a source file.
  *
- * @property id the fully qualified identifier of this unit
+ * @property id the fully qualified identifier of this file
  * @property entities the source entities contained by this source file
  * @throws IllegalArgumentException if the [id] is not valid or if the ids of
  * the [entities] are not valid or if the [entities] contain duplicated ids
  */
-data class SourceUnit(
+data class SourceFile(
     override val id: String,
     val entities: Set<SourceEntity> = emptySet()
 ) : SourceNode() {
 
     init {
-        validateUnitId(id)
+        validateFileId(id)
         validateChildrenIds()
     }
 
-    /** The fully qualified path of this unit, equal to [id]. */
+    /** The fully qualified path of this file, equal to [id]. */
     val path: String get() = id
 }
 
 /**
- * A type declaration found inside a [SourceUnit].
+ * A type declaration found inside a [SourceFile].
  *
  * @property id the fully qualified name of this type
  * @property supertypes the supertypes of this type
@@ -94,7 +94,7 @@ data class Type(
 }
 
 /**
- * A function declaration found inside a [SourceUnit].
+ * A function declaration found inside a [SourceFile].
  *
  * The parameters of a function must have unique names.
  *
@@ -130,7 +130,7 @@ data class Function(
 }
 
 /**
- * A variable declaration found inside a [SourceUnit].
+ * A variable declaration found inside a [SourceFile].
  *
  * @property id the fully qualified name of this variable
  * @property modifiers the modifiers of this variable

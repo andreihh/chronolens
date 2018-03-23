@@ -31,7 +31,7 @@ class EditTypeTest {
 
     @Test fun `test add supertype to type`() {
         val expected = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("Test") {
                     supertypes("Object")
                 }
@@ -39,7 +39,7 @@ class EditTypeTest {
         }
 
         val actual = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("Test") {}
             }
         }
@@ -52,7 +52,7 @@ class EditTypeTest {
 
     @Test fun `test edit non-existing type throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {}
+            sourceFile("src/Test.java") {}
         }
         val edit = editType("src/Test.java:Test") {}
 
@@ -63,7 +63,7 @@ class EditTypeTest {
 
     @Test fun `test edit type applied to variable id throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 variable("test") {}
             }
         }

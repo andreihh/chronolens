@@ -40,8 +40,8 @@ sealed class ProjectEdit : Edit<Project> {
          */
         @JvmStatic
         fun Project.diff(other: Project): List<ProjectEdit> {
-            val thisSources = this.sources.map(SourceUnit::id)
-            val otherSources = other.sources.map(SourceUnit::id)
+            val thisSources = this.sources.map(SourceFile::id)
+            val otherSources = other.sources.map(SourceFile::id)
             val allSources = thisSources.union(otherSources)
 
             val nodesBefore = NodeHashMap()
@@ -224,13 +224,13 @@ private fun updateAncestors(nodes: NodeHashMap, entity: SourceEntity) {
         return newEntities
     }
 
-    fun SourceUnit.updated() = copy(entities = entities.updated(entity))
+    fun SourceFile.updated() = copy(entities = entities.updated(entity))
     fun Type.updated() = copy(members = members.updated(entity))
 
     val parent = nodes[entity.parentId]
         ?: error("Parent '${entity.parentId}' doesn't exist!")
     val newParent = when (parent) {
-        is SourceUnit -> parent.updated()
+        is SourceFile -> parent.updated()
         is Type -> parent.updated()
         else -> error("Unknown container '${parent::class}'!")
     }

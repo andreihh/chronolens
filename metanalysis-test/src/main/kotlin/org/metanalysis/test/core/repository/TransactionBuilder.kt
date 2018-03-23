@@ -26,11 +26,11 @@ import org.metanalysis.test.core.model.EditFunctionBuilder
 import org.metanalysis.test.core.model.EditTypeBuilder
 import org.metanalysis.test.core.model.EditVariableBuilder
 import org.metanalysis.test.core.model.FunctionBuilder
+import org.metanalysis.test.core.model.SourceFileBuilder
 import org.metanalysis.test.core.model.TypeBuilder
-import org.metanalysis.test.core.model.UnitBuilder
 import org.metanalysis.test.core.model.VariableBuilder
 import org.metanalysis.test.core.model.function
-import org.metanalysis.test.core.model.sourceUnit
+import org.metanalysis.test.core.model.sourceFile
 import org.metanalysis.test.core.model.type
 import org.metanalysis.test.core.model.variable
 
@@ -49,11 +49,11 @@ class TransactionBuilder(private val revisionId: String) {
         return this
     }
 
-    fun addSourceUnit(
+    fun addSourceFile(
         path: String,
-        init: Init<UnitBuilder>
+        init: Init<SourceFileBuilder>
     ): TransactionBuilder {
-        edits += AddNode(sourceUnit(path, init))
+        edits += AddNode(sourceFile(path, init))
         return this
     }
 

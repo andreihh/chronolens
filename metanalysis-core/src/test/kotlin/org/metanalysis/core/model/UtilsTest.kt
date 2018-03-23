@@ -18,7 +18,7 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 import org.metanalysis.test.core.model.function
-import org.metanalysis.test.core.model.sourceUnit
+import org.metanalysis.test.core.model.sourceFile
 import org.metanalysis.test.core.model.type
 import org.metanalysis.test.core.model.variable
 import kotlin.test.assertEquals
@@ -26,11 +26,11 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class UtilsTest {
-    @Test fun `test children of unit are equal to entities`() {
-        val unit = sourceUnit("src/Test.java") {
+    @Test fun `test children of source file are equal to entities`() {
+        val source = sourceFile("src/Test.java") {
             type("Test") {}
         }
-        assertEquals(unit.entities, unit.children)
+        assertEquals(source.entities, source.children)
     }
 
     @Test fun `test children of type are equal to members`() {
@@ -52,9 +52,9 @@ class UtilsTest {
         assertTrue(variable.children.isEmpty())
     }
 
-    @Test fun `test source path of unit`() {
-        val unit = sourceUnit("src/Test.java") {}
-        assertEquals(unit.path, unit.sourcePath)
+    @Test fun `test source path of source file`() {
+        val source = sourceFile("src/Test.java") {}
+        assertEquals(source.path, source.sourcePath)
     }
 
     @Test fun `test source path of node`() {

@@ -32,7 +32,7 @@ class ProjectEditTest {
     @Test
     fun `test diff equal projects`() {
         val before = project {
-            sourceUnit("src/Main.java") {
+            sourceFile("src/Main.java") {
                 type("Main") {
                     function("getVersion(String)") {
                         parameters("name")
@@ -46,7 +46,7 @@ class ProjectEditTest {
         }
 
         val after = project {
-            sourceUnit("src/Main.java") {
+            sourceFile("src/Main.java") {
                 type("Main") {
                     function("getVersion(String)") {
                         parameters("name")
@@ -65,13 +65,13 @@ class ProjectEditTest {
 
     @Test fun `test diff change type modifiers`() {
         val before = project {
-            sourceUnit("src/Main.java") {
+            sourceFile("src/Main.java") {
                 type("Main") {}
             }
         }
 
         val after = project {
-            sourceUnit("src/Main.java") {
+            sourceFile("src/Main.java") {
                 type("Main") {
                     modifiers("interface")
                 }
@@ -83,13 +83,13 @@ class ProjectEditTest {
 
     @Test fun `test diff change type supertypes`() {
         val before = project {
-            sourceUnit("src/Main.java") {
+            sourceFile("src/Main.java") {
                 type("Main") {}
             }
         }
 
         val after = project {
-            sourceUnit("src/Main.java") {
+            sourceFile("src/Main.java") {
                 type("Main") {
                     supertypes("Object")
                 }
@@ -101,13 +101,13 @@ class ProjectEditTest {
 
     @Test fun `test diff change function modifiers`() {
         val before = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("getVersion()") {}
             }
         }
 
         val after = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("getVersion()") {
                     modifiers("abstract")
                 }
@@ -119,7 +119,7 @@ class ProjectEditTest {
 
     @Test fun `test diff change function parameters`() {
         val before = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("getVersion(String, int)") {
                     parameters("name", "revision")
                 }
@@ -127,7 +127,7 @@ class ProjectEditTest {
         }
 
         val after = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("getVersion(String, int)") {
                     parameters("className", "revision")
                 }
@@ -139,13 +139,13 @@ class ProjectEditTest {
 
     @Test fun `test diff change function body`() {
         val before = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("getVersion()") { +"DEBUG" }
             }
         }
 
         val after = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("getVersion()") { +"RELEASE" }
             }
         }
@@ -155,7 +155,7 @@ class ProjectEditTest {
 
     @Test fun `test diff change variable modifiers`() {
         val before = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 variable("version") {
                     modifiers("public")
                 }
@@ -163,7 +163,7 @@ class ProjectEditTest {
         }
 
         val after = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 variable("version") {}
             }
         }
@@ -173,13 +173,13 @@ class ProjectEditTest {
 
     @Test fun `test diff change variable initializer`() {
         val before = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 variable("version") { +"DEBUG" }
             }
         }
 
         val after = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 variable("version") { +"RELEASE" }
             }
         }

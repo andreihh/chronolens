@@ -20,24 +20,24 @@ import org.junit.Test
 import kotlin.test.assertFailsWith
 
 class ValidationUtilsTest {
-    @Test fun `test empty unit id throws`() {
+    @Test fun `test empty source file id throws`() {
         assertFailsWith<IllegalArgumentException> {
-            validateUnitId("")
+            validateFileId("")
         }
     }
 
-    @Test fun `test entity separator in unit id throws`() {
+    @Test fun `test entity separator in source file id throws`() {
         assertFailsWith<IllegalArgumentException> {
-            validateUnitId("src:Test.java")
+            validateFileId("src:Test.java")
         }
     }
 
-    @Test fun `test unit id without separators is valid`() {
-        validateUnitId("Test.java")
+    @Test fun `test source file id without separators is valid`() {
+        validateFileId("Test.java")
     }
 
-    @Test fun `test unit id with correct path separator is valid`() {
-        validateUnitId("src/Test.java")
+    @Test fun `test source file id with correct path separator is valid`() {
+        validateFileId("src/Test.java")
     }
 
     @Test fun `test type id with correct separator is valid`() {
@@ -105,7 +105,7 @@ class ValidationUtilsTest {
         }
     }
 
-    @Test fun `test valid unit id is valid node id`() {
+    @Test fun `test valid source file id is valid node id`() {
         validateNodeId("src/Test.java")
     }
 
@@ -117,7 +117,7 @@ class ValidationUtilsTest {
         validateEntityId("src/Test.java:IClass:getVersion()")
     }
 
-    @Test fun `test valid unit id is invalid entity id`() {
+    @Test fun `test valid source file id is invalid entity id`() {
         assertFailsWith<IllegalArgumentException> {
             validateEntityId("src/Test.java")
         }

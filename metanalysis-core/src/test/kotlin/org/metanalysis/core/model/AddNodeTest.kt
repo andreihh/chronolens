@@ -18,31 +18,30 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 import org.metanalysis.test.core.model.addFunction
-import org.metanalysis.test.core.model.addSourceUnit
+import org.metanalysis.test.core.model.addSourceFile
 import org.metanalysis.test.core.model.addType
-import org.metanalysis.test.core.model.addVariable
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.project
 import kotlin.test.assertFailsWith
 
 class AddNodeTest {
-    @Test fun `test add source unit`() {
+    @Test fun `test add source file`() {
         val expected = project {
-            sourceUnit("src/Main.java") {}
-            sourceUnit("src/Test.java") {}
+            sourceFile("src/Main.java") {}
+            sourceFile("src/Test.java") {}
         }
 
         val actual = project {
-            sourceUnit("src/Main.java") {}
+            sourceFile("src/Main.java") {}
         }
-        actual.apply(addSourceUnit("src/Test.java") {})
+        actual.apply(addSourceFile("src/Test.java") {})
 
         assertEquals(expected, actual)
     }
 
     @Test fun `test add function to type`() {
         val expected = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("Test") {
                     function("getVersion()") {}
                 }
@@ -50,7 +49,7 @@ class AddNodeTest {
         }
 
         val actual = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("Test") {}
             }
         }
@@ -61,7 +60,7 @@ class AddNodeTest {
 
     @Test fun `test add type with function with parameter`() {
         val expected = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("Test") {
                     function("getV(String)") {
                         parameters("name")
@@ -71,7 +70,7 @@ class AddNodeTest {
         }
 
         val actual = project {
-            sourceUnit("src/Test.java") {}
+            sourceFile("src/Test.java") {}
         }
         actual.apply(addType("src/Test.java:Test") {
             function("getV(String)") {
@@ -84,7 +83,7 @@ class AddNodeTest {
 
     @Test fun `test add existing node throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("Test") {}
             }
         }
@@ -97,7 +96,7 @@ class AddNodeTest {
 
     @Test fun `test add entity to variable throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 variable("version") {}
             }
         }
@@ -110,7 +109,7 @@ class AddNodeTest {
 
     @Test fun `test add node to non-existing parent throws`() {
         val project = project {
-            sourceUnit("src/Main.java") {}
+            sourceFile("src/Main.java") {}
         }
         val edit = addFunction("src/Main.java:Main:getVersion()") {}
 

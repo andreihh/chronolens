@@ -20,17 +20,8 @@ import org.junit.Test
 import org.metanalysis.core.model.typeModifierOf
 import org.metanalysis.core.parsing.Result
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class JavaParserErrorTest : JavaParserTest() {
-    @Test fun `test parse invalid path throws`() {
-        val source = "class Main {}"
-        val path = "src/Test.jav"
-        assertFailsWith<IllegalArgumentException> {
-            parse(source, path)
-        }
-    }
-
     @Test fun `test parse invalid source is syntax error`() {
         val source = "cla Main { int i = &@*; { class K; interface {}"
         val result = parseResult(source)
@@ -76,7 +67,7 @@ class JavaParserErrorTest : JavaParserTest() {
             }
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("Type") {
                 modifiers("class")
                 variable("i") {

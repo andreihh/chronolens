@@ -25,8 +25,8 @@ import org.metanalysis.core.model.EditVariable
 import org.metanalysis.core.model.Function
 import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.RemoveNode
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
-import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.model.Type
 import org.metanalysis.core.model.Variable
 import org.metanalysis.test.core.Init
@@ -35,8 +35,8 @@ import org.metanalysis.test.core.apply
 fun project(init: Init<ProjectBuilder>): Project =
     ProjectBuilder().apply(init).build()
 
-fun sourceUnit(path: String, init: Init<UnitBuilder>): SourceUnit =
-    UnitBuilder(path).apply(init).build()
+fun sourceFile(path: String, init: Init<SourceFileBuilder>): SourceFile =
+    SourceFileBuilder(path).apply(init).build()
 
 fun type(id: String, init: Init<TypeBuilder>): Type {
     val parentId = id.substringBeforeLast(ENTITY_SEPARATOR)
@@ -56,8 +56,8 @@ fun variable(id: String, init: Init<VariableBuilder>): Variable {
     return VariableBuilder(name).apply(init).build(parentId)
 }
 
-fun addSourceUnit(path: String, init: Init<UnitBuilder>): AddNode =
-    AddNode(sourceUnit(path, init))
+fun addSourceFile(path: String, init: Init<SourceFileBuilder>): AddNode =
+    AddNode(sourceFile(path, init))
 
 fun addType(id: String, init: Init<TypeBuilder>): AddNode =
     AddNode(type(id, init))

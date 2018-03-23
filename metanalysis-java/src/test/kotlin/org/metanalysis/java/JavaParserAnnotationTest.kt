@@ -26,7 +26,7 @@ class JavaParserAnnotationTest : JavaParserTest() {
         @interface AnnotationClass {
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("AnnotationClass") {
                 modifiers("@interface")
             }
@@ -41,7 +41,7 @@ class JavaParserAnnotationTest : JavaParserTest() {
             int version();
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("AnnotationClass") {
                 modifiers("@interface")
                 variable("name") {
@@ -62,7 +62,7 @@ class JavaParserAnnotationTest : JavaParserTest() {
             int version() default 1;
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("AnnotationClass") {
                 modifiers("@interface")
                 variable("name") {

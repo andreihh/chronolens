@@ -31,7 +31,7 @@ class EditFunctionTest {
 
     @Test fun `test add modifier to function`() {
         val expected = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("Test") {
                     function("getVersion()") {
                         modifiers("@Override")
@@ -41,7 +41,7 @@ class EditFunctionTest {
         }
 
         val actual = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("Test") {
                     function("getVersion()") {}
                 }
@@ -56,7 +56,7 @@ class EditFunctionTest {
 
     @Test fun `test swap function parameters`() {
         val expected = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("getValue(int, int)") {
                     parameters("x", "y")
                 }
@@ -64,7 +64,7 @@ class EditFunctionTest {
         }
 
         val actual = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("getValue(int, int)") {
                     parameters("y", "x")
                 }
@@ -82,7 +82,7 @@ class EditFunctionTest {
 
     @Test fun `test edit non-existing function throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("get_version()") {}
             }
         }
@@ -95,7 +95,7 @@ class EditFunctionTest {
 
     @Test fun `test edit non-existing parameter throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 function("getValue(int, int)") {
                     parameters("y", "x")
                 }

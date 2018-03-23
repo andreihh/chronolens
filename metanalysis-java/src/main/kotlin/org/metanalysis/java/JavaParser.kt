@@ -21,18 +21,16 @@ import org.eclipse.jdt.core.dom.AST
 import org.eclipse.jdt.core.dom.ASTParser
 import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.CompilationUnit
-import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.parsing.Parser
 import org.metanalysis.core.parsing.SyntaxErrorException
 
 /** Java 8 language parser. */
 class JavaParser : Parser() {
-    override val language: String get() = LANGUAGE
-
     override fun canParse(path: String): Boolean = path.endsWith(".java")
 
     @Throws(SyntaxErrorException::class)
-    override fun parse(path: String, rawSource: String): SourceUnit {
+    override fun parse(path: String, rawSource: String): SourceFile {
         val options = JavaCore.getOptions()
         JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options)
         val jdtParser = ASTParser.newParser(AST.JLS9).apply {
@@ -41,12 +39,7 @@ class JavaParser : Parser() {
             setSource(rawSource.toCharArray())
         }
         val compilationUnit = jdtParser.createAST(null) as CompilationUnit
-        return ParserContext(unitId = path, source = rawSource, parentId = "")
+        return ParserContext(path = path, source = rawSource, parentId = "")
             .visit(compilationUnit)
-    }
-
-    companion object {
-        /** The `Java` programming language supported by this parser. */
-        const val LANGUAGE: String = "Java"
     }
 }

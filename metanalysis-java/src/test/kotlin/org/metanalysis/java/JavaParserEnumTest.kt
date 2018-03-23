@@ -27,7 +27,7 @@ class JavaParserEnumTest : JavaParserTest() {
         enum Color {
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("Color") {
                 modifiers("enum")
             }
@@ -43,7 +43,7 @@ class JavaParserEnumTest : JavaParserTest() {
             BLUE;
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("Color") {
                 modifiers("enum")
                 variable("RED") {}
@@ -65,7 +65,7 @@ class JavaParserEnumTest : JavaParserTest() {
             public static int i;
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("Color") {
                 modifiers("enum")
                 variable("RED") {}
@@ -109,7 +109,7 @@ class JavaParserEnumTest : JavaParserTest() {
             abstract String getCode();
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("Color") {
                 modifiers("enum")
 
@@ -154,7 +154,7 @@ class JavaParserEnumTest : JavaParserTest() {
                 BLUE
             }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("Color") {
                 modifiers("enum")
 

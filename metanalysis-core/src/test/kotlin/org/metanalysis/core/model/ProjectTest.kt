@@ -18,23 +18,23 @@ package org.metanalysis.core.model
 
 import org.junit.Test
 import org.metanalysis.test.core.model.addFunction
-import org.metanalysis.test.core.model.addSourceUnit
+import org.metanalysis.test.core.model.addSourceFile
 import org.metanalysis.test.core.model.addType
 import org.metanalysis.test.core.model.assertEquals
 import org.metanalysis.test.core.model.editType
 import org.metanalysis.test.core.model.project
 import org.metanalysis.test.core.model.removeNode
-import org.metanalysis.test.core.model.sourceUnit
+import org.metanalysis.test.core.model.sourceFile
 import org.metanalysis.test.core.model.variable
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class ProjectTest {
-    @Test fun `test create project with duplicated unit ids throws`() {
-        val unit = sourceUnit("src/Test.java") {}
+    @Test fun `test create project with duplicated source paths throws`() {
+        val source = sourceFile("src/Test.java") {}
         assertFailsWith<IllegalArgumentException> {
-            Project.of(listOf(unit, unit))
+            Project.of(listOf(source, source))
         }
     }
 
@@ -56,15 +56,15 @@ class ProjectTest {
             id = "src/Test.java:version",
             initializer = listOf("2")
         )
-        val testUnit = SourceUnit(
+        val testSource = SourceFile(
             id = "src/Test.java",
             entities = setOf(classType, version)
         )
         val expectedNodes =
-            setOf(testUnit, version, classType, classVersion, classFunction)
+            setOf(testSource, version, classType, classVersion, classFunction)
 
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("IClass") {
                     modifiers("interface")
                     supertypes("Object")
@@ -84,7 +84,7 @@ class ProjectTest {
             variable("src/Test.java:IClass:version") { +"1" }
 
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("IClass") {
                     modifiers("interface")
                     supertypes("Object")
@@ -101,7 +101,7 @@ class ProjectTest {
 
     @Test fun `test get id with incorrect type throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("IClass") {}
             }
         }
@@ -113,7 +113,7 @@ class ProjectTest {
 
     @Test fun `test get non-existing id throws`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("IClass") {}
                 variable("version") { +"1" }
             }
@@ -126,7 +126,7 @@ class ProjectTest {
 
     @Test fun `test get non-existing id returns null`() {
         val project = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("IClass") {}
                 variable("version") { +"1" }
             }
@@ -137,7 +137,7 @@ class ProjectTest {
 
     @Test fun `test apply chained edits`() {
         val expected = project {
-            sourceUnit("src/Test.java") {
+            sourceFile("src/Test.java") {
                 type("Test") {
                     modifiers("abstract")
                     supertypes("Object")
@@ -147,11 +147,11 @@ class ProjectTest {
         }
 
         val actual = project {
-            sourceUnit("src/Main.java") {}
+            sourceFile("src/Main.java") {}
         }
         actual.apply(listOf(
             removeNode("src/Main.java"),
-            addSourceUnit("src/Test.java") {},
+            addSourceFile("src/Test.java") {},
             addType("src/Test.java:Test") {},
             addFunction("src/Test.java:Test:getVersion()") {},
             editType("src/Test.java:Test") {

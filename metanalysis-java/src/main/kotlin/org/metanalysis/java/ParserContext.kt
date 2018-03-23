@@ -26,15 +26,15 @@ import org.eclipse.jdt.core.dom.MethodDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
 import org.metanalysis.core.model.Function
 import org.metanalysis.core.model.SourceEntity
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.model.SourceNode.Companion.ENTITY_SEPARATOR
-import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.model.Type
 import org.metanalysis.core.model.Variable
 import org.metanalysis.core.model.returnTypeModifierOf
 import org.metanalysis.core.model.typeModifierOf
 
 internal data class ParserContext(
-    private val unitId: String,
+    private val path: String,
     private val source: String,
     private val parentId: String
 ) {
@@ -136,13 +136,13 @@ internal data class ParserContext(
         )
     }
 
-    fun visit(node: CompilationUnit): SourceUnit {
+    fun visit(node: CompilationUnit): SourceFile {
         requireNotMalformed(node)
-        val childContext = copy(parentId = unitId)
+        val childContext = copy(parentId = path)
         val entities = node.types()
             .requireIsInstance<AbstractTypeDeclaration>()
             .map(childContext::visit)
         entities.map(Type::id).requireDistinct()
-        return SourceUnit(unitId, entities.toSet())
+        return SourceFile(path, entities.toSet())
     }
 }

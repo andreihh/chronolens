@@ -21,19 +21,19 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class SourceNodeTest {
-    @Test fun `test duplicated entity in unit throws`() {
+    @Test fun `test duplicated entity in source file throws`() {
         val id = "src/Test.java"
         val entities = setOf(Type("$id:type"), Variable("$id:type"))
         assertFailsWith<IllegalArgumentException> {
-            SourceUnit(id = id, entities = entities)
+            SourceFile(id = id, entities = entities)
         }
     }
 
-    @Test fun `test invalid entity id in unit throws`() {
+    @Test fun `test invalid entity id in source file throws`() {
         val id = "src/Test.java"
         val entities = setOf(Type("src/Test:type"))
         assertFailsWith<IllegalArgumentException> {
-            SourceUnit(id = id, entities = entities)
+            SourceFile(id = id, entities = entities)
         }
     }
 
@@ -61,11 +61,11 @@ class SourceNodeTest {
         }
     }
 
-    @Test fun `test path equals unit id`() {
+    @Test fun `test path equals source file id`() {
         val path = "src/Test.java"
         val id = "src/Test.java"
-        val unit = SourceUnit(id)
-        assertEquals(path, unit.path)
+        val source = SourceFile(id)
+        assertEquals(path, source.path)
     }
 
     @Test fun `test name equals simple type id`() {

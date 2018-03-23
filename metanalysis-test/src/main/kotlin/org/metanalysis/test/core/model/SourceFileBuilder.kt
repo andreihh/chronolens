@@ -16,33 +16,37 @@
 
 package org.metanalysis.test.core.model
 
-import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.test.core.BuilderMarker
 import org.metanalysis.test.core.Init
 import org.metanalysis.test.core.apply
 
 @BuilderMarker
-class UnitBuilder(private val path: String) {
+class SourceFileBuilder(private val path: String) {
     private val entities = mutableListOf<EntityBuilder<*>>()
 
     private inline fun <reified T : EntityBuilder<*>> addEntity(
         simpleId: String,
         init: Init<T>
-    ): UnitBuilder {
+    ): SourceFileBuilder {
         entities += newBuilder<T>(simpleId).apply(init)
         return this
     }
 
-    fun type(name: String, init: Init<TypeBuilder>): UnitBuilder =
+    fun type(name: String, init: Init<TypeBuilder>): SourceFileBuilder =
         addEntity(name, init)
 
-    fun function(signature: String, init: Init<FunctionBuilder>): UnitBuilder =
-        addEntity(signature, init)
+    fun function(
+        signature: String,
+        init: Init<FunctionBuilder>
+    ): SourceFileBuilder = addEntity(signature, init)
 
-    fun variable(name: String, init: Init<VariableBuilder>): UnitBuilder =
-        addEntity(name, init)
+    fun variable(
+        name: String,
+        init: Init<VariableBuilder>
+    ): SourceFileBuilder = addEntity(name, init)
 
-    fun build(): SourceUnit = SourceUnit(
+    fun build(): SourceFile = SourceFile(
         id = path,
         entities = entities.map { it.build(path) }.toSet()
     )

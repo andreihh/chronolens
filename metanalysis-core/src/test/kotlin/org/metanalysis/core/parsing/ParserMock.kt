@@ -16,20 +16,16 @@
 
 package org.metanalysis.core.parsing
 
-import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.model.validateFileId
 import org.metanalysis.core.serialization.JsonException
 import org.metanalysis.core.serialization.JsonModule
 
 class ParserMock : Parser() {
-    companion object {
-        const val LANGUAGE: String = "Mock"
-    }
-
-    override val language: String = LANGUAGE
-
     override fun canParse(path: String): Boolean = path.endsWith(".mock")
 
-    override fun parse(path: String, rawSource: String): SourceUnit = try {
+    override fun parse(path: String, rawSource: String): SourceFile = try {
+        validateFileId(path)
         JsonModule.deserialize(rawSource.byteInputStream())
     } catch (e: JsonException) {
         throw SyntaxErrorException(e)

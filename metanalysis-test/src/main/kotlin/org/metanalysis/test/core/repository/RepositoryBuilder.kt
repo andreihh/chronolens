@@ -17,7 +17,7 @@
 package org.metanalysis.test.core.repository
 
 import org.metanalysis.core.model.Project
-import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.repository.Repository
 import org.metanalysis.core.repository.Transaction
 import org.metanalysis.test.core.Init
@@ -45,13 +45,13 @@ class RepositoryBuilder {
         override fun getHeadId(): String = history.last().revisionId
 
         override fun listSources(): Set<String> =
-            snapshot.sources.map(SourceUnit::path).toSet()
+            snapshot.sources.map(SourceFile::path).toSet()
 
         override fun listRevisions(): List<String> =
             history.map(Transaction::revisionId)
 
-        override fun getSource(path: String): SourceUnit? =
-            snapshot.get<SourceUnit?>(path)
+        override fun getSource(path: String): SourceFile? =
+            snapshot.get<SourceFile?>(path)
 
         override fun getHistory(): Iterable<Transaction> = history
     }

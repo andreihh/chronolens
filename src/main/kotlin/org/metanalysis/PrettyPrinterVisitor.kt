@@ -17,8 +17,8 @@
 package org.metanalysis
 
 import org.metanalysis.core.model.Function
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.model.SourceNode
-import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.model.Type
 import org.metanalysis.core.model.Variable
 import java.io.PrintStream
@@ -61,7 +61,7 @@ class PrettyPrinterVisitor(private val out: PrintStream) {
         }
     }
 
-    private fun Context.visit(unit: SourceUnit) {
+    private fun Context.visit(unit: SourceFile) {
         out.println("${newIndent}unit ${unit.path}")
         visit(unit.entities)
     }
@@ -102,7 +102,7 @@ class PrettyPrinterVisitor(private val out: PrintStream) {
 
     private fun Context.visit(node: SourceNode) {
         when (node) {
-            is SourceUnit -> visit(node)
+            is SourceFile -> visit(node)
             is Type -> visit(node)
             is Function -> visit(node)
             is Variable -> visit(node)

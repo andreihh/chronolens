@@ -16,35 +16,32 @@
 
 package org.metanalysis.java
 
-import org.metanalysis.core.model.SourceUnit
-import org.metanalysis.core.parsing.Parser.Companion.getParserByLanguage
-import org.metanalysis.core.parsing.RawSourceFile
+import org.metanalysis.core.model.SourceFile
+import org.metanalysis.core.parsing.Parser
 import org.metanalysis.core.parsing.Result
-import org.metanalysis.test.core.model.UnitBuilder
-import org.metanalysis.test.core.model.sourceUnit
+import org.metanalysis.test.core.model.SourceFileBuilder
+import org.metanalysis.test.core.model.sourceFile
 import kotlin.test.fail
 
 abstract class JavaParserTest {
     private val defaultPath = "Test.java"
-    private val parser = getParserByLanguage(JavaParser.LANGUAGE)
-        ?: fail("Couldn't retrieve Java parser!")
 
-    protected fun sourceUnit(init: UnitBuilder.() -> Unit): SourceUnit =
-        sourceUnit(defaultPath, init)
+    protected fun sourceFile(init: SourceFileBuilder.() -> Unit): SourceFile =
+        sourceFile(defaultPath, init)
 
     protected fun parse(
         source: String,
         path: String = defaultPath
-    ): SourceUnit {
-        val result = parser.parse(RawSourceFile(path, source))
+    ): SourceFile {
+        val result = Parser.parse(path, source)
         return when (result) {
-            is Result.Success -> result.sourceUnit
-            Result.SyntaxError -> fail()
+            is Result.Success -> result.source
+            else -> fail()
         }
     }
 
     protected fun parseResult(
         source: String,
         path: String = defaultPath
-    ): Result = parser.parse(RawSourceFile(path, source))
+    ): Result = Parser.parse(path, source) ?: fail()
 }

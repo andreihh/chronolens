@@ -18,9 +18,9 @@ package org.metanalysis.core.repository
 
 import org.metanalysis.core.model.Project
 import org.metanalysis.core.model.ProjectEdit.Companion.diff
-import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.parsing.Parser
-import org.metanalysis.core.parsing.RawSourceFile
+import org.metanalysis.core.parsing.Parser.Companion.canParse
 import org.metanalysis.core.parsing.Result
 import org.metanalysis.core.versioning.Revision
 import org.metanalysis.core.versioning.VcsProxy
@@ -39,8 +39,6 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
     private val headId = vcs.getHead().id.apply(::checkValidRevisionId)
     private val headSources = listSources(headId)
     private val history = vcs.getHistory().apply(::checkValidHistory)
-
-    private fun canParse(path: String): Boolean = Parser.getParser(path) != null
 
     override fun getHeadId(): String = headId
 
@@ -66,14 +64,14 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
     private fun parseSource(revisionId: String, path: String): Result? {
         checkValidRevisionId(revisionId)
         checkValidPath(path)
-        val source = vcs.getFile(revisionId, path) ?: return null
-        return Parser.parse(RawSourceFile(path, source))
+        val rawSource = vcs.getFile(revisionId, path) ?: return null
+        return Parser.parse(path, rawSource)
     }
 
     private fun getLatestValidSource(
         revisionId: String,
         path: String
-    ): SourceUnit {
+    ): SourceFile {
         checkValidRevisionId(revisionId)
         checkValidPath(path)
         val revisions = vcs.getHistory(path)
@@ -82,10 +80,10 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
         for ((id, _, _) in revisions) {
             val result = parseSource(id, path)
             if (result is Result.Success) {
-                return result.sourceUnit
+                return result.source
             }
         }
-        return SourceUnit(path)
+        return SourceFile(path)
     }
 
     /**
@@ -100,38 +98,38 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
      * @throws IllegalArgumentException if [path] or [revisionId] are invalid
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun getSource(path: String, revisionId: String): SourceUnit? {
+    fun getSource(path: String, revisionId: String): SourceFile? {
         validatePath(path)
         validateRevisionId(revisionId)
         val result = parseSource(revisionId, path)
         return when (result) {
-            is Result.Success -> result.sourceUnit
+            is Result.Success -> result.source
             Result.SyntaxError -> getLatestValidSource(revisionId, path)
             null -> null
         }
     }
 
-    override fun getSource(path: String): SourceUnit? = getSource(path, headId)
+    override fun getSource(path: String): SourceFile? = getSource(path, headId)
 
     override fun getHistory(): Iterable<Transaction> {
         val project = Project.empty()
         return history.mapLazy { (revisionId, date, author) ->
             val changeSet = vcs.getChangeSet(revisionId)
-            val before = HashSet<SourceUnit>(changeSet.size)
-            val after = HashSet<SourceUnit>(changeSet.size)
+            val before = HashSet<SourceFile>(changeSet.size)
+            val after = HashSet<SourceFile>(changeSet.size)
             for (path in changeSet) {
-                val oldUnit = project.get<SourceUnit?>(path)
-                if (oldUnit != null) {
-                    before += oldUnit
+                val oldSource = project.get<SourceFile?>(path)
+                if (oldSource != null) {
+                    before += oldSource
                 }
                 val result = parseSource(revisionId, path)
-                val newUnit = when (result) {
-                    is Result.Success -> result.sourceUnit
-                    Result.SyntaxError -> oldUnit ?: SourceUnit(path)
+                val newSource = when (result) {
+                    is Result.Success -> result.source
+                    Result.SyntaxError -> oldSource ?: SourceFile(path)
                     null -> null
                 }
-                if (newUnit != null) {
-                    after += newUnit
+                if (newSource != null) {
+                    after += newSource
                 }
             }
             val edits = Project.of(before).diff(Project.of(after))

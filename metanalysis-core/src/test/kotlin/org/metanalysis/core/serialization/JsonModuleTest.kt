@@ -27,7 +27,7 @@ class JsonModuleTest {
     private val data = transaction("HEAD") {
         date = 1824733L
         author = "unknown"
-        addSourceUnit("res") {
+        addSourceFile("res") {
             variable("DEBUG") { +"true" }
             variable("RELEASE") { +"false" }
             function("createIClass()") {}

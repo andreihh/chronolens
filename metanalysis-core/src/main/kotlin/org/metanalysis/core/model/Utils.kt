@@ -28,18 +28,18 @@ internal typealias NodeHashMap = HashMap<String, SourceNode>
 val SourceEntity.parentId: String
     get() = id.substringBeforeLast(ENTITY_SEPARATOR)
 
-/** The path of the [SourceUnit] which contains [this] node. */
+/** The path of the [SourceFile] which contains [this] node. */
 val SourceNode.sourcePath: String get() = id.substringBefore(ENTITY_SEPARATOR)
 
 /**
- * The path of the [SourceUnit] which contains the node affected by [this] edit.
+ * The path of the [SourceFile] which contains the node affected by [this] edit.
  */
 val ProjectEdit.sourcePath: String get() = id.substringBefore(ENTITY_SEPARATOR)
 
 /** The child source nodes contained in [this] source node. */
 val SourceNode.children: Collection<SourceEntity>
     get() = when (this) {
-        is SourceUnit -> entities
+        is SourceFile -> entities
         is Type -> members
         else -> emptySet()
     }
@@ -88,7 +88,7 @@ internal fun NodeHashMap.removeSourceTree(root: SourceNode) {
     this -= root.walkSourceTree().map(SourceNode::id)
 }
 
-internal fun buildVisit(sources: Iterable<SourceUnit>): NodeHashMap {
+internal fun buildVisit(sources: Iterable<SourceFile>): NodeHashMap {
     val nodes = NodeHashMap()
     sources.forEach(nodes::putSourceTree)
     return nodes

@@ -37,8 +37,8 @@ import org.metanalysis.core.model.Function
 import org.metanalysis.core.model.ListEdit
 import org.metanalysis.core.model.RemoveNode
 import org.metanalysis.core.model.SetEdit
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.model.SourceNode
-import org.metanalysis.core.model.SourceUnit
 import org.metanalysis.core.model.Type
 import org.metanalysis.core.model.Variable
 import java.io.IOException
@@ -49,7 +49,7 @@ import java.io.OutputStream
 object JsonModule {
     private val typeIdResolver = object : TypeIdResolverBase() {
         private val typeToId = mapOf(
-            SourceUnit::class.java to "SourceUnit",
+            SourceFile::class.java to "SourceFile",
             Type::class.java to "Type",
             Function::class.java to "Function",
             Variable::class.java to "Variable",

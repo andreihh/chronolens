@@ -18,7 +18,6 @@ package org.metanalysis.java
 
 import org.junit.Test
 import org.metanalysis.core.model.returnTypeModifierOf
-import org.metanalysis.core.model.typeModifierOf
 import kotlin.test.assertEquals
 
 class JavaParserClassTest : JavaParserTest() {
@@ -27,7 +26,7 @@ class JavaParserClassTest : JavaParserTest() {
         class IClass extends Object implements Comparable<IInterface> {
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("IClass") {
                 modifiers("class")
                 supertypes("Object", "Comparable<IInterface>")
@@ -43,7 +42,7 @@ class JavaParserClassTest : JavaParserTest() {
             abstract void println(String... args);
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("IClass") {
                 modifiers("abstract", "class")
 

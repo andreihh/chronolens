@@ -16,7 +16,7 @@
 
 package org.metanalysis.core.repository
 
-import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.SourceFile
 import org.metanalysis.core.repository.PersistentRepository.ProgressListener
 import org.metanalysis.core.serialization.JsonModule
 import java.io.File
@@ -48,10 +48,10 @@ class PersistentRepository private constructor() : Repository {
 
     override fun listRevisions(): List<String> = unmodifiableList(history)
 
-    override fun getSource(path: String): SourceUnit? {
+    override fun getSource(path: String): SourceFile? {
         validatePath(path)
         return if (path !in sources) null
-        else JsonModule.deserialize(getSourceUnitFile(path))
+        else JsonModule.deserialize(getSourceFile(path))
     }
 
     override fun getHistory(): Iterable<Transaction> =
@@ -140,21 +140,20 @@ private val headFile = File(rootDirectory, "HEAD")
 private val sourcesFile = File(rootDirectory, "SOURCES")
 private val historyFile = File(rootDirectory, "HISTORY")
 private val snapshotDirectory = File(rootDirectory, "snapshot")
-private val transactionsDirectory =
-    File(rootDirectory, "transactions")
+private val transactionsDirectory = File(rootDirectory, "transactions")
 
-private fun getSourceUnitDirectory(path: String): File =
+private fun getSourceDirectory(path: String): File =
     File(snapshotDirectory, path)
 
-private fun getSourceUnitFile(path: String): File =
-    File(getSourceUnitDirectory(path), "model.json")
+private fun getSourceFile(path: String): File =
+    File(getSourceDirectory(path), "model.json")
 
 private fun getTransactionFile(id: String): File =
     File(transactionsDirectory, "$id.json")
 
-private fun persistSource(source: SourceUnit) {
-    getSourceUnitDirectory(source.path).mkdirs()
-    getSourceUnitFile(source.path).outputStream().use { out ->
+private fun persistSource(source: SourceFile) {
+    getSourceDirectory(source.path).mkdirs()
+    getSourceFile(source.path).outputStream().use { out ->
         JsonModule.serialize(out, source)
     }
 }

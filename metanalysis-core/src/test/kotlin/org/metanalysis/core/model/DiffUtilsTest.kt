@@ -17,15 +17,15 @@
 package org.metanalysis.core.model
 
 import org.junit.Test
-import org.metanalysis.test.core.model.sourceUnit
+import org.metanalysis.test.core.model.sourceFile
 import org.metanalysis.test.core.model.type
 import org.metanalysis.test.core.model.variable
 import kotlin.test.assertFailsWith
 
 class DiffUtilsTest {
     @Test fun `test diff nodes with different ids throws`() {
-        val before = sourceUnit("src/Test.java") {}
-        val after = sourceUnit("src/Main.java") {}
+        val before = sourceFile("src/Test.java") {}
+        val after = sourceFile("src/Main.java") {}
         assertFailsWith<IllegalArgumentException> {
             before.diff(after)
         }

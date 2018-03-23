@@ -19,35 +19,51 @@ package org.metanalysis.core.parsing
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
-import kotlin.test.fail
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class ParserTest {
-    @Test fun `test get unprovided parser by language returns null`() {
-        assertNull(Parser.getParserByLanguage("Java"))
+    @Test fun `test can parse language with provided parser returns true`() {
+        assertTrue(Parser.canParse("Test.mock"))
     }
 
-    @Test fun `test get unprovided parser returns null`() {
-        assertNull(Parser.getParser("Test.java"))
+    @Test fun `test can parse unknown language returns false`() {
+        assertFalse(Parser.canParse("file.mp3"))
     }
 
-    @Test fun `test get parser for unknown language returns null`() {
-        assertNull(Parser.getParser("mp3"))
-    }
-
-    @Test fun `test parse source with errors throws`() {
-        val rawSourceFile =
-            RawSourceFile(path = "res.mock", content = "{ \"invalid\":2")
-        val result = Parser.parse(rawSourceFile)
-        assertEquals(Result.SyntaxError, result )
+    @Test fun `test parse source with errors returns syntax error`() {
+        val result = Parser.parse(
+            path = "res.mock",
+            rawSource = "{\"invalid\":2"
+        )
+        assertEquals(Result.SyntaxError, result)
     }
 
     @Test fun `test parse invalid path throws`() {
-        val parser = Parser.getParserByLanguage(ParserMock.LANGUAGE)
-            ?: fail("Parser not provided!")
-        val rawSourceFile = RawSourceFile(path = "res.moc", content = "{}")
         assertFailsWith<IllegalArgumentException> {
-            parser.parse(rawSourceFile)
+            Parser.parse(
+                path = "res:/Test.mock",
+                rawSource = """
+                    {
+                      "@class": "SourceFile",
+                      "id": "res:/Test.mock"
+                    }
+                """.trimIndent()
+            )
+        }
+    }
+
+    @Test fun `test parsed source with different path throws`() {
+        assertFailsWith<IllegalStateException> {
+            Parser.parse(
+                path = "Test.mock",
+                rawSource = """
+                    {
+                      "@class": "SourceFile",
+                      "id": "Main.mock"
+                    }
+                """.trimIndent()
+            )
         }
     }
 }

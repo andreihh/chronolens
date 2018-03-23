@@ -27,7 +27,7 @@ class JavaParserInterfaceTest : JavaParserTest() {
         interface IInterface {
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("IInterface") {
                 modifiers("interface")
             }
@@ -42,7 +42,7 @@ class JavaParserInterfaceTest : JavaParserTest() {
             int version = 1;
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("IInterface") {
                 modifiers("interface")
                 variable("name") {
@@ -65,7 +65,7 @@ class JavaParserInterfaceTest : JavaParserTest() {
             int getVersion();
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("IInterface") {
                 modifiers("interface")
                 function("getName()") {
@@ -88,7 +88,7 @@ class JavaParserInterfaceTest : JavaParserTest() {
             }
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("IInterface") {
                 modifiers("interface")
                 function("getName()") {
@@ -111,7 +111,7 @@ class JavaParserInterfaceTest : JavaParserTest() {
         interface IInterface extends Comparable<IInterface> {
         }
         """.trimIndent()
-        val expected = sourceUnit {
+        val expected = sourceFile {
             type("IInterface") {
                 modifiers("interface")
                 supertypes("Comparable<IInterface>")

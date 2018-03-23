@@ -16,19 +16,19 @@
 
 package org.metanalysis.core.parsing
 
-import org.metanalysis.core.model.SourceUnit
+import org.metanalysis.core.model.SourceFile
 
 /** The result from parsing a source file. */
 sealed class Result {
     /**
-     * Indicates the successful interpretation of a [SourceUnit].
+     * Indicates the successful interpretation of a [SourceFile].
      *
-     * @property sourceUnit the interpreted source unit
+     * @property source the interpreted source file
      */
-    data class Success(val sourceUnit: SourceUnit) : Result()
+    data class Success(val source: SourceFile) : Result()
 
     /**
-     * Indicates that a [SourceUnit] couldn't be interpreted due to syntax
+     * Indicates that a [SourceFile] couldn't be interpreted due to syntax
      * errors.
      */
     object SyntaxError : Result()
