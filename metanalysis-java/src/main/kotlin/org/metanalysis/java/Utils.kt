@@ -20,17 +20,26 @@ import org.eclipse.jdt.core.dom.ASTNode
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeMemberDeclaration
+import org.eclipse.jdt.core.dom.ArrayType
 import org.eclipse.jdt.core.dom.BodyDeclaration
 import org.eclipse.jdt.core.dom.EnumConstantDeclaration
 import org.eclipse.jdt.core.dom.EnumDeclaration
 import org.eclipse.jdt.core.dom.FieldDeclaration
 import org.eclipse.jdt.core.dom.Initializer
+import org.eclipse.jdt.core.dom.IntersectionType
 import org.eclipse.jdt.core.dom.MethodDeclaration
+import org.eclipse.jdt.core.dom.NameQualifiedType
+import org.eclipse.jdt.core.dom.ParameterizedType
+import org.eclipse.jdt.core.dom.PrimitiveType
+import org.eclipse.jdt.core.dom.QualifiedType
+import org.eclipse.jdt.core.dom.SimpleType
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration
 import org.eclipse.jdt.core.dom.Type
 import org.eclipse.jdt.core.dom.TypeDeclaration
+import org.eclipse.jdt.core.dom.UnionType
 import org.eclipse.jdt.core.dom.VariableDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment
+import org.eclipse.jdt.core.dom.WildcardType
 import org.metanalysis.core.parsing.SyntaxErrorException
 
 /**
@@ -71,32 +80,84 @@ internal fun AnnotationTypeMemberDeclaration.name(): String = name.identifier
 internal fun EnumConstantDeclaration.name(): String = name.identifier
 internal fun VariableDeclaration.name(): String = name.identifier
 
-private fun Type?.asString(
-    extraDimensions: Int = 0,
-    isVarargs: Boolean = false
-): String? {
-    val suffix = "[]".repeat(extraDimensions) + if (isVarargs) "..." else ""
-    return if (this == null) null else "$this$suffix" // TODO: stringify type
+private fun PrimitiveType.asString(): String = when (primitiveTypeCode) {
+    PrimitiveType.BOOLEAN -> "boolean"
+    PrimitiveType.BYTE -> "byte"
+    PrimitiveType.CHAR -> "char"
+    PrimitiveType.DOUBLE -> "double"
+    PrimitiveType.FLOAT -> "float"
+    PrimitiveType.INT -> "int"
+    PrimitiveType.LONG -> "long"
+    PrimitiveType.SHORT -> "short"
+    PrimitiveType.VOID -> "void"
+    else -> throw AssertionError("Invalid primitive type '$this'!")
 }
 
-private fun getBaseType(node: ASTNode): Type? = when (node) {
-    is FieldDeclaration -> node.type
-    is AnnotationTypeMemberDeclaration -> node.type
-    is SingleVariableDeclaration -> node.type
-    is VariableDeclarationFragment -> getBaseType(node.parent)
+private fun ArrayType.asString(): String = elementType.asString(dimensions)
+private fun SimpleType.asString(): String = name.fullyQualifiedName
+
+private fun QualifiedType.asString(): String =
+    "${qualifier.asString()}.${name.fullyQualifiedName}"
+
+private fun NameQualifiedType.asString(): String =
+    "${qualifier.fullyQualifiedName}.${name.fullyQualifiedName}"
+
+private fun WildcardType.asString(): String =
+    if (bound == null) "?"
+    else "? ${if (isUpperBound) "extends" else "super"} ${bound.asString()}"
+
+private fun ParameterizedType.asString(): String {
+    val parameters =
+        typeArguments().requireIsInstance<Type>().map(Type::asString)
+    return "${type.asString()}<${parameters.joinToString()}>"
+}
+
+private fun IntersectionType.asString(): String =
+    types().requireIsInstance<Type>()
+        .joinToString(separator = " & ", transform = Type::asString)
+
+private fun UnionType.asString(): String =
+    types().requireIsInstance<Type>()
+        .joinToString(separator = " | ", transform = Type::asString)
+
+private fun Type.asString(): String = when (this) {
+    is PrimitiveType -> asString()
+    is SimpleType -> asString()
+    is QualifiedType -> asString()
+    is NameQualifiedType -> asString()
+    is WildcardType -> asString()
+    is ArrayType -> asString()
+    is ParameterizedType -> asString()
+    is UnionType -> asString()
+    is IntersectionType -> asString()
+    else -> throw AssertionError("Unknown type '$this'!")
+}
+
+private fun Type.asString(
+    extraDimensions: Int = 0,
+    isVarargs: Boolean = false
+): String {
+    val suffix = "[]".repeat(extraDimensions) + if (isVarargs) "..." else ""
+    return "${asString()}$suffix"
+}
+
+private fun ASTNode.baseType(): Type? = when (this) {
+    is FieldDeclaration -> type
+    is AnnotationTypeMemberDeclaration -> type
+    is SingleVariableDeclaration -> type
+    is VariableDeclarationFragment -> parent.baseType()
     else -> null
 }
 
 internal fun ASTNode.type(): String? = when (this) {
     is SingleVariableDeclaration ->
-        getBaseType(this).asString(extraDimensions, isVarargs)
-    is VariableDeclarationFragment ->
-        getBaseType(this).asString(extraDimensions)
-    else -> getBaseType(this).asString()
+        baseType()?.asString(extraDimensions, isVarargs)
+    is VariableDeclarationFragment -> baseType()?.asString(extraDimensions)
+    else -> baseType()?.asString()
 }
 
 internal fun MethodDeclaration.returnType(): String? =
-    returnType2.asString(extraDimensions)
+    returnType2?.asString(extraDimensions)
 
 internal fun MethodDeclaration.signature(): String {
     val parameterList = getParameters(this).joinToString { parameter ->
