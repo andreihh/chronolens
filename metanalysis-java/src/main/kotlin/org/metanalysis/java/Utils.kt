@@ -26,7 +26,6 @@ import org.eclipse.jdt.core.dom.EnumConstantDeclaration
 import org.eclipse.jdt.core.dom.EnumDeclaration
 import org.eclipse.jdt.core.dom.FieldDeclaration
 import org.eclipse.jdt.core.dom.Initializer
-import org.eclipse.jdt.core.dom.IntersectionType
 import org.eclipse.jdt.core.dom.MethodDeclaration
 import org.eclipse.jdt.core.dom.NameQualifiedType
 import org.eclipse.jdt.core.dom.ParameterizedType
@@ -36,7 +35,6 @@ import org.eclipse.jdt.core.dom.SimpleType
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration
 import org.eclipse.jdt.core.dom.Type
 import org.eclipse.jdt.core.dom.TypeDeclaration
-import org.eclipse.jdt.core.dom.UnionType
 import org.eclipse.jdt.core.dom.VariableDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment
 import org.eclipse.jdt.core.dom.WildcardType
