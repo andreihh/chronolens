@@ -112,14 +112,6 @@ private fun ParameterizedType.asString(): String {
     return "${type.asString()}<${parameters.joinToString()}>"
 }
 
-private fun IntersectionType.asString(): String =
-    types().requireIsInstance<Type>()
-        .joinToString(separator = " & ", transform = Type::asString)
-
-private fun UnionType.asString(): String =
-    types().requireIsInstance<Type>()
-        .joinToString(separator = " | ", transform = Type::asString)
-
 private fun Type.asString(): String = when (this) {
     is PrimitiveType -> asString()
     is SimpleType -> asString()
@@ -128,8 +120,6 @@ private fun Type.asString(): String = when (this) {
     is WildcardType -> asString()
     is ArrayType -> asString()
     is ParameterizedType -> asString()
-    is UnionType -> asString()
-    is IntersectionType -> asString()
     else -> throw AssertionError("Unknown type '$this'!")
 }
 
