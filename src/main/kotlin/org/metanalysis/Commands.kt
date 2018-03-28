@@ -64,7 +64,7 @@ class MainCommand : Runnable {
 }
 
 @Command(
-    name = "list",
+    name = "ls-tree",
     description = [
         "Prints all the interpretable files of the repository from the "
             + "specified revision."

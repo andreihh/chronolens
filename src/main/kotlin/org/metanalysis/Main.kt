@@ -29,8 +29,8 @@ fun exit(message: String): Nothing {
 
 fun main(vararg args: String) {
     val cmd = CommandLine(MainCommand())
+    val exceptionHandler = defaultExceptionHandler().andExit(1)
     try {
-        val exceptionHandler = defaultExceptionHandler().andExit(1)
         cmd.parseWithHandlers(RunAll(), exceptionHandler, *args)
     } catch (e: ExecutionException) {
         System.err.println(e.message)
