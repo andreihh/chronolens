@@ -39,7 +39,9 @@ import picocli.CommandLine.ParentCommand
             + "repository detected in the current working directory."
     ],
     subcommands = [
-        List::class, RevList::class, Model::class, Persist::class, Clean::class,
+        ListTree::class, RevList::class,
+        Model::class,
+        Persist::class, Clean::class,
         HelpCommand::class
     ]
 )
@@ -68,7 +70,7 @@ class MainCommand : Runnable {
             + "specified revision."
     ]
 )
-class List : Subcommand() {
+class ListTree : Subcommand() {
     @Option(
         names = ["--rev"],
         description = ["the inspected revision (default: the <head> revision)"]
@@ -99,9 +101,8 @@ class RevList : Subcommand() {
 @Command(
     name = "model",
     description = [
-        "Prints the interpreted code metadata of the source node with the "
-            + "specified id as it is found in the given revision of the "
-            + "repository."
+        "Prints the interpreted model of the source node with the specified id "
+            + "as it is found in the given revision of the repository."
     ]
 )
 class Model : Subcommand() {
@@ -134,9 +135,9 @@ class Model : Subcommand() {
 @Command(
     name = "persist",
     description = [
-        "Connects to the repository and persists the code and history metadata "
+        "Connects to the repository and persists the source and history model "
             + "from all the files that can be interpreted.",
-        "The repository is persisted in the '.metanalysis' directory from the "
+        "The model is persisted in the '.metanalysis' directory from the "
             + "current working directory."
     ]
 )

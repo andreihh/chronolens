@@ -19,6 +19,7 @@ package org.metanalysis
 import picocli.CommandLine
 import picocli.CommandLine.ExecutionException
 import picocli.CommandLine.RunAll
+import picocli.CommandLine.defaultExceptionHandler
 import kotlin.system.exitProcess
 
 fun exit(message: String): Nothing {
@@ -29,7 +30,8 @@ fun exit(message: String): Nothing {
 fun main(vararg args: String) {
     val cmd = CommandLine(MainCommand())
     try {
-        cmd.parseWithHandler(RunAll(), mutableListOf<Any?>(), args)
+        val exceptionHandler = defaultExceptionHandler().andExit(1)
+        cmd.parseWithHandlers(RunAll(), exceptionHandler, *args)
     } catch (e: ExecutionException) {
         System.err.println(e.message)
         e.printStackTrace(System.err)

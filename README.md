@@ -23,27 +23,31 @@ In order to use `metanalysis` you need to have `JDK 1.8` or newer.
 
 Download the most recently released distribution from
 [here](https://github.com/andreihh/metanalysis/releases) and run the executable
-from the `bin` directory: `./metanalysis --help`.
+from the `bin` directory: `./metanalysis help`.
 
 The following is an example session of commands that inspect a remote `git`
 repository:
 ```
-# clones the repository to the current working directory
+# Clones the repository to the current working directory.
 git clone $URL .
 
-# prints help and lists the available commands
-metanalysis --help
+# Prints help and lists the available commands.
+metanalysis help
 
-# prints the metadata for the specified file as it is found in the HEAD revision
-metanalysis model --file src/main/Main.java --revision HEAD
+# Prints usage information for the 'model' command.
+metanalysis help model
 
-# persists the repository metadata
+# Prints the source model for the specified file as it is found in the 'HEAD'
+# revision.
+metanalysis model --id $PATH
+
+# Persists the history model.
 metanalysis persist
 
-# run various analyses that make use of the persisted metadata
+# run various analyses that make use of the persisted model
 ...
 
-# deletes the persisted repository metadata
+# Deletes the persisted model.
 metanalysis clean
 ```
 
