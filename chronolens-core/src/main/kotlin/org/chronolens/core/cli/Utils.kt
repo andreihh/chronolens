@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:JvmName("Utils")
+
 package org.chronolens.core.cli
 
 import picocli.CommandLine

@@ -7,11 +7,18 @@
 
 ## Features
 
-- an abstract model to represent code metadata and transactions (differences
-between two versions of code metadata)
-- JSON serialization utilities for code metadata and transactions
+### History analysis and extraction
+
+- an abstract model to represent the history of a system (sources and
+differences between two versions of the same source)
+- JSON serialization utilities for the defined model
 - a Git proxy module
-- a Java source file parser which extracts Java code metadata
+- a Java parser that extracts the source model from Java files
+- utilities for building command-line interfaces
+
+### Anti-pattern detection
+
+- a specialized analyzer that detects decapsulations of fields
 
 ## Using ChronoLens
 
@@ -44,8 +51,8 @@ chronolens model --id $PATH
 # Persists the history model.
 chronolens persist
 
-# run various analyses that make use of the persisted model
-...
+# Run the 'decapsulations' analysis that makes use of the persisted model.
+chronolens decapsulations --ignore-constants | less
 
 # Deletes the persisted model.
 chronolens clean
@@ -194,6 +201,25 @@ abstract class TransactionVisitor {
             visit(edit); // process this edit
             project.apply(edit); // update the snapshot with this edit
         }
+    }
+}
+```
+
+Implementing a command-line interface for the main executable can be done as
+follows:
+```java
+import static org.chronolens.core.cli.Utils.run;
+import picocli.CommandLine.Command;
+
+@Command(name = "main-command-name")
+public class Main implements Runnable {
+    @Override
+    public void run() {
+        // ...
+    }
+    
+    public static void main(String[] args) {
+        run(new Main(), args, 1);
     }
 }
 ```
