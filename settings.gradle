@@ -1,5 +1,5 @@
-rootProject.name = 'metanalysis'
+rootProject.name = 'chronolens'
 
-include 'metanalysis-core', 'metanalysis-test'
-include 'metanalysis-git'
-include 'metanalysis-java'
+include 'chronolens-core', 'chronolens-test'
+include 'services:chronolens-git'
+include 'services:chronolens-java'

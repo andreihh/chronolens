@@ -1,0 +1,6 @@
+dependencies {
+    api project(':chronolens-core')
+    implementation "org.eclipse.jdt:org.eclipse.jdt.core:$jdt_version"
+
+    testImplementation project(':chronolens-test')
+}

@@ -101,9 +101,9 @@ mainClassName = 'org.metanalysis.MainKt'
 
 dependencies {
     implementation "info.picocli:picocli:$picocli_version"
-    implementation project(':metanalysis-core')
-    runtimeOnly project(':metanalysis-git')
-    runtimeOnly project(':metanalysis-java')
+    implementation project(':chronolens-core')
+    runtimeOnly project(':services:chronolens-git')
+    runtimeOnly project(':services:chronolens-java')
 }
 
 task codeCoverageReport(type: JacocoReport) {

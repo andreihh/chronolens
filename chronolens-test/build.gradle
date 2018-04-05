@@ -1,0 +1,6 @@
+apply plugin: 'maven'
+
+dependencies {
+    api project(':chronolens-core')
+    implementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+}

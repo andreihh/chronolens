@@ -1,0 +1,91 @@
+/*
+ * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.chronolens.core.model
+
+import org.chronolens.test.core.model.function
+import org.chronolens.test.core.model.sourceFile
+import org.chronolens.test.core.model.type
+import org.chronolens.test.core.model.variable
+import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+class UtilsTest {
+    @Test fun `test children of source file are equal to entities`() {
+        val source = sourceFile("src/Test.java") {
+            type("Test") {}
+        }
+        assertEquals(source.entities, source.children)
+    }
+
+    @Test fun `test children of type are equal to members`() {
+        val type = type("src/Test.java:Test") {
+            variable("version") {}
+        }
+        assertEquals(type.members, type.children)
+    }
+
+    @Test fun `test children of function is empty collection`() {
+        val function = function("src/Test.java:getVersion(String)") {
+            parameters("name")
+        }
+        assertTrue(function.children.isEmpty())
+    }
+
+    @Test fun `test children of variable is empty collection`() {
+        val variable = variable("src/Test.java:VERSION") {}
+        assertTrue(variable.children.isEmpty())
+    }
+
+    @Test fun `test source path of source file`() {
+        val source = sourceFile("src/Test.java") {}
+        assertEquals(source.path, source.sourcePath)
+    }
+
+    @Test fun `test source path of node`() {
+        val path = "src/Test.java"
+        val node = function("$path:getVersion(String)") {}
+        assertEquals(path, node.sourcePath)
+    }
+
+    @Test fun `test return type`() {
+        val returnType = "int"
+        val function = function("src/Test.java:getVersion()") {
+            modifiers("public", returnTypeModifierOf(returnType))
+        }
+        assertEquals(returnType, function.returnType)
+    }
+
+    @Test fun `test null return type`() {
+        val function = function("src/Test.java:getVersion()") {}
+        assertNull(function.returnType)
+    }
+
+    @Test fun `test variable type`() {
+        val variableType = "String"
+        val variable = variable("src/Test.java:VERSION") {
+            modifiers("public", typeModifierOf(variableType))
+        }
+        assertEquals(variableType, variable.type)
+    }
+
+    @Test fun `test null variable type`() {
+        val variable = variable("src/Test.java:VERSION") {}
+        assertNull(variable.type)
+    }
+}

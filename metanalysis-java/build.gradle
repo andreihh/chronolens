@@ -1,6 +1,0 @@
-dependencies {
-    api project(':metanalysis-core')
-    implementation "org.eclipse.jdt:org.eclipse.jdt.core:$jdt_version"
-
-    testImplementation project(':metanalysis-test')
-}

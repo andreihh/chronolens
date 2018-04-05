@@ -1,4 +1,4 @@
-# Metanalysis
+# ChronoLens
 
 [![](https://jitpack.io/v/andreihh/metanalysis.svg)](https://jitpack.io/#andreihh/metanalysis)
 [![Build Status](https://travis-ci.org/andreihh/metanalysis.svg)](https://travis-ci.org/andreihh/metanalysis)
@@ -13,17 +13,17 @@ between two versions of code metadata)
 - a Git proxy module
 - a Java source file parser which extracts Java code metadata
 
-## Using Metanalysis
+## Using ChronoLens
 
 ### Environment requirements
 
-In order to use `metanalysis` you need to have `JDK 1.8` or newer.
+In order to use `ChronoLens` you need to have `JDK 1.8` or newer.
 
 ### Using the command line
 
 Download the most recently released distribution from
 [here](https://github.com/andreihh/metanalysis/releases) and run the executable
-from the `bin` directory: `./metanalysis help`.
+from the `bin` directory: `./chronolens help`.
 
 The following is an example session of commands that inspect a remote `git`
 repository:
@@ -32,23 +32,23 @@ repository:
 git clone $URL .
 
 # Prints help and lists the available commands.
-metanalysis help
+chronolens help
 
 # Prints usage information for the 'model' command.
-metanalysis help model
+chronolens help model
 
 # Prints the source model for the specified file as it is found in the 'HEAD'
 # revision.
-metanalysis model --id $PATH
+chronolens model --id $PATH
 
 # Persists the history model.
-metanalysis persist
+chronolens persist
 
 # run various analyses that make use of the persisted model
 ...
 
 # Deletes the persisted model.
-metanalysis clean
+chronolens clean
 ```
 
 ### Using Gradle
@@ -63,8 +63,8 @@ repositories {
 Add the dependencies:
 ```groovy
 dependencies {
-    compile "com.github.andreihh.metanalysis:metanalysis-core:$version"
-    testCompile "com.github.andreihh.metanalysis:metanalysis-test:$version"
+    compile "com.github.andreihh.metanalysis:chronolens-core:$version"
+    testCompile "com.github.andreihh.metanalysis:chronolens-test:$version"
 }
 ```
 
@@ -85,13 +85,13 @@ Add the dependencies:
 <dependencies>
   <dependency>
     <groupId>com.github.andreihh.metanalysis</groupId>
-    <artifactId>metanalysis-core</artifactId>
+    <artifactId>chronolens-core</artifactId>
     <version>$version</version>
     <scope>compile</scope>
   </dependency>
   <dependency>
     <groupId>com.github.andreihh.metanalysis</groupId>
-    <artifactId>metanalysis-test</artifactId>
+    <artifactId>chronolens-test</artifactId>
     <version>$version</version>
     <scope>test</scope>
   </dependency>
