@@ -5,7 +5,7 @@ buildscript {
         jackson_version = '2.9.5'
         jdt_version = '3.13.100'
         junit_version = '4.12'
-        picocli_version = '3.0.0-alpha-2'
+        picocli_version = '3.0.0-alpha-4'
     }
 
     repositories {
@@ -97,13 +97,14 @@ subprojects {
 
 apply plugin: 'application'
 
-mainClassName = 'org.metanalysis.MainKt'
+mainClassName = 'org.chronolens.Main'
 
 dependencies {
     implementation "info.picocli:picocli:$picocli_version"
     implementation project(':chronolens-core')
     runtimeOnly project(':services:chronolens-git')
     runtimeOnly project(':services:chronolens-java')
+    runtimeOnly project(':analyzers:chronolens-decapsulations')
 }
 
 task codeCoverageReport(type: JacocoReport) {

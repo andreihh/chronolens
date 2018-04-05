@@ -26,7 +26,7 @@ import java.util.ServiceLoader
  *
  * VCS proxy factories must have a public no-arg constructor and must supply an
  * entry in the
- * `META-INF/services/org.metanalysis.core.versioning.VcsProxyFactory`
+ * `META-INF/services/org.chronolens.core.versioning.VcsProxyFactory`
  * configuration file.
  */
 abstract class VcsProxyFactory {

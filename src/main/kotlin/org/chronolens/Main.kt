@@ -16,25 +16,25 @@
 
 package org.chronolens
 
-import picocli.CommandLine
-import picocli.CommandLine.ExecutionException
-import picocli.CommandLine.RunAll
-import picocli.CommandLine.defaultExceptionHandler
-import kotlin.system.exitProcess
+import org.chronolens.core.cli.run
+import picocli.CommandLine.Command
 
-fun exit(message: String): Nothing {
-    System.err.println(message)
-    exitProcess(1)
-}
+@Command(
+    name = "chronolens",
+    version = ["0.2"],
+    mixinStandardHelpOptions = true,
+    description = [
+        "ChronoLens is a software evolution analysis tool that inspects the "
+            + "repository detected in the current working directory."
+    ]
+)
+class Main : Runnable {
+    override fun run() {}
 
-fun main(vararg args: String) {
-    val cmd = CommandLine(MainCommand())
-    val exceptionHandler = defaultExceptionHandler().andExit(1)
-    try {
-        cmd.parseWithHandlers(RunAll(), exceptionHandler, *args)
-    } catch (e: ExecutionException) {
-        System.err.println(e.message)
-        e.printStackTrace(System.err)
-        exitProcess(1)
+    companion object {
+        @JvmStatic
+        fun main(vararg args: String) {
+            run(Main(), *args)
+        }
     }
 }

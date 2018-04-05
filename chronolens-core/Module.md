@@ -25,3 +25,7 @@ VCS API.
 # Package org.chronolens.core.repository
 
 Repository interaction API.
+
+# Package org.chronolens.core.cli
+
+Command-line interface utils.

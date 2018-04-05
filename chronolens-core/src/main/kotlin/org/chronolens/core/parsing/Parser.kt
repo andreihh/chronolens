@@ -23,7 +23,7 @@ import java.util.ServiceLoader
  * An abstract source file parser for a specific programming language.
  *
  * Parsers must have a public no-arg constructor and must supply an entry in the
- * `META-INF/services/org.metanalysis.core.parsing.Parser` configuration file.
+ * `META-INF/services/org.chronolens.core.parsing.Parser` configuration file.
  */
 abstract class Parser {
     /** Returns whether this parser can interpret the given file [path]. */

@@ -16,52 +16,17 @@
 
 package org.chronolens
 
-import org.chronolens.MainCommand.Subcommand
+import org.chronolens.core.cli.Subcommand
+import org.chronolens.core.cli.exit
 import org.chronolens.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 import org.chronolens.core.model.walkSourceTree
-import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.PersistentRepository.Companion.persist
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
 import org.chronolens.core.repository.Repository.Companion.isValidPath
 import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
 import picocli.CommandLine.Command
-import picocli.CommandLine.HelpCommand
 import picocli.CommandLine.Option
-import picocli.CommandLine.ParentCommand
-
-@Command(
-    name = "chronolens",
-    version = ["0.2"],
-    mixinStandardHelpOptions = true,
-    description = [
-        "ChronoLens is a software evolution analysis tool that inspects the "
-            + "repository detected in the current working directory."
-    ],
-    subcommands = [
-        ListTree::class, RevList::class,
-        Model::class,
-        Persist::class, Clean::class,
-        HelpCommand::class
-    ]
-)
-class MainCommand : Runnable {
-    internal lateinit var repository: InteractiveRepository
-        private set
-
-    override fun run() {
-        repository = InteractiveRepository.connect()
-            ?: exit("Repository not found!")
-    }
-
-    abstract class Subcommand : Runnable {
-        @ParentCommand
-        private lateinit var parent: MainCommand
-
-        protected val repository: InteractiveRepository
-            get() = parent.repository
-    }
-}
 
 @Command(
     name = "ls-tree",
@@ -71,6 +36,9 @@ class MainCommand : Runnable {
     ]
 )
 class ListTree : Subcommand() {
+    override val name: String get() = "ls-tree"
+    private val repository by lazy(::connect)
+
     @Option(
         names = ["--rev"],
         description = ["the inspected revision (default: the <head> revision)"]
@@ -93,7 +61,10 @@ class ListTree : Subcommand() {
     ]
 )
 class RevList : Subcommand() {
+    override val name: String get() = "rev-list"
+
     override fun run() {
+        val repository = connect()
         repository.listRevisions().forEach(::println)
     }
 }
@@ -106,6 +77,9 @@ class RevList : Subcommand() {
     ]
 )
 class Model : Subcommand() {
+    override val name: String get() = "model"
+    private val repository by lazy(::connect)
+
     @Option(
         names = ["--id"],
         description = ["the inspected source node"],
@@ -142,7 +116,10 @@ class Model : Subcommand() {
     ]
 )
 class Persist : Subcommand() {
+    override val name: String get() = "persist"
+
     override fun run() {
+        val repository = connect()
         repository.persist(object : ProgressListener {
             private var sources = 0
             private var transactions = 0
@@ -191,6 +168,8 @@ class Persist : Subcommand() {
     ]
 )
 class Clean : Subcommand() {
+    override val name: String get() = "clean"
+
     override fun run() {
         PersistentRepository.clean()
     }
