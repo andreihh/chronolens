@@ -1,8 +1,8 @@
 # ChronoLens
 
-[![](https://jitpack.io/v/andreihh/metanalysis.svg)](https://jitpack.io/#andreihh/metanalysis)
-[![Build Status](https://travis-ci.org/andreihh/metanalysis.svg)](https://travis-ci.org/andreihh/metanalysis)
-[![codecov](https://codecov.io/gh/andreihh/metanalysis/branch/master/graph/badge.svg)](https://codecov.io/gh/andreihh/metanalysis)
+[![](https://jitpack.io/v/andreihh/chronolens.svg)](https://jitpack.io/#andreihh/chronolens)
+[![Build Status](https://travis-ci.org/andreihh/chronolens.svg)](https://travis-ci.org/andreihh/chronolens)
+[![codecov](https://codecov.io/gh/andreihh/chronolens/branch/master/graph/badge.svg)](https://codecov.io/gh/andreihh/chronolens)
 [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## Features
@@ -22,7 +22,7 @@ In order to use `ChronoLens` you need to have `JDK 1.8` or newer.
 ### Using the command line
 
 Download the most recently released distribution from
-[here](https://github.com/andreihh/metanalysis/releases) and run the executable
+[here](https://github.com/andreihh/chronolens/releases) and run the executable
 from the `bin` directory: `./chronolens help`.
 
 The following is an example session of commands that inspect a remote `git`
@@ -63,8 +63,8 @@ repositories {
 Add the dependencies:
 ```groovy
 dependencies {
-    compile "com.github.andreihh.metanalysis:chronolens-core:$version"
-    testCompile "com.github.andreihh.metanalysis:chronolens-test:$version"
+    compile "com.github.andreihh.chronolens:chronolens-core:$version"
+    testCompile "com.github.andreihh.chronolens:chronolens-test:$version"
 }
 ```
 
@@ -84,13 +84,13 @@ Add the dependencies:
 ```xml
 <dependencies>
   <dependency>
-    <groupId>com.github.andreihh.metanalysis</groupId>
+    <groupId>com.github.andreihh.chronolens</groupId>
     <artifactId>chronolens-core</artifactId>
     <version>$version</version>
     <scope>compile</scope>
   </dependency>
   <dependency>
-    <groupId>com.github.andreihh.metanalysis</groupId>
+    <groupId>com.github.andreihh.chronolens</groupId>
     <artifactId>chronolens-test</artifactId>
     <version>$version</version>
     <scope>test</scope>
