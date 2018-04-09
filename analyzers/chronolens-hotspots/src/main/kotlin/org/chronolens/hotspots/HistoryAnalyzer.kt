@@ -31,19 +31,20 @@ import kotlin.math.ln
 
 class HistoryAnalyzer {
     private val project = Project.empty()
-    private val weight = hashMapOf<String, Double>()
     private val changes = hashMapOf<String, Int>()
+    private val churn = hashMapOf<String, Int>()
+    private val weight = hashMapOf<String, Double>()
 
     private fun getSourcePath(id: String): String =
         project.get<SourceNode>(id).sourcePath
 
-    private fun getCost(edit: EditFunction): Int = edit.bodyEdits.size
+    private fun getChurn(edit: EditFunction): Int = edit.bodyEdits.size
 
-    private fun getCost(edit: EditVariable): Int = edit.initializerEdits.size
+    private fun getChurn(edit: EditVariable): Int = edit.initializerEdits.size
 
-    private fun getCost(edit: ProjectEdit): Int = when (edit) {
-        is EditFunction -> getCost(edit)
-        is EditVariable -> getCost(edit)
+    private fun getChurn(edit: ProjectEdit): Int = when (edit) {
+        is EditFunction -> getChurn(edit)
+        is EditVariable -> getChurn(edit)
         else -> 0
     }
 
@@ -51,22 +52,26 @@ class HistoryAnalyzer {
         when (edit) {
             is AddNode -> {
                 for (node in edit.node.walkSourceTree()) {
-                    weight[node.id] = 0.0
                     changes[node.id] = 1
+                    churn[node.id] = 0
+                    weight[node.id] = 0.0
                 }
             }
             is RemoveNode -> {
                 val nodes = project.get<SourceNode>(edit.id).walkSourceTree()
                 for (node in nodes) {
-                    weight -= node.id
                     changes -= node.id
+                    churn -= node.id
+                    weight -= node.id
                 }
             }
             else -> {
+                val addedChurn = getChurn(edit)
                 val scale = ln(1.0 * changes.getValue(edit.id))
-                val addedWeight = scale * getCost(edit)
-                weight[edit.id] = weight.getValue(edit.id) + addedWeight
+                val addedWeight = scale * addedChurn
                 changes[edit.id] = changes.getValue(edit.id) + 1
+                churn[edit.id] = churn.getValue(edit.id) + addedChurn
+                weight[edit.id] = weight.getValue(edit.id) + addedWeight
             }
         }
         project.apply(edit)
@@ -78,15 +83,22 @@ class HistoryAnalyzer {
         }
     }
 
+    private fun getMemberReport(id: String): MemberReport = MemberReport(
+        id = id,
+        revisions = changes.getValue(id),
+        churn = churn.getValue(id),
+        value = weight.getValue(id)
+    )
+
     fun analyze(history: Iterable<Transaction>): Report {
         history.forEach(::visit)
         val membersByFile = changes.keys.groupBy(::getSourcePath)
         val sourcePaths = project.sources.map(SourceFile::path)
         val fileReports = sourcePaths.map { path ->
             val members = membersByFile[path].orEmpty()
-            val memberReports = members.map { id ->
-                MemberReport(id, changes.getValue(id), weight.getValue(id))
-            }.sortedByDescending(MemberReport::value)
+            val memberReports = members
+                .map(::getMemberReport)
+                .sortedByDescending(MemberReport::value)
             FileReport(path, memberReports)
         }.sortedByDescending(FileReport::value)
         return Report(fileReports)
@@ -103,6 +115,7 @@ class HistoryAnalyzer {
     data class MemberReport(
         val id: String,
         val revisions: Int,
+        val churn: Int,
         val value: Double
     )
 }
