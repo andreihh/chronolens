@@ -14,48 +14,41 @@
  * limitations under the License.
  */
 
-package org.chronolens.decapsulations
+package org.chronolens.hotspots
 
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.exit
+import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.serialization.JsonModule
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 
 @Command(
-    name = "decapsulations",
+    name = "hotspots",
     description = [
-        "Loads the persisted repository, detects the decapsulations that " +
-            "occurred during the evolution of the project and reports the " +
-            "results to the standard output."
+        "Loads the persisted repository, detects the hotspots of the system " +
+            "and reports the results to the standard output."
     ],
     showDefaultValues = true
 )
-class DecapsulationsCommand : Subcommand() {
-    override val name: String get() = "decapsulations"
-
-    @Option(
-        names = ["--ignore-constants"],
-        description = ["ignore decapsulations of constant fields"]
-    )
-    private var ignoreConstants: Boolean = false
+class HotspotsCommand : Subcommand() {
+    override val name: String get() = "hotspots"
 
     @Option(
         names = ["--min-metric-value"],
         description = [
-            "ignore source files that have less decapsulations than the " +
-                "specified limit"
+            "ignore source files that have less churn than the specified limit"
         ]
     )
-    private var minMetricValue: Int = 0
+    private var minMetricValue: Double = 0.0
 
     private fun validateOptions() {
-        if (minMetricValue < 0) exit("min-metric-value can't be negative!")
+        if (minMetricValue < 0.0) exit("min-metric-value can't be negative!")
     }
 
     override fun run() {
         validateOptions()
-        val analyzer = HistoryAnalyzer(ignoreConstants)
+        val analyzer = HistoryAnalyzer()
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())
         val files = report.files.filter { it.value >= minMetricValue }

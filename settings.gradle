@@ -4,5 +4,6 @@ include 'chronolens-core', 'chronolens-test'
 include 'services:chronolens-git'
 include 'services:chronolens-java'
 
-include 'analyzers:chronolens-decapsulations',
-        'analyzers:chronolens-coupling'
+include 'analyzers:chronolens-coupling',
+        'analyzers:chronolens-decapsulations',
+        'analyzers:chronolens-hotspots'

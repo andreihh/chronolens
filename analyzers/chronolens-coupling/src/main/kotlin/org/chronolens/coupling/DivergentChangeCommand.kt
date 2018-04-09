@@ -82,7 +82,11 @@ class DivergentChangeCommand : Subcommand() {
     private var minAntiBlobSize: Int = 10
 
     @Option(
-        names = ["--min-metric-value"]
+        names = ["--min-metric-value"],
+        description = [
+            "ignore source files that have less blobs / anti-blobs than the " +
+                "specified limit"
+        ]
     )
     private var minMetricValue: Int = 0
 
