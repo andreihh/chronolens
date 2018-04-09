@@ -30,7 +30,8 @@ import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
 
-@Ignore // TODO: better tests
+// TODO: better tests
+@Ignore
 class JavaAnalyzerTest {
     private fun getProjectWithType(
         className: String,

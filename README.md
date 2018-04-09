@@ -18,7 +18,9 @@ differences between two versions of the same source)
 
 ### Anti-pattern detection
 
-- a specialized analyzer that detects decapsulations of fields
+- an analyzer that detects decapsulations of fields
+- an analyzer that detects hotspots of a system
+- an analyzer that detects instances of the *Divergent Change* code smell
 
 ## Using ChronoLens
 
