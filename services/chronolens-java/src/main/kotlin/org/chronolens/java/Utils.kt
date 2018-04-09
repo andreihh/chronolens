@@ -78,6 +78,67 @@ internal fun AnnotationTypeMemberDeclaration.name(): String = name.identifier
 internal fun EnumConstantDeclaration.name(): String = name.identifier
 internal fun VariableDeclaration.name(): String = name.identifier
 
+internal fun MethodDeclaration.returnType(): String? =
+    returnType2?.asString(extraDimensions)
+
+internal fun MethodDeclaration.signature(): String {
+    val parameterList = parameters()
+        .requireIsInstance<SingleVariableDeclaration>()
+        .joinToString { parameter ->
+            parameter.type()
+                ?: throw AssertionError("'$parameter' must specify type!")
+        }
+    return "${name.identifier}($parameterList)"
+}
+
+/**
+ * Returns the list of all members of this type.
+ *
+ * The returned elements can be of the following types:
+ * - [AbstractTypeDeclaration]
+ * - [AnnotationTypeMemberDeclaration]
+ * - [EnumConstantDeclaration]
+ * - [VariableDeclaration]
+ * - [MethodDeclaration]
+ * - [Initializer]
+ */
+internal fun AbstractTypeDeclaration.members(): List<*> {
+    val declarations = mutableListOf<Any?>()
+    if (this is EnumDeclaration) {
+        declarations.addAll(enumConstants())
+    }
+    bodyDeclarations().flatMapTo(declarations) { member ->
+        if (member is FieldDeclaration) member.fragments()
+        else listOf(member)
+    }
+    return declarations
+}
+
+internal fun AbstractTypeDeclaration.supertypes(): Set<String> = when (this) {
+    is AnnotationTypeDeclaration -> emptyList()
+    is EnumDeclaration -> superInterfaceTypes()
+    is TypeDeclaration -> superInterfaceTypes() + listOfNotNull(superclassType)
+    else -> throw AssertionError("Unknown declaration '$this'!")
+}.requireIsInstance<Type>().map(Type::asString).requireDistinct()
+
+internal fun AbstractTypeDeclaration.typeModifier(): String = when (this) {
+    is AnnotationTypeDeclaration -> "@interface"
+    is EnumDeclaration -> "enum"
+    is TypeDeclaration -> if (isInterface) "interface" else "class"
+    else -> throw AssertionError("Unknown declaration '$this'!")
+}
+
+internal fun MethodDeclaration.parameterList(): List<String> =
+    parameters().requireIsInstance<SingleVariableDeclaration>()
+        .map { it.name() }
+
+internal fun getModifiers(node: ASTNode): List<ASTNode> = when (node) {
+    is BodyDeclaration -> node.modifiers()
+    is SingleVariableDeclaration -> node.modifiers()
+    is VariableDeclarationFragment -> getModifiers(node.parent)
+    else -> emptyList()
+}.requireIsInstance()
+
 private fun PrimitiveType.asString(): String = when (primitiveTypeCode) {
     PrimitiveType.BOOLEAN -> "boolean"
     PrimitiveType.BYTE -> "byte"
@@ -143,62 +204,3 @@ internal fun ASTNode.type(): String? = when (this) {
     is VariableDeclarationFragment -> baseType()?.asString(extraDimensions)
     else -> baseType()?.asString()
 }
-
-internal fun MethodDeclaration.returnType(): String? =
-    returnType2?.asString(extraDimensions)
-
-internal fun MethodDeclaration.signature(): String {
-    val parameterList = getParameters(this).joinToString { parameter ->
-        parameter.type()
-            ?: throw AssertionError("'$parameter' must have specified type!")
-    }
-    return "${name.identifier}($parameterList)"
-}
-
-/**
- * Returns the list of all members of this type.
- *
- * The returned elements can be of the following types:
- * - [AbstractTypeDeclaration]
- * - [AnnotationTypeMemberDeclaration]
- * - [EnumConstantDeclaration]
- * - [VariableDeclaration]
- * - [MethodDeclaration]
- * - [Initializer]
- */
-internal fun AbstractTypeDeclaration.members(): List<*> {
-    val declarations = mutableListOf<Any?>()
-    if (this is EnumDeclaration) {
-        declarations.addAll(enumConstants())
-    }
-    bodyDeclarations().flatMapTo(declarations) { member ->
-        if (member is FieldDeclaration) member.fragments()
-        else listOf(member)
-    }
-    return declarations
-}
-
-internal fun AbstractTypeDeclaration.supertypes(): List<Type> = when (this) {
-    is AnnotationTypeDeclaration -> emptyList()
-    is EnumDeclaration -> superInterfaceTypes()
-    is TypeDeclaration -> superInterfaceTypes() + superclassType
-    else -> throw AssertionError("Unknown declaration '$this'!")
-}.requireIsInstance<Type?>().filterNotNull()
-
-internal fun AbstractTypeDeclaration.typeModifier(): String = when (this) {
-    is AnnotationTypeDeclaration -> "@interface"
-    is EnumDeclaration -> "enum"
-    is TypeDeclaration -> if (isInterface) "interface" else "class"
-    else -> throw AssertionError("Unknown declaration '$this'!")
-}
-
-internal fun getParameters(
-    method: MethodDeclaration
-): List<SingleVariableDeclaration> = method.parameters().requireIsInstance()
-
-internal fun getModifiers(node: ASTNode): List<ASTNode> = when (node) {
-    is BodyDeclaration -> node.modifiers()
-    is SingleVariableDeclaration -> node.modifiers()
-    is VariableDeclarationFragment -> getModifiers(node.parent)
-    else -> emptyList()
-}.requireIsInstance()

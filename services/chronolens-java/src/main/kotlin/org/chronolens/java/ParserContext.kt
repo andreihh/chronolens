@@ -54,9 +54,6 @@ internal data class ParserContext(
         return modifiers + listOfNotNull(additionalModifier)
     }
 
-    private fun AbstractTypeDeclaration.supertypeSet(): Set<String> =
-        supertypes().map { it.toSource() }.requireDistinct()
-
     private fun MethodDeclaration.body(): List<String> =
         body?.toSource().toBlock()
 
@@ -78,8 +75,8 @@ internal data class ParserContext(
         is EnumConstantDeclaration -> visit(node)
         is VariableDeclaration -> visit(node)
         is MethodDeclaration -> visit(node)
-        is Initializer -> null // TODO: parse initializers
-        else -> throw AssertionError("Unknown declaration $node!")
+        is Initializer -> null
+        else -> throw AssertionError("Unknown declaration '$node'!")
     }
 
     private fun visit(node: AbstractTypeDeclaration): Type {
@@ -90,7 +87,7 @@ internal data class ParserContext(
         members.map(SourceEntity::id).requireDistinct()
         return Type(
             id = id,
-            supertypes = node.supertypeSet(),
+            supertypes = node.supertypes(),
             modifiers = node.modifierSet(),
             members = members.toSet()
         )
@@ -125,7 +122,7 @@ internal data class ParserContext(
 
     private fun visit(node: MethodDeclaration): Function {
         requireNotMalformed(node)
-        val parameters = getParameters(node).map { it.name() }
+        val parameters = node.parameterList()
         parameters.requireDistinct()
         return Function(
             id = getEntityId(node.signature()),
