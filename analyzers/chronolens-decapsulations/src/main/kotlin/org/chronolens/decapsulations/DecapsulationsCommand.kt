@@ -17,6 +17,7 @@
 package org.chronolens.decapsulations
 
 import org.chronolens.core.cli.Subcommand
+import org.chronolens.core.cli.exit
 import org.chronolens.core.serialization.JsonModule
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
@@ -48,7 +49,12 @@ class DecapsulationsCommand : Subcommand() {
     )
     private var minMetricValue: Int = 0
 
+    private fun validateOptions() {
+        if (minMetricValue < 0) exit("min-metric-value can't be negative!")
+    }
+
     override fun run() {
+        validateOptions()
         val analyzer = HistoryAnalyzer(ignoreConstants)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())

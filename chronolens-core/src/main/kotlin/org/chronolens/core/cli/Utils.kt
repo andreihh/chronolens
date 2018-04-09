@@ -28,6 +28,8 @@ import kotlin.system.exitProcess
 /**
  * Prints the given [message] to `stderr` and exits with the specified [status]
  * code.
+ *
+ * Should be used to validate user input and initial state.
  */
 fun exit(message: String, status: Int = 1): Nothing {
     System.err.println(message)

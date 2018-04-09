@@ -22,6 +22,7 @@ import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.Project
 import org.chronolens.core.model.RemoveNode
+import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.sourcePath
@@ -158,7 +159,9 @@ class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     fun analyze(history: Iterable<Transaction>): Report {
         history.forEach(::analyze)
         val fieldsByFile = decapsulationsByField.keys.groupBy(::getSourcePath)
-        val fileReports = fieldsByFile.map { (path, fields) ->
+        val sourcePaths = project.sources.map(SourceFile::path)
+        val fileReports = sourcePaths.map { path ->
+            val fields = fieldsByFile[path].orEmpty()
             val fieldReports = fields.map { id ->
                 FieldReport(id, getDecapsulations(id))
             }.sortedByDescending(FieldReport::value)
@@ -169,13 +172,9 @@ class HistoryAnalyzer(private val ignoreConstants: Boolean) {
 
     data class Report(val files: List<FileReport>)
 
-    data class FileReport(
-        val file: String,
-        val fields: List<FieldReport>
-    ) {
+    data class FileReport(val file: String, val fields: List<FieldReport>) {
         val category: String = "SOLID Breakers"
         val name: String = "Encapsulation Breakers"
-
         val value: Int = fields.sumBy(FieldReport::value)
     }
 

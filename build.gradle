@@ -104,6 +104,7 @@ dependencies {
     implementation project(':chronolens-core')
     runtimeOnly project(':services:chronolens-git')
     runtimeOnly project(':services:chronolens-java')
+    runtimeOnly project(':analyzers:chronolens-coupling')
     runtimeOnly project(':analyzers:chronolens-decapsulations')
 }
 
