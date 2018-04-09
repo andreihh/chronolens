@@ -39,10 +39,20 @@ class DecapsulationsCommand : Subcommand() {
     )
     private var ignoreConstants: Boolean = false
 
+    @Option(
+        names = ["--min-metric-value"],
+        description = [
+            "ignore source files that have less decapsulations than the " +
+                "specified limit."
+        ]
+    )
+    private var minMetricValue: Int = 0
+
     override fun run() {
         val analyzer = HistoryAnalyzer(ignoreConstants)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())
-        JsonModule.serialize(System.out, report.files)
+        val files = report.files.filter { it.value >= minMetricValue }
+        JsonModule.serialize(System.out, files)
     }
 }

@@ -1,4 +1,5 @@
 dependencies {
     api project(':chronolens-core')
-    runtimeOnly project(':analyzers:chronolens-decapsulations:chronolens-decapsulations-java')
+
+    testImplementation project(':chronolens-test')
 }

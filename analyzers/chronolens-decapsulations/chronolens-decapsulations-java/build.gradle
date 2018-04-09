@@ -1,5 +1,0 @@
-dependencies {
-    api project(':analyzers:chronolens-decapsulations')
-
-    testImplementation project(':chronolens-test')
-}
