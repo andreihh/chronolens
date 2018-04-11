@@ -62,17 +62,17 @@ internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
  * the [other] source node, or `null` if the two nodes are equal.
  *
  * @throws IllegalArgumentException if the two source nodes have different ids
- * or different types
  */
-internal fun SourceNode.diff(other: SourceNode): ProjectEdit? {
-    require(id == other.id && this::class == other::class) {
+internal fun SourceNode.diff(other: SourceNode): List<ProjectEdit> {
+    require(id == other.id) {
         "Can't compute diff between '$id' and '${other.id}'!"
     }
-    return when (this) {
-        is SourceFile -> null
-        is Type -> diff(other as Type)
-        is Function -> diff(other as Function)
-        is Variable -> diff(other as Variable)
+    return when {
+        this is SourceFile && other is SourceFile -> emptyList()
+        this is Type && other is Type -> listOfNotNull(this.diff(other))
+        this is Function && other is Function -> listOfNotNull(this.diff(other))
+        this is Variable && other is Variable -> listOfNotNull(this.diff(other))
+        else -> listOf(RemoveNode(id), AddNode(other))
     }
 }
 

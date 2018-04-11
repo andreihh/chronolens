@@ -58,12 +58,12 @@ sealed class ProjectEdit : Edit<Project> {
             }
 
             val nodeIds = nodesBefore.keys + nodesAfter.keys
-            return nodeIds.filter(::parentExists).mapNotNull { id ->
+            return nodeIds.filter(::parentExists).flatMap { id ->
                 val before = nodesBefore[id]
                 val after = nodesAfter[id]
                 val edit = when {
-                    before == null && after != null -> AddNode(after)
-                    before != null && after == null -> RemoveNode(id)
+                    before == null && after != null -> listOf(AddNode(after))
+                    before != null && after == null -> listOf(RemoveNode(id))
                     before != null && after != null -> before.diff(after)
                     else -> throw AssertionError("Node '$id' doesn't exist!")
                 }

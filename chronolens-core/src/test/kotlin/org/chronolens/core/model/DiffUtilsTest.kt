@@ -20,6 +20,7 @@ import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.type
 import org.chronolens.test.core.model.variable
 import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class DiffUtilsTest {
@@ -31,11 +32,12 @@ class DiffUtilsTest {
         }
     }
 
-    @Test fun `test diff nodes of different types throws`() {
+    @Test fun `test diff nodes of different types`() {
         val before = type("src/Test.java:Test") {}
         val after = variable("src/Test.java:Test") {}
-        assertFailsWith<IllegalArgumentException> {
-            before.diff(after)
-        }
+        assertEquals(
+            expected = listOf(RemoveNode(before.id), AddNode(after)),
+            actual = before.diff(after)
+        )
     }
 }
