@@ -35,6 +35,16 @@ class HotspotsCommand : Subcommand() {
     override val name: String get() = "hotspots"
 
     @Option(
+        names = ["--skip-days"],
+        description = [
+            "when analyzing source nodes, ignore revisions occurring in the " +
+                "first specified number of days, counting from the revision " +
+                "when the source node was created."
+        ]
+    )
+    private var skipDays: Int = 14
+
+    @Option(
         names = ["--min-metric-value"],
         description = [
             "ignore source files that have less churn than the specified limit"
@@ -43,12 +53,13 @@ class HotspotsCommand : Subcommand() {
     private var minMetricValue: Double = 0.0
 
     private fun validateOptions() {
+        if (skipDays < 0) exit("skip-days can't be negative!")
         if (minMetricValue < 0.0) exit("min-metric-value can't be negative!")
     }
 
     override fun run() {
         validateOptions()
-        val analyzer = HistoryAnalyzer()
+        val analyzer = HistoryAnalyzer(skipDays)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())
         val files = report.files.filter { it.value >= minMetricValue }

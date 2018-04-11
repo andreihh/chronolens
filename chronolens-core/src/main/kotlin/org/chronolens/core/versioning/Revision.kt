@@ -16,17 +16,13 @@
 
 package org.chronolens.core.versioning
 
+import java.time.Instant
+
 /**
  * A revision in a version control system (commit, tag, branch etc.).
  *
  * @property id the unique id of this revision
- * @property date the date at which this revision was committed in milliseconds
- * since the Unix epoch
+ * @property date the date at which this revision was committed
  * @property author the author of this revision
- * @throws IllegalArgumentException if [date] is negative
  */
-data class Revision(val id: String, val date: Long, val author: String) {
-    init {
-        require(date >= 0L) { "'$id' date '$date' can't be negative!" }
-    }
-}
+data class Revision(val id: String, val date: Instant, val author: String)

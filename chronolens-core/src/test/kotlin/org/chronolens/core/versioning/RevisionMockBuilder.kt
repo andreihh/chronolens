@@ -16,8 +16,10 @@
 
 package org.chronolens.core.versioning
 
+import java.time.Instant
+
 class RevisionMockBuilder(private val id: String) {
-    var date: Long = System.currentTimeMillis()
+    var date: Instant = Instant.now()
     var author: String = "<unknown-author>"
     private val changeSet = mutableMapOf<String, String?>()
 

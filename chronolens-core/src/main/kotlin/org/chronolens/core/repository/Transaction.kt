@@ -19,6 +19,7 @@ package org.chronolens.core.repository
 import org.chronolens.core.model.Project
 import org.chronolens.core.model.ProjectEdit
 import org.chronolens.core.model.sourcePath
+import java.time.Instant
 import java.util.Collections.unmodifiableSet
 
 /**
@@ -27,22 +28,21 @@ import java.util.Collections.unmodifiableSet
  * @property revisionId the non-empty unique identifier of the revision
  * corresponding to this transaction, consisting of alphanumeric characters
  * @property date the date when the revision corresponding to this transaction
- * was committed in milliseconds since the Unix epoch
+ * was committed
  * @property author the author of the revision corresponding to this transaction
  * @property edits the edits applied in this transaction
  * @throws IllegalArgumentException if [revisionId] is empty or contains
- * non-alphanumeric characters or if [date] is negative
+ * non-alphanumeric characters
  */
 data class Transaction(
     val revisionId: String,
-    val date: Long,
+    val date: Instant,
     val author: String,
     val edits: List<ProjectEdit> = emptyList()
 ) {
 
     init {
         validateRevisionId(revisionId)
-        require(date >= 0L) { "'$revisionId' date '$date' can't be negative!" }
     }
 
     /** The set of source files modified in this transaction. */

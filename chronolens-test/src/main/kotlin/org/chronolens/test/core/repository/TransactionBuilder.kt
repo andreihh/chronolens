@@ -33,13 +33,14 @@ import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.type
 import org.chronolens.test.core.model.variable
+import java.time.Instant
 
 class TransactionBuilder(private val revisionId: String) {
-    var date: Long = System.currentTimeMillis()
+    var date: Instant = Instant.now()
     var author: String = "<unknown-author>"
     private val edits = mutableListOf<ProjectEdit>()
 
-    fun date(value: Long): TransactionBuilder {
+    fun date(value: Instant): TransactionBuilder {
         date = value
         return this
     }

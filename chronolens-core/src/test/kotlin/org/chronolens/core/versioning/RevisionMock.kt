@@ -16,14 +16,11 @@
 
 package org.chronolens.core.versioning
 
+import java.time.Instant
+
 data class RevisionMock(
     val id: String,
-    val date: Long,
+    val date: Instant,
     val author: String,
     val changeSet: Map<String, String?>
-) {
-
-    init {
-        require(date >= 0) { "Date '$date' can't be negative!" }
-    }
-}
+)

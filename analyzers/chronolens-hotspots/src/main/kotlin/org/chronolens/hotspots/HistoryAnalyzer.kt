@@ -27,10 +27,18 @@ import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
+import java.time.Instant
+import java.time.temporal.ChronoUnit.DAYS
 import kotlin.math.ln
 
-class HistoryAnalyzer {
+class HistoryAnalyzer(private val skipDays: Int) {
+    init {
+        require(skipDays >= 0) { "Invalid number of days skipped '$skipDays'!" }
+    }
+
     private val project = Project.empty()
+    private val creationDate = hashMapOf<String, Instant>()
+    private val revisions = hashMapOf<String, Int>()
     private val changes = hashMapOf<String, Int>()
     private val churn = hashMapOf<String, Int>()
     private val weight = hashMapOf<String, Double>()
@@ -48,11 +56,13 @@ class HistoryAnalyzer {
         else -> 0
     }
 
-    private fun visit(edit: ProjectEdit) {
+    private fun visit(edit: ProjectEdit, date: Instant) {
         when (edit) {
             is AddNode -> {
                 for (node in edit.node.walkSourceTree()) {
-                    changes[node.id] = 1
+                    creationDate[node.id] = date
+                    revisions[node.id] = 1
+                    changes[node.id] = 0
                     churn[node.id] = 0
                     weight[node.id] = 0.0
                 }
@@ -60,18 +70,24 @@ class HistoryAnalyzer {
             is RemoveNode -> {
                 val nodes = project.get<SourceNode>(edit.id).walkSourceTree()
                 for (node in nodes) {
+                    creationDate -= node.id
+                    revisions -= node.id
                     changes -= node.id
                     churn -= node.id
                     weight -= node.id
                 }
             }
             else -> {
-                val addedChurn = getChurn(edit)
-                val scale = ln(1.0 * changes.getValue(edit.id))
-                val addedWeight = scale * addedChurn
-                changes[edit.id] = changes.getValue(edit.id) + 1
-                churn[edit.id] = churn.getValue(edit.id) + addedChurn
-                weight[edit.id] = weight.getValue(edit.id) + addedWeight
+                revisions[edit.id] = revisions.getValue(edit.id) + 1
+                val day = creationDate.getValue(edit.id).until(date, DAYS)
+                if (day >= skipDays) {
+                    val addedChurn = getChurn(edit)
+                    val scale = ln(1.0 + changes.getValue(edit.id))
+                    val addedWeight = scale * addedChurn
+                    changes[edit.id] = changes.getValue(edit.id) + 1
+                    churn[edit.id] = churn.getValue(edit.id) + addedChurn
+                    weight[edit.id] = weight.getValue(edit.id) + addedWeight
+                }
             }
         }
         project.apply(edit)
@@ -79,13 +95,14 @@ class HistoryAnalyzer {
 
     private fun visit(transaction: Transaction) {
         for (edit in transaction.edits) {
-            visit(edit)
+            visit(edit, transaction.date)
         }
     }
 
     private fun getMemberReport(id: String): MemberReport = MemberReport(
         id = id,
-        revisions = changes.getValue(id),
+        revisions = revisions.getValue(id),
+        changes = changes.getValue(id),
         churn = churn.getValue(id),
         value = weight.getValue(id)
     )
@@ -115,6 +132,7 @@ class HistoryAnalyzer {
     data class MemberReport(
         val id: String,
         val revisions: Int,
+        val changes: Int,
         val churn: Int,
         val value: Double
     )

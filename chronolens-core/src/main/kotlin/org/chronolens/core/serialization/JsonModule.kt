@@ -22,11 +22,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.PropertyAccessor
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DatabindContext
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTypeResolverBuilder
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.OBJECT_AND_NON_CONCRETE
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.Edit
@@ -94,10 +96,13 @@ object JsonModule {
             .typeProperty("@class")
 
     private val objectMapper = jacksonObjectMapper().apply {
+        registerModule(JavaTimeModule())
         setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
         setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
         setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
         setDefaultTyping(typeResolver)
+        disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+        disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
         enable(SerializationFeature.INDENT_OUTPUT)
     }
 

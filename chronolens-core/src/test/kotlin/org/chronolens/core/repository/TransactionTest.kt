@@ -21,25 +21,20 @@ import org.chronolens.core.model.EditType
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.Type
 import org.junit.Test
+import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class TransactionTest {
     @Test fun `test transaction with empty id throws`() {
         assertFailsWith<IllegalArgumentException> {
-            Transaction(revisionId = "", date = 1L, author = "<author>")
+            Transaction(revisionId = "", date = Instant.now(), author = "")
         }
     }
 
     @Test fun `test transaction with invalid characters in id throws`() {
         assertFailsWith<IllegalArgumentException> {
-            Transaction(revisionId = "123aA_", date = 1L, author = "<author>")
-        }
-    }
-
-    @Test fun `test transaction with negative date throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            Transaction(revisionId = "123", date = -1L, author = "<author>")
+            Transaction(revisionId = "12aA_", date = Instant.now(), author = "")
         }
     }
 
@@ -47,8 +42,8 @@ class TransactionTest {
         val expected = setOf("Main.java", "Test.java", "MainTest.java")
         val actual = Transaction(
             revisionId = "123",
-            date = 1L,
-            author = "<author>",
+            date = Instant.now(),
+            author = "",
             edits = listOf(
                 AddNode(Type("Main.java:Main:MainType")),
                 RemoveNode("Test.java:Test:TestType"),

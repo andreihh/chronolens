@@ -20,12 +20,13 @@ import org.chronolens.core.repository.Transaction
 import org.chronolens.test.core.repository.transaction
 import org.junit.Test
 import java.io.ByteArrayOutputStream
+import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class JsonModuleTest {
     private val data = transaction("HEAD") {
-        date = 1824733L
+        date = Instant.ofEpochMilli(1824733L)
         author = "unknown"
         addSourceFile("res") {
             variable("DEBUG") { +"true" }

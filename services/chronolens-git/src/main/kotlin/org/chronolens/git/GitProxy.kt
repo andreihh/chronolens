@@ -19,6 +19,7 @@ package org.chronolens.git
 import org.chronolens.core.subprocess.Subprocess.execute
 import org.chronolens.core.versioning.Revision
 import org.chronolens.core.versioning.VcsProxy
+import java.time.Instant
 
 internal class GitProxy(private val prefix: String) : VcsProxy {
     private val vcs = "git"
@@ -36,7 +37,7 @@ internal class GitProxy(private val prefix: String) : VcsProxy {
     private fun parseCommit(formattedCommit: String): Revision {
         val (id, rawDate, author) =
             formattedCommit.split(delimiters = *charArrayOf(':'), limit = 3)
-        val date = rawDate.toLong() * 1000
+        val date = Instant.ofEpochSecond(rawDate.toLong())
         return Revision(id, date, author)
     }
 
