@@ -17,8 +17,8 @@
 package org.chronolens.core.model
 
 import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.editVariable
 import org.chronolens.test.core.model.project
+import org.chronolens.test.core.model.sourceFile
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
@@ -37,15 +37,16 @@ class EditVariableTest {
                 }
             }
         }
+        val edit = sourceFile("src/Test.java").variable("name").edit {
+            modifiers { +"@NotNull" }
+        }
 
         val actual = project {
             sourceFile("src/Test.java") {
                 variable("name") {}
             }
         }
-        actual.apply(editVariable("src/Test.java#name") {
-            modifiers { +"@NotNull" }
-        })
+        actual.apply(edit)
 
         assertEquals(expected, actual)
     }
@@ -56,7 +57,7 @@ class EditVariableTest {
                 variable("DEBUG") {}
             }
         }
-        val edit = editVariable("src/Test.java#RELEASE") {}
+        val edit = sourceFile("src/Test.java").variable("RELEASE").edit {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -69,7 +70,7 @@ class EditVariableTest {
                 type("Test") {}
             }
         }
-        val edit = editVariable("src/Test.java#Test") {}
+        val edit = sourceFile("src/Test.java").variable("Test").edit {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

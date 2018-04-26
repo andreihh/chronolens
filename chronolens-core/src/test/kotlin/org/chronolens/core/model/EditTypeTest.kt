@@ -17,8 +17,8 @@
 package org.chronolens.core.model
 
 import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.editType
 import org.chronolens.test.core.model.project
+import org.chronolens.test.core.model.sourceFile
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
@@ -37,15 +37,16 @@ class EditTypeTest {
                 }
             }
         }
+        val edit = sourceFile("src/Test.java").type("Test").edit {
+            supertypes { +"Object" }
+        }
 
         val actual = project {
             sourceFile("src/Test.java") {
                 type("Test") {}
             }
         }
-        actual.apply(editType("src/Test.java:Test") {
-            supertypes { +"Object" }
-        })
+        actual.apply(edit)
 
         assertEquals(expected, actual)
     }
@@ -54,7 +55,7 @@ class EditTypeTest {
         val project = project {
             sourceFile("src/Test.java") {}
         }
-        val edit = editType("src/Test.java:Test") {}
+        val edit = sourceFile("src/Test.java").type("Test").edit {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -67,7 +68,7 @@ class EditTypeTest {
                 variable("test") {}
             }
         }
-        val edit = editType("src/Test.java:test") {}
+        val edit = sourceFile("src/Test.java").type("test").edit {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

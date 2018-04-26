@@ -16,10 +16,7 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.sourceFile
-import org.chronolens.test.core.model.type
-import org.chronolens.test.core.model.variable
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -27,65 +24,68 @@ import kotlin.test.assertTrue
 
 class UtilsTest {
     @Test fun `test children of source file are equal to entities`() {
-        val source = sourceFile("src/Test.java") {
+        val source = sourceFile("src/Test.java").build {
             type("Test") {}
         }
         assertEquals(source.entities, source.children)
     }
 
     @Test fun `test children of type are equal to members`() {
-        val type = type("src/Test.java:Test") {
+        val type = sourceFile("src/Test.java").type("Test").build {
             variable("version") {}
         }
         assertEquals(type.members, type.children)
     }
 
     @Test fun `test children of function is empty collection`() {
-        val function = function("src/Test.java#getVersion(String)") {
-            parameters("name")
-        }
+        val function = sourceFile("src/Test.java")
+            .function("getVersion(String)").build {
+                parameters("name")
+            }
         assertTrue(function.children.isEmpty())
     }
 
     @Test fun `test children of variable is empty collection`() {
-        val variable = variable("src/Test.java#VERSION") {}
+        val variable = sourceFile("src/Test.java").variable("VERSION").build {}
         assertTrue(variable.children.isEmpty())
     }
 
     @Test fun `test source path of source file`() {
-        val source = sourceFile("src/Test.java") {}
+        val source = sourceFile("src/Test.java").build {}
         assertEquals(source.path, source.sourcePath)
     }
 
     @Test fun `test source path of node`() {
         val path = "src/Test.java"
-        val node = function("$path#getVersion(String)") {}
+        val node = sourceFile(path).function("getVersion(String)").build {}
         assertEquals(path, node.sourcePath)
     }
 
     @Test fun `test return type`() {
         val returnType = "int"
-        val function = function("src/Test.java#getVersion()") {
-            modifiers("public", returnTypeModifierOf(returnType))
-        }
+        val function = sourceFile("src/Test.java")
+            .function("getVersion()").build {
+                modifiers("public", returnTypeModifierOf(returnType))
+            }
         assertEquals(returnType, function.returnType)
     }
 
     @Test fun `test null return type`() {
-        val function = function("src/Test.java#getVersion()") {}
+        val function = sourceFile("src/Test.java")
+            .function("getVersion()").build {}
         assertNull(function.returnType)
     }
 
     @Test fun `test variable type`() {
         val variableType = "String"
-        val variable = variable("src/Test.java#VERSION") {
+        val variable = sourceFile("src/Test.java").variable("VERSION").build {
             modifiers("public", typeModifierOf(variableType))
         }
         assertEquals(variableType, variable.type)
     }
 
     @Test fun `test null variable type`() {
-        val variable = variable("src/Test.java#VERSION") {}
+        val variable = sourceFile("src/Test.java").variable("VERSION").build {}
         assertNull(variable.type)
     }
 }

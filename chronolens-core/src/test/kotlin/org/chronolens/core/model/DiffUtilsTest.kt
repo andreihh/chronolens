@@ -17,16 +17,13 @@
 package org.chronolens.core.model
 
 import org.chronolens.test.core.model.sourceFile
-import org.chronolens.test.core.model.type
-import org.chronolens.test.core.model.variable
 import org.junit.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class DiffUtilsTest {
     @Test fun `test diff nodes with different ids throws`() {
-        val before = sourceFile("src/Test.java") {}
-        val after = sourceFile("src/Main.java") {}
+        val before = sourceFile("src/Test.java").build {}
+        val after = sourceFile("src/Main.java").build {}
         assertFailsWith<IllegalArgumentException> {
             before.diff(after)
         }

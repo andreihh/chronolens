@@ -17,6 +17,7 @@
 package org.chronolens.core.serialization
 
 import org.chronolens.core.repository.Transaction
+import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.repository.transaction
 import org.junit.Test
 import java.io.ByteArrayOutputStream
@@ -28,7 +29,7 @@ class JsonModuleTest {
     private val data = transaction("HEAD") {
         date = Instant.ofEpochMilli(1824733L)
         author = "unknown"
-        addSourceFile("res") {
+        +sourceFile("res").add {
             variable("DEBUG") { +"true" }
             variable("RELEASE") { +"false" }
             function("createIClass()") {}
@@ -39,15 +40,15 @@ class JsonModuleTest {
                 function("getVersion()") { +"1" }
             }
         }
-        removeNode("res#createIClass()")
-        editVariable("res#DEBUG") {
+        +sourceFile("res").function("createIClass()").remove()
+        +sourceFile("res").variable("DEBUG").edit {
             initializer {
                 remove(0)
                 add(index = 0, value = "false")
             }
         }
-        removeNode("res#RELEASE")
-        editType("res:IClass") {
+        +sourceFile("res").variable("RELEASE").remove()
+        +sourceFile("res").type("IClass").edit {
             supertypes { -"Interface" }
         }
     }

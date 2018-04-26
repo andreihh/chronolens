@@ -17,8 +17,8 @@
 package org.chronolens.core.model
 
 import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.editFunction
 import org.chronolens.test.core.model.project
+import org.chronolens.test.core.model.sourceFile
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
@@ -39,6 +39,10 @@ class EditFunctionTest {
                 }
             }
         }
+        val edit = sourceFile("src/Test.java").type("Test")
+            .function("getVersion()").edit {
+                modifiers { +"@Override" }
+            }
 
         val actual = project {
             sourceFile("src/Test.java") {
@@ -47,9 +51,7 @@ class EditFunctionTest {
                 }
             }
         }
-        actual.apply(editFunction("src/Test.java:Test#getVersion()") {
-            modifiers { +"@Override" }
-        })
+        actual.apply(edit)
 
         assertEquals(expected, actual)
     }
@@ -62,6 +64,13 @@ class EditFunctionTest {
                 }
             }
         }
+        val edit = sourceFile("src/Test.java")
+            .function("getValue(int, int)").edit {
+                parameters {
+                    remove(0)
+                    add(index = 1, value = "y")
+                }
+            }
 
         val actual = project {
             sourceFile("src/Test.java") {
@@ -70,12 +79,7 @@ class EditFunctionTest {
                 }
             }
         }
-        actual.apply(editFunction("src/Test.java#getValue(int, int)") {
-            parameters {
-                remove(0)
-                add(index = 1, value = "y")
-            }
-        })
+        actual.apply(edit)
 
         assertEquals(expected, actual)
     }
@@ -86,7 +90,7 @@ class EditFunctionTest {
                 function("get_version()") {}
             }
         }
-        val edit = editFunction("src/Test.java#getVersion()") {}
+        val edit = sourceFile("src/Test.java").function("getVersion()").edit {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -101,11 +105,12 @@ class EditFunctionTest {
                 }
             }
         }
-        val edit = editFunction("src/Test.java#getValue(int, int)") {
-            parameters {
-                remove(2)
+        val edit = sourceFile("src/Test.java")
+            .function("getValue(int, int)").edit {
+                parameters {
+                    remove(2)
+                }
             }
-        }
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

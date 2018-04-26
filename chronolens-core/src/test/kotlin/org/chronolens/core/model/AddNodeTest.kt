@@ -16,11 +16,9 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.test.core.model.addFunction
-import org.chronolens.test.core.model.addSourceFile
-import org.chronolens.test.core.model.addType
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.project
+import org.chronolens.test.core.model.sourceFile
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
@@ -30,11 +28,12 @@ class AddNodeTest {
             sourceFile("src/Main.java") {}
             sourceFile("src/Test.java") {}
         }
+        val edit = sourceFile("src/Test.java").add {}
 
         val actual = project {
             sourceFile("src/Main.java") {}
         }
-        actual.apply(addSourceFile("src/Test.java") {})
+        actual.apply(edit)
 
         assertEquals(expected, actual)
     }
@@ -47,13 +46,15 @@ class AddNodeTest {
                 }
             }
         }
+        val edit = sourceFile("src/Test.java").type("Test")
+            .function("getVersion()").add {}
 
         val actual = project {
             sourceFile("src/Test.java") {
                 type("Test") {}
             }
         }
-        actual.apply(addFunction("src/Test.java:Test#getVersion()") {})
+        actual.apply(edit)
 
         assertEquals(expected, actual)
     }
@@ -68,15 +69,16 @@ class AddNodeTest {
                 }
             }
         }
+        val edit = sourceFile("src/Test.java").type("Test").add {
+            function("getV(String)") {
+                parameters("name")
+            }
+        }
 
         val actual = project {
             sourceFile("src/Test.java") {}
         }
-        actual.apply(addType("src/Test.java:Test") {
-            function("getV(String)") {
-                parameters("name")
-            }
-        })
+        actual.apply(edit)
 
         assertEquals(expected, actual)
     }
@@ -87,31 +89,34 @@ class AddNodeTest {
                 type("Test") {}
             }
         }
-        val edit = addType("src/Test.java:Test") {}
+        val edit = sourceFile("src/Test.java").type("Test").add {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
         }
     }
 
-    @Test fun `test add entity to variable throws`() {
+    /*@Test fun `test add entity to variable throws`() {
         val project = project {
             sourceFile("src/Test.java") {
                 variable("version") {}
             }
         }
-        val edit = addFunction("src/Test.java:version#getVersion()") {}
+        val edit = sourceFile("src/Test.java")
+            .variable("version").function("getVersion()")
+            .add {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
         }
-    }
+    }*/
 
     @Test fun `test add node to non-existing parent throws`() {
         val project = project {
             sourceFile("src/Main.java") {}
         }
-        val edit = addFunction("src/Main.java:Main#getVersion()") {}
+        val edit = sourceFile("src/Main.java").type("Main")
+            .function("getVersion()").add {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

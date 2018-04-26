@@ -102,7 +102,7 @@ abstract class RepositoryTest {
     }
 
     @Test fun `test get source`() {
-        val expected = sourceFile("src/Main.mock") {
+        val expected = sourceFile("src/Main.mock").build {
             type("Main") {}
         }
         val actual = repository.getSource("src/Main.mock")
@@ -120,7 +120,7 @@ abstract class RepositoryTest {
     }
 
     @Test fun `test get invalid source returns latest valid version`() {
-        val expected = sourceFile("src/Worksheet.mock") {
+        val expected = sourceFile("src/Worksheet.mock").build {
             function("println()") {}
         }
         val actual = repository.getSource("src/Worksheet.mock")
@@ -128,7 +128,7 @@ abstract class RepositoryTest {
     }
 
     @Test fun `test get invalid source with no history returns empty`() {
-        val expected = sourceFile("src/Error.mock") {}
+        val expected = sourceFile("src/Error.mock").build {}
         val actual = repository.getSource("src/Error.mock")
         assertEquals(expected, actual)
     }
