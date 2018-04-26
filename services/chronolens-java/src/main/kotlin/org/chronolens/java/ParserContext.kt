@@ -19,7 +19,8 @@ package org.chronolens.java
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.SourceNode.Companion.ENTITY_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.returnTypeModifierOf
@@ -66,8 +67,14 @@ internal data class ParserContext(
     private fun AnnotationTypeMemberDeclaration.defaultValue(): List<String> =
         default?.toSource().toBlock()
 
-    private fun getEntityId(simpleId: String): String =
-        "$parentId$ENTITY_SEPARATOR$simpleId"
+    private fun getTypeId(name: String): String =
+        "$parentId$CONTAINER_SEPARATOR$name"
+
+    private fun getFunctionId(signature: String): String =
+        "$parentId$MEMBER_SEPARATOR$signature"
+
+    private fun getVariableId(name: String): String =
+        "$parentId$MEMBER_SEPARATOR$name"
 
     private fun visitMember(node: Any?): SourceEntity? = when (node) {
         is AbstractTypeDeclaration -> visit(node)
@@ -81,7 +88,7 @@ internal data class ParserContext(
 
     private fun visit(node: AbstractTypeDeclaration): Type {
         requireNotMalformed(node)
-        val id = getEntityId(node.name())
+        val id = getTypeId(node.name())
         val childContext = copy(parentId = id)
         val members = node.members().mapNotNull(childContext::visitMember)
         members.map(SourceEntity::id).requireDistinct()
@@ -96,7 +103,7 @@ internal data class ParserContext(
     private fun visit(node: AnnotationTypeMemberDeclaration): Variable {
         requireNotMalformed(node)
         return Variable(
-            id = getEntityId(node.name()),
+            id = getVariableId(node.name()),
             modifiers = node.modifierSet(),
             initializer = node.defaultValue()
         )
@@ -105,7 +112,7 @@ internal data class ParserContext(
     private fun visit(node: EnumConstantDeclaration): Variable {
         requireNotMalformed(node)
         return Variable(
-            id = getEntityId(node.name()),
+            id = getVariableId(node.name()),
             modifiers = node.modifierSet(),
             initializer = node.initializer()
         )
@@ -114,7 +121,7 @@ internal data class ParserContext(
     private fun visit(node: VariableDeclaration): Variable {
         requireNotMalformed(node)
         return Variable(
-            id = getEntityId(node.name()),
+            id = getVariableId(node.name()),
             modifiers = node.modifierSet(),
             initializer = node.initializer()
         )
@@ -125,7 +132,7 @@ internal data class ParserContext(
         val parameters = node.parameterList()
         parameters.requireDistinct()
         return Function(
-            id = getEntityId(node.signature()),
+            id = getFunctionId(node.signature()),
             parameters = parameters,
             modifiers = node.modifierSet(),
             body = node.body()

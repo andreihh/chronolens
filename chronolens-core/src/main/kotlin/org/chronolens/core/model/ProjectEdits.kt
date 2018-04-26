@@ -18,7 +18,6 @@ package org.chronolens.core.model
 
 import org.chronolens.core.model.ListEdit.Companion.apply
 import org.chronolens.core.model.SetEdit.Companion.apply
-import org.chronolens.core.model.SourceNode.Companion.ENTITY_SEPARATOR
 
 /** An atomic change which should be applied to a [Project]. */
 sealed class ProjectEdit : Edit<Project> {
@@ -52,18 +51,17 @@ sealed class ProjectEdit : Edit<Project> {
             }
 
             fun parentExists(id: String): Boolean {
-                val parentId = id.parentId
-                return parentId.isEmpty()
-                    || (parentId in nodesBefore && parentId in nodesAfter)
+                val parentId = id.parentId ?: return false
+                return parentId in nodesBefore && parentId in nodesAfter
             }
 
             val nodeIds = nodesBefore.keys + nodesAfter.keys
-            return nodeIds.filter(::parentExists).flatMap { id ->
+            return nodeIds.filter(::parentExists).mapNotNull { id ->
                 val before = nodesBefore[id]
                 val after = nodesAfter[id]
                 val edit = when {
-                    before == null && after != null -> listOf(AddNode(after))
-                    before != null && after == null -> listOf(RemoveNode(id))
+                    before == null && after != null -> AddNode(after)
+                    before != null && after == null -> RemoveNode(id)
                     before != null && after != null -> before.diff(after)
                     else -> throw AssertionError("Node '$id' doesn't exist!")
                 }
@@ -203,9 +201,6 @@ data class EditVariable(
         updateAncestors(nodes, newVariable)
     }
 }
-
-private val String.parentId: String
-    get() = substringBeforeLast(ENTITY_SEPARATOR, missingDelimiterValue = "")
 
 /**
  * Updates all the ancestors of the given modified [entity] from the given

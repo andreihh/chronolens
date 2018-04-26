@@ -62,35 +62,35 @@ class ValidationUtilsTest {
 
     @Test fun `test function id with invalid parentheses throws`() {
         assertFailsWith<IllegalArgumentException> {
-            validateFunctionId("Test.java:getVersion(String")
+            validateFunctionId("Test.java#getVersion(String")
         }
     }
 
     @Test fun `test function id with invalid parameter type throws`() {
         assertFailsWith<IllegalArgumentException> {
-            validateFunctionId("Test.java:getVersion(Str:ing)")
+            validateFunctionId("Test.java#getVersion(Str:ing)")
         }
     }
 
     @Test fun `test function id with no parameters is valid`() {
-        validateFunctionId("Test.java:getVersion()")
+        validateFunctionId("Test.java#getVersion()")
     }
 
 
     @Test fun `test function id with single parameter is valid`() {
-        validateFunctionId("Test.java:getVersion(String)")
+        validateFunctionId("Test.java#getVersion(String)")
     }
 
     @Test fun `test function id with multiple parameters is valid`() {
-        validateFunctionId("Test.java:getVersion(int, String, int)")
+        validateFunctionId("Test.java#getVersion(int, String, int)")
     }
 
     @Test fun `test function id with vararg parameter type is valid`() {
-        validateFunctionId("Test.java:getVersion(String...)")
+        validateFunctionId("Test.java#getVersion(String...)")
     }
 
     @Test fun `test function id with lambda parameter type is valid`() {
-        validateFunctionId("Test.java:getVersion((T) -> Unit)")
+        validateFunctionId("Test.java#getVersion((T) -> Unit)")
     }
 
     @Test fun `test variable id with parentheses throws`() {
@@ -114,7 +114,7 @@ class ValidationUtilsTest {
     }
 
     @Test fun `test valid function id is valid entity id`() {
-        validateEntityId("src/Test.java:IClass:getVersion()")
+        validateEntityId("src/Test.java:IClass#getVersion()")
     }
 
     @Test fun `test valid source file id is invalid entity id`() {

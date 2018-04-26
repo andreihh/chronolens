@@ -39,14 +39,14 @@ class JsonModuleTest {
                 function("getVersion()") { +"1" }
             }
         }
-        removeNode("res:createIClass()")
-        editVariable("res:DEBUG") {
+        removeNode("res#createIClass()")
+        editVariable("res#DEBUG") {
             initializer {
                 remove(0)
                 add(index = 0, value = "false")
             }
         }
-        removeNode("res:RELEASE")
+        removeNode("res#RELEASE")
         editType("res:IClass") {
             supertypes { -"Interface" }
         }

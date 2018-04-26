@@ -16,35 +16,31 @@
 
 package org.chronolens.test.core.model
 
-import org.chronolens.core.model.Function
+import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 
-class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
-    private var modifiers = emptySet<String>()
-    private var parameters = emptyList<String>()
-    private val body = mutableListOf<String>()
+class IdBuilder {
+    private lateinit var id: String
 
-    fun parameters(vararg parameters: String): FunctionBuilder {
-        this.parameters = parameters.requireDistinct().toList()
+    fun file(path: String): IdBuilder {
+        id = path
         return this
     }
 
-    fun modifiers(vararg modifiers: String): FunctionBuilder {
-        this.modifiers = modifiers.requireDistinct()
+    fun type(name: String): IdBuilder {
+        id += "$CONTAINER_SEPARATOR$name"
         return this
     }
 
-    fun body(vararg bodyLines: String): FunctionBuilder {
-        body += bodyLines
+    fun function(signature: String): IdBuilder {
+        id += "$MEMBER_SEPARATOR$signature"
         return this
     }
 
-    operator fun String.unaryPlus() {
-        body += this
+    fun variable(name: String): IdBuilder {
+        id += "$MEMBER_SEPARATOR$name"
+        return this
     }
 
-    override fun build(parentId: String): Function {
-        val id = "$parentId$MEMBER_SEPARATOR$signature"
-        return Function(id, parameters, modifiers, body)
-    }
+    fun build(): String = id
 }

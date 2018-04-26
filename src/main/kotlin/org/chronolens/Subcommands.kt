@@ -18,7 +18,7 @@ package org.chronolens
 
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.exit
-import org.chronolens.core.model.SourceNode.Companion.ENTITY_SEPARATOR
+import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.PersistentRepository.Companion.persist
@@ -95,7 +95,7 @@ class Model : Subcommand() {
     private val revision: String get() = revisionId ?: repository.getHeadId()
 
     override fun run() {
-        val path = id.substringBefore(ENTITY_SEPARATOR)
+        val path = id.sourcePath
         if (!isValidPath(path)) exit("Invalid file path '$path'!")
         if (!isValidRevisionId(revision)) exit("Invalid revision '$revision'!")
         val model = repository.getSource(path, revision)

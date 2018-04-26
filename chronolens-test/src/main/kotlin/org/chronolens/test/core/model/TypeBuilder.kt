@@ -16,7 +16,7 @@
 
 package org.chronolens.test.core.model
 
-import org.chronolens.core.model.SourceNode.Companion.ENTITY_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.Type
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
@@ -54,7 +54,7 @@ class TypeBuilder(private val name: String) : EntityBuilder<Type> {
         addMember(name, init)
 
     override fun build(parentId: String): Type {
-        val id = "$parentId$ENTITY_SEPARATOR$name"
+        val id = "$parentId$CONTAINER_SEPARATOR$name"
         return Type(
             id = id,
             supertypes = supertypes,

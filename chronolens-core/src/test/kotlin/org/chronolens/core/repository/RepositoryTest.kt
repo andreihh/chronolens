@@ -42,7 +42,7 @@ abstract class RepositoryTest {
                         "id": "src/Worksheet.mock",
                         "@class": "SourceFile",
                         "entities": [{
-                            "id": "src/Worksheet.mock:println()",
+                            "id": "src/Worksheet.mock#println()",
                             "@class": "Function"
                         }]
                 }""")

@@ -9,15 +9,15 @@
       "id" : "res",
       "entities" : [ {
         "@class" : "Variable",
-        "id" : "res:DEBUG",
+        "id" : "res#DEBUG",
         "initializer" : [ "true" ]
       }, {
         "@class" : "Variable",
-        "id" : "res:RELEASE",
+        "id" : "res#RELEASE",
         "initializer" : [ "false" ]
       }, {
         "@class" : "Function",
-        "id" : "res:createIClass()"
+        "id" : "res#createIClass()"
       }, {
         "@class" : "Type",
         "id" : "res:IClass",
@@ -27,21 +27,21 @@
           "id" : "res:IClass:InnerClass"
         }, {
           "@class" : "Variable",
-          "id" : "res:IClass:version",
+          "id" : "res:IClass#version",
           "initializer" : [ "1" ]
         }, {
           "@class" : "Function",
-          "id" : "res:IClass:getVersion()",
+          "id" : "res:IClass#getVersion()",
           "body" : [ "1" ]
         } ]
       } ]
     }
   }, {
     "@class" : "RemoveNode",
-    "id" : "res:createIClass()"
+    "id" : "res#createIClass()"
   }, {
     "@class" : "EditVariable",
-    "id" : "res:DEBUG",
+    "id" : "res#DEBUG",
     "initializerEdits" : [ {
       "@class" : "List.Remove",
       "index" : 0
@@ -52,7 +52,7 @@
     } ]
   }, {
     "@class" : "RemoveNode",
-    "id" : "res:RELEASE"
+    "id" : "res#RELEASE"
   }, {
     "@class" : "EditType",
     "id" : "res:IClass",

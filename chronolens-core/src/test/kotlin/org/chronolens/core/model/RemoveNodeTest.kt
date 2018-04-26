@@ -17,6 +17,7 @@
 package org.chronolens.core.model
 
 import org.chronolens.test.core.model.assertEquals
+import org.chronolens.test.core.model.id
 import org.chronolens.test.core.model.project
 import org.chronolens.test.core.model.removeNode
 import org.junit.Test
@@ -44,7 +45,8 @@ class RemoveNodeTest {
             }
             sourceFile("src/Test.java") {}
         }
-        actual.apply(removeNode("src/Main.java"))
+        val removedId = id().file("src/Main.java").build()
+        actual.apply(removeNode(removedId))
 
         assertEquals(expected, actual)
     }
@@ -68,7 +70,10 @@ class RemoveNodeTest {
                 }
             }
         }
-        actual.apply(removeNode("src/Main.java:Main:getVersion(String)"))
+        val removedId = id()
+            .file("src/Main.java").type("Main").function("getVersion(String)")
+            .build()
+        actual.apply(removeNode(removedId))
 
         assertEquals(expected, actual)
     }
@@ -79,7 +84,8 @@ class RemoveNodeTest {
                 function("getVersion()") {}
             }
         }
-        val edit = removeNode("src/Test.java:version")
+        val removedId = id().file("src/Test.java").variable("version").build()
+        val edit = removeNode(removedId)
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

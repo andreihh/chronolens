@@ -25,7 +25,7 @@ import kotlin.test.assertFailsWith
 class EditFunctionTest {
     @Test fun `test edit invalid function id throws`() {
         assertFailsWith<IllegalArgumentException> {
-            EditFunction("src/Test.java:getVersion)")
+            EditFunction("src/Test.java#getVersion)")
         }
     }
 
@@ -47,7 +47,7 @@ class EditFunctionTest {
                 }
             }
         }
-        actual.apply(editFunction("src/Test.java:Test:getVersion()") {
+        actual.apply(editFunction("src/Test.java:Test#getVersion()") {
             modifiers { +"@Override" }
         })
 
@@ -70,7 +70,7 @@ class EditFunctionTest {
                 }
             }
         }
-        actual.apply(editFunction("src/Test.java:getValue(int, int)") {
+        actual.apply(editFunction("src/Test.java#getValue(int, int)") {
             parameters {
                 remove(0)
                 add(index = 1, value = "y")
@@ -86,7 +86,7 @@ class EditFunctionTest {
                 function("get_version()") {}
             }
         }
-        val edit = editFunction("src/Test.java:getVersion()") {}
+        val edit = editFunction("src/Test.java#getVersion()") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -101,7 +101,7 @@ class EditFunctionTest {
                 }
             }
         }
-        val edit = editFunction("src/Test.java:getValue(int, int)") {
+        val edit = editFunction("src/Test.java#getValue(int, int)") {
             parameters {
                 remove(2)
             }

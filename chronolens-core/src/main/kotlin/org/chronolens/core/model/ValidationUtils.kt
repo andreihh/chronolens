@@ -19,18 +19,21 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.SourceNode.Companion.ENTITY_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceNode.Companion.PATH_SEPARATOR
 
-private const val separators = "$PATH_SEPARATOR$ENTITY_SEPARATOR\"\\\\"
+private const val separators =
+    "$PATH_SEPARATOR$CONTAINER_SEPARATOR$MEMBER_SEPARATOR\"\\\\"
+
 private val fileComponent = Regex("(?>[^$separators]++)")
 private val identifier = Regex("(?>[^$separators()]++)")
 private val signature = Regex("(?>$identifier\\([^$separators]*\\))")
 
 private val file = Regex("$fileComponent($PATH_SEPARATOR$fileComponent)*+")
-private val type = Regex("$file($ENTITY_SEPARATOR$identifier)+?")
-private val function = Regex("($type|$file)$ENTITY_SEPARATOR$signature")
-private val variable = Regex("($type|$file)$ENTITY_SEPARATOR$identifier")
+private val type = Regex("$file($CONTAINER_SEPARATOR$identifier)+?")
+private val function = Regex("($type|$file)$MEMBER_SEPARATOR$signature")
+private val variable = Regex("($type|$file)$MEMBER_SEPARATOR$identifier")
 
 private val entity = Regex("$function|$type|$variable")
 private val node = Regex("$file|$entity")

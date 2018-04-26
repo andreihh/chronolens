@@ -25,7 +25,7 @@ import kotlin.test.assertFailsWith
 class EditVariableTest {
     @Test fun `test edit invalid variable id throws`() {
         assertFailsWith<IllegalArgumentException> {
-            EditVariable("src/Test.java:version()")
+            EditVariable("src/Test.java#version()")
         }
     }
 
@@ -43,7 +43,7 @@ class EditVariableTest {
                 variable("name") {}
             }
         }
-        actual.apply(editVariable("src/Test.java:name") {
+        actual.apply(editVariable("src/Test.java#name") {
             modifiers { +"@NotNull" }
         })
 
@@ -56,7 +56,7 @@ class EditVariableTest {
                 variable("DEBUG") {}
             }
         }
-        val edit = editVariable("src/Test.java:RELEASE") {}
+        val edit = editVariable("src/Test.java#RELEASE") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -69,7 +69,7 @@ class EditVariableTest {
                 type("Test") {}
             }
         }
-        val edit = editVariable("src/Test.java:Test") {}
+        val edit = editVariable("src/Test.java#Test") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

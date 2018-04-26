@@ -26,11 +26,15 @@ import org.chronolens.core.model.Function
 import org.chronolens.core.model.Project
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.SourceNode.Companion.ENTITY_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
+import org.chronolens.core.model.parentId
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
+
+fun id(): IdBuilder = IdBuilder()
 
 fun project(init: Init<ProjectBuilder>): Project =
     ProjectBuilder().apply(init).build()
@@ -39,20 +43,20 @@ fun sourceFile(path: String, init: Init<SourceFileBuilder>): SourceFile =
     SourceFileBuilder(path).apply(init).build()
 
 fun type(id: String, init: Init<TypeBuilder>): Type {
-    val parentId = id.substringBeforeLast(ENTITY_SEPARATOR)
-    val name = id.substringAfterLast(ENTITY_SEPARATOR)
+    val parentId = id.parentId ?: error("Invalid type id '$id'!")
+    val name = id.substringAfterLast(CONTAINER_SEPARATOR)
     return TypeBuilder(name).apply(init).build(parentId)
 }
 
 fun function(id: String, init: Init<FunctionBuilder>): Function {
-    val parentId = id.substringBeforeLast(ENTITY_SEPARATOR)
-    val signature = id.substringAfterLast(ENTITY_SEPARATOR)
+    val parentId = id.parentId ?: error("Invalid function id '$id'!")
+    val signature = id.substringAfterLast(MEMBER_SEPARATOR)
     return FunctionBuilder(signature).apply(init).build(parentId)
 }
 
 fun variable(id: String, init: Init<VariableBuilder>): Variable {
-    val parentId = id.substringBeforeLast(ENTITY_SEPARATOR)
-    val name = id.substringAfterLast(ENTITY_SEPARATOR)
+    val parentId = id.parentId ?: error("Invalid variable id '$id'!")
+    val name = id.substringAfterLast(MEMBER_SEPARATOR)
     return VariableBuilder(name).apply(init).build(parentId)
 }
 

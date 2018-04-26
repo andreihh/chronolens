@@ -16,7 +16,7 @@
 
 package org.chronolens.test.core.model
 
-import org.chronolens.core.model.SourceNode.Companion.ENTITY_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.Variable
 
 class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
@@ -38,7 +38,7 @@ class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
     }
 
     override fun build(parentId: String): Variable = Variable(
-        id = "$parentId$ENTITY_SEPARATOR$name",
+        id = "$parentId$MEMBER_SEPARATOR$name",
         modifiers = modifiers,
         initializer = initializer
     )

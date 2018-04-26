@@ -21,6 +21,7 @@ import org.chronolens.test.core.model.addSourceFile
 import org.chronolens.test.core.model.addType
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.editType
+import org.chronolens.test.core.model.id
 import org.chronolens.test.core.model.project
 import org.chronolens.test.core.model.removeNode
 import org.chronolens.test.core.model.sourceFile
@@ -32,7 +33,7 @@ import kotlin.test.assertNull
 
 class ProjectTest {
     @Test fun `test create project with duplicated source paths throws`() {
-        val source = sourceFile("src/Test.java") {}
+        val source = sourceFile(id().file("src/Test.java").build()) {}
         assertFailsWith<IllegalArgumentException> {
             Project.of(listOf(source, source))
         }
@@ -40,24 +41,28 @@ class ProjectTest {
 
     @Test fun `test source tree returns structurally equal nodes`() {
         val classVersion = Variable(
-            id = "src/Test.java:IClass:version",
+            id = id()
+                .file("src/Test.java").type("IClass").variable("version")
+                .build(),
             initializer = listOf("1")
         )
         val classFunction = Function(
-            id = "src/Test.java:IClass:getVersion()"
+            id = id()
+                .file("src/Test.java").type("IClass").function("getVersion()")
+                .build()
         )
         val classType = Type(
-            id = "src/Test.java:IClass",
+            id = id().file("src/Test.java").type("IClass").build(),
             supertypes = setOf("Object"),
             modifiers = setOf("interface"),
             members = setOf(classVersion, classFunction)
         )
         val version = Variable(
-            id = "src/Test.java:version",
+            id = id().file("src/Test.java").variable("version").build(),
             initializer = listOf("2")
         )
         val testSource = SourceFile(
-            id = "src/Test.java",
+            id = id().file("src/Test.java").build(),
             entities = setOf(classType, version)
         )
         val expectedNodes =
@@ -81,7 +86,7 @@ class ProjectTest {
 
     @Test fun `test get node returns structurally equal node`() {
         val expectedNode =
-            variable("src/Test.java:IClass:version") { +"1" }
+            variable("src/Test.java:IClass#version") { +"1" }
 
         val project = project {
             sourceFile("src/Test.java") {
@@ -94,7 +99,10 @@ class ProjectTest {
                 variable("version") { +"2" }
             }
         }
-        val actualNode = project.get<Variable>("src/Test.java:IClass:version")
+        val nodeId = id()
+            .file("src/Test.java").type("IClass").variable("version")
+            .build()
+        val actualNode = project.get<Variable>(nodeId)
 
         assertEquals(expectedNode, actualNode)
     }
@@ -105,9 +113,10 @@ class ProjectTest {
                 type("IClass") {}
             }
         }
+        val nodeId = id().file("src/Test.java").type("IClass").build()
 
         assertFailsWith<IllegalStateException> {
-            project.get<Variable>("src/Test.java:IClass")
+            project.get<Variable>(nodeId)
         }
     }
 
@@ -118,9 +127,10 @@ class ProjectTest {
                 variable("version") { +"1" }
             }
         }
+        val nodeId = id().file("src/Test.java").function("getVersion()").build()
 
         assertFailsWith<IllegalStateException> {
-            project.get<Function>("src/Test.java:getVersion()")
+            project.get<Function>(nodeId)
         }
     }
 
@@ -131,8 +141,9 @@ class ProjectTest {
                 variable("version") { +"1" }
             }
         }
+        val nodeId = id().file("src/Test.java").function("getVersion()").build()
 
-        assertNull(project.get<Function?>("src/Test.java:getVersion()"))
+        assertNull(project.get<Function?>(nodeId))
     }
 
     @Test fun `test apply chained edits`() {
@@ -150,11 +161,15 @@ class ProjectTest {
             sourceFile("src/Main.java") {}
         }
         actual.apply(listOf(
-            removeNode("src/Main.java"),
-            addSourceFile("src/Test.java") {},
-            addType("src/Test.java:Test") {},
-            addFunction("src/Test.java:Test:getVersion()") {},
-            editType("src/Test.java:Test") {
+            removeNode(id().file("src/Main.java").build()),
+            addSourceFile(id().file("src/Test.java").build()) {},
+            addType(id().file("src/Test.java").type("Test").build()) {},
+            addFunction(
+                id = id()
+                    .file("src/Test.java").type("Test").function("getVersion()")
+                    .build()
+            ) {},
+            editType(id().file("src/Test.java").type("Test").build()) {
                 modifiers { +"abstract" }
                 supertypes { +"Object" }
             }

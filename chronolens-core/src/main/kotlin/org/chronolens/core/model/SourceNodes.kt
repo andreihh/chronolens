@@ -36,8 +36,14 @@ sealed class SourceNode {
         /** Paths in [SourceFile] ids are separated by `/`. */
         const val PATH_SEPARATOR: Char = '/'
 
-        /** Identifiers in [SourceEntity] ids are separated by `:`. */
-        const val ENTITY_SEPARATOR: Char = ':'
+        /** [Type] identifiers are separated by `:` from the parent id. */
+        const val CONTAINER_SEPARATOR: Char = ':'
+
+        /**
+         * [Function] and [Variable] identifiers are separated by `#` from the
+         * parent id.
+         */
+        const val MEMBER_SEPARATOR: Char = '#'
     }
 }
 
@@ -90,7 +96,7 @@ data class Type(
     }
 
     /** The simple name of this type. */
-    val name: String get() = id.substringAfterLast(ENTITY_SEPARATOR)
+    val name: String get() = id.substringAfterLast(CONTAINER_SEPARATOR)
 }
 
 /**
@@ -126,7 +132,7 @@ data class Function(
      * `n` is the arity of the function) if function overloading at the arity
      * level is allowed, or `name()` otherwise.
      */
-    val signature: String get() = id.substringAfterLast(ENTITY_SEPARATOR)
+    val signature: String get() = id.substringAfterLast(MEMBER_SEPARATOR)
 }
 
 /**
@@ -149,5 +155,5 @@ data class Variable(
     }
 
     /** The simple name of this variable. */
-    val name: String get() = id.substringAfterLast(ENTITY_SEPARATOR)
+    val name: String get() = id.substringAfterLast(MEMBER_SEPARATOR)
 }

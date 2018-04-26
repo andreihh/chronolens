@@ -31,13 +31,4 @@ class DiffUtilsTest {
             before.diff(after)
         }
     }
-
-    @Test fun `test diff nodes of different types`() {
-        val before = type("src/Test.java:Test") {}
-        val after = variable("src/Test.java:Test") {}
-        assertEquals(
-            expected = listOf(RemoveNode(before.id), AddNode(after)),
-            actual = before.diff(after)
-        )
-    }
 }

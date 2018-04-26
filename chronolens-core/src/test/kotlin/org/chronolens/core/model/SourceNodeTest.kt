@@ -23,7 +23,10 @@ import kotlin.test.assertFailsWith
 class SourceNodeTest {
     @Test fun `test duplicated entity in source file throws`() {
         val id = "src/Test.java"
-        val entities = setOf(Type("$id:type"), Variable("$id:type"))
+        val entities = setOf(
+            Type(id = "$id:Type", modifiers = setOf("abstract")),
+            Type(id = "$id:Type", modifiers = setOf("interface"))
+        )
         assertFailsWith<IllegalArgumentException> {
             SourceFile(id = id, entities = entities)
         }
@@ -31,7 +34,7 @@ class SourceNodeTest {
 
     @Test fun `test invalid entity id in source file throws`() {
         val id = "src/Test.java"
-        val entities = setOf(Type("src/Test:type"))
+        val entities = setOf(Type("src/Test:Type"))
         assertFailsWith<IllegalArgumentException> {
             SourceFile(id = id, entities = entities)
         }
@@ -39,7 +42,10 @@ class SourceNodeTest {
 
     @Test fun `test duplicated entity in type throws`() {
         val id = "src/Test.java:Type"
-        val members = setOf(Type("$id:member"), Variable("$id:member"))
+        val members = setOf(
+            Type(id = "$id:InnerType", modifiers = setOf("abstract")),
+            Type(id = "$id:InnerType", modifiers = setOf("interface"))
+        )
         assertFailsWith<IllegalArgumentException> {
             Type(id = id, members = members)
         }
@@ -54,7 +60,7 @@ class SourceNodeTest {
     }
 
     @Test fun `test duplicated parameter in function throws`() {
-        val id = "src/Test.java:getVersion(int, int)"
+        val id = "src/Test.java#getVersion(int, int)"
         val parameters = listOf("param", "param")
         assertFailsWith<IllegalArgumentException> {
             Function(id = id, parameters = parameters)
@@ -77,14 +83,14 @@ class SourceNodeTest {
 
     @Test fun `test signature equals simple function id`() {
         val signature = "getVersion(int)"
-        val id = "src/Test.java:$signature"
+        val id = "src/Test.java#$signature"
         val function = Function(id)
         assertEquals(signature, function.signature)
     }
 
     @Test fun `test name equals simple variable id`() {
         val name = "VERSION"
-        val id = "src/Test.java:$name"
+        val id = "src/Test.java#$name"
         val variable = Variable(id)
         assertEquals(name, variable.name)
     }

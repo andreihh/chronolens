@@ -53,7 +53,7 @@ class AddNodeTest {
                 type("Test") {}
             }
         }
-        actual.apply(addFunction("src/Test.java:Test:getVersion()") {})
+        actual.apply(addFunction("src/Test.java:Test#getVersion()") {})
 
         assertEquals(expected, actual)
     }
@@ -100,7 +100,7 @@ class AddNodeTest {
                 variable("version") {}
             }
         }
-        val edit = addFunction("src/Test.java:version:getVersion()") {}
+        val edit = addFunction("src/Test.java:version#getVersion()") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)
@@ -111,7 +111,7 @@ class AddNodeTest {
         val project = project {
             sourceFile("src/Main.java") {}
         }
-        val edit = addFunction("src/Main.java:Main:getVersion()") {}
+        val edit = addFunction("src/Main.java:Main#getVersion()") {}
 
         assertFailsWith<IllegalStateException> {
             project.apply(edit)

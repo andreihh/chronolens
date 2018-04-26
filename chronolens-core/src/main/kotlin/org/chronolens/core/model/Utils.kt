@@ -19,22 +19,37 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.SourceNode.Companion.ENTITY_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 
 /** A hash map from ids to source nodes. */
 internal typealias NodeHashMap = HashMap<String, SourceNode>
 
+private val separators = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
+
+val String.sourcePath: String
+    get() {
+        val where = indexOfAny(separators)
+        return if (where == -1) this else substring(0, where)
+    }
+
+val String.parentId: String?
+    get() {
+        val where = lastIndexOfAny(separators)
+        return if (where == -1) null else substring(0, where)
+    }
+
 /** The id of the [SourceNode] which contains [this] entity. */
-val SourceEntity.parentId: String
-    get() = id.substringBeforeLast(ENTITY_SEPARATOR)
+val SourceEntity.parentId: String get() =
+    id.parentId ?: throw AssertionError("'$id' must have a parent node!")
 
 /** The path of the [SourceFile] which contains [this] node. */
-val SourceNode.sourcePath: String get() = id.substringBefore(ENTITY_SEPARATOR)
+val SourceNode.sourcePath: String get() = id.sourcePath
 
 /**
  * The path of the [SourceFile] which contains the node affected by [this] edit.
  */
-val ProjectEdit.sourcePath: String get() = id.substringBefore(ENTITY_SEPARATOR)
+val ProjectEdit.sourcePath: String get() = id.sourcePath
 
 /** The child source nodes contained in [this] source node. */
 val SourceNode.children: Collection<SourceEntity>
