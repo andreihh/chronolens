@@ -31,7 +31,7 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 // TODO: better tests
-@Ignore
+/*@Ignore
 class JavaAnalyzerTest {
     private fun getProjectWithType(
         className: String,
@@ -100,4 +100,4 @@ class JavaAnalyzerTest {
         val actualLevel = DecapsulationAnalyzer.getVisibility(project, id)
         assertEquals(expectedLevel, actualLevel)
     }
-}
+}*/

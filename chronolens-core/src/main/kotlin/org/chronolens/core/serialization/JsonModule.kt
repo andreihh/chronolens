@@ -24,6 +24,7 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DatabindContext
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JavaType
+import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTypeResolverBuilder
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.OBJECT_AND_NON_CONCRETE
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -103,6 +104,7 @@ object JsonModule {
         setDefaultTyping(typeResolver)
         disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
         disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+        enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
         enable(SerializationFeature.INDENT_OUTPUT)
     }
 

@@ -21,7 +21,7 @@ package org.chronolens.core.cli
 import picocli.CommandLine
 import picocli.CommandLine.ExecutionException
 import picocli.CommandLine.HelpCommand
-import picocli.CommandLine.RunAll
+import picocli.CommandLine.RunLast
 import picocli.CommandLine.defaultExceptionHandler
 import kotlin.system.exitProcess
 
@@ -50,7 +50,7 @@ fun run(mainCommand: Runnable, vararg args: String, status: Int = 1) {
     }
     val exceptionHandler = defaultExceptionHandler().andExit(status)
     try {
-        cmd.parseWithHandlers(RunAll(), exceptionHandler, *args)
+        cmd.parseWithHandlers(RunLast(), exceptionHandler, *args)
     } catch (e: ExecutionException) {
         System.err.println(e.message)
         e.printStackTrace(System.err)

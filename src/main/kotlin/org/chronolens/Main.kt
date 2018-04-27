@@ -17,6 +17,7 @@
 package org.chronolens
 
 import org.chronolens.core.cli.run
+import picocli.CommandLine
 import picocli.CommandLine.Command
 
 @Command(
@@ -29,7 +30,9 @@ import picocli.CommandLine.Command
     ]
 )
 class Main : Runnable {
-    override fun run() {}
+    override fun run() {
+        CommandLine.usage(this, System.out)
+    }
 
     companion object {
         @JvmStatic

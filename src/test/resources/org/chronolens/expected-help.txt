@@ -1,0 +1,5 @@
+Usage: chronolens [-hV]
+ChronoLens is a software evolution analysis tool that inspects the repository
+detected in the current working directory.
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.

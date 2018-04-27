@@ -18,6 +18,7 @@ package org.chronolens
 
 import org.chronolens.core.model.Project
 import org.chronolens.core.repository.InteractiveRepository
+import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.subprocess.Subprocess.execute
 import org.chronolens.test.core.model.assertEquals
 import org.junit.AfterClass
@@ -34,14 +35,16 @@ class MainTest {
     companion object {
         @BeforeClass
         @JvmStatic
-        fun cloneRepository() {
+        fun setupRepository() {
             val url = "https://github.com/google/guava.git"
             execute("git", "clone", url, "./")
+            Main.main("persist")
         }
 
         @AfterClass
         @JvmStatic
         fun cleanRepository() {
+            Main.main("clean")
             File("./").listFiles().forEach { it.deleteRecursively() }
         }
     }
@@ -64,7 +67,7 @@ class MainTest {
     }
 
     @Test fun `test snapshot equals applied edits from history`() {
-        val repository = InteractiveRepository.connect() ?: fail()
+        val repository = PersistentRepository.load() ?: fail()
         val expected = repository.getSnapshot()
         val actual = Project.empty()
         for ((_, _, _, edits) in repository.getHistory()) {
@@ -73,13 +76,11 @@ class MainTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test model`() {
-        val id = "guava/src/com/google/common/hash/Crc32cHashFunction.java"
-        val revision = "9fad64c2874ab1aa21d3ecad54f19ae4a25f27fd"
-        val expected = readResource("expected-model.txt")
+    @Test fun `test no args prints help`() {
+        val expected = readResource("expected-help.txt")
 
         resetStdOut()
-        Main.main("model", "--id", id, "--rev", revision)
+        Main.main()
         val actual = getStdOut()
 
         assertEquals(expected, actual)
@@ -91,6 +92,18 @@ class MainTest {
 
         resetStdOut()
         Main.main("ls-tree", "--rev", revision)
+        val actual = getStdOut()
+
+        assertEquals(expected, actual)
+    }
+
+    @Test fun `test model`() {
+        val id = "guava/src/com/google/common/hash/Crc32cHashFunction.java"
+        val revision = "9fad64c2874ab1aa21d3ecad54f19ae4a25f27fd"
+        val expected = readResource("expected-model.txt")
+
+        resetStdOut()
+        Main.main("model", "--id", id, "--rev", revision)
         val actual = getStdOut()
 
         assertEquals(expected, actual)
