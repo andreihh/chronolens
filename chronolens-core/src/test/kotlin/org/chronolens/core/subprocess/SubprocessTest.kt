@@ -17,12 +17,13 @@
 package org.chronolens.core.subprocess
 
 import org.junit.Test
+import java.io.BufferedReader
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class SubprocessTest {
-    private val script =
-        "src/test/resources/org/chronolens/core/subprocess/test_script.py"
+    private val script = javaClass.getResourceAsStream("test_script.py")
+        .bufferedReader().use(BufferedReader::readText)
 
     private fun execute(
         out: String = "",
@@ -30,7 +31,7 @@ class SubprocessTest {
         delaySeconds: Int = 0,
         exitValue: Int = 0
     ): Result = Subprocess.execute(
-        "python", script, out, err, "$delaySeconds", "$exitValue"
+        "python", "-c", script, out, err, "$delaySeconds", "$exitValue"
     )
 
     @Test fun `test get output`() {

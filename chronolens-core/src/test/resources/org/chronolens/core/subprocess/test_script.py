@@ -10,4 +10,3 @@ if __name__ == "__main__":
     print(out)
     time.sleep(int(delay))
     sys.exit(int(exit_value))
-

@@ -16,7 +16,6 @@
 
 package org.chronolens.git
 
-import org.chronolens.core.subprocess.Subprocess.execute
 import org.chronolens.core.versioning.VcsProxyFactory
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -34,14 +33,13 @@ class GitProxyWithRepositoryTest {
         @BeforeClass
         @JvmStatic
         fun cloneRepository() {
-            val url = "https://github.com/andreihh/metanalysis.git"
-            execute("git", "clone", url, "./")
+            clone("https://github.com/andreihh/chronolens.git")
         }
 
         @AfterClass
         @JvmStatic
         fun cleanRepository() {
-            File("./").listFiles().forEach { it.deleteRecursively() }
+            clean()
         }
     }
 

@@ -16,12 +16,10 @@
 
 package org.chronolens.git
 
-import org.chronolens.core.subprocess.Subprocess.execute
 import org.chronolens.core.versioning.VcsProxyFactory
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.Test
-import java.io.File
 import kotlin.test.assertFailsWith
 
 class GitProxyWithEmptyRepositoryTest {
@@ -29,13 +27,13 @@ class GitProxyWithEmptyRepositoryTest {
         @BeforeClass
         @JvmStatic
         fun initRepository() {
-            execute("git", "init")
+            init()
         }
 
         @AfterClass
         @JvmStatic
         fun cleanRepository() {
-            File("./").listFiles().forEach { it.deleteRecursively() }
+            clean()
         }
     }
 

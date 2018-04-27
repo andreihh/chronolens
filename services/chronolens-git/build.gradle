@@ -1,5 +1,3 @@
 dependencies {
     api project(':chronolens-core')
 }
-
-test.workingDir = java.nio.file.Files.createTempDirectory(null)

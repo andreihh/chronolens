@@ -1,0 +1,63 @@
+file guava/src/com/google/common/hash/Crc32cHashFunction.java
+`-- type Crc32cHashFunction
+    |-- supertypes:
+    |   `-- AbstractStreamingHashFunction
+    |-- modifiers:
+    |   |-- final
+    |   `-- class
+    `-- members:
+        |-- function bits()
+        |   |-- parameters:
+        |   |-- modifiers:
+        |   |   |-- @Override
+        |   |   |-- public
+        |   |   `-- @return:int
+        |   `-- body: "{" ... (trimmed)
+        |-- function newHasher()
+        |   |-- parameters:
+        |   |-- modifiers:
+        |   |   |-- @Override
+        |   |   |-- public
+        |   |   `-- @return:Hasher
+        |   `-- body: "{" ... (trimmed)
+        |-- function toString()
+        |   |-- parameters:
+        |   |-- modifiers:
+        |   |   |-- @Override
+        |   |   |-- public
+        |   |   `-- @return:String
+        |   `-- body: "{" ... (trimmed)
+        `-- type Crc32cHasher
+            |-- supertypes:
+            |   `-- AbstractByteHasher
+            |-- modifiers:
+            |   |-- static
+            |   |-- final
+            |   `-- class
+            `-- members:
+                |-- variable CRC_TABLE
+                |   |-- modifiers:
+                |   |   |-- static
+                |   |   |-- final
+                |   |   `-- @type:int[]
+                |   `-- initializer: "{" ... (trimmed)
+                |-- variable crc
+                |   |-- modifiers:
+                |   |   |-- private
+                |   |   `-- @type:int
+                |   `-- initializer: "0"
+                |-- function update(byte)
+                |   |-- parameters:
+                |   |   `-- b
+                |   |-- modifiers:
+                |   |   |-- @Override
+                |   |   |-- public
+                |   |   `-- @return:void
+                |   `-- body: "{" ... (trimmed)
+                `-- function hash()
+                    |-- parameters:
+                    |-- modifiers:
+                    |   |-- @Override
+                    |   |-- public
+                    |   `-- @return:HashCode
+                    `-- body: "{" ... (trimmed)

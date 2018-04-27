@@ -61,9 +61,9 @@ class PrettyPrinterVisitor(private val out: PrintStream) {
         }
     }
 
-    private fun Context.visit(unit: SourceFile) {
-        out.println("${newIndent}unit ${unit.path}")
-        visit(unit.entities)
+    private fun Context.visit(file: SourceFile) {
+        out.println("${newIndent}file ${file.path}")
+        visit(file.entities)
     }
 
     private fun Context.visit(type: Type) {

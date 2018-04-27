@@ -34,6 +34,10 @@ allprojects {
         kotlinOptions.jvmTarget = '1.8'
     }
 
+    def tmpDir = File.createTempDir()
+    tmpDir.deleteOnExit()
+    test.workingDir = tmpDir
+
     repositories {
         mavenCentral()
         jcenter()
@@ -108,6 +112,8 @@ dependencies {
     runtimeOnly project(':analyzers:chronolens-coupling')
     runtimeOnly project(':analyzers:chronolens-decapsulations')
     runtimeOnly project(':analyzers:chronolens-hotspots')
+
+    testImplementation project(':chronolens-test')
 }
 
 task codeCoverageReport(type: JacocoReport) {
