@@ -77,7 +77,7 @@ class ProjectTest {
 
     @Test fun `test get node returns structurally equal node`() {
         val expectedNode = sourceFile("src/Test.java").type("IClass")
-            .variable("src/Test.java:IClass#version").build { +"1" }
+            .variable("version").build { +"1" }
 
         val project = project {
             sourceFile("src/Test.java") {

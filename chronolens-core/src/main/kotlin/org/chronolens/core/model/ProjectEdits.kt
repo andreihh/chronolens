@@ -51,7 +51,7 @@ sealed class ProjectEdit : Edit<Project> {
             }
 
             fun parentExists(id: String): Boolean {
-                val parentId = id.parentId ?: return false
+                val parentId = id.parentId ?: return true
                 return parentId in nodesBefore && parentId in nodesAfter
             }
 
