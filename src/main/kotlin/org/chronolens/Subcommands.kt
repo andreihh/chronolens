@@ -73,7 +73,9 @@ class RevList : Subcommand() {
     name = "model",
     description = [
         "Prints the interpreted model of the source node with the specified id "
-            + "as it is found in the given revision of the repository."
+            + "as it is found in the given revision of the repository.",
+        "The path separator is '/', types are separated by ':' and functions "
+            + "and variables are separated by '#'."
     ]
 )
 class Model : Subcommand() {

@@ -1,63 +1,163 @@
-file guava/src/com/google/common/hash/Crc32cHashFunction.java
-`-- type Crc32cHashFunction
+file guava/src/com/google/common/eventbus/Dispatcher.java
+`-- type Dispatcher
     |-- supertypes:
-    |   `-- AbstractStreamingHashFunction
     |-- modifiers:
-    |   |-- final
+    |   |-- abstract
     |   `-- class
     `-- members:
-        |-- function bits()
+        |-- function perThreadDispatchQueue()
         |   |-- parameters:
         |   |-- modifiers:
-        |   |   |-- @Override
-        |   |   |-- public
-        |   |   `-- @return:int
+        |   |   |-- static
+        |   |   `-- @return:Dispatcher
         |   `-- body: "{" ... (trimmed)
-        |-- function newHasher()
+        |-- function legacyAsync()
         |   |-- parameters:
         |   |-- modifiers:
-        |   |   |-- @Override
-        |   |   |-- public
-        |   |   `-- @return:Hasher
+        |   |   |-- static
+        |   |   `-- @return:Dispatcher
         |   `-- body: "{" ... (trimmed)
-        |-- function toString()
+        |-- function immediate()
         |   |-- parameters:
         |   |-- modifiers:
-        |   |   |-- @Override
-        |   |   |-- public
-        |   |   `-- @return:String
+        |   |   |-- static
+        |   |   `-- @return:Dispatcher
         |   `-- body: "{" ... (trimmed)
-        `-- type Crc32cHasher
+        |-- function dispatch(Object, Iterator<Subscriber>)
+        |   |-- parameters:
+        |   |   |-- event
+        |   |   `-- subscribers
+        |   |-- modifiers:
+        |   |   |-- abstract
+        |   |   `-- @return:void
+        |   `-- body: <none>
+        |-- type PerThreadQueuedDispatcher
+        |   |-- supertypes:
+        |   |   `-- Dispatcher
+        |   |-- modifiers:
+        |   |   |-- private
+        |   |   |-- static
+        |   |   |-- final
+        |   |   `-- class
+        |   `-- members:
+        |       |-- variable queue
+        |       |   |-- modifiers:
+        |       |   |   |-- private
+        |       |   |   |-- final
+        |       |   |   `-- @type:ThreadLocal<Queue<Event>>
+        |       |   `-- initializer: "new ThreadLocal<Queue<Event>>() {" ... (trimmed)
+        |       |-- variable dispatching
+        |       |   |-- modifiers:
+        |       |   |   |-- private
+        |       |   |   |-- final
+        |       |   |   `-- @type:ThreadLocal<Boolean>
+        |       |   `-- initializer: "new ThreadLocal<Boolean>() {" ... (trimmed)
+        |       |-- function dispatch(Object, Iterator<Subscriber>)
+        |       |   |-- parameters:
+        |       |   |   |-- event
+        |       |   |   `-- subscribers
+        |       |   |-- modifiers:
+        |       |   |   |-- @Override
+        |       |   |   `-- @return:void
+        |       |   `-- body: "{" ... (trimmed)
+        |       `-- type Event
+        |           |-- supertypes:
+        |           |-- modifiers:
+        |           |   |-- private
+        |           |   |-- static
+        |           |   |-- final
+        |           |   `-- class
+        |           `-- members:
+        |               |-- variable event
+        |               |   |-- modifiers:
+        |               |   |   |-- private
+        |               |   |   |-- final
+        |               |   |   `-- @type:Object
+        |               |   `-- initializer: <none>
+        |               |-- variable subscribers
+        |               |   |-- modifiers:
+        |               |   |   |-- private
+        |               |   |   |-- final
+        |               |   |   `-- @type:Iterator<Subscriber>
+        |               |   `-- initializer: <none>
+        |               `-- function Event(Object, Iterator<Subscriber>)
+        |                   |-- parameters:
+        |                   |   |-- event
+        |                   |   `-- subscribers
+        |                   |-- modifiers:
+        |                   |   `-- private
+        |                   `-- body: "{" ... (trimmed)
+        |-- type LegacyAsyncDispatcher
+        |   |-- supertypes:
+        |   |   `-- Dispatcher
+        |   |-- modifiers:
+        |   |   |-- private
+        |   |   |-- static
+        |   |   |-- final
+        |   |   `-- class
+        |   `-- members:
+        |       |-- variable queue
+        |       |   |-- modifiers:
+        |       |   |   |-- private
+        |       |   |   |-- final
+        |       |   |   `-- @type:ConcurrentLinkedQueue<EventWithSubscriber>
+        |       |   `-- initializer: "Queues.newConcurrentLinkedQueue()"
+        |       |-- function dispatch(Object, Iterator<Subscriber>)
+        |       |   |-- parameters:
+        |       |   |   |-- event
+        |       |   |   `-- subscribers
+        |       |   |-- modifiers:
+        |       |   |   |-- @Override
+        |       |   |   `-- @return:void
+        |       |   `-- body: "{" ... (trimmed)
+        |       `-- type EventWithSubscriber
+        |           |-- supertypes:
+        |           |-- modifiers:
+        |           |   |-- private
+        |           |   |-- static
+        |           |   |-- final
+        |           |   `-- class
+        |           `-- members:
+        |               |-- variable event
+        |               |   |-- modifiers:
+        |               |   |   |-- private
+        |               |   |   |-- final
+        |               |   |   `-- @type:Object
+        |               |   `-- initializer: <none>
+        |               |-- variable subscriber
+        |               |   |-- modifiers:
+        |               |   |   |-- private
+        |               |   |   |-- final
+        |               |   |   `-- @type:Subscriber
+        |               |   `-- initializer: <none>
+        |               `-- function EventWithSubscriber(Object, Subscriber)
+        |                   |-- parameters:
+        |                   |   |-- event
+        |                   |   `-- subscriber
+        |                   |-- modifiers:
+        |                   |   `-- private
+        |                   `-- body: "{" ... (trimmed)
+        `-- type ImmediateDispatcher
             |-- supertypes:
-            |   `-- AbstractByteHasher
+            |   `-- Dispatcher
             |-- modifiers:
+            |   |-- private
             |   |-- static
             |   |-- final
             |   `-- class
             `-- members:
-                |-- variable CRC_TABLE
-                |   |-- modifiers:
-                |   |   |-- static
-                |   |   |-- final
-                |   |   `-- @type:int[]
-                |   `-- initializer: "{" ... (trimmed)
-                |-- variable crc
+                |-- variable INSTANCE
                 |   |-- modifiers:
                 |   |   |-- private
-                |   |   `-- @type:int
-                |   `-- initializer: "0"
-                |-- function update(byte)
-                |   |-- parameters:
-                |   |   `-- b
-                |   |-- modifiers:
-                |   |   |-- @Override
-                |   |   |-- public
-                |   |   `-- @return:void
-                |   `-- body: "{" ... (trimmed)
-                `-- function hash()
+                |   |   |-- static
+                |   |   |-- final
+                |   |   `-- @type:ImmediateDispatcher
+                |   `-- initializer: "new ImmediateDispatcher()"
+                `-- function dispatch(Object, Iterator<Subscriber>)
                     |-- parameters:
+                    |   |-- event
+                    |   `-- subscribers
                     |-- modifiers:
                     |   |-- @Override
-                    |   |-- public
-                    |   `-- @return:HashCode
+                    |   `-- @return:void
                     `-- body: "{" ... (trimmed)
