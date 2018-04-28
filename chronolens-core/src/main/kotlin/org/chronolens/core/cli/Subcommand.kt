@@ -18,6 +18,9 @@ package org.chronolens.core.cli
 
 import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.PersistentRepository
+import org.chronolens.core.repository.Repository
+import org.chronolens.core.repository.Repository.Companion.isValidPath
+import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
 import picocli.CommandLine.Command
 import java.util.ServiceLoader
 
@@ -46,6 +49,23 @@ abstract class Subcommand : Runnable {
      */
     protected fun load(): PersistentRepository =
         PersistentRepository.load() ?: exit("Repository not found!")
+
+    /**
+     * Validates the given [path], or exits if it is invalid.
+     */
+    protected fun validatePath(path: String) {
+        if (!isValidPath(path)) exit("Invalid path '$path'!")
+    }
+
+    /**
+     * Validates the given [revision], or exits if it is invalid or doesn't
+     * exist.
+     */
+    protected fun Repository.validateRevision(revision: String) {
+        if (!isValidRevisionId(revision)) exit("Invalid revision '$revision'!")
+        val revisionExists = revision in listRevisions()
+        if (!revisionExists) exit("Revision '$revision' doesn't exist!")
+    }
 
     companion object {
         /** Returns the list of provided subcommands. */

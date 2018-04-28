@@ -23,8 +23,6 @@ import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.PersistentRepository.Companion.persist
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
-import org.chronolens.core.repository.Repository.Companion.isValidPath
-import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 
@@ -47,7 +45,7 @@ class ListTree : Subcommand() {
     private val revision: String get() = revisionId ?: repository.getHeadId()
 
     override fun run() {
-        if (!isValidRevisionId(revision)) exit("Invalid revision '$revision'!")
+        repository.validateRevision(revision)
         repository.listSources(revision).forEach(::println)
     }
 }
@@ -98,8 +96,8 @@ class Model : Subcommand() {
 
     override fun run() {
         val path = id.sourcePath
-        if (!isValidPath(path)) exit("Invalid file path '$path'!")
-        if (!isValidRevisionId(revision)) exit("Invalid revision '$revision'!")
+        validatePath(path)
+        repository.validateRevision(revision)
         val model = repository.getSource(path, revision)
             ?: exit("File '$path' couldn't be interpreted or doesn't exist!")
         val node = model.walkSourceTree().find { it.id == id }

@@ -46,7 +46,8 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
      * Returns the set of source units which can be interpreted from the
      * revision with the specified [revisionId].
      *
-     * @throws IllegalArgumentException if the given [revisionId] is invalid
+     * @throws IllegalArgumentException if [revisionId] is invalid or doesn't
+     * exist
      * @throws IllegalStateException if this repository is in a corrupted state
      */
     fun listSources(revisionId: String): Set<String> {
@@ -95,7 +96,8 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
      * can be parsed without errors will be returned. If all versions of the
      * source contain errors, then the empty source unit will be returned.
      *
-     * @throws IllegalArgumentException if [path] or [revisionId] are invalid
+     * @throws IllegalArgumentException if [path] or [revisionId] are invalid or
+     * if [revisionId] doesn't exist
      * @throws IllegalStateException if this repository is in a corrupted state
      */
     fun getSource(path: String, revisionId: String): SourceFile? {
