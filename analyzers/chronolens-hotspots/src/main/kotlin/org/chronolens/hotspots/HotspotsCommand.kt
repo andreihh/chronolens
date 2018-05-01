@@ -18,8 +18,8 @@ package org.chronolens.hotspots
 
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.exit
-import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.serialization.JsonModule
+import org.chronolens.hotspots.HistoryAnalyzer.Metric
 import picocli.CommandLine.Command
 import picocli.CommandLine.Option
 
@@ -33,6 +33,12 @@ import picocli.CommandLine.Option
 )
 class HotspotsCommand : Subcommand() {
     override val name: String get() = "hotspots"
+
+    @Option(
+        names = ["--metric"],
+        description = ["the metric used to rank and highlight source nodes"]
+    )
+    private var metric: Metric = Metric.DECAY
 
     @Option(
         names = ["--skip-days"],
@@ -50,16 +56,16 @@ class HotspotsCommand : Subcommand() {
             "ignore source files that have less churn than the specified limit"
         ]
     )
-    private var minMetricValue: Double = 0.0
+    private var minMetricValue: Int = 0
 
     private fun validateOptions() {
         if (skipDays < 0) exit("skip-days can't be negative!")
-        if (minMetricValue < 0.0) exit("min-metric-value can't be negative!")
+        if (minMetricValue < 0) exit("min-metric-value can't be negative!")
     }
 
     override fun run() {
         validateOptions()
-        val analyzer = HistoryAnalyzer(skipDays)
+        val analyzer = HistoryAnalyzer(metric, skipDays)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())
         val files = report.files.filter { it.value >= minMetricValue }

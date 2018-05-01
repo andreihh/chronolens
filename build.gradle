@@ -1,12 +1,12 @@
 buildscript {
     ext {
-        kotlin_version = '1.2.40'
+        kotlin_version = '1.2.41'
         dokka_version = '0.9.16'
         jackson_version = '2.9.5'
         jackson_java8_version = '2.9.5'
         jdt_version = '3.13.100'
         junit_version = '4.12'
-        picocli_version = '3.0.0-beta-2'
+        picocli_version = '3.0.0'
         system_rules_version = '1.17.1'
     }
 

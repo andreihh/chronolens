@@ -70,9 +70,9 @@ internal fun SourceNode.diff(other: SourceNode): ProjectEdit? {
     }
     return when (this) {
         is SourceFile -> null
-        is Type -> this.diff(other as Type)
-        is Function -> this.diff(other as Function)
-        is Variable -> this.diff(other as Variable)
+        is Type -> diff(other as Type)
+        is Function -> diff(other as Function)
+        is Variable -> diff(other as Variable)
     }
 }
 
