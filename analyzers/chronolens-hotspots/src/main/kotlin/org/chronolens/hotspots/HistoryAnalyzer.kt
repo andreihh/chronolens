@@ -20,6 +20,7 @@ import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
+import org.chronolens.core.model.ListEdit
 import org.chronolens.core.model.Project
 import org.chronolens.core.model.ProjectEdit
 import org.chronolens.core.model.RemoveNode
@@ -46,9 +47,12 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
     private fun getSourcePath(id: String): String =
         project.get<SourceNode>(id).sourcePath
 
+    private val List<ListEdit<String>>.churn: Int
+        get() = filterIsInstance<ListEdit.Add<String>>().size
+
     private fun getChurn(edit: ProjectEdit): Int = when (edit) {
-        is EditFunction -> edit.bodyEdits.size
-        is EditVariable -> edit.initializerEdits.size
+        is EditFunction -> edit.bodyEdits.churn
+        is EditVariable -> edit.initializerEdits.churn
         else -> 0
     }
 
@@ -149,6 +153,9 @@ private data class Stats(
     init {
         require(revisions > 0) { "Revisions must be positive '$revisions'!" }
         require(changes >= 0) { "Changes can't be negative '$changes'!" }
+        require(changes <= revisions) {
+            "Changes '$changes' can't be greater than revisions '$revisions'!"
+        }
         require(churn >= 0) { "Churn can't be negative '$churn'!" }
         require(decay >= 0.0) { "Decay can't be negative '$decay'!" }
     }
