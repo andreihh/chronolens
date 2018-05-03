@@ -54,7 +54,7 @@ chronolens model --id $PATH
 chronolens persist
 
 # Run the 'decapsulations' analysis that makes use of the persisted model.
-chronolens decapsulations --ignore-constants | less
+chronolens decapsulations | less
 
 # Deletes the persisted model.
 chronolens clean

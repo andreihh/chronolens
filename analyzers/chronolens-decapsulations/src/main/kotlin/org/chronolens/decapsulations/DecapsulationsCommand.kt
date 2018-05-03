@@ -35,10 +35,10 @@ class DecapsulationsCommand : Subcommand() {
     override val name: String get() = "decapsulations"
 
     @Option(
-        names = ["--ignore-constants"],
-        description = ["ignore decapsulations of constant fields"]
+        names = ["--keep-constants"],
+        description = ["do not ignore decapsulations of constant fields"]
     )
-    private var ignoreConstants: Boolean = false
+    private var keepConstants: Boolean = false
 
     @Option(
         names = ["--min-metric-value"],
@@ -55,7 +55,7 @@ class DecapsulationsCommand : Subcommand() {
 
     override fun run() {
         validateOptions()
-        val analyzer = HistoryAnalyzer(ignoreConstants)
+        val analyzer = HistoryAnalyzer(!keepConstants)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())
         val files = report.files.filter { it.value >= minMetricValue }

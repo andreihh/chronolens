@@ -37,7 +37,9 @@ data class Graph(
         val coupling: Double
     )
 
-    data class Subgraph(val nodes: Set<String>, val density: Double)
+    data class Subgraph(val nodes: Set<String>, val density: Double) {
+        val size: Int = nodes.size
+    }
 
     companion object {
         const val MAX_SIZE: Int = 300
