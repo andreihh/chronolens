@@ -38,7 +38,7 @@ class HotspotsCommand : Subcommand() {
         names = ["--metric"],
         description = ["the metric used to rank and highlight source nodes"]
     )
-    private var metric: Metric = Metric.DECAY
+    private var metric: Metric = Metric.WEIGHTED_CHURN
 
     @Option(
         names = ["--skip-days"],

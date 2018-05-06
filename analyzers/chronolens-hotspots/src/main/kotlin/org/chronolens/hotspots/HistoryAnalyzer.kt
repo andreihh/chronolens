@@ -93,16 +93,19 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
 
     private fun getMemberReport(id: String): MemberReport {
         val size = getSize(project.get<SourceNode>(id))
-        val (_, revisions, changes, churn, absoluteDecay) = stats.getValue(id)
-        val decay = absoluteDecay.roundToInt()
+        val (_, revisions, changes, churn, weightedChurn) = stats.getValue(id)
         val value = when (metric) {
             Metric.SIZE -> size
             Metric.REVISIONS -> revisions
             Metric.CHANGES -> changes
             Metric.CHURN -> churn
-            Metric.DECAY -> decay
+            Metric.WEIGHTED_CHURN -> weightedChurn.roundToInt()
         }
-        return MemberReport(id, size, revisions, changes, churn, decay, value)
+        return MemberReport(
+            id = id, size = size,
+            revisions = revisions, changes = changes,
+            churn = churn, weightedChurn = weightedChurn, value = value
+        )
     }
 
     fun analyze(history: Iterable<Transaction>): Report {
@@ -120,7 +123,7 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
     }
 
     enum class Metric {
-        SIZE, REVISIONS, CHANGES, CHURN, DECAY
+        SIZE, REVISIONS, CHANGES, CHURN, WEIGHTED_CHURN
     }
 
     data class Report(val files: List<FileReport>)
@@ -137,7 +140,7 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
         val revisions: Int,
         val changes: Int,
         val churn: Int,
-        val decay: Int,
+        val weightedChurn: Double,
         val value: Int
     )
 }
@@ -147,7 +150,7 @@ private data class Stats(
     val revisions: Int,
     val changes: Int,
     val churn: Int,
-    val decay: Double
+    val weightedChurn: Double
 ) {
 
     init {
@@ -157,14 +160,16 @@ private data class Stats(
             "Changes '$changes' can't be greater than revisions '$revisions'!"
         }
         require(churn >= 0) { "Churn can't be negative '$churn'!" }
-        require(decay >= 0.0) { "Decay can't be negative '$decay'!" }
+        require(weightedChurn >= 0.0) {
+            "Weighted churn can't be negative '$weightedChurn'!"
+        }
     }
 
     fun updated(addedChurn: Int): Stats = copy(
         revisions = revisions + 1,
         changes = changes + 1,
         churn = churn + addedChurn,
-        decay = decay + ln(changes + 1.0) * addedChurn
+        weightedChurn = weightedChurn + ln(changes + 1.0) * addedChurn
     )
 
     companion object {
@@ -174,7 +179,7 @@ private data class Stats(
             revisions = 1,
             changes = 0,
             churn = 0,
-            decay = 0.0
+            weightedChurn = 0.0
         )
     }
 }
