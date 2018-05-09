@@ -26,34 +26,34 @@ import picocli.CommandLine.defaultExceptionHandler
 import kotlin.system.exitProcess
 
 /**
- * Prints the given [message] to `stderr` and exits with the specified [status]
+ * Prints the given [message] to `stderr` and exits with status code `1`.
  * code.
  *
  * Should be used to validate user input and initial state.
  */
-fun exit(message: String, status: Int = 1): Nothing {
+fun exit(message: String): Nothing {
     System.err.println(message)
-    exitProcess(status)
+    exitProcess(1)
 }
 
 /**
  * Assembles all the provided subcommands, parses the given command-line [args]
- * and runs the [mainCommand], exiting with the specified [status] code if any
- * error occurs.
+ * and runs the [mainCommand], exiting with status code `1` if any error occurs.
  *
  * A `help` subcommand is implicitly added.
  */
-fun run(mainCommand: Runnable, vararg args: String, status: Int = 1) {
-    val cmd = CommandLine(mainCommand).addSubcommand("help", HelpCommand())
-    for (subcommand in Subcommand.assembleSubcommands()) {
-        cmd.addSubcommand(subcommand.name, subcommand)
-    }
-    val exceptionHandler = defaultExceptionHandler().andExit(status)
+fun run(mainCommand: MainCommand, vararg args: String) {
+    mainCommand.registerSubcommands(Subcommand.assembleSubcommands())
+    val cmd = CommandLine(mainCommand.command)
+    cmd.addSubcommand("help", HelpCommand())
+    val exceptionHandler = defaultExceptionHandler().andExit(1)
     try {
         cmd.parseWithHandlers(RunLast(), exceptionHandler, *args)
     } catch (e: ExecutionException) {
         System.err.println(e.message)
         e.printStackTrace(System.err)
-        exitProcess(status)
+        exitProcess(1)
     }
 }
+
+internal fun String.paragraph(): String = replace("\\s+".toRegex(), " ").trim()

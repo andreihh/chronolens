@@ -17,54 +17,33 @@
 package org.chronolens.hotspots
 
 import org.chronolens.core.cli.Subcommand
-import org.chronolens.core.cli.exit
+import org.chronolens.core.cli.default
+import org.chronolens.core.cli.help
+import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.hotspots.HistoryAnalyzer.Metric
-import picocli.CommandLine.Command
-import picocli.CommandLine.Option
 
-@Command(
-    name = "hotspots",
-    description = [
-        "Loads the persisted repository, detects the hotspots of the system " +
-            "and reports the results to the standard output."
-    ],
-    showDefaultValues = true
-)
 class HotspotsCommand : Subcommand() {
-    override val name: String get() = "hotspots"
+    override val help: String get() = """
+        Loads the persisted repository, detects the hotspots of the system and
+        reports the results to the standard output.
+    """
 
-    @Option(
-        names = ["--metric"],
-        description = ["the metric used to rank and highlight source nodes"]
-    )
-    private var metric: Metric = Metric.WEIGHTED_CHURN
+    private val metric by option<Metric>()
+        .help("the metric used to rank and highlight source nodes")
+        .default(Metric.WEIGHTED_CHURN)
 
-    @Option(
-        names = ["--skip-days"],
-        description = [
-            "when analyzing source nodes, ignore revisions occurring in the " +
-                "first specified number of days, counting from the revision " +
-                "when the source node was created."
-        ]
-    )
-    private var skipDays: Int = 14
+    private val skipDays by option<Int>().help("""
+        when analyzing source nodes, ignore revisions occurring in the
+        first specified number of days, counting from the revision
+        when the source node was created.
+    """).default(14).restrictTo(min = 0)
 
-    @Option(
-        names = ["--min-metric-value"],
-        description = [
-            "ignore source files that have less churn than the specified limit"
-        ]
-    )
-    private var minMetricValue: Int = 0
-
-    private fun validateOptions() {
-        if (skipDays < 0) exit("skip-days can't be negative!")
-        if (minMetricValue < 0) exit("min-metric-value can't be negative!")
-    }
+    private val minMetricValue by option<Int>().help("""
+        ignore source files that have less churn than the specified limit
+    """).default(0).restrictTo(min = 0)
 
     override fun run() {
-        validateOptions()
         val analyzer = HistoryAnalyzer(metric, skipDays)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())

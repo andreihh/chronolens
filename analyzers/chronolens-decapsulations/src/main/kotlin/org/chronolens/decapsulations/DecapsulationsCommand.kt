@@ -17,44 +17,28 @@
 package org.chronolens.decapsulations
 
 import org.chronolens.core.cli.Subcommand
-import org.chronolens.core.cli.exit
+import org.chronolens.core.cli.default
+import org.chronolens.core.cli.help
+import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.serialization.JsonModule
-import picocli.CommandLine.Command
-import picocli.CommandLine.Option
 
-@Command(
-    name = "decapsulations",
-    description = [
-        "Loads the persisted repository, detects the decapsulations that " +
-            "occurred during the evolution of the project and reports the " +
-            "results to the standard output."
-    ],
-    showDefaultValues = true
-)
 class DecapsulationsCommand : Subcommand() {
-    override val name: String get() = "decapsulations"
+    override val help: String get() = """
+        Loads the persisted repository, detects the decapsulations that occurred
+        during the evolution of the project and reports the results to the
+        standard output.
+    """
 
-    @Option(
-        names = ["--keep-constants"],
-        description = ["do not ignore decapsulations of constant fields"]
-    )
-    private var keepConstants: Boolean = false
+    private val keepConstants by option<Boolean>()
+        .help("do not ignore decapsulations of constant fields")
+        .default(false)
 
-    @Option(
-        names = ["--min-metric-value"],
-        description = [
-            "ignore source files that have less decapsulations than the " +
-                "specified limit"
-        ]
-    )
-    private var minMetricValue: Int = 0
-
-    private fun validateOptions() {
-        if (minMetricValue < 0) exit("min-metric-value can't be negative!")
-    }
+    private val minMetricValue by option<Int>().help("""
+        ignore source files that have less decapsulations than the specified
+        limit
+    """).default(0).restrictTo(min = 0)
 
     override fun run() {
-        validateOptions()
         val analyzer = HistoryAnalyzer(!keepConstants)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())

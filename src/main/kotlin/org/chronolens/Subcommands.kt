@@ -18,48 +18,38 @@ package org.chronolens
 
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.exit
+import org.chronolens.core.cli.help
+import org.chronolens.core.cli.required
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.PersistentRepository.Companion.persist
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
-import picocli.CommandLine.Command
-import picocli.CommandLine.Option
 
-@Command(
-    name = "ls-tree",
-    description = [
-        "Prints all the interpretable files of the repository from the "
-            + "specified revision."
-    ]
-)
-class ListTree : Subcommand() {
-    override val name: String get() = "ls-tree"
+class LsTree : Subcommand() {
+    override val help: String get() = """
+        Prints all the interpretable files of the repository from the specified
+        revision.
+    """
+
+    private val rev by option<String>()
+        .help("the inspected revision (default: the <head> revision)")
+        .validateRevision(::repository)
+
     private val repository by lazy(::connect)
-
-    @Option(
-        names = ["--rev"],
-        description = ["the inspected revision (default: the <head> revision)"]
-    )
-    private var revisionId: String? = null
-    private val revision: String get() = revisionId ?: repository.getHeadId()
+    private val revision: String get() = rev ?: repository.getHeadId()
 
     override fun run() {
-        repository.validateRevision(revision)
         repository.listSources(revision).forEach(::println)
     }
 }
 
-@Command(
-    name = "rev-list",
-    description = [
-        "Prints all revisions on the path from the currently checked-out "
-            + "(<head>) revision to the root of the revision tree / graph in "
-            + "chronological order."
-    ]
-)
 class RevList : Subcommand() {
-    override val name: String get() = "rev-list"
+    override val help: String get() = """
+        Prints all revisions on the path from the currently checked-out (<head>)
+        revision to the root of the revision tree / graph in chronological
+        order.
+    """
 
     override fun run() {
         val repository = connect()
@@ -67,37 +57,27 @@ class RevList : Subcommand() {
     }
 }
 
-@Command(
-    name = "model",
-    description = [
-        "Prints the interpreted model of the source node with the specified id "
-            + "as it is found in the given revision of the repository.",
-        "The path separator is '/', types are separated by ':' and functions "
-            + "and variables are separated by '#'."
-    ]
-)
 class Model : Subcommand() {
-    override val name: String get() = "model"
+    override val help: String get() = """
+        Prints the interpreted model of the source node with the specified id as
+        it is found in the given revision of the repository.
+
+        The path separator is '/', types are separated by ':' and functions and
+        variables are separated by '#'.
+    """
+
+    private val id by option<String>()
+        .help("the inspected source node").required().validateId()
+
+    private val rev by option<String>()
+        .help("the inspected revision (default: the <head> revision)")
+        .validateRevision(::repository)
+
     private val repository by lazy(::connect)
-
-    @Option(
-        names = ["--id"],
-        description = ["the inspected source node"],
-        required = true
-    )
-    private lateinit var id: String
-
-    @Option(
-        names = ["--rev"],
-        description = ["the inspected revision (default: the <head> revision)"]
-    )
-    private var revisionId: String? = null
-    private val revision: String get() = revisionId ?: repository.getHeadId()
+    private val revision: String get() = rev ?: repository.getHeadId()
 
     override fun run() {
         val path = id.sourcePath
-        validatePath(path)
-        repository.validateRevision(revision)
         val model = repository.getSource(path, revision)
             ?: exit("File '$path' couldn't be interpreted or doesn't exist!")
         val node = model.walkSourceTree().find { it.id == id }
@@ -106,17 +86,14 @@ class Model : Subcommand() {
     }
 }
 
-@Command(
-    name = "persist",
-    description = [
-        "Connects to the repository and persists the source and history model "
-            + "from all the files that can be interpreted.",
-        "The model is persisted in the '.chronolens' directory from the "
-            + "current working directory."
-    ]
-)
 class Persist : Subcommand() {
-    override val name: String get() = "persist"
+    override val help: String get() = """
+        Connects to the repository and persists the source and history model
+        from all the files that can be interpreted.
+
+        The model is persisted in the '.chronolens' directory from the
+        current working directory.
+    """
 
     override fun run() {
         val repository = connect()
@@ -160,15 +137,11 @@ class Persist : Subcommand() {
     }
 }
 
-@Command(
-    name = "clean",
-    description = [
-        "Deletes the previously persisted repository from the current working "
-            + "directory, if it exists."
-    ]
-)
 class Clean : Subcommand() {
-    override val name: String get() = "clean"
+    override val help: String get() = """
+        Deletes the previously persisted repository from the current working
+        directory, if it exists.
+    """
 
     override fun run() {
         PersistentRepository.clean()

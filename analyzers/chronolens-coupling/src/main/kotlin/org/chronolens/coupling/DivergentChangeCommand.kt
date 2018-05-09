@@ -17,88 +17,50 @@
 package org.chronolens.coupling
 
 import org.chronolens.core.cli.Subcommand
-import org.chronolens.core.cli.exit
+import org.chronolens.core.cli.default
+import org.chronolens.core.cli.help
+import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.repository.Transaction
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.coupling.Graph.Subgraph
-import picocli.CommandLine.Command
-import picocli.CommandLine.Option
 import java.io.File
 
-@Command(
-    name = "divergent-change",
-    description = [
-        "Loads the persisted repository, builds the temporal coupling graphs " +
-            "for the analyzed source files, detects the Divergent Change " +
-            "instances, reports the results to the standard output and dumps " +
-            "the coupling graphs for each source file in the " +
-            "'.chronolens/divergent-change' directory."
-    ],
-    showDefaultValues = true
-)
 class DivergentChangeCommand : Subcommand() {
-    override val name: String get() = "divergent-change"
+    override val help: String get() = """
+        Loads the persisted repository, builds the temporal coupling graphs for
+        the analyzed source files, detects the Divergent Change instances,
+        reports the results to the standard output and dumps the coupling graphs
+        for each source file in the '.chronolens/divergent-change' directory.
+    """
 
-    @Option(
-        names = ["--max-change-set"],
-        description = ["the maximum number of changed files in a revision"]
-    )
-    private var maxChangeSet: Int = 100
+    private val maxChangeSet by option<Int>()
+        .help("the maximum number of changed files in a revision")
+        .default(100).restrictTo(min = 1)
 
-    @Option(
-        names = ["--min-revisions"],
-        description = [
-            "the minimum number of revisions of a method or coupling relation"
-        ]
-    )
-    private var minRevisions: Int = 5
+    private val minRevisions by option<Int>().help("""
+        the minimum number of revisions of a method or coupling relation
+    """).default(5).restrictTo(min = 1)
 
-    @Option(
-        names = ["--min-coupling"],
-        description = ["the minimum temporal coupling between two methods"]
-    )
-    private var minCoupling: Double = 0.1
+    private val minCoupling by option<Double>()
+        .help("the minimum temporal coupling between two methods")
+        .default(0.1).restrictTo(min = 0.0)
 
-    @Option(
-        names = ["--min-blob-density"],
-        description = [
-            "the minimum average degree (sum of coupling) of methods in a blob"
-        ]
-    )
-    private var minBlobDensity: Double = 2.5
+    private val minBlobDensity by option<Double>().help("""
+        the minimum average degree (sum of coupling) of methods in a blob
+    """).default(2.5).restrictTo(min = 0.0)
 
-    @Option(
-        names = ["--max-anti-coupling"],
-        description = [
-            "the maximum degree (sum of coupling) of a method in an anti-blob"
-        ]
-    )
-    private var maxAntiCoupling: Double = 0.5
+    private val maxAntiCoupling by option<Double>().help("""
+        the maximum degree (sum of coupling) of a method in an anti-blob
+    """).default(0.5).restrictTo(min = 0.0)
 
-    @Option(
-        names = ["--min-anti-blob-size"],
-        description = ["the minimum size of of an anti-blob"]
-    )
-    private var minAntiBlobSize: Int = 10
+    private val minAntiBlobSize by option<Int>()
+        .help("the minimum size of an anti-blob")
+        .default(10).restrictTo(min = 1)
 
-    @Option(
-        names = ["--min-metric-value"],
-        description = [
-            "ignore source files that have less blobs / anti-blobs than the " +
-                "specified limit"
-        ]
-    )
-    private var minMetricValue: Int = 0
-
-    private fun validateOptions() {
-        if (maxChangeSet <= 0) exit("max-change-set must be positive!")
-        if (minRevisions <= 0) exit("min-revisions must be positive!")
-        if (minCoupling < 0.0) exit("min-coupling can't be negative!")
-        if (minBlobDensity < 0.0) exit("min-blob-density can't be negative!")
-        if (maxAntiCoupling < 0.0) exit("max-anti-coupling can't be negative!")
-        if (minAntiBlobSize <= 0) exit("min-anti-blob-size must be positive!")
-        if (minMetricValue < 0) exit("min-metric-value can't be negative!")
-    }
+    private val minMetricValue by option<Int>().help("""
+        ignore source files that have less blobs / anti-blobs than the specified
+        limit
+    """).default(0).restrictTo(min = 0)
 
     private fun analyze(history: Iterable<Transaction>): Report {
         val analyzer = HistoryAnalyzer(maxChangeSet, minRevisions, minCoupling)
@@ -118,7 +80,6 @@ class DivergentChangeCommand : Subcommand() {
     }
 
     override fun run() {
-        validateOptions()
         val repository = load()
         val report = analyze(repository.getHistory())
         val files = report.files.filter { it.value >= minMetricValue }

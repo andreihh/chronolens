@@ -16,12 +16,12 @@
 
 package org.chronolens.core.cli
 
+import org.chronolens.core.model.sourcePath
 import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.Repository.Companion.isValidPath
 import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
-import picocli.CommandLine.Command
 import java.util.ServiceLoader
 
 /**
@@ -32,9 +32,10 @@ import java.util.ServiceLoader
  * the `META-INF/services/org.chronolens.core.cli.Subcommand` configuration
  * file.
  */
-abstract class Subcommand : Runnable {
-    /** The name of this subcommand, as it should be parsed. */
-    abstract val name: String
+abstract class Subcommand : Command() {
+    override val name: String get() = getCommandName(this::class)
+    final override val version: String? get() = null
+    final override val standardHelpOptions: Boolean get() = false
 
     /**
      * Returns the interactive repository from the current working directory, or
@@ -50,21 +51,17 @@ abstract class Subcommand : Runnable {
     protected fun load(): PersistentRepository =
         PersistentRepository.load() ?: exit("Repository not found!")
 
-    /**
-     * Validates the given [path], or exits if it is invalid.
-     */
-    protected fun validatePath(path: String) {
-        if (!isValidPath(path)) exit("Invalid path '$path'!")
+    protected fun Option<String>.validateId(): Option<String> = validate { id ->
+        val path = id.sourcePath
+        require(isValidPath(path)) { "Invalid path '$path'!" }
     }
 
-    /**
-     * Validates the given [revision], or exits if it is invalid or doesn't
-     * exist.
-     */
-    protected fun Repository.validateRevision(revision: String) {
-        if (!isValidRevisionId(revision)) exit("Invalid revision '$revision'!")
-        val revisionExists = revision in listRevisions()
-        if (!revisionExists) exit("Revision '$revision' doesn't exist!")
+    protected fun NullableOption<String>.validateRevision(
+        repository: () -> Repository
+    ): NullableOption<String> = validate { revision ->
+        require(isValidRevisionId(revision)) { "Invalid revision '$revision'!" }
+        val revisionExists = revision in repository().listRevisions()
+        require(revisionExists) { "Revision '$revision' doesn't exist!" }
     }
 
     companion object {
