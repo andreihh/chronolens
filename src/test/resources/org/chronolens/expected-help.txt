@@ -19,12 +19,12 @@ Commands:
   decapsulations    Loads the persisted repository, detects the decapsulations
                       that occurred during the evolution of the project and
                       reports the results to the standard output.
-  hotspots          Loads the persisted repository, detects the hotspots of the
-                      system and reports the results to the standard output.
   divergent-change  Loads the persisted repository, builds the temporal
                       coupling graphs for the analyzed source files, detects
                       the Divergent Change instances, reports the results to
                       the standard output and dumps the coupling graphs for
                       each source file in the '.chronolens/divergent-change'
                       directory.
+  hotspots          Loads the persisted repository, detects the hotspots of the
+                      system and reports the results to the standard output.
   help              Displays help information about the specified command

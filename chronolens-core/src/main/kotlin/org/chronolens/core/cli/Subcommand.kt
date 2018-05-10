@@ -76,6 +76,7 @@ abstract class Subcommand : Command() {
         /** Returns the list of provided subcommands. */
         @JvmStatic
         fun assembleSubcommands(): List<Subcommand> =
-            ServiceLoader.load(Subcommand::class.java).toList()
+            ServiceLoader.load(Subcommand::class.java)
+                .sortedBy(Subcommand::name)
     }
 }
