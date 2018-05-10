@@ -56,4 +56,46 @@ fun run(mainCommand: MainCommand, vararg args: String) {
     }
 }
 
-internal fun String.paragraph(): String = replace("\\s+".toRegex(), " ").trim()
+internal fun String.paragraphs(): Array<String> {
+    val pars = arrayListOf<String>()
+    var par = StringBuilder()
+    var newPar = true
+    for (line in trimIndent().lines()) {
+        if (line.isBlank() && par.isNotBlank()) {
+            pars += par.toString()
+            par = StringBuilder()
+            newPar = true
+        } else if (line.isNotBlank()) {
+            if (!newPar) {
+                par.append(' ')
+            }
+            par.append(line)
+            newPar = false
+        }
+    }
+    if (par.isNotBlank()) {
+        pars += par.toString()
+    }
+    return pars.toTypedArray()
+}
+
+internal fun String.words(): List<String> {
+    val words = arrayListOf<String>()
+    var word = StringBuilder()
+    for (char in this.capitalize()) {
+        if (char.isUpperCase()) {
+            if (!word.isBlank()) {
+                words += word.toString()
+                word = StringBuilder()
+            }
+            word.append(char.toLowerCase())
+        } else {
+            word.append(char)
+        }
+    }
+    if (word.isNotBlank()) {
+        words += word.toString()
+    }
+    return words
+}
+

@@ -18,8 +18,6 @@ package org.chronolens
 
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.exit
-import org.chronolens.core.cli.help
-import org.chronolens.core.cli.required
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.PersistentRepository
@@ -39,7 +37,7 @@ class LsTree : Subcommand() {
     private val repository by lazy(::connect)
     private val revision: String get() = rev ?: repository.getHeadId()
 
-    override fun run() {
+    override fun execute() {
         repository.listSources(revision).forEach(::println)
     }
 }
@@ -51,7 +49,7 @@ class RevList : Subcommand() {
         order.
     """
 
-    override fun run() {
+    override fun execute() {
         val repository = connect()
         repository.listRevisions().forEach(::println)
     }
@@ -76,7 +74,7 @@ class Model : Subcommand() {
     private val repository by lazy(::connect)
     private val revision: String get() = rev ?: repository.getHeadId()
 
-    override fun run() {
+    override fun execute() {
         val path = id.sourcePath
         val model = repository.getSource(path, revision)
             ?: exit("File '$path' couldn't be interpreted or doesn't exist!")
@@ -95,7 +93,7 @@ class Persist : Subcommand() {
         current working directory.
     """
 
-    override fun run() {
+    override fun execute() {
         val repository = connect()
         repository.persist(object : ProgressListener {
             private var sources = 0
@@ -143,7 +141,7 @@ class Clean : Subcommand() {
         directory, if it exists.
     """
 
-    override fun run() {
+    override fun execute() {
         PersistentRepository.clean()
     }
 }

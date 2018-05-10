@@ -17,8 +17,6 @@
 package org.chronolens.hotspots
 
 import org.chronolens.core.cli.Subcommand
-import org.chronolens.core.cli.default
-import org.chronolens.core.cli.help
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.hotspots.HistoryAnalyzer.Metric
@@ -31,19 +29,19 @@ class HotspotsCommand : Subcommand() {
 
     private val metric by option<Metric>()
         .help("the metric used to rank and highlight source nodes")
-        .default(Metric.WEIGHTED_CHURN)
+        .defaultValue(Metric.WEIGHTED_CHURN)
 
     private val skipDays by option<Int>().help("""
         when analyzing source nodes, ignore revisions occurring in the
         first specified number of days, counting from the revision
         when the source node was created.
-    """).default(14).restrictTo(min = 0)
+    """).defaultValue(14).restrictTo(min = 0)
 
     private val minMetricValue by option<Int>().help("""
         ignore source files that have less churn than the specified limit
-    """).default(0).restrictTo(min = 0)
+    """).defaultValue(0).restrictTo(min = 0)
 
-    override fun run() {
+    override fun execute() {
         val analyzer = HistoryAnalyzer(metric, skipDays)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())

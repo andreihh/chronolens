@@ -33,9 +33,17 @@ import java.util.ServiceLoader
  * file.
  */
 abstract class Subcommand : Command() {
-    override val name: String get() = getCommandName(this::class)
+    override val name: String get() = getCommandName()
     final override val version: String? get() = null
     final override val standardHelpOptions: Boolean get() = false
+
+    private fun getCommandName(): String {
+        val className = this::class.simpleName
+            ?: error("Command '${this::class}' must have a name!")
+        return className.removeSuffix("Command")
+            .words()
+            .joinToString(separator = "-")
+    }
 
     /**
      * Returns the interactive repository from the current working directory, or

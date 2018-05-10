@@ -17,8 +17,6 @@
 package org.chronolens.decapsulations
 
 import org.chronolens.core.cli.Subcommand
-import org.chronolens.core.cli.default
-import org.chronolens.core.cli.help
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.serialization.JsonModule
 
@@ -31,14 +29,14 @@ class DecapsulationsCommand : Subcommand() {
 
     private val keepConstants by option<Boolean>()
         .help("do not ignore decapsulations of constant fields")
-        .default(false)
+        .defaultValue(false)
 
     private val minMetricValue by option<Int>().help("""
         ignore source files that have less decapsulations than the specified
         limit
-    """).default(0).restrictTo(min = 0)
+    """).defaultValue(0).restrictTo(min = 0)
 
-    override fun run() {
+    override fun execute() {
         val analyzer = HistoryAnalyzer(!keepConstants)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())

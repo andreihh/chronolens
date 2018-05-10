@@ -1,5 +1,30 @@
-Usage: chronolens [-hV]
+Usage: chronolens [-hV] [COMMAND]
 ChronoLens is a software evolution analysis tool that inspects the repository
 detected in the current working directory.
   -h, --help      Show this help message and exit.
   -V, --version   Print version information and exit.
+Commands:
+  ls-tree           Prints all the interpretable files of the repository from
+                      the specified revision.
+  rev-list          Prints all revisions on the path from the currently
+                      checked-out (<head>) revision to the root of the revision
+                      tree / graph in chronological order.
+  model             Prints the interpreted model of the source node with the
+                      specified id as it is found in the given revision of the
+                      repository.
+  persist           Connects to the repository and persists the source and
+                      history model from all the files that can be interpreted.
+  clean             Deletes the previously persisted repository from the
+                      current working directory, if it exists.
+  decapsulations    Loads the persisted repository, detects the decapsulations
+                      that occurred during the evolution of the project and
+                      reports the results to the standard output.
+  hotspots          Loads the persisted repository, detects the hotspots of the
+                      system and reports the results to the standard output.
+  divergent-change  Loads the persisted repository, builds the temporal
+                      coupling graphs for the analyzed source files, detects
+                      the Divergent Change instances, reports the results to
+                      the standard output and dumps the coupling graphs for
+                      each source file in the '.chronolens/divergent-change'
+                      directory.
+  help              Displays help information about the specified command

@@ -210,18 +210,35 @@ abstract class TransactionVisitor {
 Implementing a command-line interface for the main executable can be done as
 follows:
 ```java
-import static org.chronolens.core.cli.Utils.run;
-import picocli.CommandLine.Command;
+import org.chronolens.core.cli.MainCommand;
+import org.chronolens.core.cli.OptionDelegate;
+import org.chronolens.core.cli.Utils;
 
-@Command(name = "main-command-name")
-public class Main implements Runnable {
+public final class Main extends MainCommand {
     @Override
-    public void run() {
-        // ...
+    public String getName() { return "echo-message"; }
+
+    @Override
+    protected String getVersion() { return "1.0"; }
+
+    @Override
+    protected String getHelp() { return "Prints a given message."; }
+
+    private final OptionDelegate<String> message = option(String.class)
+            .help("The message to display to standard output.")
+            .paramLabel("TEXT")
+            .defaultValue("Hello, world!")
+            .provideDelegate(this, "message");
+
+    private String getMessage() { return message.getValue(); }
+
+    @Override
+    protected void execute() {
+        System.out.println(getMessage());
     }
-    
+
     public static void main(String[] args) {
-        run(new Main(), args, 1);
+        Utils.run(new Main(), args);
     }
 }
 ```

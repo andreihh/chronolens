@@ -24,107 +24,64 @@ import picocli.CommandLine.Model.IGetter
 import picocli.CommandLine.Model.OptionSpec
 import picocli.CommandLine.Model.OptionSpec.Builder
 import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 
 class OptionDelegate<out T>(private val option: OptionSpec)
-    : ReadOnlyProperty<Subcommand, T> {
+    : ReadOnlyProperty<Command, T> {
 
-    override fun getValue(thisRef: Subcommand, property: KProperty<*>): T =
-        option.getValue()
+    fun getValue(): T = option.getValue()
+
+    override fun getValue(thisRef: Command, property: KProperty<*>): T =
+        getValue()
 }
 
-open class NullableOption<out T : Any>(internal val builder: Builder) {
-    open operator fun provideDelegate(
-        thisRef: Subcommand,
+class NullableOption<T : Any>(private val builder: Builder) {
+    fun provideDelegate(
+        thisRef: Command,
+        propertyName: String
+    ): OptionDelegate<T?> = provideDelegate(builder, thisRef, propertyName)
+
+    operator fun provideDelegate(
+        thisRef: Command,
         property: KProperty<*>
-    ): OptionDelegate<T?> {
-        val name = getOptionName(property.name)
-        val parameterLabel = builder.paramLabel() ?: name.removePrefix("--")
-        val showDefault = if (builder.defaultValue() != null) ALWAYS else NEVER
-        val names = builder.names()
-        val option = builder.names(name, *names)
-            .paramLabel("<$parameterLabel>")
-            .showDefaultValue(showDefault)
-            .build()
-        thisRef.command.addOption(option)
-        return OptionDelegate(option)
+    ): OptionDelegate<T?> = provideDelegate(thisRef, property.name)
+
+    fun help(description: String): NullableOption<T> {
+        builder.description(*description.paragraphs())
+        return this
+    }
+
+    fun paramLabel(label: String): NullableOption<T> {
+        builder.paramLabel(label)
+        return this
+    }
+
+    fun required(): Option<T> = Option(builder.required(true))
+
+    fun defaultValue(value: T): Option<T> =
+        Option(builder.defaultValue("$value"))
+
+    fun validate(block: Validator.(T) -> Unit): NullableOption<T> {
+        validate(builder, block)
+        return this
     }
 }
 
-class Option<out T : Any>(builder: Builder) : NullableOption<T>(builder) {
-    @Suppress("unchecked_cast")
-    override operator fun provideDelegate(
-        thisRef: Subcommand,
+class Option<out T : Any>(private val builder: Builder) {
+    fun provideDelegate(
+        thisRef: Command,
+        propertyName: String
+    ): OptionDelegate<T> = provideDelegate(builder, thisRef, propertyName)
+
+    operator fun provideDelegate(
+        thisRef: Command,
         property: KProperty<*>
-    ): OptionDelegate<T> =
-        super.provideDelegate(thisRef, property) as OptionDelegate<T>
-}
+    ): OptionDelegate<T> = provideDelegate(thisRef, property.name)
 
-private fun String.getWords(): List<String> {
-    val words = arrayListOf<String>()
-    var word = StringBuilder()
-    for (char in this.capitalize()) {
-        if (char.isUpperCase()) {
-            if (!word.isBlank()) {
-                words += word.toString()
-                word = StringBuilder()
-            }
-            word.append(char.toLowerCase())
-        } else {
-            word.append(char)
-        }
+    fun validate(block: Validator.(T) -> Unit): Option<T> {
+        validate(builder, block)
+        return this
     }
-    if (word.isNotBlank()) {
-        words += word.toString()
-    }
-    return words
-}
-
-private fun getOptionName(propertyName: String): String =
-    propertyName.getWords().joinToString(separator = "-", prefix = "--")
-
-internal fun <T : Command> getCommandName(type: KClass<T>): String {
-    val className = type.simpleName ?: error("")
-    return className.removeSuffix("Command")
-        .getWords()
-        .joinToString(separator = "-")
-}
-
-fun <T : Any, Opt : NullableOption<T>> Opt.help(description: String): Opt {
-    builder.description(description.paragraph())
-    return this
-}
-
-fun <T : Any, Opt : NullableOption<T>> Opt.paramLabel(label: String): Opt {
-    builder.paramLabel(label)
-    return this
-}
-
-fun <T : Any> NullableOption<T>.required(): Option<T> {
-    builder.required(true)
-    return Option(builder)
-}
-
-fun <T : Any> NullableOption<T>.default(value: T): Option<T> {
-    builder.defaultValue("$value")
-    return Option(builder)
-}
-
-fun <Opt : NullableOption<Int>> Opt.restrictTo(
-    min: Int? = null,
-    max: Int? = null
-): Opt = validate { value ->
-    require(min == null || value >= min) { "$name can't be less than $min!" }
-    require(max == null || value <= max) { "$name can't be greater than $max!" }
-}
-
-fun <Opt : NullableOption<Double>> Opt.restrictTo(
-    min: Double? = null,
-    max: Double? = null
-): Opt = validate { value ->
-    require(min == null || value >= min) { "$name can't be less than $min!" }
-    require(max == null || value <= max) { "$name can't be greater than $max!" }
 }
 
 class Validator(val name: String) {
@@ -133,9 +90,27 @@ class Validator(val name: String) {
     }
 }
 
-fun <T : Any, Opt : NullableOption<T>> Opt.validate(
-    block: Validator.(T) -> Unit
-): Opt {
+private fun <T> provideDelegate(
+    builder: Builder,
+    thisRef: Command,
+    propertyName: String
+): OptionDelegate<T> {
+    val name = getOptionName(propertyName)
+    val parameterLabel = builder.paramLabel() ?: name.removePrefix("--")
+    val showDefault = if (builder.defaultValue() != null) ALWAYS else NEVER
+    val names = builder.names()
+    val option = builder.names(name, *names)
+        .paramLabel("<$parameterLabel>")
+        .showDefaultValue(showDefault)
+        .build()
+    thisRef.command.addOption(option)
+    return OptionDelegate(option)
+}
+
+private fun getOptionName(propertyName: String): String =
+    propertyName.words().joinToString(separator = "-", prefix = "--")
+
+private fun <T : Any> validate(builder: Builder, block: Validator.(T) -> Unit) {
     val getter = builder.getter()
     builder.getter(object : IGetter {
         @Suppress("unchecked_cast")
@@ -146,5 +121,36 @@ fun <T : Any, Opt : NullableOption<T>> Opt.validate(
             return value as R
         }
     })
-    return this
+}
+
+fun NullableOption<Int>.restrictTo(
+    min: Int? = null,
+    max: Int? = null
+): NullableOption<Int> = validate { value ->
+    require(min == null || value >= min) { "$name can't be less than $min!" }
+    require(max == null || value <= max) { "$name can't be greater than $max!" }
+}
+
+fun Option<Int>.restrictTo(
+    min: Int? = null,
+    max: Int? = null
+): Option<Int> = validate { value ->
+    require(min == null || value >= min) { "$name can't be less than $min!" }
+    require(max == null || value <= max) { "$name can't be greater than $max!" }
+}
+
+fun NullableOption<Double>.restrictTo(
+    min: Double? = null,
+    max: Double? = null
+): NullableOption<Double> = validate { value ->
+    require(min == null || value >= min) { "$name can't be less than $min!" }
+    require(max == null || value <= max) { "$name can't be greater than $max!" }
+}
+
+fun Option<Double>.restrictTo(
+    min: Double? = null,
+    max: Double? = null
+): Option<Double> = validate { value ->
+    require(min == null || value >= min) { "$name can't be less than $min!" }
+    require(max == null || value <= max) { "$name can't be greater than $max!" }
 }
