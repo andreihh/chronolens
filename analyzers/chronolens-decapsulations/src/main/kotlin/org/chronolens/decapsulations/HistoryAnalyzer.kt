@@ -164,7 +164,7 @@ class HistoryAnalyzer(private val ignoreConstants: Boolean) {
             val fields = fieldsByFile[path].orEmpty()
             val fieldReports = fields.map { id ->
                 FieldReport(id, getDecapsulations(id))
-            }.sortedByDescending(FieldReport::value)
+            }.sortedByDescending { it.decapsulations.size }
             FileReport(path, fieldReports)
         }.sortedByDescending(FileReport::value)
         return Report(fileReports)
@@ -173,16 +173,15 @@ class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     data class Report(val files: List<FileReport>)
 
     data class FileReport(val file: String, val fields: List<FieldReport>) {
+        val decapsulations: Int = fields.sumBy { it.decapsulations.size }
+
         val category: String = "SOLID Breakers"
         val name: String = "Encapsulation Breakers"
-        val value: Int = fields.sumBy(FieldReport::value)
+        val value: Int = decapsulations
     }
 
     data class FieldReport(
         val id: String,
         val decapsulations: List<Decapsulation>
-    ) {
-
-        val value: Int = decapsulations.size
-    }
+    )
 }
