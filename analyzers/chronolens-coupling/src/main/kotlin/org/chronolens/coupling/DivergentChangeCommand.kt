@@ -145,9 +145,11 @@ class DivergentChangeCommand : Subcommand() {
         val antiBlob: Subgraph?
     ) {
 
+        val responsibilities: Int = blobs.size + if (antiBlob != null) 1 else 0
+
         val category: String = "SOLID Breakers"
         val name: String = "Single Responsibility Breakers"
-        val value: Int = blobs.size + if (antiBlob != null) 1 else 0
+        val value: Int = responsibilities
     }
 }
 

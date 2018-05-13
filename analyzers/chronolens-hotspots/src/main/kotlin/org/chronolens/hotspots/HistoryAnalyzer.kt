@@ -56,11 +56,11 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
         else -> 0
     }
 
-    private fun visit(edit: ProjectEdit, date: Instant) {
+    private fun visit(revisionId: String, date: Instant, edit: ProjectEdit) {
         when (edit) {
             is AddNode -> {
                 for (node in edit.node.walkSourceTree()) {
-                    stats[node.id] = Stats.create(date)
+                    stats[node.id] = Stats.create(revisionId, date)
                 }
             }
             is RemoveNode -> {
@@ -71,8 +71,8 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
                 val nodeStats = stats.getValue(edit.id)
                 val day = nodeStats.creationDate.until(date, DAYS)
                 stats[edit.id] =
-                    if (day >= skipDays) nodeStats.updated(getChurn(edit))
-                    else nodeStats.copy(revisions = nodeStats.revisions + 1)
+                    if (day < skipDays) nodeStats.updated(revisionId)
+                    else nodeStats.updated(revisionId, getChurn(edit))
             }
         }
         project.apply(edit)
@@ -80,7 +80,7 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
 
     private fun visit(transaction: Transaction) {
         for (edit in transaction.edits) {
-            visit(edit, transaction.date)
+            visit(transaction.revisionId, transaction.date, edit)
         }
     }
 
@@ -91,22 +91,26 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
         is Variable -> node.initializer.size
     }
 
+    private fun getMemberValue(member: MemberReport): Int = when (metric) {
+        Metric.SIZE -> member.size
+        Metric.REVISIONS -> member.revisions
+        Metric.CHANGES -> member.changes
+        Metric.CHURN -> member.churn
+        Metric.WEIGHTED_CHURN -> member.weightedChurn.roundToInt()
+    }
+
     private fun getMemberReport(id: String): MemberReport {
         val size = getSize(project.get<SourceNode>(id))
         val (_, revisions, changes, churn, weightedChurn) = stats.getValue(id)
-        val value = when (metric) {
-            Metric.SIZE -> size
-            Metric.REVISIONS -> revisions
-            Metric.CHANGES -> changes
-            Metric.CHURN -> churn
-            Metric.WEIGHTED_CHURN -> weightedChurn.roundToInt()
-        }
         return MemberReport(
             id = id, size = size,
-            revisions = revisions, changes = changes,
-            churn = churn, weightedChurn = weightedChurn, value = value
+            revisions = revisions.size, changes = changes.size,
+            churn = churn, weightedChurn = weightedChurn
         )
     }
+
+    private fun List<Set<String>>.union(): Set<String> =
+        reduce { acc, set -> acc.union(set) }
 
     fun analyze(history: Iterable<Transaction>): Report {
         history.forEach(::visit)
@@ -114,10 +118,13 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
         val sourcePaths = project.sources.map(SourceFile::path)
         val fileReports = sourcePaths.map { path ->
             val members = membersByFile[path].orEmpty()
+            val memberStats = members.map(stats::getValue)
             val memberReports = members
                 .map(::getMemberReport)
-                .sortedByDescending(MemberReport::value)
-            FileReport(path, memberReports)
+                .sortedByDescending(::getMemberValue)
+            val revisions = memberStats.map(Stats::revisions).union().size
+            val changes = memberStats.map(Stats::changes).union().size
+            FileReport(path, metric, memberReports, revisions, changes)
         }.sortedByDescending(FileReport::value)
         return Report(fileReports)
     }
@@ -128,10 +135,28 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
 
     data class Report(val files: List<FileReport>)
 
-    data class FileReport(val file: String, val members: List<MemberReport>) {
+    data class FileReport(
+        val file: String,
+        val metric: Metric,
+        val members: List<MemberReport>,
+        val revisions: Int,
+        val changes: Int
+    ) {
+
+        val size: Int = members.sumBy(MemberReport::size)
+        val churn: Int = members.sumBy(MemberReport::churn)
+        val weightedChurn: Double =
+            members.sumByDouble(MemberReport::weightedChurn)
+
         val category: String = "SOLID Breakers"
         val name: String = "Open-Closed Breakers"
-        val value: Int = members.sumBy(MemberReport::value)
+        val value: Int = when (metric) {
+            Metric.SIZE -> size
+            Metric.REVISIONS -> revisions
+            Metric.CHANGES -> changes
+            Metric.CHURN -> churn
+            Metric.WEIGHTED_CHURN -> weightedChurn.roundToInt()
+        }
     }
 
     data class MemberReport(
@@ -140,24 +165,21 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
         val revisions: Int,
         val changes: Int,
         val churn: Int,
-        val weightedChurn: Double,
-        val value: Int
+        val weightedChurn: Double
     )
 }
 
 private data class Stats(
     val creationDate: Instant,
-    val revisions: Int,
-    val changes: Int,
+    val revisions: Set<String>,
+    val changes: Set<String>,
     val churn: Int,
     val weightedChurn: Double
 ) {
 
     init {
-        require(revisions > 0) { "Revisions must be positive '$revisions'!" }
-        require(changes >= 0) { "Changes can't be negative '$changes'!" }
-        require(changes <= revisions) {
-            "Changes '$changes' can't be greater than revisions '$revisions'!"
+        require(revisions.containsAll(changes)) {
+            "Changes '$changes' must be a subset of revisions '$revisions'!"
         }
         require(churn >= 0) { "Churn can't be negative '$churn'!" }
         require(weightedChurn >= 0.0) {
@@ -165,19 +187,22 @@ private data class Stats(
         }
     }
 
-    fun updated(addedChurn: Int): Stats = copy(
-        revisions = revisions + 1,
-        changes = changes + 1,
+    fun updated(revisionId: String): Stats =
+        copy(revisions = revisions + revisionId)
+
+    fun updated(revisionId: String, addedChurn: Int): Stats = copy(
+        revisions = revisions + revisionId,
+        changes = changes + revisionId,
         churn = churn + addedChurn,
-        weightedChurn = weightedChurn + ln(changes + 1.0) * addedChurn
+        weightedChurn = weightedChurn + ln(changes.size + 1.0) * addedChurn
     )
 
     companion object {
         @JvmStatic
-        fun create(date: Instant): Stats = Stats(
+        fun create(revisionId: String, date: Instant): Stats = Stats(
             creationDate = date,
-            revisions = 1,
-            changes = 0,
+            revisions = setOf(revisionId),
+            changes = emptySet(),
             churn = 0,
             weightedChurn = 0.0
         )
