@@ -47,33 +47,36 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
     private fun getSourcePath(id: String): String =
         project.get<SourceNode>(id).sourcePath
 
-    private val List<ListEdit<String>>.churn: Int
-        get() = filterIsInstance<ListEdit.Add<String>>().size
-
-    private fun getChurn(edit: ProjectEdit): Int = when (edit) {
-        is EditFunction -> edit.bodyEdits.churn
-        is EditVariable -> edit.initializerEdits.churn
-        else -> 0
+    private fun updateStats(
+        id: String,
+        revisionId: String,
+        date: Instant,
+        churn: Int
+    ) {
+        val nodeStats = stats.getValue(id)
+        val day = nodeStats.creationDate.until(date, DAYS)
+        stats[id] =
+            if (day < skipDays) nodeStats.updated(revisionId)
+            else nodeStats.updated(revisionId, churn)
     }
 
     private fun visit(revisionId: String, date: Instant, edit: ProjectEdit) {
+        val id = edit.id
         when (edit) {
             is AddNode -> {
-                for (node in edit.node.walkSourceTree()) {
-                    stats[node.id] = Stats.create(revisionId, date)
-                }
+                stats += edit.node
+                    .walkSourceTree()
+                    .filter(SourceNode::isMember)
+                    .associate { it.id to Stats.create(revisionId, date) }
             }
             is RemoveNode -> {
-                val nodes = project.get<SourceNode>(edit.id).walkSourceTree()
-                stats -= nodes.map(SourceNode::id)
+                stats -= project.get<SourceNode>(id)
+                    .walkSourceTree()
+                    .filter(SourceNode::isMember)
+                    .map(SourceNode::id)
             }
-            else -> {
-                val nodeStats = stats.getValue(edit.id)
-                val day = nodeStats.creationDate.until(date, DAYS)
-                stats[edit.id] =
-                    if (day < skipDays) nodeStats.updated(revisionId)
-                    else nodeStats.updated(revisionId, getChurn(edit))
-            }
+            is EditFunction -> updateStats(id, revisionId, date, edit.churn)
+            is EditVariable -> updateStats(id, revisionId, date, edit.churn)
         }
         project.apply(edit)
     }
@@ -82,21 +85,6 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
         for (edit in transaction.edits) {
             visit(transaction.revisionId, transaction.date, edit)
         }
-    }
-
-    private fun getSize(node: SourceNode): Int = when (node) {
-        is SourceFile -> node.entities.sumBy(::getSize)
-        is Type -> node.members.sumBy(::getSize)
-        is Function -> node.body.size
-        is Variable -> node.initializer.size
-    }
-
-    private fun getMemberValue(member: MemberReport): Int = when (metric) {
-        Metric.SIZE -> member.size
-        Metric.REVISIONS -> member.revisions
-        Metric.CHANGES -> member.changes
-        Metric.CHURN -> member.churn
-        Metric.WEIGHTED_CHURN -> member.weightedChurn.roundToInt()
     }
 
     private fun getMemberReport(id: String): MemberReport {
@@ -109,8 +97,13 @@ class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
         )
     }
 
-    private fun List<Set<String>>.union(): Set<String> =
-        reduce { acc, set -> acc.union(set) }
+    private fun getMemberValue(member: MemberReport): Int = when (metric) {
+        Metric.SIZE -> member.size
+        Metric.REVISIONS -> member.revisions
+        Metric.CHANGES -> member.changes
+        Metric.CHURN -> member.churn
+        Metric.WEIGHTED_CHURN -> member.weightedChurn.roundToInt()
+    }
 
     fun analyze(history: Iterable<Transaction>): Report {
         history.forEach(::visit)
@@ -208,3 +201,22 @@ private data class Stats(
         )
     }
 }
+
+private val SourceNode.isMember: Boolean
+    get() = this is Function || this is Variable
+
+private val List<ListEdit<String>>.churn: Int
+    get() = filterIsInstance<ListEdit.Add<String>>().size
+
+private val EditFunction.churn: Int get() = bodyEdits.churn
+private val EditVariable.churn: Int get() = initializerEdits.churn
+
+private fun getSize(node: SourceNode): Int = when (node) {
+    is SourceFile -> node.entities.sumBy(::getSize)
+    is Type -> node.members.sumBy(::getSize)
+    is Function -> node.body.size
+    is Variable -> node.initializer.size
+}
+
+private fun List<Set<String>>.union(): Set<String> =
+    if (isEmpty()) emptySet() else reduce { acc, set -> acc.union(set) }
