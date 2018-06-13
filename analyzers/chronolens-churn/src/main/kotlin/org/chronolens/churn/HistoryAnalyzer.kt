@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.chronolens.churners
+package org.chronolens.churn
 
 import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction

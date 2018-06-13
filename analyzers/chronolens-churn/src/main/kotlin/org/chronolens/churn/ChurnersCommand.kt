@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package org.chronolens.churners
+package org.chronolens.churn
 
-import org.chronolens.churners.HistoryAnalyzer.Metric
+import org.chronolens.churn.HistoryAnalyzer.Metric
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.serialization.JsonModule
