@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.chronolens.hotspots
+package org.chronolens.churners
 
 import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction

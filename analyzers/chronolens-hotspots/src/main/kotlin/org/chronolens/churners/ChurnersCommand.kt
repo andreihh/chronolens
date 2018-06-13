@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package org.chronolens.hotspots
+package org.chronolens.churners
 
+import org.chronolens.churners.HistoryAnalyzer.Metric
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.serialization.JsonModule
-import org.chronolens.hotspots.HistoryAnalyzer.Metric
 
-class HotspotsCommand : Subcommand() {
+class ChurnersCommand : Subcommand() {
     override val help: String get() = """
-        Loads the persisted repository, detects the hotspots of the system and
+        Loads the persisted repository, detects the churners of the system and
         reports the results to the standard output.
     """
 
