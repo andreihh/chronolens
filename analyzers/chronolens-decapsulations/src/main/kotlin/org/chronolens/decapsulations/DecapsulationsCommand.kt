@@ -36,7 +36,7 @@ class DecapsulationsCommand : Subcommand() {
         limit
     """).defaultValue(0).restrictTo(min = 0)
 
-    override fun execute() {
+    override fun run() {
         val analyzer = HistoryAnalyzer(!keepConstants)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())

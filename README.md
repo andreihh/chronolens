@@ -233,7 +233,7 @@ public final class Main extends MainCommand {
     private String getMessage() { return message.getValue(); }
 
     @Override
-    protected void execute() {
+    public void run() {
         System.out.println(getMessage());
     }
 

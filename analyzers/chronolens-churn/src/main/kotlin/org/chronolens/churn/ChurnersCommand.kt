@@ -41,7 +41,7 @@ class ChurnersCommand : Subcommand() {
         ignore source files that have less churn than the specified limit
     """).defaultValue(0).restrictTo(min = 0)
 
-    override fun execute() {
+    override fun run() {
         val analyzer = HistoryAnalyzer(metric, skipDays)
         val repository = load()
         val report = analyzer.analyze(repository.getHistory())

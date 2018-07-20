@@ -77,7 +77,7 @@ class DivergentChangeCommand : Subcommand() {
         return Report(files, coloredGraphs)
     }
 
-    override fun execute() {
+    override fun run() {
         val repository = load()
         val report = analyze(repository.getHistory())
         val files = report.files.filter { it.value >= minMetricValue }

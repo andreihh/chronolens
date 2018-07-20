@@ -37,7 +37,7 @@ class LsTree : Subcommand() {
     private val repository by lazy(::connect)
     private val revision: String get() = rev ?: repository.getHeadId()
 
-    override fun execute() {
+    override fun run() {
         repository.listSources(revision).forEach(::println)
     }
 }
@@ -49,7 +49,7 @@ class RevList : Subcommand() {
         order.
     """
 
-    override fun execute() {
+    override fun run() {
         val repository = connect()
         repository.listRevisions().forEach(::println)
     }
@@ -74,7 +74,7 @@ class Model : Subcommand() {
     private val repository by lazy(::connect)
     private val revision: String get() = rev ?: repository.getHeadId()
 
-    override fun execute() {
+    override fun run() {
         val path = id.sourcePath
         val model = repository.getSource(path, revision)
             ?: exit("File '$path' couldn't be interpreted or doesn't exist!")
@@ -93,7 +93,7 @@ class Persist : Subcommand() {
         current working directory.
     """
 
-    override fun execute() {
+    override fun run() {
         val repository = connect()
         repository.persist(object : ProgressListener {
             private var sources = 0
@@ -141,7 +141,7 @@ class Clean : Subcommand() {
         directory, if it exists.
     """
 
-    override fun execute() {
+    override fun run() {
         PersistentRepository.clean()
     }
 }

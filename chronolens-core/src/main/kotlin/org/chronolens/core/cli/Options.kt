@@ -20,7 +20,7 @@ package org.chronolens.core.cli
 
 import picocli.CommandLine.Help.Visibility.ALWAYS
 import picocli.CommandLine.Help.Visibility.NEVER
-import picocli.CommandLine.Model.IGetter
+import picocli.CommandLine.Model.ISetter
 import picocli.CommandLine.Model.OptionSpec
 import picocli.CommandLine.Model.OptionSpec.Builder
 import kotlin.properties.ReadOnlyProperty
@@ -111,14 +111,15 @@ private fun getOptionName(propertyName: String): String =
     propertyName.words().joinToString(separator = "-", prefix = "--")
 
 private fun <T : Any> validate(builder: Builder, block: Validator.(T) -> Unit) {
-    val getter = builder.getter()
-    builder.getter(object : IGetter {
+    val setter = builder.setter()
+    builder.setter(object : ISetter {
         @Suppress("unchecked_cast")
-        override fun <R> get(): R {
-            val value = getter.get<T>() ?: return null as R
-            val name = builder.names().first()
-            Validator(name).block(value)
-            return value as R
+        override fun <R : Any?> set(value: R): R {
+            if (value != null) {
+                val name = builder.names().first()
+                Validator(name).block(value as T)
+            }
+            return setter.set(value)
         }
     })
 }

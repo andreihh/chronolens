@@ -26,7 +26,7 @@ abstract class MainCommand : Command() {
         }
     }
 
-    override fun execute() {
+    override fun run() {
         command.commandLine().usage(System.out)
     }
 }

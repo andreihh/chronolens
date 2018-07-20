@@ -19,7 +19,6 @@ package org.chronolens.core.cli
 import picocli.CommandLine.Model.CommandSpec
 import picocli.CommandLine.Model.OptionSpec
 import picocli.CommandLine.Model.UsageMessageSpec
-import java.lang.reflect.Field
 
 abstract class Command : Runnable {
     internal val command by lazy {
@@ -36,8 +35,6 @@ abstract class Command : Runnable {
     protected abstract val help: String
     protected abstract val standardHelpOptions: Boolean
 
-    protected abstract fun execute()
-
     protected fun <T : Any> option(
         type: Class<T>,
         vararg names: String
@@ -46,25 +43,4 @@ abstract class Command : Runnable {
     protected inline fun <reified T : Any> option(
         vararg names: String
     ): NullableOption<T> = option(T::class.java, *names)
-
-    private fun validateOptions() {
-        val fields = arrayListOf<Field>()
-        var type: Class<*>? = this::class.java
-        while (type != null) {
-            fields += type.declaredFields
-            type = type.superclass
-        }
-        for (field in fields) {
-            if (OptionDelegate::class.java.isAssignableFrom(field.type)) {
-                field.isAccessible = true
-                val delegate = field.get(this) as OptionDelegate<*>
-                delegate.getValue()
-            }
-        }
-    }
-
-    final override fun run() {
-        validateOptions()
-        execute()
-    }
 }
