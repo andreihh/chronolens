@@ -224,11 +224,12 @@ public final class Main extends MainCommand {
     @Override
     protected String getHelp() { return "Prints a given message."; }
 
-    private final OptionDelegate<String> message = option(String.class)
+    private final OptionDelegate<String> message = option("--message")
+            .type(String.class)
             .help("The message to display to standard output.")
             .paramLabel("TEXT")
             .defaultValue("Hello, world!")
-            .provideDelegate(this, "message");
+            .provideDelegate();
 
     private String getMessage() { return message.getValue(); }
 

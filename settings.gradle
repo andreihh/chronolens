@@ -7,3 +7,4 @@ include 'services:chronolens-java'
 include 'analyzers:chronolens-churn',
         'analyzers:chronolens-coupling',
         'analyzers:chronolens-decapsulations'
+

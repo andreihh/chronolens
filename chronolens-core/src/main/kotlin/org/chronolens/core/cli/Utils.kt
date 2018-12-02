@@ -99,3 +99,5 @@ internal fun String.words(): List<String> {
     return words
 }
 
+internal fun getOptionName(propertyName: String): String =
+    propertyName.words().joinToString(separator = "-", prefix = "--")

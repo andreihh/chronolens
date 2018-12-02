@@ -22,7 +22,7 @@ import picocli.CommandLine.Model.UsageMessageSpec
 
 abstract class Command : Runnable {
     internal val command by lazy {
-        val spec = CommandSpec.forAnnotatedObjectLenient(this)
+        val spec = CommandSpec.create()
             .name(name)
             .usageMessage(UsageMessageSpec().description(*help.paragraphs()))
             .mixinStandardHelpOptions(standardHelpOptions)
@@ -35,12 +35,18 @@ abstract class Command : Runnable {
     protected abstract val help: String
     protected abstract val standardHelpOptions: Boolean
 
-    protected fun <T : Any> option(
+    protected fun <T : Any> builder(
         type: Class<T>,
         vararg names: String
-    ): NullableOption<T> = NullableOption(OptionSpec.builder(names).type(type))
+    ): NullableOption<T> =
+        NullableOption(this, OptionSpec.builder(names).type(type))
+
+    protected fun option(
+        name: String,
+        vararg names: String
+    ): NullableOption<String> = builder(String::class.java, name, *names)
 
     protected inline fun <reified T : Any> option(
         vararg names: String
-    ): NullableOption<T> = option(T::class.java, *names)
+    ): NullableOption<T> = builder(T::class.java, *names)
 }

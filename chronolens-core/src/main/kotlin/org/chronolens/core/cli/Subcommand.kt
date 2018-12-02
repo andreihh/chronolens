@@ -59,10 +59,11 @@ abstract class Subcommand : Command() {
     protected fun load(): PersistentRepository =
         PersistentRepository.load() ?: exit("Repository not found!")
 
-    protected fun Option<String>.validateId(): Option<String> = validate { id ->
-        val path = id.sourcePath
-        require(isValidPath(path)) { "Invalid path '$path'!" }
-    }
+    protected fun RequiredOption<String>.validateId(): RequiredOption<String> =
+        validate { id ->
+            val path = id.sourcePath
+            require(isValidPath(path)) { "Invalid path '$path'!" }
+        }
 
     protected fun NullableOption<String>.validateRevision(
         repository: () -> Repository
