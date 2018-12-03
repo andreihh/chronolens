@@ -1,5 +1,5 @@
 dependencies {
-    api(project(':chronolens-core'))
+    api(project(":chronolens-core"))
 
-    testImplementation(project(':chronolens-test'))
+    testImplementation(project(":chronolens-test"))
 }

@@ -33,7 +33,7 @@ plugins {
 }
 
 allprojects {
-    group = "org.metanalysis"
+    group = "org.chronolens"
     version = "0.2.11"
 
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -58,17 +58,17 @@ allprojects {
         kotlinOptions.jvmTarget = "1.8"
     }
 
-    val test by tasks.getting(Test::class) {
+    tasks.test {
         workingDir = createTempDir().apply(File::deleteOnExit)
     }
 
-    val jar by tasks.getting(Jar::class) {
+    tasks.jar {
         from(rootProject.file("LICENSE"))
         from(rootProject.file("NOTICE"))
     }
 
-    val jacocoTestReport by tasks.getting(JacocoReport::class) {
-        dependsOn(test)
+    tasks.named<JacocoReport>("jacocoTestReport") {
+        dependsOn(tasks.test)
 
         reports {
             html.isEnabled = true
@@ -82,7 +82,7 @@ subprojects {
     apply(plugin = "java-library")
     apply(plugin = "org.jetbrains.dokka")
 
-    val dokka by tasks.getting(DokkaTask::class) {
+    val dokka by tasks.existing(DokkaTask::class) {
         moduleName = project.name
         includes = listOf("Module.md")
         impliedPlatforms = arrayListOf("JVM")
@@ -96,15 +96,14 @@ subprojects {
         }*/
     }
 
-    val sourcesJar by tasks.creating(Jar::class) {
-        //dependsOn(tasks.classes)
+    val sourcesJar by tasks.registering(Jar::class) {
         group = JavaBasePlugin.DOCUMENTATION_GROUP
         description = "Assembles sources Jar."
         classifier = "sources"
         from(sourceSets.getByName("main").allSource)
     }
 
-    val javadocJar by tasks.creating(Jar::class) {
+    val javadocJar by tasks.registering(Jar::class) {
         group = JavaBasePlugin.DOCUMENTATION_GROUP
         description = "Assembles docs with Dokka."
         classifier = "javadoc"
@@ -133,18 +132,17 @@ dependencies {
     testImplementation("com.github.stefanbirkner:system-rules:1.17.1")
 }
 
-val codeCoverageReport by tasks.creating(JacocoReport::class) {
+tasks.register<JacocoReport>("codeCoverageReport") {
     group = JavaBasePlugin.VERIFICATION_GROUP
     description = "Generates a combined code coverage report for all tests."
 
     allprojects.forEach {
         dependsOn(it.tasks.named("jacocoTestReport"))
     }
-    /*dependsOn {
-        allprojects*.jacocoTestReport
-    }*/
 
-    executionData(fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec"))
+    executionData(
+        fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+    )
 
     allprojects.forEach {
         sourceSets(it.sourceSets.getByName("main"))

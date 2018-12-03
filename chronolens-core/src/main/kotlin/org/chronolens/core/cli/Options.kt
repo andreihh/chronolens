@@ -21,7 +21,6 @@ package org.chronolens.core.cli
 import picocli.CommandLine
 import picocli.CommandLine.Help.Visibility.ALWAYS
 import picocli.CommandLine.Help.Visibility.NEVER
-import picocli.CommandLine.Model.ArgSpec
 import picocli.CommandLine.Model.ISetter
 import picocli.CommandLine.Model.OptionSpec
 import picocli.CommandLine.Model.OptionSpec.Builder

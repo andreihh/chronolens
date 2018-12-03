@@ -52,7 +52,7 @@ class Project private constructor(
     inline fun <reified T : SourceNode?> get(id: String): T {
         val node = get(id)
         check(node is T) { "'$id' is not of type '${T::class}'!" }
-        return node as T
+        return node
     }
 
     /**
