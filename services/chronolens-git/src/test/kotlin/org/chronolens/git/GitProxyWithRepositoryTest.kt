@@ -79,7 +79,7 @@ class GitProxyWithRepositoryTest {
     }
 
     @Test fun `test get file`() {
-        val path = "services/chronolens-git/build.gradle"
+        val path = "services/chronolens-git/build.gradle.kts"
         val expected = File(path).readText()
         val actual = git.getFile(revisionId = "HEAD", path = path)
         assertEquals(expected, actual)
