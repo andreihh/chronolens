@@ -44,8 +44,10 @@ fun exit(message: String): Nothing {
  */
 fun run(mainCommand: MainCommand, vararg args: String) {
     mainCommand.registerSubcommands(Subcommand.assembleSubcommands())
-    val cmd = CommandLine(mainCommand.command)
-    cmd.addSubcommand("help", HelpCommand())
+    val cmd = CommandLine(mainCommand.command).apply {
+        addSubcommand("help", HelpCommand())
+        isCaseInsensitiveEnumValuesAllowed = true
+    }
     val exceptionHandler = defaultExceptionHandler().andExit(1)
     try {
         cmd.parseWithHandlers(RunLast(), exceptionHandler, *args)

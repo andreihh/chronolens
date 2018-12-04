@@ -22,7 +22,7 @@ import picocli.CommandLine.Model.UsageMessageSpec
 
 abstract class Command : Runnable {
     internal val command by lazy {
-        val spec = CommandSpec.create()
+        val spec = CommandSpec.forAnnotatedObjectLenient(this)
             .name(name)
             .usageMessage(UsageMessageSpec().description(*help.paragraphs()))
             .mixinStandardHelpOptions(standardHelpOptions)
