@@ -1,3 +1,4 @@
+import java.io.File
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -17,17 +18,17 @@ tasks.register<JacocoReport>("codeCoverageReport") {
         fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
     )
 
-    val relevantSubprojects =
-        subprojects.filter {
-            it.convention.getPlugins().contains("chronolens.common-conventions")
-        }
+    val modules =
+        subprojects.filter { it.tasks.findByName("jacocoTestReport") != null }
 
-    relevantSubprojects.forEach {
-        dependsOn(it.tasks.named("jacocoTestReport"))
-    }
+    modules.forEach {
+        val reports = it.tasks.withType<JacocoReport>()
+        val sources = it.the<SourceSetContainer>()["main"]
+        //val data = reports.flatMap(JacocoReport::executionData)
 
-    relevantSubprojects.forEach {
-        sourceSets(it.the<SourceSetContainer>()["main"])
+        dependsOn(reports)
+        sourceSets(sources)
+        //executionData(data)
     }
 
     reports {
