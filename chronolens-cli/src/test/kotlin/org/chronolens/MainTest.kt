@@ -32,7 +32,7 @@ import kotlin.test.assertEquals
 import kotlin.test.fail
 
 class MainTest {
-    companion object {
+    /*companion object {
         @BeforeClass
         @JvmStatic
         fun setupRepository() {
@@ -166,5 +166,5 @@ class MainTest {
         val id = "guava/src/com/google/common/eventbus/Dispatcher.java:Missing"
         val revision = "9fad64c2874ab1aa21d3ecad54f19ae4a25f27fd"
         Main.main("model", "--id", id, "--rev", revision)
-    }
+    }*/
 }

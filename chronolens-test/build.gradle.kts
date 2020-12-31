@@ -1,5 +1,5 @@
 plugins {
-    maven
+    id("chronolens.library-conventions")
 }
 
 dependencies {

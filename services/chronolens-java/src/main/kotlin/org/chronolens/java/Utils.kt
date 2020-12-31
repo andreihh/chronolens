@@ -115,7 +115,7 @@ internal fun AbstractTypeDeclaration.members(): List<*> {
 }
 
 internal fun AbstractTypeDeclaration.supertypes(): Set<String> = when (this) {
-    is AnnotationTypeDeclaration -> emptyList()
+    is AnnotationTypeDeclaration -> emptyList<Type>()
     is EnumDeclaration -> superInterfaceTypes()
     is TypeDeclaration -> superInterfaceTypes() + listOfNotNull(superclassType)
     else -> throw AssertionError("Unknown declaration '$this'!")
@@ -136,7 +136,7 @@ internal fun getModifiers(node: ASTNode): List<ASTNode> = when (node) {
     is BodyDeclaration -> node.modifiers()
     is SingleVariableDeclaration -> node.modifiers()
     is VariableDeclarationFragment -> getModifiers(node.parent)
-    else -> emptyList()
+    else -> emptyList<ASTNode>()
 }.requireIsInstance()
 
 private fun PrimitiveType.asString(): String = when (primitiveTypeCode) {

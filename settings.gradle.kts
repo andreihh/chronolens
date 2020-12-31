@@ -1,6 +1,6 @@
 rootProject.name = "chronolens"
 
-include("chronolens-core", "chronolens-test")
+include("chronolens-core", "chronolens-cli", "chronolens-test")
 
 include("services:chronolens-git")
 
@@ -11,3 +11,11 @@ include(
     "analyzers:chronolens-coupling",
     "analyzers:chronolens-decapsulations"
 )
+
+// Required for Dokka.
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        jcenter()
+    }
+}
