@@ -1,7 +1,7 @@
 # ChronoLens
 
 [![](https://jitpack.io/v/andreihh/chronolens.svg)](https://jitpack.io/#andreihh/chronolens)
-[![Build Status](https://travis-ci.org/andreihh/chronolens.svg)](https://travis-ci.org/andreihh/chronolens)
+[![Build Status](https://travis-ci.com/andreihh/chronolens.svg)](https://travis-ci.com/andreihh/chronolens)
 [![codecov](https://codecov.io/gh/andreihh/chronolens/branch/master/graph/badge.svg)](https://codecov.io/gh/andreihh/chronolens)
 [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
@@ -174,7 +174,7 @@ Processing a `Transaction` can also be achieved using the `Visitor` pattern:
 abstract class TransactionVisitor {
     /** The current snapshot of the repository. */
     protected final Project project = new Project();
-    
+
     protected abstract void visit(AddNode edit);
     protected abstract void visit(RemoveNode edit);
     protected abstract void visit(EditType edit);
