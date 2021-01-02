@@ -22,6 +22,7 @@ import org.chronolens.core.subprocess.Subprocess.execute
 import org.chronolens.test.core.model.assertEquals
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.contrib.java.lang.system.ExpectedSystemExit
@@ -31,8 +32,9 @@ import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
+@Ignore
 class MainTest {
-    /*companion object {
+    companion object {
         @BeforeClass
         @JvmStatic
         fun setupRepository() {
@@ -166,5 +168,5 @@ class MainTest {
         val id = "guava/src/com/google/common/eventbus/Dispatcher.java:Missing"
         val revision = "9fad64c2874ab1aa21d3ecad54f19ae4a25f27fd"
         Main.main("model", "--id", id, "--rev", revision)
-    }*/
+    }
 }
