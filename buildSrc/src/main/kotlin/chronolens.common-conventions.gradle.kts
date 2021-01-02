@@ -1,9 +1,7 @@
 //import java.net.URL
-//import kotlin.io.path.createTempDirectory
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    `java-library`
     kotlin("jvm")
     id("org.jetbrains.dokka")
     jacoco
@@ -24,14 +22,16 @@ dependencies {
     testImplementation("junit:junit:4.13")
 }
 
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs += "-Xjvm-default=all"
+    }
 }
 
 tasks.test {
+    // TODO: use temporary file rules in unit tests.
     workingDir = createTempDir().apply(File::deleteOnExit)
-    // TODO: figure out why the new method is not found.
-    //workingDir = createTempDirectory().apply { it.toFile().deleteOnExit() }
 }
 
 tasks.jar {
@@ -51,9 +51,9 @@ tasks.jacocoTestReport {
 
 tasks.dokkaJavadoc {
     dokkaSourceSets {
-        // TODO: figure out why this leads to a superclass not found error.
-        /*configureEach { // named("main") {
-            includes.from("Module.md")
+        named("main") {
+            // TODO: figure out why this leads to a superclass not found error.
+            /*includes.from("Module.md")
             sourceLink {
                 val ghRoot = "https://github.com/andreihh/chronolens"
                 val ghProject = "$ghRoot/tree/master/${project.path}"
@@ -62,8 +62,8 @@ tasks.dokkaJavadoc {
                 localDirectory.set(file(sourceRoot))
                 remoteUrl.set(URL("$ghProject/$sourceRoot"))
                 remoteLineSuffix.set("#L")
-            }
-        }*/
+            }*/
+        }
     }
 }
 

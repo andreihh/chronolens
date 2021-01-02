@@ -1,6 +1,3 @@
-import java.io.File
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     base
     jacoco
@@ -10,6 +7,12 @@ repositories {
     mavenCentral()
 }
 
+tasks.wrapper {
+    distributionType = Wrapper.DistributionType.ALL
+}
+
+val Project.jacocoReportTasks get() = tasks.withType<JacocoReport>()
+
 tasks.register<JacocoReport>("codeCoverageReport") {
     group = JavaBasePlugin.VERIFICATION_GROUP
     description = "Generates a combined code coverage report for all tests."
@@ -18,18 +21,12 @@ tasks.register<JacocoReport>("codeCoverageReport") {
         fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
     )
 
-    val modules =
-        subprojects.filter { it.tasks.findByName("jacocoTestReport") != null }
-
-    modules.forEach {
-        val reports = it.tasks.withType<JacocoReport>()
-        val sources = it.the<SourceSetContainer>()["main"]
-        //val data = reports.flatMap(JacocoReport::executionData)
-
-        dependsOn(reports)
-        sourceSets(sources)
-        //executionData(data)
-    }
+    subprojects
+        .filter { it.jacocoReportTasks.isNotEmpty() }
+        .forEach {
+            dependsOn(it.jacocoReportTasks)
+            sourceSets(it.the<SourceSetContainer>()["main"])
+        }
 
     reports {
         html.isEnabled = true
