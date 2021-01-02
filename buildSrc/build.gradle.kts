@@ -8,7 +8,7 @@ repositories {
 }
 
 dependencies {
-    // Kotlin version embedded by Gradle 6.8-rc-1 is 1.4.20. We must not specify
+    // Kotlin version embedded by Gradle 6.8-rc-4 is 1.4.20. We must not specify
     // a different version in order to avoid conflicts with the embedded
     // version. See https://youtrack.jetbrains.com/issue/KT-41142.
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
