@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,72 +23,92 @@ import org.chronolens.core.versioning.Revision
 /**
  * Validates the given revision [id].
  *
- * @throws IllegalArgumentException if the given [id] is not valid
+ * @throws IllegalArgumentException if the given [id] is invalid
  */
 internal fun validateRevisionId(id: String) {
     require(isValidRevisionId(id)) { "Invalid revision id '$id'!" }
 }
 
 /**
- * Checks that the given revision [id] is valid.
+ * Validates the given [path].
  *
- * @throws IllegalStateException if the given [id] is not valid
+ * @throws IllegalArgumentException if the given [path] is invalid
  */
-internal fun checkValidRevisionId(id: String) {
-    check(isValidRevisionId(id)) { "Invalid revision id '$id'!" }
+internal fun validatePath(path: String): String {
+    require(isValidPath(path)) { "Invalid source file path '$path'!" }
+    return path
 }
 
 /**
- * Validates the given [path].
+ * Checks that the given [condition] is true.
  *
- * @throws IllegalArgumentException if the given [path] is not valid
+ * @throws CorruptedRepositoryException if [condition] is false
  */
-internal fun validatePath(path: String) {
-    require(isValidPath(path)) { "Invalid source file path '$path'!" }
+internal fun checkState(condition: Boolean, lazyMessage: () -> String) {
+    if (!condition) throw CorruptedRepositoryException(lazyMessage())
+}
+
+/**
+ * Checks that the given revision [id] is valid.
+ *
+ * @throws CorruptedRepositoryException if the given [id] is invalid
+ */
+internal fun checkValidRevisionId(id: String): String {
+    checkState(isValidRevisionId(id)) { "Invalid revision id '$id'!" }
+    return id
 }
 
 /**
  * Checks that the given source file [path] is valid.
  *
- * @throws IllegalStateException if the given [path] is not valid
+ * @throws CorruptedRepositoryException if the given [path] is invalid
  */
-internal fun checkValidPath(path: String) {
-    check(isValidPath(path)) { "Invalid source file path '$path'!" }
+internal fun checkValidPath(path: String): String {
+    checkState(isValidPath(path)) { "Invalid source file path '$path'!" }
+    return path
+}
+
+/**
+ * Checks that the given [sources] are valid.
+ *
+ * @throws CorruptedRepositoryException if the given [sources] contain any
+ * invalid or duplicated paths
+ */
+internal fun checkValidSources(sources: Collection<String>): Set<String> {
+    val sourceFiles = LinkedHashSet<String>(sources.size)
+    for (source in sources) {
+        checkValidPath(source)
+        checkState(source !in sourceFiles) {
+            "Duplicated source file '$source'!"
+        }
+        sourceFiles += source
+    }
+    return sourceFiles
 }
 
 /**
  * Checks that the given list of transaction ids represent a valid [history].
  *
- * @throws IllegalStateException if the given [history] is invalid
+ * @throws CorruptedRepositoryException if the given [history] is invalid
  */
-internal fun checkValidHistory(history: List<String>) {
+internal fun checkValidHistory(history: List<String>): List<String> {
     val revisionIds = HashSet<String>(history.size)
     for (id in history) {
-        check(id !in revisionIds) { "Duplicated revision id '$id'!" }
+        checkState(id !in revisionIds) { "Duplicated revision id '$id'!" }
         checkValidRevisionId(id)
         revisionIds += id
     }
+    return history
 }
 
 /**
  * Checks that the given list of revisions represent a valid [history].
  *
- * @throws IllegalStateException if the given [history] is invalid
+ * @throws CorruptedRepositoryException if the given [history] contains invalid
+ * or duplicated revision ids
  */
 @JvmName("checkValidRevisionHistory")
-internal fun checkValidHistory(history: List<Revision>) {
+internal fun checkValidHistory(history: List<Revision>): List<Revision> {
     checkValidHistory(history.map(Revision::id))
+    return history
 }
-
-/**
- * Returns a lazy view of this [Iterable] with each element mapped using the
- * given [transform].
- */
-internal fun <T, R> Iterable<T>.mapLazy(transform: (T) -> R): Iterable<R> =
-    Iterable {
-        val it = iterator()
-        object : Iterator<R> {
-            override fun hasNext(): Boolean = it.hasNext()
-            override fun next(): R = transform(it.next())
-        }
-    }

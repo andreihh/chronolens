@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ internal class HistoryAnalyzer(
         Metric.WEIGHTED_CHURN -> member.weightedChurn.roundToInt()
     }
 
-    fun analyze(history: Iterable<Transaction>): Report {
+    fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::visit)
         val membersByFile = stats.keys.groupBy(::getSourcePath)
         val sourcePaths = project.sources.map(SourceFile::path)

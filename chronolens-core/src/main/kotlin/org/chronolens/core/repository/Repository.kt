@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.chronolens.core.repository
 
 import org.chronolens.core.model.Project
 import org.chronolens.core.model.SourceFile
+import java.util.stream.Stream
+import kotlin.streams.asStream
 
 /**
  * A wrapper which connects to a repository and allows querying source code
@@ -25,47 +27,44 @@ import org.chronolens.core.model.SourceFile
  */
 public interface Repository {
     /**
-     * Returns the id of the `head` revision of this repository.
+     * Returns the id of the `head` revision.
      *
-     * @throws IllegalStateException if this repository is in a corrupted state
+     * @throws CorruptedRepositoryException if the repository is corrupted
      */
     public fun getHeadId(): String
 
     /**
-     * Returns the set of source files from the `head` revision which can be
-     * interpreted.
+     * Returns the interpretable source files from the `head` revision.
      *
-     * @throws IllegalStateException if this repository is in a corrupted state
+     * @throws CorruptedRepositoryException if the repository is corrupted
      */
     public fun listSources(): Set<String>
 
     /**
-     * Returns the list of revisions from this repository in chronological
-     * order.
+     * Returns the list of all revisions chronological order.
      *
-     * @throws IllegalStateException if this repository is in a corrupted state
+     * @throws CorruptedRepositoryException if the repository is corrupted
      */
     public fun listRevisions(): List<String>
 
     /**
-     * Returns the source file found at the given [path] as it is found in the
-     * `head` revision, or `null` if the [path] doesn't exist in the `head`
-     * revision or couldn't be interpreted.
+     * Returns the source file found at the given [path] in the `head` revision,
+     * or `null` if the [path] doesn't exist in the `head` revision or couldn't
+     * be interpreted.
      *
      * If the source contains syntax errors, then the most recent version which
      * can be parsed without errors will be returned. If all versions of the
      * source contain errors, then the empty source file will be returned.
      *
      * @throws IllegalArgumentException if the given [path] is invalid
-     * @throws IllegalStateException if this repository is in a corrupted state
+     * @throws CorruptedRepositoryException if the repository is corrupted
      */
     public fun getSource(path: String): SourceFile?
 
     /**
-     * Returns the snapshot of the repository, as it is found in the `head`
-     * revision.
+     * Returns the snapshot of the repository at the `head` revision.
      *
-     * @throws IllegalStateException if this repository is in a corrupted state
+     * @throws CorruptedRepositoryException if the repository is corrupted
      * @see getSource for details about how the latest sources are retrieved
      */
     public fun getSnapshot(): Project {
@@ -77,9 +76,12 @@ public interface Repository {
      * Returns a lazy view of the transactions applied to the repository in
      * chronological order.
      *
-     * @throws IllegalStateException if this repository is in a corrupted state
+     * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun getHistory(): Iterable<Transaction>
+    public fun getHistory(): Sequence<Transaction>
+
+    /** Delegates to [getHistory]. */
+    public fun getHistoryStream(): Stream<Transaction> = getHistory().asStream()
 
     public companion object {
         /** Returns whether the given source file [path] is valid. */

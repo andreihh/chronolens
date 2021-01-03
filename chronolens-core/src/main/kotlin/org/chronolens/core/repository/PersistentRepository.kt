@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,12 @@ package org.chronolens.core.repository
 
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
+import org.chronolens.core.serialization.JsonException
 import org.chronolens.core.serialization.JsonModule
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
+import java.io.UncheckedIOException
 import java.util.Collections.unmodifiableList
 import java.util.Collections.unmodifiableSet
 
@@ -31,86 +34,120 @@ import java.util.Collections.unmodifiableSet
  * All queries read the interpreted data directly from disk, not having to
  * reinterpret it again or to communicate with other subprocesses.
  */
-public class PersistentRepository private constructor() : Repository {
-    private val headId = headFile.readFileLines().single()
-    private val sources = sourcesFile.readFileLines().toSet()
-    private val history = historyFile.readFileLines()
+public class PersistentRepository
+@Throws(IOException::class) internal constructor(
+    private val files: RepositoryFileLayout,
+) : Repository {
+
+    private val headId: String
+    private val sources: Set<String>
+    private val history: List<String>
 
     init {
-        checkValidRevisionId(headId)
-        sources.forEach(::checkValidPath)
-        checkValidHistory(history)
+        with(files) {
+            checkDirectoryExists(rootDirectory)
+            checkFileExists(headFile)
+            checkFileExists(sourcesFile)
+            checkFileExists(historyFile)
+            checkDirectoryExists(snapshotDirectory)
+            checkDirectoryExists(transactionsDirectory)
+        }
+
+        val rawHeadId = files.headFile.readFileLines()
+        checkState(rawHeadId.size == 1) {
+            "'${files.headFile}' must contain a single line with the head id!"
+        }
+        headId = checkValidRevisionId(rawHeadId.single())
+
+        val rawSources = files.sourcesFile.readFileLines()
+        sources = unmodifiableSet(checkValidSources(rawSources))
+        sources.forEach { path -> checkFileExists(files.getSourceFile(path)) }
+
+        val rawHistory = files.historyFile.readFileLines()
+        history = unmodifiableList(checkValidHistory(rawHistory))
+        history.forEach { revisionId ->
+            checkFileExists(files.getTransactionFile(revisionId))
+        }
     }
 
     override fun getHeadId(): String = headId
 
-    override fun listSources(): Set<String> = unmodifiableSet(sources)
+    override fun listSources(): Set<String> = sources
 
-    override fun listRevisions(): List<String> = unmodifiableList(history)
+    override fun listRevisions(): List<String> = history
 
     override fun getSource(path: String): SourceFile? {
         validatePath(path)
         return if (path !in sources) null
-        else JsonModule.deserialize(getSourceFile(path))
+        else JsonModule.deserialize(files.getSourceFile(path))
     }
 
-    override fun getHistory(): Iterable<Transaction> =
-        history.mapLazy { transactionId ->
-            val file = getTransactionFile(transactionId)
-            JsonModule.deserialize<Transaction>(file)
+    override fun getHistory(): Sequence<Transaction> =
+        history.asSequence().map { transactionId ->
+            val file = files.getTransactionFile(transactionId)
+            try {
+                JsonModule.deserialize<Transaction>(file)
+            } catch (e: IOException) {
+                throw UncheckedIOException(e)
+            }
         }
 
     public companion object {
         /**
-         * Returns the instance which can query the repository detected in the
-         * current working directory for code metadata, or `null` if no
-         * repository was detected
+         * Returns the persisted repository detected in the given
+         * [repositoryDirectory], or `null` if no repository was detected.
          *
          * @throws IOException if any input related errors occur
-         * @throws IllegalStateException if the repository state is corrupted
+         * @throws CorruptedRepositoryException if the repository is corrupted
          */
         @Throws(IOException::class)
         @JvmStatic
-        public fun load(): PersistentRepository? =
-            if (rootDirectory.exists()) PersistentRepository() else null
+        public fun load(repositoryDirectory: File): PersistentRepository? {
+            val files = RepositoryFileLayout(repositoryDirectory)
+            return if (!files.rootDirectory.isDirectory) null
+            else PersistentRepository(files)
+        }
 
         /**
-         * Persists this repository in the current working directory.
+         * Persists this repository in the given [repositoryDirectory].
          *
+         * @receiver the repository to persist
+         * @param repositoryDirectory the directory where the repository should
+         * be persisted
          * @param listener the listener which will be notified on the
          * persistence progress, or `null` if no notification is required
          * @return the persisted repository
          * @throws IOException if any output related errors occur
-         * @throws IllegalStateException if the repository state is corrupted
+         * @throws CorruptedRepositoryException if the repository is corrupted
          */
         @Throws(IOException::class)
         @JvmStatic
         public fun Repository.persist(
+            repositoryDirectory: File,
             listener: ProgressListener? = null
         ): PersistentRepository {
-            if (this is PersistentRepository) {
+            val files = RepositoryFileLayout(repositoryDirectory)
+            if (this is PersistentRepository && files == this.files) {
                 return this
             }
-            rootDirectory.mkdir()
-            headFile.printWriter().use { out -> out.println(getHeadId()) }
-            persistSnapshot(listener)
-            persistHistory(listener)
-            return PersistentRepository()
+            RepositoryPersister(this, files, listener).persist()
+            return PersistentRepository(files)
         }
 
         /**
-         * Deletes the previously persisted repository from the current working
-         * directory.
+         * Deletes the previously persisted repository from the given
+         * [repositoryDirectory].
          *
-         * All [PersistentRepository] instances will become corrupted after this
-         * method is called.
+         * All corresponding [PersistentRepository] instances will become
+         * corrupted after this method is called.
          *
          * @throws IOException if any input or output related errors occur
          */
         @Throws(IOException::class)
         @JvmStatic
-        public fun clean() {
-            rootDirectory.deleteRecursively()
+        public fun clean(repositoryDirectory: File) {
+            val files = RepositoryFileLayout(repositoryDirectory)
+            files.rootDirectory.deleteRecursively()
         }
     }
 
@@ -125,70 +162,26 @@ public class PersistentRepository private constructor() : Repository {
     }
 }
 
+private fun checkFileExists(file: File) {
+    checkState(file.isFile) {
+        "File '$file' does not exist or is not a file!"
+    }
+}
+
+private fun checkDirectoryExists(directory: File) {
+    checkState(directory.isDirectory) {
+        "Directory '$directory' does not exist or is not a directory!"
+    }
+}
+
 private inline fun <reified T : Any> JsonModule.deserialize(src: File): T =
     try {
         src.inputStream().use { deserialize(it) }
-    } catch (e: IOException) {
-        throw IllegalStateException(e)
+    } catch (e: JsonException) {
+        throw CorruptedRepositoryException(e)
+    } catch (e: FileNotFoundException) {
+        throw CorruptedRepositoryException(e)
     }
 
 private fun File.readFileLines(): List<String> =
     readLines().takeWhile(String::isNotEmpty)
-
-private val rootDirectory = File(".chronolens")
-private val headFile = File(rootDirectory, "HEAD")
-private val sourcesFile = File(rootDirectory, "SOURCES")
-private val historyFile = File(rootDirectory, "HISTORY")
-private val snapshotDirectory = File(rootDirectory, "snapshot")
-private val transactionsDirectory = File(rootDirectory, "transactions")
-
-private fun getSourceDirectory(path: String): File =
-    File(snapshotDirectory, path)
-
-private fun getSourceFile(path: String): File =
-    File(getSourceDirectory(path), "model.json")
-
-private fun getTransactionFile(id: String): File =
-    File(transactionsDirectory, "$id.json")
-
-private fun persistSource(source: SourceFile) {
-    getSourceDirectory(source.path).mkdirs()
-    getSourceFile(source.path).outputStream().use { out ->
-        JsonModule.serialize(out, source)
-    }
-}
-
-private fun Repository.persistSnapshot(listener: ProgressListener?) {
-    listener?.onSnapshotStart(getHeadId(), listSources().size)
-    snapshotDirectory.mkdir()
-    sourcesFile.printWriter().use { out ->
-        for (path in listSources()) {
-            val source = getSource(path)
-                ?: error("'$path' couldn't be interpreted!")
-            out.println(path)
-            persistSource(source)
-            listener?.onSourcePersisted(path)
-        }
-    }
-    listener?.onSnapshotEnd()
-}
-
-private fun persistTransaction(transaction: Transaction) {
-    val file = getTransactionFile(transaction.revisionId)
-    file.outputStream().use { out ->
-        JsonModule.serialize(out, transaction)
-    }
-}
-
-private fun Repository.persistHistory(listener: ProgressListener?) {
-    listener?.onHistoryStart(listRevisions().size)
-    transactionsDirectory.mkdir()
-    historyFile.printWriter().use { out ->
-        for (transaction in getHistory()) {
-            out.println(transaction.revisionId)
-            persistTransaction(transaction)
-            listener?.onTransactionPersisted(transaction.revisionId)
-        }
-    }
-    listener?.onHistoryEnd()
-}

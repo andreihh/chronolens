@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ internal class DivergentChangeCommand : Subcommand() {
         specified limit"""
     ).defaultValue(0).restrictTo(min = 0)
 
-    private fun analyze(history: Iterable<Transaction>): Report {
+    private fun analyze(history: Sequence<Transaction>): Report {
         val analyzer = HistoryAnalyzer(maxChangeSet, minRevisions, minCoupling)
         val graphs = analyzer.analyze(history).graphs.map { graph ->
             graph.filterNodes { (label, _) -> label.startsWith(graph.label) }

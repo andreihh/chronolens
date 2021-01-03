@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.Repository.Companion.isValidPath
 import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
+import java.io.File
 
 /**
  * An abstract subcommand of a main command-line interface executable.
@@ -56,7 +57,7 @@ public abstract class Subcommand : Command() {
      * exits if no persisted repository is found.
      */
     protected fun load(): PersistentRepository =
-        PersistentRepository.load() ?: exit("Repository not found!")
+        PersistentRepository.load(File(".")) ?: exit("Repository not found!")
 
     protected fun RequiredOption<String>.validateId(): RequiredOption<String> =
         validate { id ->

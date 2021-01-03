@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,6 +96,6 @@ public class RepositoryBuilder {
         override fun getSource(path: String): SourceFile? =
             snapshot.get<SourceFile?>(path)
 
-        override fun getHistory(): Iterable<Transaction> = history
+        override fun getHistory(): Sequence<Transaction> = history.asSequence()
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ internal class HistoryAnalyzer(
         }
     }
 
-    fun analyze(history: Iterable<Transaction>): Report {
+    fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::analyze)
         return Report(aggregate())
     }

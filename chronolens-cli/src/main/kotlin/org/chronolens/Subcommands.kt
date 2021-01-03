@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.PersistentRepository.Companion.persist
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
+import java.io.File
 
 class LsTree : Subcommand() {
     override val help: String get() = """
@@ -95,43 +96,46 @@ class Persist : Subcommand() {
 
     override fun run() {
         val repository = connect()
-        repository.persist(object : ProgressListener {
-            private var sources = 0
-            private var transactions = 0
-            private var i = 0
+        repository.persist(
+            File("."),
+            object : ProgressListener {
+                private var sources = 0
+                private var transactions = 0
+                private var i = 0
 
-            override fun onSnapshotStart(headId: String, sourceCount: Int) {
-                println("Persisting snapshot '$headId'...")
-                sources = sourceCount
-                i = 0
-            }
+                override fun onSnapshotStart(headId: String, sourceCount: Int) {
+                    println("Persisting snapshot '$headId'...")
+                    sources = sourceCount
+                    i = 0
+                }
 
-            override fun onSourcePersisted(path: String) {
-                i++
-                print("Persisted $i / $sources sources...\r")
-            }
+                override fun onSourcePersisted(path: String) {
+                    i++
+                    print("Persisted $i / $sources sources...\r")
+                }
 
-            override fun onSnapshotEnd() {
-                println()
-                println("Done!")
-            }
+                override fun onSnapshotEnd() {
+                    println()
+                    println("Done!")
+                }
 
-            override fun onHistoryStart(revisionCount: Int) {
-                println("Persisting transactions...")
-                transactions = revisionCount
-                i = 0
-            }
+                override fun onHistoryStart(revisionCount: Int) {
+                    println("Persisting transactions...")
+                    transactions = revisionCount
+                    i = 0
+                }
 
-            override fun onTransactionPersisted(id: String) {
-                i++
-                print("Persisted $i / $transactions transactions...\r")
-            }
+                override fun onTransactionPersisted(id: String) {
+                    i++
+                    print("Persisted $i / $transactions transactions...\r")
+                }
 
-            override fun onHistoryEnd() {
-                println()
-                println("Done!")
+                override fun onHistoryEnd() {
+                    println()
+                    println("Done!")
+                }
             }
-        })
+        )
     }
 }
 
@@ -142,6 +146,6 @@ class Clean : Subcommand() {
     """
 
     override fun run() {
-        PersistentRepository.clean()
+        PersistentRepository.clean(File("."))
     }
 }

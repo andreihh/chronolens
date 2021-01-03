@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -156,7 +156,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         if (ignoreConstants && isConstant(fieldId)) emptyList()
         else decapsulationsByField[fieldId].orEmpty()
 
-    fun analyze(history: Iterable<Transaction>): Report {
+    fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::analyze)
         val fieldsByFile = decapsulationsByField.keys.groupBy(::getSourcePath)
         val sourcePaths = project.sources.map(SourceFile::path)

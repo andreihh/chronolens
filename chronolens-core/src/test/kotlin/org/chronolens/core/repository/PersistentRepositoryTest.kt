@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,34 +19,40 @@ package org.chronolens.core.repository
 import org.chronolens.core.repository.PersistentRepository.Companion.persist
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
 import org.chronolens.test.core.repository.assertEquals
-import org.junit.After
+import org.junit.Rule
 import org.junit.Test
-import java.io.File
+import org.junit.rules.TemporaryFolder
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class PersistentRepositoryTest : RepositoryTest() {
+    @get:Rule
+    val tmp = TemporaryFolder()
+
     override fun createRepository(): PersistentRepository =
-        InteractiveRepository.connect()?.persist()
+        InteractiveRepository.connect()?.persist(tmp.root)
             ?: fail("Couldn't connect to VCS repository!")
 
-    @Test fun `test load after clean returns null`() {
-        PersistentRepository.clean()
-        assertNull(PersistentRepository.load())
+    @Test
+    fun `test load after clean returns null`() {
+        PersistentRepository.clean(tmp.root)
+        assertNull(PersistentRepository.load(tmp.root))
     }
 
-    @Test fun `test load returns equal repository`() {
+    @Test
+    fun `test load returns equal repository`() {
         val expected = repository
-        val actual = PersistentRepository.load()
+        val actual = PersistentRepository.load(tmp.root)
             ?: fail("Couldn't load persisted repository!")
         assertEquals(expected, actual)
     }
 
-    @Test fun `test persist already persisted returns same repository`() {
+    @Test
+    fun `test persist already persisted returns same repository`() {
         val expected = repository
-        val actual = repository.persist()
+        val actual = repository.persist(tmp.root)
         assertEquals(expected, actual)
     }
 
@@ -54,7 +60,8 @@ class PersistentRepositoryTest : RepositoryTest() {
         IDLE, SNAPSHOT, TRANSIENT, HISTORY, DONE
     }
 
-    @Test fun `test progress listener`() {
+    @Test
+    fun `test progress listener`() {
         val listener = object : ProgressListener {
             var state = ProgressListenerState.IDLE
                 private set
@@ -103,14 +110,8 @@ class PersistentRepositoryTest : RepositoryTest() {
             }
         }
 
-        InteractiveRepository.connect()?.persist(listener)
+        InteractiveRepository.connect()?.persist(tmp.root, listener)
             ?: fail("Repository not found!")
         assertEquals(ProgressListenerState.DONE, listener.state)
-    }
-
-    @After fun cleanPersistedRepository() {
-        check(File(".chronolens").deleteRecursively()) {
-            "Couldn't clean up the persisted repository!"
-        }
     }
 }

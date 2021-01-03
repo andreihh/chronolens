@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,35 +33,31 @@ import java.util.Collections.unmodifiableSet
  *
  * All queries retrieve and interpret the data from a VCS subprocess.
  */
-public class InteractiveRepository private constructor(
-    private val vcs: VcsProxy,
-) : Repository {
-
-    private val headId = vcs.getHead().id.apply(::checkValidRevisionId)
+public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
+    private val headId = vcs.getHead().id.let(::checkValidRevisionId)
     private val headSources = listSources(headId)
-    private val history = vcs.getHistory().apply(::checkValidHistory)
+    private val history = vcs.getHistory().let(::checkValidHistory)
 
     override fun getHeadId(): String = headId
 
-    /**
-     * Returns the set of source units which can be interpreted from the
-     * revision with the specified [revisionId].
-     *
-     * @throws IllegalArgumentException if [revisionId] is invalid or doesn't
-     * exist
-     * @throws IllegalStateException if this repository is in a corrupted state
-     */
-    public fun listSources(revisionId: String): Set<String> {
-        validateRevisionId(revisionId)
-        val sources = vcs.listFiles(revisionId).filter(::canParse).toSet()
-        sources.forEach(::checkValidPath)
-        return unmodifiableSet(sources)
-    }
-
-    override fun listSources(): Set<String> = headSources
+    override fun listSources(): Set<String> = unmodifiableSet(headSources)
 
     override fun listRevisions(): List<String> =
         unmodifiableList(history.map(Revision::id))
+
+    /**
+     * Returns the interpretable source units from the revision with the
+     * specified [revisionId].
+     *
+     * @throws IllegalArgumentException if [revisionId] is invalid or doesn't
+     * exist
+     * @throws CorruptedRepositoryException if the repository is corrupted
+     */
+    public fun listSources(revisionId: String): Set<String> {
+        validateRevisionId(revisionId)
+        val sources = vcs.listFiles(revisionId).filter(::canParse)
+        return checkValidSources(sources)
+    }
 
     private fun parseSource(revisionId: String, path: String): Result? {
         checkValidRevisionId(revisionId)
@@ -89,9 +85,9 @@ public class InteractiveRepository private constructor(
     }
 
     /**
-     * Returns the source unit found at the given [path] as it is found in the
-     * revision with the specified [revisionId], or `null` if the [path] doesn't
-     * exist in the specified revision or couldn't be interpreted.
+     * Returns the source unit found at the given [path] in the revision with
+     * the specified [revisionId], or `null` if the [path] doesn't exist in the
+     * specified revision or couldn't be interpreted.
      *
      * If the source contains syntax errors, then the most recent version which
      * can be parsed without errors will be returned. If all versions of the
@@ -99,7 +95,7 @@ public class InteractiveRepository private constructor(
      *
      * @throws IllegalArgumentException if [path] or [revisionId] are invalid or
      * if [revisionId] doesn't exist
-     * @throws IllegalStateException if this repository is in a corrupted state
+     * @throws CorruptedRepositoryException if the repository is corrupted
      */
     public fun getSource(path: String, revisionId: String): SourceFile? {
         validatePath(path)
@@ -114,9 +110,9 @@ public class InteractiveRepository private constructor(
 
     override fun getSource(path: String): SourceFile? = getSource(path, headId)
 
-    override fun getHistory(): Iterable<Transaction> {
+    override fun getHistory(): Sequence<Transaction> {
         val project = Project.empty()
-        return history.mapLazy { (revisionId, date, author) ->
+        return history.asSequence().map { (revisionId, date, author) ->
             val changeSet = vcs.getChangeSet(revisionId)
             val before = HashSet<SourceFile>(changeSet.size)
             val after = HashSet<SourceFile>(changeSet.size)
@@ -143,8 +139,8 @@ public class InteractiveRepository private constructor(
          * current working directory for code metadata, or `null` if no
          * supported VCS repository could be unambiguously detected
          *
-         * @throws IllegalStateException if the detected repository is corrupted
-         * or empty (doesn't have a `head` revision)
+         * @throws CorruptedRepositoryException if the detected repository is
+         * corrupted or empty (doesn't have a `head` revision)
          */
         @JvmStatic
         public fun connect(): InteractiveRepository? =
