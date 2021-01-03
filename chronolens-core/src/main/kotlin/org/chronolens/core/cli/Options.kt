@@ -95,7 +95,8 @@ public class NullableOption<T : Any>(command: Command, builder: Builder)
 
     override fun self(): NullableOption<T> = this
 
-    public fun provideDelegate(): OptionDelegate<T?> = provideDelegate(command, null)
+    public fun provideDelegate(): OptionDelegate<T?> =
+        provideDelegate(command, null)
 
     public operator fun provideDelegate(
         thisRef: Command,
