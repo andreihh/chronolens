@@ -62,7 +62,6 @@ class ProjectEditTest {
         assertDiff(before, after)
     }
 
-
     @Test fun `test diff change type modifiers`() {
         val before = project {
             sourceFile("src/Main.java") {

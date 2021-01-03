@@ -150,7 +150,7 @@ class ProjectTest {
         val actual = project {
             sourceFile("src/Main.java") {}
         }
-        actual.apply(listOf(
+        actual.apply(
             sourceFile("src/Main.java").remove(),
             sourceFile("src/Test.java").add {},
             sourceFile("src/Test.java").type("Test").add {},
@@ -160,7 +160,7 @@ class ProjectTest {
                 modifiers { +"abstract" }
                 supertypes { +"Object" }
             }
-        ))
+        )
 
         assertEquals(expected, actual)
     }

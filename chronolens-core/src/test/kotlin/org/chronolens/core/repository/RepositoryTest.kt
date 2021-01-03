@@ -38,34 +38,42 @@ abstract class RepositoryTest {
         VcsProxyFactoryMock.setRepository {
             revision {
                 change("src/Main.mock" to "{")
-                change("src/Worksheet.mock" to """{
+                change(
+                    "src/Worksheet.mock" to """{
                         "id": "src/Worksheet.mock",
                         "@class": "SourceFile",
                         "entities": [{
                             "id": "src/Worksheet.mock#println()",
                             "@class": "Function"
                         }]
-                }""")
-                change("src/Test.mock" to """{
+                    }"""
+                )
+                change(
+                    "src/Test.mock" to """{
                         "id": "src/Test.mock",
                         "@class": "SourceFile"
-                }""")
-                change("src/BuildVersion.mock" to """
+                    }"""
+                )
+                change(
+                    "src/BuildVersion.mock" to """
                         "id": "src/BuildVersion.mock",
                         "@class": "SourceFile"
-                """)
+                    """
+                )
                 change("README.md" to "## Mock repository\n")
             }
 
             revision {
-                change("src/Main.mock" to """{
+                change(
+                    "src/Main.mock" to """{
                         "id": "src/Main.mock",
                         "@class": "SourceFile",
                         "entities": [{
                             "id": "src/Main.mock:Main",
                             "@class": "Type"
                         }]
-                }""")
+                    }"""
+                )
                 change("src/Test.mock" to null)
                 change("src/Error.mock" to "{")
                 change("src/Worksheet.mock" to "{")

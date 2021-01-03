@@ -31,15 +31,15 @@ internal class ChurnersCommand : Subcommand() {
         .help("the metric used to rank and highlight source nodes")
         .defaultValue(Metric.WEIGHTED_CHURN)
 
-    private val skipDays by option<Int>().help("""
-        when analyzing source nodes, ignore revisions occurring in the
+    private val skipDays by option<Int>().help(
+        """when analyzing source nodes, ignore revisions occurring in the
         first specified number of days, counting from the revision
-        when the source node was created.
-    """).defaultValue(14).restrictTo(min = 0)
+        when the source node was created."""
+    ).defaultValue(14).restrictTo(min = 0)
 
-    private val minMetricValue by option<Int>().help("""
-        ignore source files that have less churn than the specified limit
-    """).defaultValue(0).restrictTo(min = 0)
+    private val minMetricValue by option<Int>().help(
+        "ignore source files that have less churn than the specified limit"
+    ).defaultValue(0).restrictTo(min = 0)
 
     override fun run() {
         val analyzer = HistoryAnalyzer(metric, skipDays)

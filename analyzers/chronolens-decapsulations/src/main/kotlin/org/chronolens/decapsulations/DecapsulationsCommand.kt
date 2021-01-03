@@ -31,10 +31,10 @@ internal class DecapsulationsCommand : Subcommand() {
         .help("do not ignore decapsulations of constant fields")
         .defaultValue(false)
 
-    private val minMetricValue by option<Int>().help("""
-        ignore source files that have less decapsulations than the specified
-        limit
-    """).defaultValue(0).restrictTo(min = 0)
+    private val minMetricValue by option<Int>().help(
+        """ignore source files that have less decapsulations than the specified
+        limit"""
+    ).defaultValue(0).restrictTo(min = 0)
 
     override fun run() {
         val analyzer = HistoryAnalyzer(!keepConstants)

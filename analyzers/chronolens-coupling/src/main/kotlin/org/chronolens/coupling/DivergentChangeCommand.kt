@@ -35,30 +35,30 @@ internal class DivergentChangeCommand : Subcommand() {
         .help("the maximum number of changed files in a revision")
         .defaultValue(100).restrictTo(min = 1)
 
-    private val minRevisions by option<Int>().help("""
-        the minimum number of revisions of a method or coupling relation
-    """).defaultValue(5).restrictTo(min = 1)
+    private val minRevisions by option<Int>().help(
+        "the minimum number of revisions of a method or coupling relation"
+    ).defaultValue(5).restrictTo(min = 1)
 
     private val minCoupling by option<Double>()
         .help("the minimum temporal coupling between two methods")
         .defaultValue(0.1).restrictTo(min = 0.0)
 
-    private val minBlobDensity by option<Double>().help("""
-        the minimum average degree (sum of coupling) of methods in a blob
-    """).defaultValue(2.5).restrictTo(min = 0.0)
+    private val minBlobDensity by option<Double>().help(
+        "the minimum average degree (sum of coupling) of methods in a blob"
+    ).defaultValue(2.5).restrictTo(min = 0.0)
 
-    private val maxAntiCoupling by option<Double>().help("""
-        the maximum degree (sum of coupling) of a method in an anti-blob
-    """).defaultValue(0.5).restrictTo(min = 0.0)
+    private val maxAntiCoupling by option<Double>().help(
+        "the maximum degree (sum of coupling) of a method in an anti-blob"
+    ).defaultValue(0.5).restrictTo(min = 0.0)
 
     private val minAntiBlobSize by option<Int>()
         .help("the minimum size of an anti-blob")
         .defaultValue(10).restrictTo(min = 1)
 
-    private val minMetricValue by option<Int>().help("""
-        ignore source files that have less blobs / anti-blobs than the specified
-        limit
-    """).defaultValue(0).restrictTo(min = 0)
+    private val minMetricValue by option<Int>().help(
+        """ignore source files that have less blobs / anti-blobs than the
+        specified limit"""
+    ).defaultValue(0).restrictTo(min = 0)
 
     private fun analyze(history: Iterable<Transaction>): Report {
         val analyzer = HistoryAnalyzer(maxChangeSet, minRevisions, minCoupling)

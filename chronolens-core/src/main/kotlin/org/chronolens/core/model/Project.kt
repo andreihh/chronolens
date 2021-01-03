@@ -76,6 +76,11 @@ public class Project private constructor(
         edits.forEach(::apply)
     }
 
+    /** Utility method. */
+    public fun apply(vararg edits: ProjectEdit) {
+        apply(edits.asList())
+    }
+
     public companion object {
         /**
          * Creates and returns a project from the given [sources].

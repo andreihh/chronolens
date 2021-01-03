@@ -76,7 +76,6 @@ class ValidationUtilsTest {
         validateFunctionId("Test.java#getVersion()")
     }
 
-
     @Test fun `test function id with single parameter is valid`() {
         validateFunctionId("Test.java#getVersion(String)")
     }

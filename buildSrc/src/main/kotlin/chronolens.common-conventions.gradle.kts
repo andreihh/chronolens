@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
     id("org.jetbrains.dokka")
-    //id("org.jlleitschuh.gradle.ktlint")
+    id("com.diffplug.spotless")
     jacoco
 }
 
@@ -30,10 +30,15 @@ tasks.withType<KotlinCompile> {
     }
 }
 
-// TODO: enable ktlint once errors are fixed.
-/*ktlint {
-    version.set("0.40.0")
-}*/
+spotless {
+    kotlin {
+        ktlint("0.40.0")
+    }
+    kotlinGradle {
+        target("*.gradle.kts")
+        ktlint("0.40.0")
+    }
+}
 
 tasks.test {
     // TODO: use temporary file rules in unit tests.

@@ -89,9 +89,9 @@ private fun Function.diff(other: Function): EditFunction? {
     val modifierEdits = modifiers.diff(other.modifiers)
     val bodyEdits = body.diff(other.body)
     val edit = EditFunction(id, parameterEdits, modifierEdits, bodyEdits)
-    val changed = parameterEdits.isNotEmpty()
-        || modifierEdits.isNotEmpty()
-        || bodyEdits.isNotEmpty()
+    val changed = parameterEdits.isNotEmpty() ||
+        modifierEdits.isNotEmpty() ||
+        bodyEdits.isNotEmpty()
     return if (changed) edit else null
 }
 

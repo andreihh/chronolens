@@ -28,8 +28,8 @@ import picocli.CommandLine.ParameterException
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-public class OptionDelegate<out T>(private val option: OptionSpec)
-    : ReadOnlyProperty<Command, T> {
+public class OptionDelegate<out T>(private val option: OptionSpec) :
+    ReadOnlyProperty<Command, T> {
 
     public fun getValue(): T = option.getValue()
 
@@ -90,8 +90,8 @@ public abstract class Option<T : Any, B : Option<T, B>>(
     }
 }
 
-public class NullableOption<T : Any>(command: Command, builder: Builder)
-    : Option<T, NullableOption<T>>(command, builder) {
+public class NullableOption<T : Any>(command: Command, builder: Builder) :
+    Option<T, NullableOption<T>>(command, builder) {
 
     override fun self(): NullableOption<T> = this
 
@@ -132,8 +132,8 @@ public class NullableOption<T : Any>(command: Command, builder: Builder)
         arity(range.start, range.endInclusive)
 }
 
-public class RequiredOption<T : Any>(command: Command, builder: Builder)
-    : Option<T, RequiredOption<T>>(command, builder) {
+public class RequiredOption<T : Any>(command: Command, builder: Builder) :
+    Option<T, RequiredOption<T>>(command, builder) {
 
     override fun self(): RequiredOption<T> = this
 
