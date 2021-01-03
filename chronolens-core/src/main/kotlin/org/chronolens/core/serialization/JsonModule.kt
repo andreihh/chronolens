@@ -134,7 +134,8 @@ public object JsonModule {
     @Throws(IOException::class)
     @JvmStatic
     public fun <T : Any> deserialize(
-        src: InputStream, type: Class<T>,
+        src: InputStream,
+        type: Class<T>,
     ): T = try {
         objectMapper.readValue(src, type)
     } catch (e: JsonProcessingException) {

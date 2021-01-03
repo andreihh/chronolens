@@ -86,10 +86,10 @@ abstract class RepositoryTest {
 
     @Test fun `test list sources`() {
         val expected = setOf(
-                "src/Main.mock",
-                "src/BuildVersion.mock",
-                "src/Error.mock",
-                "src/Worksheet.mock"
+            "src/Main.mock",
+            "src/BuildVersion.mock",
+            "src/Error.mock",
+            "src/Worksheet.mock"
         )
         val actual = repository.listSources()
         assertEquals(expected, actual)

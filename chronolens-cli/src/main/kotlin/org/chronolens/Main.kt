@@ -31,9 +31,9 @@ class Main : MainCommand() {
         @JvmStatic
         fun main(vararg args: String) {
             val command = Main()
-            command.registerSubcommands(listOf(
-                LsTree(), RevList(), Model(), Persist(), Clean()
-            ))
+            command.registerSubcommands(
+                listOf(LsTree(), RevList(), Model(), Persist(), Clean())
+            )
             run(command, *args)
         }
     }

@@ -22,7 +22,6 @@ import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.Repository.Companion.isValidPath
 import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
-import java.util.ServiceLoader
 
 /**
  * An abstract subcommand of a main command-line interface executable.

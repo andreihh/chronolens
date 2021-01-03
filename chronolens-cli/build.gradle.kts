@@ -17,4 +17,3 @@ dependencies {
     testImplementation(project(":chronolens-test"))
     testImplementation("com.github.stefanbirkner:system-rules:1.17.1")
 }
-

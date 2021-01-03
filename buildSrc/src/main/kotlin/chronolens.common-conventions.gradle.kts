@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm")
     id("org.jetbrains.dokka")
+    id("org.jlleitschuh.gradle.ktlint")
     jacoco
 }
 
@@ -27,6 +28,10 @@ tasks.withType<KotlinCompile> {
         jvmTarget = "1.8"
         freeCompilerArgs += "-Xjvm-default=all"
     }
+}
+
+ktlint {
+    version.set("0.40.0")
 }
 
 tasks.test {
