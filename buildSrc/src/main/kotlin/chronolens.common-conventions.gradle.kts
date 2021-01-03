@@ -31,8 +31,11 @@ tasks.withType<KotlinCompile> {
 }
 
 spotless {
+    ratchetFrom("origin/master")
+
     kotlin {
         ktlint("0.40.0")
+        licenseHeaderFile("$rootDir/spotless.kotlin.license")
     }
     kotlinGradle {
         target("*.gradle.kts")
