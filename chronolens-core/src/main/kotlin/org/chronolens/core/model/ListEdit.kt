@@ -21,7 +21,7 @@ package org.chronolens.core.model
  *
  * @param T the type of the elements of the edited list
  */
-sealed class ListEdit<T> : Edit<List<T>> {
+public sealed class ListEdit<T> : Edit<List<T>> {
     /**
      * Applies this edit on the given mutable [subject].
      *
@@ -30,7 +30,7 @@ sealed class ListEdit<T> : Edit<List<T>> {
      */
     protected abstract fun applyOn(subject: MutableList<T>)
 
-    companion object {
+    public companion object {
         /**
          * Applies the given [edits] on [this] list and returns the result.
          *
@@ -38,7 +38,7 @@ sealed class ListEdit<T> : Edit<List<T>> {
          * the given [edits] couldn't be applied
          */
         @JvmStatic
-        fun <T> List<T>.apply(edits: List<ListEdit<T>>): List<T> {
+        public fun <T> List<T>.apply(edits: List<ListEdit<T>>): List<T> {
             val result = toMutableList()
             for (edit in edits) {
                 edit.applyOn(result)
@@ -48,7 +48,7 @@ sealed class ListEdit<T> : Edit<List<T>> {
 
         /** Utility method. */
         @JvmStatic
-        fun <T> List<T>.apply(vararg edits: ListEdit<T>): List<T> =
+        public fun <T> List<T>.apply(vararg edits: ListEdit<T>): List<T> =
             apply(edits.asList())
 
         /**
@@ -56,7 +56,7 @@ sealed class ListEdit<T> : Edit<List<T>> {
          * the [other] list.
          */
         @JvmStatic
-        fun <T> List<T>.diff(other: List<T>): List<ListEdit<T>> {
+        public fun <T> List<T>.diff(other: List<T>): List<ListEdit<T>> {
             val objectToValue = hashMapOf<T, Int>()
             val valueToObject = arrayListOf<T>()
             for (it in (this + other)) {
@@ -85,7 +85,7 @@ sealed class ListEdit<T> : Edit<List<T>> {
      * @property value the element which should be added
      * @throws IllegalArgumentException if [index] is negative
      */
-    data class Add<T>(val index: Int, val value: T) : ListEdit<T>() {
+    public data class Add<T>(val index: Int, val value: T) : ListEdit<T>() {
         init {
             require(index >= 0) { "Can't add $value at negative index $index!" }
         }
@@ -105,7 +105,7 @@ sealed class ListEdit<T> : Edit<List<T>> {
      * @property index the index of the element which should be removed
      * @throws IllegalArgumentException if [index] is negative
      */
-    data class Remove<T>(val index: Int) : ListEdit<T>() {
+    public data class Remove<T>(val index: Int) : ListEdit<T>() {
         init {
             require(index >= 0) { "Can't remove negative index $index!" }
         }

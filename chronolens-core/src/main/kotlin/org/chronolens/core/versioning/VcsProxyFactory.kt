@@ -29,7 +29,7 @@ import java.util.ServiceLoader
  * `META-INF/services/org.chronolens.core.versioning.VcsProxyFactory`
  * configuration file.
  */
-abstract class VcsProxyFactory {
+public abstract class VcsProxyFactory {
     /**
      * Returns whether the associated VCS is supported in the current
      * environment.
@@ -56,9 +56,9 @@ abstract class VcsProxyFactory {
      * valid state (it is corrupted or doesn't have a [head][VcsProxy.getHead]
      * revision)
      */
-    fun connect(): VcsProxy? = if (isSupported()) createProxy() else null
+    public fun connect(): VcsProxy? = if (isSupported()) createProxy() else null
 
-    companion object {
+    public companion object {
         private val vcsProxyFactories =
             ServiceLoader.load(VcsProxyFactory::class.java)
                 .filter(VcsProxyFactory::isSupported)
@@ -72,7 +72,7 @@ abstract class VcsProxyFactory {
          * or empty (doesn't have a [head][VcsProxy.getHead] revision)
          */
         @JvmStatic
-        fun detect(): VcsProxy? =
+        public fun detect(): VcsProxy? =
             vcsProxyFactories.mapNotNull(VcsProxyFactory::createProxy)
                 .singleOrNull()
     }

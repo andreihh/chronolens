@@ -33,8 +33,9 @@ import java.util.Collections.unmodifiableSet
  *
  * All queries retrieve and interpret the data from a VCS subprocess.
  */
-class InteractiveRepository private constructor(private val vcs: VcsProxy) :
-    Repository {
+public class InteractiveRepository private constructor(
+    private val vcs: VcsProxy,
+) : Repository {
 
     private val headId = vcs.getHead().id.apply(::checkValidRevisionId)
     private val headSources = listSources(headId)
@@ -50,7 +51,7 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
      * exist
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun listSources(revisionId: String): Set<String> {
+    public fun listSources(revisionId: String): Set<String> {
         validateRevisionId(revisionId)
         val sources = vcs.listFiles(revisionId).filter(::canParse).toSet()
         sources.forEach(::checkValidPath)
@@ -100,7 +101,7 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
      * if [revisionId] doesn't exist
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun getSource(path: String, revisionId: String): SourceFile? {
+    public fun getSource(path: String, revisionId: String): SourceFile? {
         validatePath(path)
         validateRevisionId(revisionId)
         val result = parseSource(revisionId, path)
@@ -136,7 +137,7 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
         }
     }
 
-    companion object {
+    public companion object {
         /**
          * Returns the instance which can query the repository detected in the
          * current working directory for code metadata, or `null` if no
@@ -146,7 +147,7 @@ class InteractiveRepository private constructor(private val vcs: VcsProxy) :
          * or empty (doesn't have a `head` revision)
          */
         @JvmStatic
-        fun connect(): InteractiveRepository? =
+        public fun connect(): InteractiveRepository? =
             VcsProxyFactory.detect()?.let(::InteractiveRepository)
     }
 }

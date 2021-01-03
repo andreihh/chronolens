@@ -28,50 +28,51 @@ import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
 import java.time.Instant
 
-fun transaction(
+public fun transaction(
     revisionId: String,
-    init: Init<TransactionBuilder>
+    init: Init<TransactionBuilder>,
 ): Transaction = TransactionBuilder(revisionId).apply(init).build()
 
-fun repository(init: Init<RepositoryBuilder>): Repository =
+public fun repository(init: Init<RepositoryBuilder>): Repository =
     RepositoryBuilder().apply(init).build()
 
 @BuilderMarker
-class TransactionBuilder(private val revisionId: String) {
-    var date: Instant = Instant.now()
-    var author: String = "<unknown-author>"
+public class TransactionBuilder(private val revisionId: String) {
+    public var date: Instant = Instant.now()
+    public var author: String = "<unknown-author>"
     private val edits = mutableListOf<ProjectEdit>()
 
-    fun date(value: Instant): TransactionBuilder {
+    public fun date(value: Instant): TransactionBuilder {
         date = value
         return this
     }
 
-    fun author(value: String): TransactionBuilder {
+    public fun author(value: String): TransactionBuilder {
         author = value
         return this
     }
 
-    fun edit(edit: ProjectEdit): TransactionBuilder {
+    public fun edit(edit: ProjectEdit): TransactionBuilder {
         edits += edit
         return this
     }
 
-    operator fun ProjectEdit.unaryPlus() {
+    public operator fun ProjectEdit.unaryPlus() {
         edits += this
     }
 
-    fun build(): Transaction = Transaction(revisionId, date, author, edits)
+    public fun build(): Transaction =
+        Transaction(revisionId, date, author, edits)
 }
 
 @BuilderMarker
-class RepositoryBuilder {
+public class RepositoryBuilder {
     private val history = mutableListOf<Transaction>()
     private val snapshot = Project.empty()
 
-    fun transaction(
+    public fun transaction(
         revisionId: String,
-        init: Init<TransactionBuilder>
+        init: Init<TransactionBuilder>,
     ): RepositoryBuilder {
         val transaction = TransactionBuilder(revisionId).apply(init).build()
         history += transaction
@@ -79,7 +80,7 @@ class RepositoryBuilder {
         return this
     }
 
-    fun build(): Repository = object : Repository {
+    public fun build(): Repository = object : Repository {
         init {
             check(history.isNotEmpty())
         }

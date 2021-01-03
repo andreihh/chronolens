@@ -23,15 +23,15 @@ package org.chronolens.core.versioning
  * The associated VCS must be supported in the current environment and the
  * detected repository must be in a valid state.
  */
-interface VcsProxy {
+public interface VcsProxy {
     /** Returns the `head` revision. */
-    fun getHead(): Revision
+    public fun getHead(): Revision
 
     /**
      * Returns the revision with the given [revisionId], or `null` if no such
      * revision exists.
      */
-    fun getRevision(revisionId: String): Revision?
+    public fun getRevision(revisionId: String): Revision?
 
     /**
      * Returns the files inside the current working directory which were
@@ -39,7 +39,7 @@ interface VcsProxy {
      *
      * @throws IllegalArgumentException if [revisionId] doesn't exist
      */
-    fun getChangeSet(revisionId: String): Set<String>
+    public fun getChangeSet(revisionId: String): Set<String>
 
     /**
      * Returns the set of existing files in the current working directory in the
@@ -47,7 +47,7 @@ interface VcsProxy {
      *
      * @throws IllegalArgumentException if [revisionId] doesn't exist
      */
-    fun listFiles(revisionId: String): Set<String>
+    public fun listFiles(revisionId: String): Set<String>
 
     /**
      * Returns the content of the file located at the given relative [path] as
@@ -56,7 +56,7 @@ interface VcsProxy {
      *
      * @throws IllegalArgumentException if [revisionId] doesn't exist
      */
-    fun getFile(revisionId: String, path: String): String?
+    public fun getFile(revisionId: String, path: String): String?
 
     /**
      * Returns the chronological list of revisions which modified the file or
@@ -67,5 +67,5 @@ interface VcsProxy {
      * A directory is modified if any file in its subtree is modified. The empty
      * string is a path that represents the current working directory.
      */
-    fun getHistory(path: String = ""): List<Revision>
+    public fun getHistory(path: String = ""): List<Revision>
 }

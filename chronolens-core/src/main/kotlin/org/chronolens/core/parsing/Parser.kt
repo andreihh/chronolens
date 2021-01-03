@@ -25,7 +25,7 @@ import java.util.ServiceLoader
  * Parsers must have a public no-arg constructor and must supply an entry in the
  * `META-INF/services/org.chronolens.core.parsing.Parser` configuration file.
  */
-abstract class Parser {
+public abstract class Parser {
     /** Returns whether this parser can interpret the given file [path]. */
     protected abstract fun canParse(path: String): Boolean
 
@@ -40,7 +40,7 @@ abstract class Parser {
     @Throws(SyntaxErrorException::class)
     protected abstract fun parse(path: String, rawSource: String): SourceFile
 
-    companion object {
+    public companion object {
         private val parsers = ServiceLoader.load(Parser::class.java)
 
         /**
@@ -54,7 +54,7 @@ abstract class Parser {
          * Returns whether a provided parser can interpret the given file
          * [path].
          */
-        fun canParse(path: String): Boolean = getParser(path) != null
+        public fun canParse(path: String): Boolean = getParser(path) != null
 
         /**
          * Parses the given `UTF-8` encoded [rawSource] assuming it is located
@@ -66,7 +66,7 @@ abstract class Parser {
          * @throws IllegalStateException if the parsed source file has a
          * different path than the given [path]
          */
-        fun parse(path: String, rawSource: String): Result? {
+        public fun parse(path: String, rawSource: String): Result? {
             val parser = getParser(path) ?: return null
             return try {
                 val source = parser.parse(path, rawSource)

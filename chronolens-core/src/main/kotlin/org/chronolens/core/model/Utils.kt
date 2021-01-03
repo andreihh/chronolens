@@ -27,32 +27,32 @@ internal typealias NodeHashMap = HashMap<String, SourceNode>
 
 private val separators = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
 
-val String.sourcePath: String
+public val String.sourcePath: String
     get() {
         val where = indexOfAny(separators)
         return if (where == -1) this else substring(0, where)
     }
 
-val String.parentId: String?
+public val String.parentId: String?
     get() {
         val where = lastIndexOfAny(separators)
         return if (where == -1) null else substring(0, where)
     }
 
 /** The id of the [SourceNode] which contains [this] entity. */
-val SourceEntity.parentId: String get() =
+public val SourceEntity.parentId: String get() =
     id.parentId ?: throw AssertionError("'$id' must have a parent node!")
 
 /** The path of the [SourceFile] which contains [this] node. */
-val SourceNode.sourcePath: String get() = id.sourcePath
+public val SourceNode.sourcePath: String get() = id.sourcePath
 
 /**
  * The path of the [SourceFile] which contains the node affected by [this] edit.
  */
-val ProjectEdit.sourcePath: String get() = id.sourcePath
+public val ProjectEdit.sourcePath: String get() = id.sourcePath
 
 /** The child source nodes contained in [this] source node. */
-val SourceNode.children: Collection<SourceEntity>
+public val SourceNode.children: Collection<SourceEntity>
     get() = when (this) {
         is SourceFile -> entities
         is Type -> members
@@ -63,7 +63,7 @@ val SourceNode.children: Collection<SourceEntity>
  * Returns all the source nodes contained in [this] source tree in top-down
  * order.
  */
-fun SourceNode.walkSourceTree(): List<SourceNode> {
+public fun SourceNode.walkSourceTree(): List<SourceNode> {
     val nodes = mutableListOf(this)
     var i = 0
     while (i < nodes.size) {
@@ -77,22 +77,22 @@ private const val typePrefix = "@type:"
 private const val returnTypePrefix = "@return:"
 
 /** Returns the type of [this] variable, or `null` if not specified. */
-val Variable.type: String?
+public val Variable.type: String?
     get() = modifiers
         .singleOrNull { it.startsWith(typePrefix) }
         ?.removePrefix(typePrefix)
 
 /** Returns the return type of [this] function, or `null` if not specified. */
-val Function.returnType: String?
+public val Function.returnType: String?
     get() = modifiers
         .singleOrNull { it.startsWith(returnTypePrefix) }
         ?.removePrefix(returnTypePrefix)
 
 /** Returns the modifier corresponding to the given [type]. */
-fun typeModifierOf(type: String): String = "$typePrefix$type"
+public fun typeModifierOf(type: String): String = "$typePrefix$type"
 
 /** Returns the modifier corresponding to the given [returnType]. */
-fun returnTypeModifierOf(returnType: String): String =
+public fun returnTypeModifierOf(returnType: String): String =
     "$returnTypePrefix$returnType"
 
 internal fun NodeHashMap.putSourceTree(root: SourceNode) {

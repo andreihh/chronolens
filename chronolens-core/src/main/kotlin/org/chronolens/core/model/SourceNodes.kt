@@ -21,7 +21,7 @@ package org.chronolens.core.model
  *
  * All collections passed as constructor parameters must be unmodifiable.
  */
-sealed class SourceNode {
+public sealed class SourceNode {
     /**
      * A fully qualified identifier among all nodes inside a [Project].
      *
@@ -30,25 +30,25 @@ sealed class SourceNode {
      * separator and then followed by the simple identifier of the node. The
      * simple identifiers must not contain `/`, `:`, `'`, `"` or `\`.
      */
-    abstract val id: String
+    public abstract val id: String
 
-    companion object {
+    public companion object {
         /** Paths in [SourceFile] ids are separated by `/`. */
-        const val PATH_SEPARATOR: Char = '/'
+        public const val PATH_SEPARATOR: Char = '/'
 
         /** [Type] identifiers are separated by `:` from the parent id. */
-        const val CONTAINER_SEPARATOR: Char = ':'
+        public const val CONTAINER_SEPARATOR: Char = ':'
 
         /**
          * [Function] and [Variable] identifiers are separated by `#` from the
          * parent id.
          */
-        const val MEMBER_SEPARATOR: Char = '#'
+        public const val MEMBER_SEPARATOR: Char = '#'
     }
 }
 
 /** An abstract representation of a source entity within a [SourceFile]. */
-sealed class SourceEntity : SourceNode()
+public sealed class SourceEntity : SourceNode()
 
 /**
  * The source code metadata of a source file.
@@ -58,9 +58,9 @@ sealed class SourceEntity : SourceNode()
  * @throws IllegalArgumentException if the [id] is not valid or if the ids of
  * the [entities] are not valid or if the [entities] contain duplicated ids
  */
-data class SourceFile(
+public data class SourceFile(
     override val id: String,
-    val entities: Set<SourceEntity> = emptySet()
+    val entities: Set<SourceEntity> = emptySet(),
 ) : SourceNode() {
 
     init {
@@ -69,7 +69,7 @@ data class SourceFile(
     }
 
     /** The fully qualified path of this file, equal to [id]. */
-    val path: String get() = id
+    public val path: String get() = id
 }
 
 /**
@@ -83,11 +83,11 @@ data class SourceFile(
  * @throws IllegalArgumentException if the [id] is not valid or if the ids of
  * the [members] are not valid or if the [members] contain duplicated ids
  */
-data class Type(
+public data class Type(
     override val id: String,
     val supertypes: Set<String> = emptySet(),
     val modifiers: Set<String> = emptySet(),
-    val members: Set<SourceEntity> = emptySet()
+    val members: Set<SourceEntity> = emptySet(),
 ) : SourceEntity() {
 
     init {
@@ -96,7 +96,7 @@ data class Type(
     }
 
     /** The simple name of this type. */
-    val name: String get() = id.substringAfterLast(CONTAINER_SEPARATOR)
+    public val name: String get() = id.substringAfterLast(CONTAINER_SEPARATOR)
 }
 
 /**
@@ -112,11 +112,11 @@ data class Type(
  * @throws IllegalArgumentException if the [id] is not valid or if the ids of
  * the [parameters] are not valid or if the [parameters] contain duplicated ids
  */
-data class Function(
+public data class Function(
     override val id: String,
     val parameters: List<String> = emptyList(),
     val modifiers: Set<String> = emptySet(),
-    val body: List<String> = emptyList()
+    val body: List<String> = emptyList(),
 ) : SourceEntity() {
 
     init {
@@ -132,7 +132,7 @@ data class Function(
      * `n` is the arity of the function) if function overloading at the arity
      * level is allowed, or `name()` otherwise.
      */
-    val signature: String get() = id.substringAfterLast(MEMBER_SEPARATOR)
+    public val signature: String get() = id.substringAfterLast(MEMBER_SEPARATOR)
 }
 
 /**
@@ -144,10 +144,10 @@ data class Function(
  * list if it doesn't have an initializer
  * @throws IllegalArgumentException if the [id] is not valid
  */
-data class Variable(
+public data class Variable(
     override val id: String,
     val modifiers: Set<String> = emptySet(),
-    val initializer: List<String> = emptyList()
+    val initializer: List<String> = emptyList(),
 ) : SourceEntity() {
 
     init {
@@ -155,5 +155,5 @@ data class Variable(
     }
 
     /** The simple name of this variable. */
-    val name: String get() = id.substringAfterLast(MEMBER_SEPARATOR)
+    public val name: String get() = id.substringAfterLast(MEMBER_SEPARATOR)
 }

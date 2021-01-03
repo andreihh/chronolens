@@ -23,7 +23,7 @@ import org.chronolens.core.serialization.JsonModule
 import org.chronolens.coupling.Graph.Subgraph
 import java.io.File
 
-class DivergentChangeCommand : Subcommand() {
+internal class DivergentChangeCommand : Subcommand() {
     override val help: String get() = """
         Loads the persisted repository, builds the temporal coupling graphs for
         the analyzed source files, detects the Divergent Change instances,
@@ -95,13 +95,13 @@ class DivergentChangeCommand : Subcommand() {
 
     data class Report(
         val files: List<FileReport>,
-        val coloredGraphs: List<ColoredGraph>
+        val coloredGraphs: List<ColoredGraph>,
     )
 
     data class FileReport(
         val file: String,
         val blobs: List<Subgraph>,
-        val antiBlob: Subgraph?
+        val antiBlob: Subgraph?,
     ) {
 
         val responsibilities: Int = blobs.size + if (antiBlob != null) 1 else 0
@@ -114,7 +114,7 @@ class DivergentChangeCommand : Subcommand() {
 
 private fun Graph.colorNodes(
     blobs: List<Subgraph>,
-    antiBlob: Subgraph?
+    antiBlob: Subgraph?,
 ): ColoredGraph {
     val groups = blobs.map(Subgraph::nodes) + listOfNotNull(antiBlob?.nodes)
     return colorNodes(groups)

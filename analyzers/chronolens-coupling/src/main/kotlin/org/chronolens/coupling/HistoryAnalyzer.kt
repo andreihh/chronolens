@@ -30,10 +30,10 @@ import org.chronolens.core.repository.Transaction
 import org.chronolens.coupling.Graph.Edge
 import org.chronolens.coupling.Graph.Node
 
-class HistoryAnalyzer(
+internal class HistoryAnalyzer(
     private val maxChangeSet: Int,
     private val minRevisions: Int,
-    private val minCoupling: Double
+    private val minCoupling: Double,
 ) {
 
     init {
@@ -102,13 +102,13 @@ class HistoryAnalyzer(
         }
     }
 
-    private fun takeNode(node: Graph.Node): Boolean =
+    private fun takeNode(node: Node): Boolean =
         node.revisions >= minRevisions
 
-    private fun takeEdge(edge: Graph.Edge): Boolean =
+    private fun takeEdge(edge: Edge): Boolean =
         edge.revisions >= minRevisions && edge.coupling >= minCoupling
 
-    private fun makeEdge(id1: String, id2: String, revisions: Int): Graph.Edge {
+    private fun makeEdge(id1: String, id2: String, revisions: Int): Edge {
         val countId1 = changes.getValue(id1)
         val countId2 = changes.getValue(id2)
         val totalCount = countId1 + countId2 - revisions

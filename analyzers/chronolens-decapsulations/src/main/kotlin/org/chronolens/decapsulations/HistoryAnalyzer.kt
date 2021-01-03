@@ -29,7 +29,7 @@ import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
 
-class HistoryAnalyzer(private val ignoreConstants: Boolean) {
+internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private val project = Project.empty()
     private val decapsulationsByField = hashMapOf<String, List<Decapsulation>>()
 
@@ -182,6 +182,6 @@ class HistoryAnalyzer(private val ignoreConstants: Boolean) {
 
     data class FieldReport(
         val id: String,
-        val decapsulations: List<Decapsulation>
+        val decapsulations: List<Decapsulation>,
     )
 }

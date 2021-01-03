@@ -21,7 +21,7 @@ package org.chronolens.core.model
  *
  * @param T the type of the elements of the edited set
  */
-sealed class SetEdit<T> : Edit<Set<T>> {
+public sealed class SetEdit<T> : Edit<Set<T>> {
     /**
      * Applies this edit on the given mutable [subject].
      *
@@ -30,7 +30,7 @@ sealed class SetEdit<T> : Edit<Set<T>> {
      */
     protected abstract fun applyOn(subject: MutableSet<T>)
 
-    companion object {
+    public companion object {
         /**
          * Applies the given [edits] on [this] set and returns the result.
          *
@@ -38,7 +38,7 @@ sealed class SetEdit<T> : Edit<Set<T>> {
          * the given [edits] couldn't be applied
          */
         @JvmStatic
-        fun <T> Set<T>.apply(edits: List<SetEdit<T>>): Set<T> {
+        public fun <T> Set<T>.apply(edits: List<SetEdit<T>>): Set<T> {
             val result = toMutableSet()
             for (edit in edits) {
                 edit.applyOn(result)
@@ -48,7 +48,7 @@ sealed class SetEdit<T> : Edit<Set<T>> {
 
         /** Utility method. */
         @JvmStatic
-        fun <T> Set<T>.apply(vararg edits: SetEdit<T>): Set<T> =
+        public fun <T> Set<T>.apply(vararg edits: SetEdit<T>): Set<T> =
             apply(edits.asList())
 
         /**
@@ -56,7 +56,7 @@ sealed class SetEdit<T> : Edit<Set<T>> {
          * [other] set.
          */
         @JvmStatic
-        fun <T> Set<T>.diff(other: Set<T>): List<SetEdit<T>> {
+        public fun <T> Set<T>.diff(other: Set<T>): List<SetEdit<T>> {
             val added = (other - this).map(::Add)
             val removed = (this - other).map(::Remove)
             return added + removed
@@ -69,7 +69,7 @@ sealed class SetEdit<T> : Edit<Set<T>> {
      * @param T the type of the elements of the edited set
      * @property value the element which should be added
      */
-    data class Add<T>(val value: T) : SetEdit<T>() {
+    public data class Add<T>(val value: T) : SetEdit<T>() {
         override fun applyOn(subject: MutableSet<T>) {
             check(subject.add(value)) {
                 "Can't add $value because it already exists in $subject!"
@@ -83,7 +83,7 @@ sealed class SetEdit<T> : Edit<Set<T>> {
      * @param T the type of the elements of the edited set
      * @property value the element which should be removed
      */
-    data class Remove<T>(val value: T) : SetEdit<T>() {
+    public data class Remove<T>(val value: T) : SetEdit<T>() {
         override fun applyOn(subject: MutableSet<T>) {
             check(subject.remove(value)) {
                 "Can't remove $value because it doesn't exist in $subject!"

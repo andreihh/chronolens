@@ -49,7 +49,7 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /** Provides JSON serialization and deserialization of arbitrary objects. */
-object JsonModule {
+public object JsonModule {
     private val typeIdResolver = object : TypeIdResolverBase() {
         private val typeToId = mapOf(
             SourceFile::class.java to "SourceFile",
@@ -116,7 +116,7 @@ object JsonModule {
      */
     @Throws(IOException::class)
     @JvmStatic
-    fun serialize(out: OutputStream, value: Any) {
+    public fun serialize(out: OutputStream, value: Any) {
         try {
             objectMapper.writeValue(out, value)
         } catch (e: JsonProcessingException) {
@@ -133,7 +133,9 @@ object JsonModule {
      */
     @Throws(IOException::class)
     @JvmStatic
-    fun <T : Any> deserialize(src: InputStream, type: Class<T>): T = try {
+    public fun <T : Any> deserialize(
+        src: InputStream, type: Class<T>,
+    ): T = try {
         objectMapper.readValue(src, type)
     } catch (e: JsonProcessingException) {
         throw JsonException(e)
@@ -142,6 +144,6 @@ object JsonModule {
     /** Inline utility method. */
     @Throws(IOException::class)
     @JvmStatic
-    inline fun <reified T : Any> deserialize(src: InputStream): T =
+    public inline fun <reified T : Any> deserialize(src: InputStream): T =
         deserialize(src, T::class.java)
 }

@@ -23,24 +23,24 @@ import java.util.Collections.unmodifiableCollection
  *
  * It indexes all contained source nodes to allow fast access by id.
  */
-class Project private constructor(
+public class Project private constructor(
     private val sourceMap: HashMap<String, SourceFile>,
-    private val nodeMap: HashMap<String, SourceNode>
+    private val nodeMap: HashMap<String, SourceNode>,
 ) {
 
     /** The source files in this project. */
-    val sources: Collection<SourceFile>
+    public val sources: Collection<SourceFile>
         get() = unmodifiableCollection(sourceMap.values)
 
     /** Returns all the source nodes in this project. */
-    val sourceTree: Iterable<SourceNode>
+    public val sourceTree: Iterable<SourceNode>
         get() = unmodifiableCollection(nodeMap.values)
 
     /**
      * Returns the node with the specified [id], or `null` if no such node was
      * found.
      */
-    operator fun get(id: String): SourceNode? = nodeMap[id]
+    public operator fun get(id: String): SourceNode? = nodeMap[id]
 
     /**
      * Returns the node of type [T] with the specified [id], or `null` if no
@@ -49,7 +49,7 @@ class Project private constructor(
      * @throws IllegalStateException if the requested node is not of type [T]
      */
     @JvmName("getNode")
-    inline fun <reified T : SourceNode?> get(id: String): T {
+    public inline fun <reified T : SourceNode?> get(id: String): T {
         val node = get(id)
         check(node is T) { "'$id' is not of type '${T::class}'!" }
         return node
@@ -61,7 +61,7 @@ class Project private constructor(
      * @throws IllegalStateException if this project has an invalid state and
      * the given [edit] couldn't be applied
      */
-    fun apply(edit: ProjectEdit) {
+    public fun apply(edit: ProjectEdit) {
         val sourcePath = edit.sourcePath
         sourceMap -= sourcePath
         edit.applyOn(nodeMap)
@@ -72,11 +72,11 @@ class Project private constructor(
     }
 
     /** Utility method. */
-    fun apply(edits: List<ProjectEdit>) {
+    public fun apply(edits: List<ProjectEdit>) {
         edits.forEach(::apply)
     }
 
-    companion object {
+    public companion object {
         /**
          * Creates and returns a project from the given [sources].
          *
@@ -84,7 +84,7 @@ class Project private constructor(
          * duplicate ids
          */
         @JvmStatic
-        fun of(sources: Collection<SourceFile>): Project {
+        public fun of(sources: Collection<SourceFile>): Project {
             val sourceMap = HashMap<String, SourceFile>(sources.size)
             for (source in sources) {
                 require(source.id !in sourceMap) {
@@ -98,6 +98,6 @@ class Project private constructor(
 
         /** Creates and returns an empty project. */
         @JvmStatic
-        fun empty(): Project = Project(HashMap(0), HashMap(0))
+        public fun empty(): Project = Project(HashMap(0), HashMap(0))
     }
 }

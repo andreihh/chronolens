@@ -5,6 +5,5 @@ plugins {
 }
 
 kotlin {
-    // TODO: switch to strict 'explicitApi()' once all warnings are fixed.
-    explicitApiWarning()
+    explicitApi()
 }

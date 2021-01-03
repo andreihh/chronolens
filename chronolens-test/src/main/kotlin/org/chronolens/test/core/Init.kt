@@ -16,7 +16,7 @@
 
 package org.chronolens.test.core
 
-typealias Init<T> = T.() -> Any?
+public typealias Init<T> = T.() -> Any?
 
 internal inline fun <T> T.apply(init: Init<T>): T {
     init(this)

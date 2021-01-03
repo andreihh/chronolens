@@ -20,7 +20,7 @@ import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.serialization.JsonModule
 
-class DecapsulationsCommand : Subcommand() {
+internal class DecapsulationsCommand : Subcommand() {
     override val help: String get() = """
         Loads the persisted repository, detects the decapsulations that occurred
         during the evolution of the project and reports the results to the

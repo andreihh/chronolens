@@ -22,10 +22,10 @@ import org.chronolens.core.model.Project
 import org.chronolens.core.model.SourceFile
 import kotlin.test.assertEquals as assertEqualsKt
 
-fun assertEquals(
+public fun assertEquals(
     expected: Project?,
     actual: Project?,
-    message: String? = null
+    message: String? = null,
 ) {
     val expectedSources = expected?.sources?.toList()?.sortedBy(SourceFile::id)
     val actualSources = actual?.sources?.toList()?.sortedBy(SourceFile::id)

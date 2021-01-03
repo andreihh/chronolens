@@ -32,7 +32,7 @@ import java.util.ServiceLoader
  * the `META-INF/services/org.chronolens.core.cli.Subcommand` configuration
  * file.
  */
-abstract class Subcommand : Command() {
+public abstract class Subcommand : Command() {
     override val name: String get() = getCommandName()
     final override val version: String? get() = null
     final override val standardHelpOptions: Boolean get() = false
@@ -71,13 +71,5 @@ abstract class Subcommand : Command() {
         require(isValidRevisionId(revision)) { "Invalid revision '$revision'!" }
         val revisionExists = revision in repository().listRevisions()
         require(revisionExists) { "Revision '$revision' doesn't exist!" }
-    }
-
-    companion object {
-        /** Returns the list of provided subcommands. */
-        @JvmStatic
-        fun assembleSubcommands(): List<Subcommand> =
-            ServiceLoader.load(Subcommand::class.java)
-                .sortedBy(Subcommand::name)
     }
 }

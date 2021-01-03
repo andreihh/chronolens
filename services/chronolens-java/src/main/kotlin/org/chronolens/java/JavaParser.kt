@@ -26,7 +26,7 @@ import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.CompilationUnit
 
 /** Java 8 language parser. */
-class JavaParser : Parser() {
+internal class JavaParser : Parser() {
     override fun canParse(path: String): Boolean = path.endsWith(".java")
 
     @Throws(SyntaxErrorException::class)

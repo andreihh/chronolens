@@ -25,4 +25,8 @@ import java.time.Instant
  * @property date the date at which this revision was committed
  * @property author the author of this revision
  */
-data class Revision(val id: String, val date: Instant, val author: String)
+public data class Revision(
+    val id: String,
+    val date: Instant,
+    val author: String,
+)

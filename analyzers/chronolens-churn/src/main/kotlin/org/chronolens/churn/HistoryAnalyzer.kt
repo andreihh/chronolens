@@ -36,7 +36,11 @@ import java.time.temporal.ChronoUnit.DAYS
 import kotlin.math.ln
 import kotlin.math.roundToInt
 
-class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
+internal class HistoryAnalyzer(
+    private val metric: Metric,
+    private val skipDays: Int,
+) {
+
     init {
         require(skipDays >= 0) { "Invalid number of skipped days '$skipDays'!" }
     }

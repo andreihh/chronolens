@@ -16,9 +16,9 @@
 
 package org.chronolens.decapsulations
 
-data class Decapsulation(
+internal data class Decapsulation(
     val fieldId: String,
     val sourceNodeId: String,
     val revisionId: String,
-    val message: String
+    val message: String,
 )

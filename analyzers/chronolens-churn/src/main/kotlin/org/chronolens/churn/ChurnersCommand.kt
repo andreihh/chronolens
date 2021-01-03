@@ -21,7 +21,7 @@ import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.serialization.JsonModule
 
-class ChurnersCommand : Subcommand() {
+internal class ChurnersCommand : Subcommand() {
     override val help: String get() = """
         Loads the persisted repository, detects the churners of the system and
         reports the results to the standard output.

@@ -17,10 +17,10 @@
 package org.chronolens.core.subprocess
 
 /** Signals that a subprocess terminated abnormally. */
-class SubprocessException : RuntimeException {
-    constructor(cause: Throwable) : super(cause)
+public class SubprocessException : RuntimeException {
+    public constructor(cause: Throwable) : super(cause)
 
-    constructor(
+    public constructor(
         exitValue: Int,
         message: String
     ) : super("Subprocess exited with code $exitValue: $message")

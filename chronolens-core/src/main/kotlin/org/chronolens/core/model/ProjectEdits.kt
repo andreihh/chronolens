@@ -20,9 +20,9 @@ import org.chronolens.core.model.ListEdit.Companion.apply
 import org.chronolens.core.model.SetEdit.Companion.apply
 
 /** An atomic change which should be applied to a [Project]. */
-sealed class ProjectEdit : Edit<Project> {
+public sealed class ProjectEdit : Edit<Project> {
     /** The [SourceNode.id] of the edited node. */
-    abstract val id: String
+    public abstract val id: String
 
     /**
      * Applies this edit on the given mutable map of [nodes].
@@ -32,13 +32,13 @@ sealed class ProjectEdit : Edit<Project> {
      */
     internal abstract fun applyOn(nodes: NodeHashMap)
 
-    companion object {
+    public companion object {
         /**
          * Returns the edits which must be applied to [this] project in order to
          * obtain the [other] project.
          */
         @JvmStatic
-        fun Project.diff(other: Project): List<ProjectEdit> {
+        public fun Project.diff(other: Project): List<ProjectEdit> {
             val thisSources = this.sources.map(SourceFile::id)
             val otherSources = other.sources.map(SourceFile::id)
             val allSources = thisSources.union(otherSources)
@@ -76,7 +76,7 @@ sealed class ProjectEdit : Edit<Project> {
  *
  * @property node the node which should be added to the project
  */
-data class AddNode(val node: SourceNode) : ProjectEdit() {
+public data class AddNode(val node: SourceNode) : ProjectEdit() {
     override val id: String get() = node.id
 
     override fun applyOn(nodes: NodeHashMap) {
@@ -93,7 +93,7 @@ data class AddNode(val node: SourceNode) : ProjectEdit() {
  *
  * @throws IllegalArgumentException if the `id` is not a valid node id
  */
-data class RemoveNode(override val id: String) : ProjectEdit() {
+public data class RemoveNode(override val id: String) : ProjectEdit() {
     init {
         validateNodeId(id)
     }
@@ -116,7 +116,7 @@ data class RemoveNode(override val id: String) : ProjectEdit() {
  * [Type.modifiers] of the type with the given [id]
  * @throws IllegalArgumentException if the [id] is not a valid type id
  */
-data class EditType(
+public data class EditType(
     override val id: String,
     val supertypeEdits: List<SetEdit<String>> = emptyList(),
     val modifierEdits: List<SetEdit<String>> = emptyList()
@@ -148,7 +148,7 @@ data class EditType(
  * of the function with the given [id]
  * @throws IllegalArgumentException if the [id] is not a valid function id
  */
-data class EditFunction(
+public data class EditFunction(
     override val id: String,
     val parameterEdits: List<ListEdit<String>> = emptyList(),
     val modifierEdits: List<SetEdit<String>> = emptyList(),
@@ -181,7 +181,7 @@ data class EditFunction(
  * [Variable.initializer] of the variable with the given [id]
  * @throws IllegalArgumentException if the [id] is not a valid variable id
  */
-data class EditVariable(
+public data class EditVariable(
     override val id: String,
     val modifierEdits: List<SetEdit<String>> = emptyList(),
     val initializerEdits: List<ListEdit<String>> = emptyList()

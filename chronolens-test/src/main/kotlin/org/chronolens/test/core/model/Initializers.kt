@@ -30,94 +30,98 @@ import org.chronolens.core.model.Variable
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
 
-fun sourceFile(path: String): SourceFileInitializer =
+public fun sourceFile(path: String): SourceFileInitializer =
     SourceFileInitializer(path)
 
-class SourceFileInitializer(private val path: String) {
-    fun id(): String = path
+public class SourceFileInitializer(private val path: String) {
+    public fun id(): String = path
 
-    fun build(init: Init<SourceFileBuilder>): SourceFile =
+    public fun build(init: Init<SourceFileBuilder>): SourceFile =
         SourceFileBuilder(path).apply(init).build()
 
-    fun type(name: String): TypeInitializer =
+    public fun type(name: String): TypeInitializer =
         TypeInitializer(path, name)
 
-    fun function(signature: String): FunctionInitializer =
+    public fun function(signature: String): FunctionInitializer =
         FunctionInitializer(path, signature)
 
-    fun variable(name: String): VariableInitializer =
+    public fun variable(name: String): VariableInitializer =
         VariableInitializer(path, name)
 
-    fun add(init: Init<SourceFileBuilder>): AddNode =
+    public fun add(init: Init<SourceFileBuilder>): AddNode =
         AddNode(SourceFileBuilder(path).apply(init).build())
 
-    fun remove(): RemoveNode = RemoveNode(path)
+    public fun remove(): RemoveNode = RemoveNode(path)
 }
 
-class TypeInitializer(private val parentId: String, private val name: String) {
+public class TypeInitializer(
+    private val parentId: String,
+    private val name: String,
+) {
+
     private val id: String = "$parentId$CONTAINER_SEPARATOR$name"
 
-    fun id(): String = id
+    public fun id(): String = id
 
-    fun build(init: Init<TypeBuilder>): Type =
+    public fun build(init: Init<TypeBuilder>): Type =
         TypeBuilder(name).apply(init).build(parentId)
 
-    fun type(name: String): TypeInitializer =
+    public fun type(name: String): TypeInitializer =
         TypeInitializer(id, name)
 
-    fun function(signature: String): FunctionInitializer =
+    public fun function(signature: String): FunctionInitializer =
         FunctionInitializer(id, signature)
 
-    fun variable(name: String): VariableInitializer =
+    public fun variable(name: String): VariableInitializer =
         VariableInitializer(id, name)
 
-    fun add(init: Init<TypeBuilder>): AddNode =
+    public fun add(init: Init<TypeBuilder>): AddNode =
         AddNode(TypeBuilder(name).apply(init).build(parentId))
 
-    fun remove(): RemoveNode = RemoveNode(id)
+    public fun remove(): RemoveNode = RemoveNode(id)
 
-    fun edit(init: Init<EditTypeBuilder>): EditType =
+    public fun edit(init: Init<EditTypeBuilder>): EditType =
         EditTypeBuilder(id).apply(init).build()
 }
 
-class FunctionInitializer(
+public class FunctionInitializer(
     private val parentId: String,
-    private val signature: String
+    private val signature: String,
 ) {
 
     private val id: String = "$parentId$MEMBER_SEPARATOR$signature"
 
-    fun id(): String = id
+    public fun id(): String = id
 
-    fun build(init: Init<FunctionBuilder>): Function =
+    public fun build(init: Init<FunctionBuilder>): Function =
         FunctionBuilder(signature).apply(init).build(parentId)
 
-    fun add(init: Init<FunctionBuilder>): AddNode =
+    public fun add(init: Init<FunctionBuilder>): AddNode =
         AddNode(FunctionBuilder(signature).apply(init).build(parentId))
 
-    fun remove(): RemoveNode = RemoveNode(id)
+    public fun remove(): RemoveNode = RemoveNode(id)
 
-    fun edit(init: Init<EditFunctionBuilder>): EditFunction =
+    public fun edit(init: Init<EditFunctionBuilder>): EditFunction =
         EditFunctionBuilder(id).apply(init).build()
 }
 
-class VariableInitializer(
+public class VariableInitializer(
     private val parentId: String,
-    private val name: String
+    private val name: String,
 ) {
 
     private val id: String = "$parentId$MEMBER_SEPARATOR$name"
 
-    fun id(): String = id
+    public fun id(): String = id
 
-    fun build(init: Init<VariableBuilder>): Variable =
+    public fun build(init: Init<VariableBuilder>): Variable =
         VariableBuilder(name).apply(init).build(parentId)
 
-    fun add(init: Init<VariableBuilder>): AddNode =
+    public fun add(init: Init<VariableBuilder>): AddNode =
         AddNode(VariableBuilder(name).apply(init).build(parentId))
 
-    fun remove(): RemoveNode = RemoveNode(id)
+    public fun remove(): RemoveNode = RemoveNode(id)
 
-    fun edit(init: Init<EditVariableBuilder>): EditVariable =
+    public fun edit(init: Init<EditVariableBuilder>): EditVariable =
         EditVariableBuilder(id).apply(init).build()
 }

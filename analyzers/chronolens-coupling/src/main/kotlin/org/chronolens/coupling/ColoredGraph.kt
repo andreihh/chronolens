@@ -18,13 +18,17 @@ package org.chronolens.coupling
 
 import org.chronolens.coupling.Graph.Node
 
-data class ColoredGraph(val graph: Graph, val colors: Map<String, Int>) {
+internal data class ColoredGraph(
+    val graph: Graph,
+    val colors: Map<String, Int>,
+) {
+
     init {
         require(graph.nodes.map(Node::label).toSet() == colors.keys)
     }
 }
 
-fun Graph.colorNodes(groups: Collection<Set<String>>): ColoredGraph {
+internal fun Graph.colorNodes(groups: Collection<Set<String>>): ColoredGraph {
     val colors = hashMapOf<String, Int>()
     var color = 0
     for ((label, _) in nodes) {

@@ -26,7 +26,7 @@ import java.util.concurrent.Future
 import java.util.concurrent.ThreadFactory
 
 /** A subprocess executor. */
-object Subprocess {
+public object Subprocess {
     private val builder = ProcessBuilder()
     private val executor = newSingleThreadExecutor(object : ThreadFactory {
         private val defaultFactory = defaultThreadFactory()
@@ -56,7 +56,7 @@ object Subprocess {
      * terminate or if any input related errors occur
      */
     @JvmStatic
-    fun execute(vararg command: String): Result {
+    public fun execute(vararg command: String): Result {
         var process: Process? = null
         try {
             process = builder.command(*command).start()

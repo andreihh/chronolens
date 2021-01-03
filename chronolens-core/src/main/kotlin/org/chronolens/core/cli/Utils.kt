@@ -23,6 +23,7 @@ import picocli.CommandLine.ExecutionException
 import picocli.CommandLine.HelpCommand
 import picocli.CommandLine.RunLast
 import picocli.CommandLine.defaultExceptionHandler
+import java.util.ServiceLoader
 import kotlin.system.exitProcess
 
 /**
@@ -31,7 +32,7 @@ import kotlin.system.exitProcess
  *
  * Should be used to validate user input and initial state.
  */
-fun exit(message: String): Nothing {
+public fun exit(message: String): Nothing {
     System.err.println(message)
     exitProcess(1)
 }
@@ -42,8 +43,8 @@ fun exit(message: String): Nothing {
  *
  * A `help` subcommand is implicitly added.
  */
-fun run(mainCommand: MainCommand, vararg args: String) {
-    mainCommand.registerSubcommands(Subcommand.assembleSubcommands())
+public fun run(mainCommand: MainCommand, vararg args: String) {
+    mainCommand.registerSubcommands(assembleSubcommands())
     val cmd = CommandLine(mainCommand.command).apply {
         addSubcommand("help", HelpCommand())
         isCaseInsensitiveEnumValuesAllowed = true
@@ -57,6 +58,11 @@ fun run(mainCommand: MainCommand, vararg args: String) {
         exitProcess(1)
     }
 }
+
+/** Returns the list of provided subcommands. */
+internal fun assembleSubcommands(): List<Subcommand> =
+    ServiceLoader.load(Subcommand::class.java)
+        .sortedBy(Subcommand::name)
 
 internal fun String.paragraphs(): Array<String> {
     val pars = arrayListOf<String>()

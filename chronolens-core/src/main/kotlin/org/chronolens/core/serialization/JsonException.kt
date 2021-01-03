@@ -19,4 +19,4 @@ package org.chronolens.core.serialization
 import java.io.IOException
 
 /** Signals that an error occurred while trying to read or write JSON data. */
-class JsonException(cause: Throwable) : IOException(cause)
+public class JsonException(cause: Throwable) : IOException(cause)

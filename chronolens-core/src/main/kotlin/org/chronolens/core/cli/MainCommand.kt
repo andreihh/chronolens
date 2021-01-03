@@ -16,11 +16,11 @@
 
 package org.chronolens.core.cli
 
-abstract class MainCommand : Command() {
-    abstract override val version: String
+public abstract class MainCommand : Command() {
+    public abstract override val version: String
     final override val standardHelpOptions: Boolean = true
 
-    fun registerSubcommands(subcommands: Iterable<Subcommand>) {
+    public fun registerSubcommands(subcommands: Iterable<Subcommand>) {
         for (subcommand in subcommands) {
             command.addSubcommand(subcommand.name, subcommand.command)
         }

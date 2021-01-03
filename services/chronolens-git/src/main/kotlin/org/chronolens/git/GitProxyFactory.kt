@@ -21,7 +21,7 @@ import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsProxyFactory
 
 /** Creates proxies which delegate their operations to the `git` VCS. */
-class GitProxyFactory : VcsProxyFactory() {
+internal class GitProxyFactory : VcsProxyFactory() {
     private val vcs: String = "git"
 
     private fun getPrefix(): String? {

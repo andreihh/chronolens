@@ -20,6 +20,6 @@ import org.chronolens.core.model.SourceEntity
 import org.chronolens.test.core.BuilderMarker
 
 @BuilderMarker
-interface EntityBuilder<out T : SourceEntity> {
+internal interface EntityBuilder<out T : SourceEntity> {
     fun build(parentId: String): T
 }

@@ -19,17 +19,17 @@ package org.chronolens.core.parsing
 import org.chronolens.core.model.SourceFile
 
 /** The result from parsing a source file. */
-sealed class Result {
+public sealed class Result {
     /**
      * Indicates the successful interpretation of a [SourceFile].
      *
      * @property source the interpreted source file
      */
-    data class Success(val source: SourceFile) : Result()
+    public data class Success(val source: SourceFile) : Result()
 
     /**
      * Indicates that a [SourceFile] couldn't be interpreted due to syntax
      * errors.
      */
-    object SyntaxError : Result()
+    public object SyntaxError : Result()
 }

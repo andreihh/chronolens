@@ -20,7 +20,7 @@ import org.chronolens.core.model.Project
 import org.chronolens.core.model.sourcePath
 import java.util.ServiceLoader
 
-abstract class DecapsulationAnalyzer {
+internal abstract class DecapsulationAnalyzer {
     protected abstract fun canProcess(sourcePath: String): Boolean
 
     protected abstract fun getField(project: Project, nodeId: String): String?
@@ -35,7 +35,7 @@ abstract class DecapsulationAnalyzer {
 
         private fun findAnalyzer(
             project: Project,
-            id: String
+            id: String,
         ): DecapsulationAnalyzer? {
             val sourcePath = project[id]?.sourcePath ?: return null
             return analyzers.find { it.canProcess(sourcePath) }

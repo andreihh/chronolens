@@ -28,33 +28,33 @@ import picocli.CommandLine.ParameterException
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-class OptionDelegate<out T>(private val option: OptionSpec)
+public class OptionDelegate<out T>(private val option: OptionSpec)
     : ReadOnlyProperty<Command, T> {
 
-    fun getValue(): T = option.getValue()
+    public fun getValue(): T = option.getValue()
 
     override fun getValue(thisRef: Command, property: KProperty<*>): T =
         getValue()
 }
 
-abstract class Option<T : Any, B : Option<T, B>>(
+public abstract class Option<T : Any, B : Option<T, B>>(
     protected val command: Command,
     protected val builder: Builder
 ) {
 
-    abstract fun self(): B
+    public abstract fun self(): B
 
-    fun help(description: String): B {
+    public fun help(description: String): B {
         builder.description(*description.paragraphs())
         return self()
     }
 
-    fun paramLabel(label: String): B {
+    public fun paramLabel(label: String): B {
         builder.paramLabel(label)
         return self()
     }
 
-    fun validate(block: Validator.(T) -> Unit): B {
+    public fun validate(block: Validator.(T) -> Unit): B {
         val setter = builder.setter()
         builder.setter(object : ISetter {
             @Suppress("unchecked_cast")
@@ -90,31 +90,34 @@ abstract class Option<T : Any, B : Option<T, B>>(
     }
 }
 
-class NullableOption<T : Any>(command: Command, builder: Builder)
+public class NullableOption<T : Any>(command: Command, builder: Builder)
     : Option<T, NullableOption<T>>(command, builder) {
 
     override fun self(): NullableOption<T> = this
 
-    fun provideDelegate(): OptionDelegate<T?> = provideDelegate(command, null)
+    public fun provideDelegate(): OptionDelegate<T?> = provideDelegate(command, null)
 
-    operator fun provideDelegate(
+    public operator fun provideDelegate(
         thisRef: Command,
         property: KProperty<*>
     ): OptionDelegate<T?> = provideDelegate(thisRef, property.name)
 
     @Suppress("unchecked_cast")
-    fun <R : Any> type(propertyType: Class<R>): NullableOption<R> {
+    public fun <R : Any> type(propertyType: Class<R>): NullableOption<R> {
         builder.type(propertyType)
         return this as NullableOption<R>
     }
 
-    fun required(): RequiredOption<T> =
+    public fun required(): RequiredOption<T> =
         RequiredOption(command, builder.required(true))
 
-    fun defaultValue(value: T): RequiredOption<T> =
+    public fun defaultValue(value: T): RequiredOption<T> =
         RequiredOption(command, builder.defaultValue("$value"))
 
-    fun arity(min: Int? = null, max: Int? = null): RequiredOption<List<T>> {
+    public fun arity(
+        min: Int? = null,
+        max: Int? = null
+    ): RequiredOption<List<T>> {
         val from = "${min ?: 0}"
         val to = if (max == null) "*" else "$max"
         builder
@@ -124,36 +127,37 @@ class NullableOption<T : Any>(command: Command, builder: Builder)
         return RequiredOption(command, builder)
     }
 
-    fun arity(range: IntRange): RequiredOption<List<T>> =
+    public fun arity(range: IntRange): RequiredOption<List<T>> =
         arity(range.start, range.endInclusive)
 }
 
-class RequiredOption<T : Any>(command: Command, builder: Builder)
+public class RequiredOption<T : Any>(command: Command, builder: Builder)
     : Option<T, RequiredOption<T>>(command, builder) {
 
     override fun self(): RequiredOption<T> = this
 
-    fun provideDelegate(): OptionDelegate<T> = provideDelegate(command, null)
+    public fun provideDelegate(): OptionDelegate<T> =
+        provideDelegate(command, null)
 
-    operator fun provideDelegate(
+    public operator fun provideDelegate(
         thisRef: Command,
         property: KProperty<*>
     ): OptionDelegate<T> = provideDelegate(thisRef, property.name)
 
     @Suppress("unchecked_cast")
-    fun <R : Any> type(propertyType: Class<R>): RequiredOption<R> {
+    public fun <R : Any> type(propertyType: Class<R>): RequiredOption<R> {
         builder.type(propertyType)
         return this as RequiredOption<R>
     }
 }
 
-class Validator(
+public class Validator(
     private val cmd: CommandLine,
     private val option: OptionSpec,
     private val value: String
 ) {
 
-    fun require(condition: Boolean, lazyMessage: () -> String) {
+    public fun require(condition: Boolean, lazyMessage: () -> String) {
         if (!condition) {
             val name = option.longestName()
             val msg = "For option '$name' with value '$value': ${lazyMessage()}"
@@ -162,7 +166,7 @@ class Validator(
     }
 }
 
-fun <B : Option<Int, B>> Option<Int, B>.restrictTo(
+public fun <B : Option<Int, B>> Option<Int, B>.restrictTo(
     min: Int? = null,
     max: Int? = null
 ): B = validate { value ->
@@ -170,7 +174,7 @@ fun <B : Option<Int, B>> Option<Int, B>.restrictTo(
     require(max == null || value <= max) { "Value can't be greater than $max!" }
 }
 
-fun <B : Option<Double, B>> Option<Double, B>.restrictTo(
+public fun <B : Option<Double, B>> Option<Double, B>.restrictTo(
     min: Double? = null,
     max: Double? = null
 ): B = validate { value ->

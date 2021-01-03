@@ -29,56 +29,57 @@ import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
 
-fun project(init: Init<ProjectBuilder>): Project =
+public fun project(init: Init<ProjectBuilder>): Project =
     ProjectBuilder().apply(init).build()
 
 @BuilderMarker
-class ProjectBuilder {
+public class ProjectBuilder {
     private val sources = mutableListOf<SourceFileBuilder>()
 
-    fun sourceFile(
+    public fun sourceFile(
         path: String,
-        init: Init<SourceFileBuilder>
+        init: Init<SourceFileBuilder>,
     ): ProjectBuilder {
         sources += SourceFileBuilder(path).apply(init)
         return this
     }
 
-    fun build(): Project = Project.of(sources.map(SourceFileBuilder::build))
+    public fun build(): Project =
+        Project.of(sources.map(SourceFileBuilder::build))
 }
 
 @BuilderMarker
-class SourceFileBuilder(private val path: String) {
+public class SourceFileBuilder(private val path: String) {
     private val entities = mutableListOf<EntityBuilder<*>>()
 
     private inline fun <reified T : EntityBuilder<*>> addEntity(
         simpleId: String,
-        init: Init<T>
+        init: Init<T>,
     ): SourceFileBuilder {
         entities += newBuilder<T>(simpleId).apply(init)
         return this
     }
 
-    fun type(name: String, init: Init<TypeBuilder>): SourceFileBuilder =
+    public fun type(name: String, init: Init<TypeBuilder>): SourceFileBuilder =
         addEntity(name, init)
 
-    fun function(
+    public fun function(
         signature: String,
-        init: Init<FunctionBuilder>
+        init: Init<FunctionBuilder>,
     ): SourceFileBuilder = addEntity(signature, init)
 
-    fun variable(
+    public fun variable(
         name: String,
-        init: Init<VariableBuilder>
+        init: Init<VariableBuilder>,
     ): SourceFileBuilder = addEntity(name, init)
 
-    fun build(): SourceFile = SourceFile(
+    public fun build(): SourceFile = SourceFile(
         id = path,
-        entities = entities.map { it.build(path) }.toSet()
+        entities = entities.map { it.build(path) }.toSet(),
     )
 }
 
-class TypeBuilder(private val name: String) : EntityBuilder<Type> {
+public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
     private var supertypes = emptySet<String>()
     private var modifiers = emptySet<String>()
     private val members = mutableListOf<EntityBuilder<*>>()
@@ -91,24 +92,28 @@ class TypeBuilder(private val name: String) : EntityBuilder<Type> {
         return this
     }
 
-    fun supertypes(vararg supertypes: String): TypeBuilder {
+    public fun supertypes(vararg supertypes: String): TypeBuilder {
         this.supertypes = supertypes.requireDistinct()
         return this
     }
 
-    fun modifiers(vararg modifiers: String): TypeBuilder {
+    public fun modifiers(vararg modifiers: String): TypeBuilder {
         this.modifiers = modifiers.requireDistinct()
         return this
     }
 
-    fun type(name: String, init: Init<TypeBuilder>): TypeBuilder =
+    public fun type(name: String, init: Init<TypeBuilder>): TypeBuilder =
         addMember(name, init)
 
-    fun function(signature: String, init: Init<FunctionBuilder>): TypeBuilder =
-        addMember(signature, init)
+    public fun function(
+        signature: String,
+        init: Init<FunctionBuilder>,
+    ): TypeBuilder = addMember(signature, init)
 
-    fun variable(name: String, init: Init<VariableBuilder>): TypeBuilder =
-        addMember(name, init)
+    public fun variable(
+        name: String,
+        init: Init<VariableBuilder>,
+    ): TypeBuilder = addMember(name, init)
 
     override fun build(parentId: String): Type {
         val id = "$parentId$CONTAINER_SEPARATOR$name"
@@ -121,27 +126,30 @@ class TypeBuilder(private val name: String) : EntityBuilder<Type> {
     }
 }
 
-class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
+public class FunctionBuilder(
+    private val signature: String,
+) : EntityBuilder<Function> {
+
     private var modifiers = emptySet<String>()
     private var parameters = emptyList<String>()
     private val body = mutableListOf<String>()
 
-    fun parameters(vararg parameters: String): FunctionBuilder {
+    public fun parameters(vararg parameters: String): FunctionBuilder {
         this.parameters = parameters.requireDistinct().toList()
         return this
     }
 
-    fun modifiers(vararg modifiers: String): FunctionBuilder {
+    public fun modifiers(vararg modifiers: String): FunctionBuilder {
         this.modifiers = modifiers.requireDistinct()
         return this
     }
 
-    fun body(vararg bodyLines: String): FunctionBuilder {
+    public fun body(vararg bodyLines: String): FunctionBuilder {
         body += bodyLines
         return this
     }
 
-    operator fun String.unaryPlus() {
+    public operator fun String.unaryPlus() {
         body += this
     }
 
@@ -151,21 +159,24 @@ class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
     }
 }
 
-class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
+public class VariableBuilder(
+    private val name: String,
+) : EntityBuilder<Variable> {
+
     private var modifiers = emptySet<String>()
     private val initializer = mutableListOf<String>()
 
-    fun modifiers(vararg modifiers: String): VariableBuilder {
+    public fun modifiers(vararg modifiers: String): VariableBuilder {
         this.modifiers = modifiers.requireDistinct()
         return this
     }
 
-    fun initializer(vararg initializerLines: String): VariableBuilder {
+    public fun initializer(vararg initializerLines: String): VariableBuilder {
         initializer += initializerLines
         return this
     }
 
-    operator fun String.unaryPlus() {
+    public operator fun String.unaryPlus() {
         initializer += this
     }
 

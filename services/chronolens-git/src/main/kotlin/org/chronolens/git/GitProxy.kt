@@ -36,7 +36,7 @@ internal class GitProxy(private val prefix: String) : VcsProxy {
 
     private fun parseCommit(formattedCommit: String): Revision {
         val (id, rawDate, author) =
-            formattedCommit.split(delimiters = *charArrayOf(':'), limit = 3)
+            formattedCommit.split(limit = 3, delimiters = charArrayOf(':'))
         val date = Instant.ofEpochSecond(rawDate.toLong())
         return Revision(id, date, author)
     }

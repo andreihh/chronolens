@@ -31,7 +31,7 @@ import java.util.Collections.unmodifiableSet
  * All queries read the interpreted data directly from disk, not having to
  * reinterpret it again or to communicate with other subprocesses.
  */
-class PersistentRepository private constructor() : Repository {
+public class PersistentRepository private constructor() : Repository {
     private val headId = headFile.readFileLines().single()
     private val sources = sourcesFile.readFileLines().toSet()
     private val history = historyFile.readFileLines()
@@ -60,7 +60,7 @@ class PersistentRepository private constructor() : Repository {
             JsonModule.deserialize<Transaction>(file)
         }
 
-    companion object {
+    public companion object {
         /**
          * Returns the instance which can query the repository detected in the
          * current working directory for code metadata, or `null` if no
@@ -71,7 +71,7 @@ class PersistentRepository private constructor() : Repository {
          */
         @Throws(IOException::class)
         @JvmStatic
-        fun load(): PersistentRepository? =
+        public fun load(): PersistentRepository? =
             if (rootDirectory.exists()) PersistentRepository() else null
 
         /**
@@ -85,7 +85,7 @@ class PersistentRepository private constructor() : Repository {
          */
         @Throws(IOException::class)
         @JvmStatic
-        fun Repository.persist(
+        public fun Repository.persist(
             listener: ProgressListener? = null
         ): PersistentRepository {
             if (this is PersistentRepository) {
@@ -109,19 +109,19 @@ class PersistentRepository private constructor() : Repository {
          */
         @Throws(IOException::class)
         @JvmStatic
-        fun clean() {
+        public fun clean() {
             rootDirectory.deleteRecursively()
         }
     }
 
     /** A listener notified on the progress of persisting a repository. */
-    interface ProgressListener {
-        fun onSnapshotStart(headId: String, sourceCount: Int)
-        fun onSourcePersisted(path: String)
-        fun onSnapshotEnd()
-        fun onHistoryStart(revisionCount: Int)
-        fun onTransactionPersisted(id: String)
-        fun onHistoryEnd()
+    public interface ProgressListener {
+        public fun onSnapshotStart(headId: String, sourceCount: Int)
+        public fun onSourcePersisted(path: String)
+        public fun onSnapshotEnd()
+        public fun onHistoryStart(revisionCount: Int)
+        public fun onTransactionPersisted(id: String)
+        public fun onHistoryEnd()
     }
 }
 

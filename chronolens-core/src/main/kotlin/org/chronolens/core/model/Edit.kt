@@ -21,4 +21,4 @@ package org.chronolens.core.model
  *
  * @param T the type of the edited object
  */
-interface Edit<T>
+public interface Edit<T>

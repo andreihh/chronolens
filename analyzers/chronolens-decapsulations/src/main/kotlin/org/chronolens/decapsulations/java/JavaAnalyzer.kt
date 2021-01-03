@@ -25,7 +25,7 @@ import org.chronolens.core.model.Variable
 import org.chronolens.core.model.parentId
 import org.chronolens.decapsulations.DecapsulationAnalyzer
 
-class JavaAnalyzer : DecapsulationAnalyzer() {
+internal class JavaAnalyzer : DecapsulationAnalyzer() {
     override fun canProcess(sourcePath: String): Boolean =
         sourcePath.endsWith(".java")
 

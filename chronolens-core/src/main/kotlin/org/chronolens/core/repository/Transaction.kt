@@ -34,11 +34,11 @@ import java.util.Collections.unmodifiableSet
  * @throws IllegalArgumentException if [revisionId] is empty or contains
  * non-alphanumeric characters
  */
-data class Transaction(
+public data class Transaction(
     val revisionId: String,
     val date: Instant,
     val author: String,
-    val edits: List<ProjectEdit> = emptyList()
+    val edits: List<ProjectEdit> = emptyList(),
 ) {
 
     init {
@@ -46,6 +46,6 @@ data class Transaction(
     }
 
     /** The set of source files modified in this transaction. */
-    val changeSet: Set<String>
+    public val changeSet: Set<String>
         get() = unmodifiableSet(edits.map(ProjectEdit::sourcePath).toSet())
 }

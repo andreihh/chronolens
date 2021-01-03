@@ -22,10 +22,10 @@ import org.chronolens.coupling.Graph.Node
 import org.chronolens.coupling.Graph.Subgraph
 import java.util.PriorityQueue
 
-data class Graph(
+internal data class Graph(
     val label: String,
     val nodes: Set<Node>,
-    val edges: List<Edge>
+    val edges: List<Edge>,
 ) {
 
     data class Node(val label: String, val revisions: Int)
@@ -34,7 +34,7 @@ data class Graph(
         val source: String,
         val target: String,
         val revisions: Int,
-        val coupling: Double
+        val coupling: Double,
     )
 
     data class Subgraph(val nodes: Set<String>, val density: Double) {
@@ -46,7 +46,7 @@ data class Graph(
     }
 }
 
-inline fun Graph.filterNodes(predicate: (Node) -> Boolean): Graph {
+internal inline fun Graph.filterNodes(predicate: (Node) -> Boolean): Graph {
     val newNodes = nodes.filter(predicate).toSet()
     val newLabels = newNodes.map(Node::label).toSet()
     val newEdges =
@@ -54,14 +54,14 @@ inline fun Graph.filterNodes(predicate: (Node) -> Boolean): Graph {
     return copy(nodes = newNodes, edges = newEdges)
 }
 
-inline fun Graph.filterEdges(predicate: (Edge) -> Boolean): Graph {
+internal inline fun Graph.filterEdges(predicate: (Edge) -> Boolean): Graph {
     return copy(edges = edges.filter(predicate))
 }
 
-fun List<Edge>.getEndpoints(): Set<String> =
+internal fun List<Edge>.getEndpoints(): Set<String> =
     flatMap { (u, v, _, _) -> listOf(u, v) }.toSet()
 
-fun Graph.findBlobs(minDensity: Double): List<Subgraph> {
+internal fun Graph.findBlobs(minDensity: Double): List<Subgraph> {
     require(minDensity >= 0.0) { "Invalid blob density '$minDensity'!" }
     if (nodes.size > MAX_SIZE) {
         return nodes.map { (label, _) ->
@@ -75,7 +75,7 @@ fun Graph.findBlobs(minDensity: Double): List<Subgraph> {
     return blobs
 }
 
-fun Graph.findAntiBlob(maxCoupling: Double, minSize: Int): Subgraph? {
+internal fun Graph.findAntiBlob(maxCoupling: Double, minSize: Int): Subgraph? {
     require(maxCoupling >= 0.0) { "Invalid anti-blob coupling '$maxCoupling'!" }
     require(minSize > 0) { "Invalid anti-blob size '$minSize'!" }
     val coupling = hashMapOf<String, Double>()
@@ -196,7 +196,7 @@ private fun Graph.intersect(nodes: Set<String>): Graph {
 private fun findBlobs(
     graph: Graph,
     minDensity: Double,
-    blobs: ArrayList<Subgraph>
+    blobs: ArrayList<Subgraph>,
 ) {
     val blob = findBlob(graph, minDensity)
     if (blob != null) {

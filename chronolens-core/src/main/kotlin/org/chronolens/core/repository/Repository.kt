@@ -23,13 +23,13 @@ import org.chronolens.core.model.SourceFile
  * A wrapper which connects to a repository and allows querying source code
  * metadata and the project history.
  */
-interface Repository {
+public interface Repository {
     /**
      * Returns the id of the `head` revision of this repository.
      *
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun getHeadId(): String
+    public fun getHeadId(): String
 
     /**
      * Returns the set of source files from the `head` revision which can be
@@ -37,7 +37,7 @@ interface Repository {
      *
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun listSources(): Set<String>
+    public fun listSources(): Set<String>
 
     /**
      * Returns the list of revisions from this repository in chronological
@@ -45,7 +45,7 @@ interface Repository {
      *
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun listRevisions(): List<String>
+    public fun listRevisions(): List<String>
 
     /**
      * Returns the source file found at the given [path] as it is found in the
@@ -59,7 +59,7 @@ interface Repository {
      * @throws IllegalArgumentException if the given [path] is invalid
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun getSource(path: String): SourceFile?
+    public fun getSource(path: String): SourceFile?
 
     /**
      * Returns the snapshot of the repository, as it is found in the `head`
@@ -68,7 +68,7 @@ interface Repository {
      * @throws IllegalStateException if this repository is in a corrupted state
      * @see getSource for details about how the latest sources are retrieved
      */
-    fun getSnapshot(): Project {
+    public fun getSnapshot(): Project {
         val sources = listSources().map(::getSource).requireNoNulls()
         return Project.of(sources)
     }
@@ -79,15 +79,15 @@ interface Repository {
      *
      * @throws IllegalStateException if this repository is in a corrupted state
      */
-    fun getHistory(): Iterable<Transaction>
+    public fun getHistory(): Iterable<Transaction>
 
-    companion object {
+    public companion object {
         /** Returns whether the given source file [path] is valid. */
-        fun isValidPath(path: String): Boolean =
+        public fun isValidPath(path: String): Boolean =
             "/$path/".indexOfAny(listOf("//", "/./", "/../")) == -1
 
         /** Returns whether the given revision [id] is valid. */
-        fun isValidRevisionId(id: String): Boolean =
+        public fun isValidRevisionId(id: String): Boolean =
             id.isNotEmpty() && id.all(Character::isLetterOrDigit)
     }
 }

@@ -17,7 +17,7 @@
 package org.chronolens.core.parsing
 
 /** Signals that a syntax error was encountered while parsing a source file. */
-class SyntaxErrorException : Exception {
-    constructor(message: String) : super(message)
-    constructor(cause: Throwable) : super(cause)
+public class SyntaxErrorException : Exception {
+    public constructor(message: String) : super(message)
+    public constructor(cause: Throwable) : super(cause)
 }

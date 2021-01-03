@@ -20,7 +20,7 @@ import picocli.CommandLine.Model.CommandSpec
 import picocli.CommandLine.Model.OptionSpec
 import picocli.CommandLine.Model.UsageMessageSpec
 
-abstract class Command : Runnable {
+public abstract class Command : Runnable {
     internal val command by lazy {
         val spec = CommandSpec.forAnnotatedObjectLenient(this)
             .name(name)
@@ -30,7 +30,7 @@ abstract class Command : Runnable {
         spec
     }
 
-    abstract val name: String
+    public abstract val name: String
     protected abstract val version: String?
     protected abstract val help: String
     protected abstract val standardHelpOptions: Boolean
