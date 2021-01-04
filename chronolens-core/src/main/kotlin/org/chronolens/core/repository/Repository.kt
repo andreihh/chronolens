@@ -41,7 +41,7 @@ public interface Repository {
     public fun listSources(): Set<String>
 
     /**
-     * Returns the list of all revisions chronological order.
+     * Returns the list of all revisions in chronological order.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
@@ -68,13 +68,17 @@ public interface Repository {
      * @see getSource for details about how the latest sources are retrieved
      */
     public fun getSnapshot(): Project {
-        val sources = listSources().map(::getSource).requireNoNulls()
+        val sources = listSources().map(::getSource).checkNoNulls()
         return Project.of(sources)
     }
 
     /**
      * Returns a lazy view of the transactions applied to the repository in
      * chronological order.
+     *
+     * Iterating over the sequence may throw an [java.io.UncheckedIOException]
+     * if any I/O errors occur, or a [CorruptedRepositoryException] if the
+     * repository is corrupted.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
      */

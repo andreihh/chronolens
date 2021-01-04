@@ -18,10 +18,7 @@ package org.chronolens.core.repository
 
 import java.io.File
 
-internal data class RepositoryFileSchema(
-    private val repositoryDirectory: File
-) {
-
+internal data class RepositoryFileSchema(val repositoryDirectory: File) {
     val rootDirectory: File = File(repositoryDirectory, ".chronolens")
     val headFile: File = File(rootDirectory, "HEAD")
     val sourcesFile: File = File(rootDirectory, "SOURCES")

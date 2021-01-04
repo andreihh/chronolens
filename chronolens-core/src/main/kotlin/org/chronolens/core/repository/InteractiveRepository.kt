@@ -34,11 +34,11 @@ import java.util.Collections.unmodifiableSet
  * All queries retrieve and interpret the data from a VCS subprocess.
  */
 public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
-    private val headId = vcs.getHead().id.let(::checkValidRevisionId)
-    private val headSources = listSources(headId)
-    private val history = vcs.getHistory().let(::checkValidHistory)
+    private val head by lazy { vcs.getHead().id.let(::checkValidRevisionId) }
+    private val headSources by lazy { listSources(head) }
+    private val history by lazy { vcs.getHistory().let(::checkValidHistory) }
 
-    override fun getHeadId(): String = headId
+    override fun getHeadId(): String = head
 
     override fun listSources(): Set<String> = unmodifiableSet(headSources)
 
@@ -68,7 +68,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
 
     private fun getLatestValidSource(
         revisionId: String,
-        path: String
+        path: String,
     ): SourceFile {
         checkValidRevisionId(revisionId)
         checkValidPath(path)
@@ -108,7 +108,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
         }
     }
 
-    override fun getSource(path: String): SourceFile? = getSource(path, headId)
+    override fun getSource(path: String): SourceFile? = getSource(path, head)
 
     override fun getHistory(): Sequence<Transaction> {
         val project = Project.empty()

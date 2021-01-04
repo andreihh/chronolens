@@ -17,11 +17,8 @@
 package org.chronolens.core.repository
 
 import org.chronolens.core.model.SourceFile
-import org.chronolens.core.repository.PersistentRepository.ProgressListener
-import org.chronolens.core.serialization.JsonException
 import org.chronolens.core.serialization.JsonModule
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.UncheckedIOException
 import java.util.Collections.unmodifiableList
@@ -35,56 +32,41 @@ import java.util.Collections.unmodifiableSet
  * reinterpret it again or to communicate with other subprocesses.
  */
 public class PersistentRepository
-@Throws(IOException::class) internal constructor(
-    private val files: RepositoryFileLayout,
-) : Repository {
+private constructor(private val schema: RepositoryFileSchema) : Repository {
 
-    private val headId: String
-    private val sources: Set<String>
-    private val history: List<String>
-
-    init {
-        with(files) {
-            checkDirectoryExists(rootDirectory)
-            checkFileExists(headFile)
-            checkFileExists(sourcesFile)
-            checkFileExists(historyFile)
-            checkDirectoryExists(snapshotDirectory)
-            checkDirectoryExists(transactionsDirectory)
-        }
-
-        val rawHeadId = files.headFile.readFileLines()
+    private val head by lazy {
+        val rawHeadId = schema.headFile.readFileLines()
         checkState(rawHeadId.size == 1) {
-            "'${files.headFile}' must contain a single line with the head id!"
+            "'${schema.headFile}' must contain a single line with the head id!"
         }
-        headId = checkValidRevisionId(rawHeadId.single())
-
-        val rawSources = files.sourcesFile.readFileLines()
-        sources = unmodifiableSet(checkValidSources(rawSources))
-        sources.forEach { path -> checkFileExists(files.getSourceFile(path)) }
-
-        val rawHistory = files.historyFile.readFileLines()
-        history = unmodifiableList(checkValidHistory(rawHistory))
-        history.forEach { revisionId ->
-            checkFileExists(files.getTransactionFile(revisionId))
-        }
+        checkValidRevisionId(rawHeadId.single())
     }
 
-    override fun getHeadId(): String = headId
+    private val sources by lazy {
+        val rawSources = schema.sourcesFile.readFileLines()
+        checkValidSources(rawSources)
+    }
 
-    override fun listSources(): Set<String> = sources
+    private val history by lazy {
+        val rawHistory = schema.historyFile.readFileLines()
+        checkValidHistory(rawHistory)
+    }
 
-    override fun listRevisions(): List<String> = history
+    override fun getHeadId(): String = head
+
+    override fun listSources(): Set<String> = unmodifiableSet(sources)
+
+    override fun listRevisions(): List<String> = unmodifiableList(history)
 
     override fun getSource(path: String): SourceFile? {
         validatePath(path)
-        return if (path !in sources) null
-        else JsonModule.deserialize(files.getSourceFile(path))
+        val file = schema.getSourceFile(path)
+        return if (path in sources) JsonModule.deserialize(file) else null
     }
 
     override fun getHistory(): Sequence<Transaction> =
         history.asSequence().map { transactionId ->
-            val file = files.getTransactionFile(transactionId)
+            val file = schema.getTransactionFile(transactionId)
             try {
                 JsonModule.deserialize<Transaction>(file)
             } catch (e: IOException) {
@@ -103,9 +85,9 @@ public class PersistentRepository
         @Throws(IOException::class)
         @JvmStatic
         public fun load(repositoryDirectory: File): PersistentRepository? {
-            val files = RepositoryFileLayout(repositoryDirectory)
-            return if (!files.rootDirectory.isDirectory) null
-            else PersistentRepository(files)
+            val schema = RepositoryFileSchema(repositoryDirectory)
+            return if (!schema.rootDirectory.isDirectory) null
+            else PersistentRepository(schema)
         }
 
         /**
@@ -124,14 +106,14 @@ public class PersistentRepository
         @JvmStatic
         public fun Repository.persist(
             repositoryDirectory: File,
-            listener: ProgressListener? = null
+            listener: ProgressListener? = null,
         ): PersistentRepository {
-            val files = RepositoryFileLayout(repositoryDirectory)
-            if (this is PersistentRepository && files == this.files) {
+            val schema = RepositoryFileSchema(repositoryDirectory)
+            if (this is PersistentRepository && schema == this.schema) {
                 return this
             }
-            RepositoryPersister(this, files, listener).persist()
-            return PersistentRepository(files)
+            RepositoryPersister(this, schema, listener).persist()
+            return PersistentRepository(schema)
         }
 
         /**
@@ -146,8 +128,8 @@ public class PersistentRepository
         @Throws(IOException::class)
         @JvmStatic
         public fun clean(repositoryDirectory: File) {
-            val files = RepositoryFileLayout(repositoryDirectory)
-            files.rootDirectory.deleteRecursively()
+            val schema = RepositoryFileSchema(repositoryDirectory)
+            schema.rootDirectory.deleteRecursively()
         }
     }
 
@@ -161,27 +143,3 @@ public class PersistentRepository
         public fun onHistoryEnd()
     }
 }
-
-private fun checkFileExists(file: File) {
-    checkState(file.isFile) {
-        "File '$file' does not exist or is not a file!"
-    }
-}
-
-private fun checkDirectoryExists(directory: File) {
-    checkState(directory.isDirectory) {
-        "Directory '$directory' does not exist or is not a directory!"
-    }
-}
-
-private inline fun <reified T : Any> JsonModule.deserialize(src: File): T =
-    try {
-        src.inputStream().use { deserialize(it) }
-    } catch (e: JsonException) {
-        throw CorruptedRepositoryException(e)
-    } catch (e: FileNotFoundException) {
-        throw CorruptedRepositoryException(e)
-    }
-
-private fun File.readFileLines(): List<String> =
-    readLines().takeWhile(String::isNotEmpty)

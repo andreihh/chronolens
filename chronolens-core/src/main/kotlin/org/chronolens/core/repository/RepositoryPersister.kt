@@ -19,19 +19,18 @@ package org.chronolens.core.repository
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
 import org.chronolens.core.serialization.JsonModule
-import java.io.File
 import java.io.IOException
 
 internal class RepositoryPersister(
     private val repository: Repository,
-    private val files: RepositoryFileLayout,
+    private val schema: RepositoryFileSchema,
     private val listener: ProgressListener?,
 ) {
 
     @Throws(IOException::class)
     fun persist() {
-        mkdirs(files.rootDirectory)
-        files.headFile.printWriter().use { out ->
+        mkdirs(schema.rootDirectory)
+        schema.headFile.printWriter().use { out ->
             out.println(repository.getHeadId())
         }
         persistSnapshot()
@@ -39,8 +38,8 @@ internal class RepositoryPersister(
     }
 
     private fun persistSource(source: SourceFile) {
-        mkdirs(files.getSourceDirectory(source.path))
-        files.getSourceFile(source.path).outputStream().use { out ->
+        mkdirs(schema.getSourceDirectory(source.path))
+        schema.getSourceFile(source.path).outputStream().use { out ->
             JsonModule.serialize(out, source)
         }
     }
@@ -50,11 +49,13 @@ internal class RepositoryPersister(
             headId = repository.getHeadId(),
             sourceCount = repository.listSources().size,
         )
-        mkdirs(files.snapshotDirectory)
-        files.sourcesFile.printWriter().use { out ->
+        mkdirs(schema.snapshotDirectory)
+        schema.sourcesFile.printWriter().use { out ->
             for (path in repository.listSources()) {
                 val source = repository.getSource(path)
-                    ?: error("'$path' couldn't be interpreted!")
+                    ?: throw CorruptedRepositoryException(
+                        "'$path' couldn't be interpreted!"
+                    )
                 out.println(path)
                 persistSource(source)
                 listener?.onSourcePersisted(path)
@@ -64,7 +65,7 @@ internal class RepositoryPersister(
     }
 
     private fun persistTransaction(transaction: Transaction) {
-        val file = files.getTransactionFile(transaction.revisionId)
+        val file = schema.getTransactionFile(transaction.revisionId)
         file.outputStream().use { out ->
             JsonModule.serialize(out, transaction)
         }
@@ -72,8 +73,8 @@ internal class RepositoryPersister(
 
     private fun persistHistory() {
         listener?.onHistoryStart(repository.listRevisions().size)
-        mkdirs(files.transactionsDirectory)
-        files.historyFile.printWriter().use { out ->
+        mkdirs(schema.transactionsDirectory)
+        schema.historyFile.printWriter().use { out ->
             for (transaction in repository.getHistory()) {
                 out.println(transaction.revisionId)
                 persistTransaction(transaction)
@@ -81,11 +82,5 @@ internal class RepositoryPersister(
             }
         }
         listener?.onHistoryEnd()
-    }
-}
-
-private fun mkdirs(directory: File) {
-    if (!directory.exists() && !directory.mkdirs()) {
-        throw IOException("Failed to create directory '$directory'!")
     }
 }

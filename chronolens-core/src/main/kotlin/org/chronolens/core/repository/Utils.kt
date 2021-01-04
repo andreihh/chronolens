@@ -18,7 +18,11 @@ package org.chronolens.core.repository
 
 import org.chronolens.core.repository.Repository.Companion.isValidPath
 import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
+import org.chronolens.core.serialization.JsonException
+import org.chronolens.core.serialization.JsonModule
 import org.chronolens.core.versioning.Revision
+import java.io.File
+import java.io.IOException
 
 /**
  * Validates the given revision [id].
@@ -111,4 +115,70 @@ internal fun checkValidHistory(history: List<String>): List<String> {
 internal fun checkValidHistory(history: List<Revision>): List<Revision> {
     checkValidHistory(history.map(Revision::id))
     return history
+}
+
+/**
+ * Checks that [this] collection doesn't contain any `null` elements.
+ *
+ * @throws CorruptedRepositoryException if any element is `null`
+ */
+internal fun <T : Any> Collection<T?>.checkNoNulls(): Collection<T> {
+    for (item in this) {
+        if (item == null) {
+            throw CorruptedRepositoryException("'null' found in '$this'!")
+        }
+    }
+    @Suppress("UNCHECKED_CAST")
+    return this as Collection<T>
+}
+
+/**
+ * Checks that the given [file] exists and is a file.
+ *
+ * @throws CorruptedRepositoryException if the given [file] doesn't exist or is
+ * not a file
+ */
+internal fun checkFileExists(file: File) {
+    checkState(file.isFile) { "File '$file' does not exist or is not a file!" }
+}
+
+/**
+ * Delegates to [JsonModule.serialize].
+ *
+ * @throws CorruptedRepositoryException if the deserialization failed with a
+ * [JsonException] or the given [src] file doesn't exist or is not a file
+ * @throws IOException if any I/O errors occur
+ */
+@Throws(IOException::class)
+internal inline fun <reified T : Any> JsonModule.deserialize(src: File): T =
+    try {
+        checkFileExists(src)
+        src.inputStream().use { deserialize(it) }
+    } catch (e: JsonException) {
+        throw CorruptedRepositoryException(e)
+    }
+
+/**
+ * Delegates to [File.readLines] and keeps the lines up to the first empty line.
+ *
+ * @throws CorruptedRepositoryException if [this] file doesn't exist or is not
+ * a file
+ * @throws IOException if any I/O errors occur
+ */
+@Throws(IOException::class)
+internal fun File.readFileLines(): List<String> {
+    checkFileExists(this)
+    return readLines().takeWhile(String::isNotEmpty)
+}
+
+/**
+ * Creates the given [directory] and any parent directories, if necessary.
+ *
+ * @throws IOException if the given [directory] couldn't be created
+ */
+@Throws(IOException::class)
+internal fun mkdirs(directory: File) {
+    if (!directory.exists() && !directory.mkdirs()) {
+        throw IOException("Failed to create directory '$directory'!")
+    }
 }
