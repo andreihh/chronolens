@@ -18,7 +18,7 @@ package org.chronolens.core.repository
 
 import java.io.File
 
-internal data class RepositoryFileLayout(
+internal data class RepositoryFileSchema(
     private val repositoryDirectory: File
 ) {
 
