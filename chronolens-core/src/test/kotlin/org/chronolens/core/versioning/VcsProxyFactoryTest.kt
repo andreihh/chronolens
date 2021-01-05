@@ -16,7 +16,6 @@
 
 package org.chronolens.core.versioning
 
-import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 import kotlin.test.assertFailsWith
@@ -24,7 +23,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.fail
 
-@Ignore
 class VcsProxyFactoryTest {
     class UnsupportedVcsProxyFactory : VcsProxyFactory() {
         override fun isSupported() = false
@@ -33,7 +31,7 @@ class VcsProxyFactoryTest {
 
     class UndetectedVcsProxyFactory : VcsProxyFactory() {
         override fun isSupported() = true
-        override fun createProxy(directory: File) = fail()
+        override fun createProxy(directory: File) = null
     }
 
     @Test fun `test detect ignores unsupported`() {

@@ -19,7 +19,6 @@ package org.chronolens.core.repository
 import org.chronolens.core.repository.PersistentRepository.Companion.persist
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
 import org.chronolens.test.core.repository.assertEquals
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -28,7 +27,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
-@Ignore
 class PersistentRepositoryTest : RepositoryTest() {
     @get:Rule val tmp = TemporaryFolder.builder().assureDeletion().build()
 

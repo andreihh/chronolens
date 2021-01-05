@@ -33,26 +33,26 @@ import java.io.BufferedReader
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
-@Ignore
+@Ignore // TODO: figure out how to speed this up.
 class MainTest {
     companion object {
         @ClassRule
         @JvmField
         val tmp = TemporaryFolder.builder().assureDeletion().build()
+        val repoDir get() = tmp.root.absolutePath
 
         @BeforeClass
         @JvmStatic
         fun setupRepository() {
             val url = "https://github.com/google/guava.git"
             execute(tmp.root, "git", "clone", url, "./")
-            Main.main("persist", "--repo-dir", tmp.root.absolutePath)
+            Main.main("persist", "--repo-dir", repoDir)
         }
 
         @AfterClass
         @JvmStatic
         fun cleanRepository() {
-            Main.main("clean", "--repo-dir", tmp.root.absolutePath)
-            tmp.root.listFiles()?.forEach { it.deleteRecursively() }
+            Main.main("clean", "--repo-dir", repoDir)
         }
     }
 
@@ -61,8 +61,6 @@ class MainTest {
 
     @get:Rule
     val exitRule = ExpectedSystemExit.none()
-
-    private val repoDir = tmp.root.absolutePath
 
     private fun readResource(resource: String): String =
         javaClass.getResourceAsStream(resource).bufferedReader()
@@ -91,6 +89,7 @@ class MainTest {
         assertEquals(expected, actual)
     }
 
+    // TODO: figure out why the revision is not found.
     @Test
     fun `test list tree`() {
         val expected = readResource("expected-ls-tree.txt")
@@ -131,6 +130,7 @@ class MainTest {
         assertEquals(expected, actual)
     }
 
+    // TODO: figure out why the revision is not found.
     @Test
     fun `test model`() {
         val expected = readResource("expected-model.txt")

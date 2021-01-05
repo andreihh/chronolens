@@ -37,6 +37,10 @@ public abstract class Subcommand : Command() {
     final override val version: String? get() = null
     final override val standardHelpOptions: Boolean get() = false
 
+    protected val repositoryDirectory: String by option<String>("--repo-dir")
+        .help("the repository directory")
+        .defaultValue(".")
+
     private fun getCommandName(): String {
         val className = this::class.simpleName
             ?: error("Command '${this::class}' must have a name!")

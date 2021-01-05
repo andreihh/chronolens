@@ -43,11 +43,6 @@ spotless {
     }
 }
 
-tasks.test {
-    // TODO: use temporary file rules in unit tests.
-    workingDir = createTempDir().apply(File::deleteOnExit)
-}
-
 tasks.jar {
     from(rootProject.file("LICENSE"))
     from(rootProject.file("NOTICE"))
