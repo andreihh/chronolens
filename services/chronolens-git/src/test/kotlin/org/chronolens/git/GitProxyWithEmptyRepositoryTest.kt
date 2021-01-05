@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,35 +17,34 @@
 package org.chronolens.git
 
 import org.chronolens.core.versioning.VcsProxyFactory
-import org.junit.AfterClass
-import org.junit.BeforeClass
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import kotlin.test.assertFailsWith
+import kotlin.test.fail
 
 class GitProxyWithEmptyRepositoryTest {
-    companion object {
-        @BeforeClass
-        @JvmStatic
-        fun initRepository() {
-            init()
-        }
+    @get:Rule val tmp = TemporaryFolder.builder().assureDeletion().build()
 
-        @AfterClass
-        @JvmStatic
-        fun cleanRepository() {
-            clean()
+    @Before
+    fun initRepository() {
+        init(tmp.root)
+    }
+
+    @Test
+    fun `test head after connect to empty repository throws`() {
+        val git = VcsProxyFactory.detect(tmp.root) ?: fail()
+        assertFailsWith<IllegalStateException> {
+            git.getHead()
         }
     }
 
-    @Test fun `test connect to empty repository throws`() {
+    @Test
+    fun `test head after create empty repository throws`() {
+        val git = GitProxy(tmp.root, "")
         assertFailsWith<IllegalStateException> {
-            VcsProxyFactory.detect()
-        }
-    }
-
-    @Test fun `test create empty repository throws`() {
-        assertFailsWith<IllegalStateException> {
-            GitProxy("")
+            git.getHead()
         }
     }
 }

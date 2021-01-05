@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 package org.chronolens.git
 
 import org.chronolens.core.versioning.VcsProxyFactory
-import org.junit.AfterClass
 import org.junit.BeforeClass
+import org.junit.ClassRule
 import org.junit.Ignore
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -31,24 +32,22 @@ import kotlin.test.fail
 
 class GitProxyWithRepositoryTest {
     companion object {
+        @ClassRule
+        @JvmField
+        val tmp = TemporaryFolder.builder().assureDeletion().build()
+
         @BeforeClass
         @JvmStatic
         fun cloneRepository() {
-            clone("https://github.com/andreihh/chronolens.git")
-        }
-
-        @AfterClass
-        @JvmStatic
-        fun cleanRepository() {
-            clean()
+            clone(tmp.root, "https://github.com/andreihh/chronolens.git")
         }
     }
 
-    private val git = GitProxyFactory().connect()
+    private val git = GitProxyFactory().connect(tmp.root)
         ?: fail("Couldn't connect to git repository!")
 
     @Test fun `test detect`() {
-        assertTrue(VcsProxyFactory.detect() is GitProxy)
+        assertTrue(VcsProxyFactory.detect(tmp.root) is GitProxy)
     }
 
     @Test fun `test get revision`() {
@@ -69,10 +68,10 @@ class GitProxyWithRepositoryTest {
     }
 
     @Test fun `test list files`() {
-        val expected = File("./")
+        val expected = tmp.root
             .walk().onEnter { it.name != ".git" }
             .filter(File::isFile)
-            .map { it.path.removePrefix("./") }
+            .map { it.path.removePrefix("${tmp.root.absolutePath}/") }
             .toSet()
         val headId = git.getHead().id
         val actual = git.listFiles(headId)
@@ -81,7 +80,7 @@ class GitProxyWithRepositoryTest {
 
     @Test fun `test get file`() {
         val path = "services/chronolens-git/build.gradle.kts"
-        val expected = File(path).readText()
+        val expected = File(tmp.root, path).readText()
         val actual = git.getFile(revisionId = "HEAD", path = path)
         assertEquals(expected, actual)
         assertNull(git.getFile(revisionId = "HEAD", path = "non-existent.txt"))

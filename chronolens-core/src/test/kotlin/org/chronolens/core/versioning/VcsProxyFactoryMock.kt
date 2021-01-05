@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 
 package org.chronolens.core.versioning
+
+import java.io.File
 
 class VcsProxyFactoryMock : VcsProxyFactory() {
     companion object {
@@ -38,6 +40,6 @@ class VcsProxyFactoryMock : VcsProxyFactory() {
 
     override fun isSupported(): Boolean = true
 
-    override fun createProxy(): VcsProxy? =
+    override fun createProxy(directory: File): VcsProxy? =
         if (isInitialized) VcsProxyMock(revisions) else null
 }

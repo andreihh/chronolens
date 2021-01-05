@@ -97,7 +97,7 @@ class Persist : Subcommand() {
     override fun run() {
         val repository = connect()
         repository.persist(
-            File("."),
+            File(repositoryDirectory),
             object : ProgressListener {
                 private var sources = 0
                 private var transactions = 0
@@ -146,6 +146,6 @@ class Clean : Subcommand() {
     """
 
     override fun run() {
-        PersistentRepository.clean(File("."))
+        PersistentRepository.clean(File(repositoryDirectory))
     }
 }

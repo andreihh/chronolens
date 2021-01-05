@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,25 @@
 
 package org.chronolens.core.repository
 
+import org.junit.Ignore
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.fail
 
+@Ignore
 class InteractiveRepositoryTest : RepositoryTest() {
+    @get:Rule val tmp = TemporaryFolder.builder().assureDeletion().build()
+
     override fun createRepository(): InteractiveRepository =
-        InteractiveRepository.connect()
+        InteractiveRepository.connect(tmp.root)
             ?: fail("Couldn't connect to VCS repository!")
 
     @Test fun `test connect with empty repository returns null`() {
         resetVcsRepository()
-        assertNull(InteractiveRepository.connect())
+        assertNull(InteractiveRepository.connect(tmp.root))
     }
 
     @Test fun `test get source from invalid revision throws`() {

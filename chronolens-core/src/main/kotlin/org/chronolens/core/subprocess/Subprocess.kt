@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.chronolens.core.subprocess
 
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -56,10 +57,11 @@ public object Subprocess {
      * terminate or if any input related errors occur
      */
     @JvmStatic
-    public fun execute(vararg command: String): Result {
+    public fun execute(directory: File, vararg command: String): Result {
         var process: Process? = null
         try {
-            process = builder.command(*command).start()
+            process =
+                ProcessBuilder().directory(directory).command(*command).start()
             process.outputStream.close()
             val error = submit { process.errorStream.readText() }
             val input = process.inputStream.readText()
@@ -73,7 +75,7 @@ public object Subprocess {
                 // https://msdn.microsoft.com/en-us/library/cc704588.aspx for
                 // more details regarding Windows exit codes.
                 130, 131, 137, 143, -1073741510 ->
-                    throw SubprocessException(exitValue, "subprocess killed!")
+                    throw SubprocessException(exitValue, "Subprocess killed!")
                 else -> Result.Error(exitValue, error.get())
             }
         } catch (e: InterruptedException) {
@@ -86,4 +88,8 @@ public object Subprocess {
             process?.destroy()
         }
     }
+
+    /** Delegates to [execute] for the current working directory. */
+    public fun execute(vararg command: String): Result =
+        execute(File("."), *command)
 }

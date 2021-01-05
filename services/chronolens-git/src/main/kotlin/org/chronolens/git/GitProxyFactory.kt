@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,22 @@ package org.chronolens.git
 import org.chronolens.core.subprocess.Subprocess.execute
 import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsProxyFactory
+import java.io.File
 
 /** Creates proxies which delegate their operations to the `git` VCS. */
 internal class GitProxyFactory : VcsProxyFactory() {
     private val vcs: String = "git"
 
-    private fun getPrefix(): String? {
-        val result = execute(vcs, "rev-parse", "--show-prefix")
+    private fun getPrefix(directory: File): String? {
+        val result = execute(directory, vcs, "rev-parse", "--show-prefix")
         val rawPrefix = result.getOrNull() ?: return null
         return rawPrefix.lines().first()
     }
 
     override fun isSupported(): Boolean = execute(vcs, "--version").isSuccess
 
-    override fun createProxy(): VcsProxy? {
-        val prefix = getPrefix() ?: return null
-        return GitProxy(prefix)
+    override fun createProxy(directory: File): VcsProxy? {
+        val prefix = getPrefix(directory) ?: return null
+        return GitProxy(directory, prefix)
     }
 }

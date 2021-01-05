@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,75 +16,79 @@
 
 package org.chronolens.core.versioning
 
+import org.junit.Ignore
 import org.junit.Test
+import java.io.File
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.fail
 
+@Ignore
 class VcsProxyFactoryTest {
     class UnsupportedVcsProxyFactory : VcsProxyFactory() {
-        override fun isSupported(): Boolean = false
-        override fun createProxy(): VcsProxy? = throw AssertionError()
+        override fun isSupported() = false
+        override fun createProxy(directory: File) = fail()
     }
 
     class UndetectedVcsProxyFactory : VcsProxyFactory() {
-        override fun isSupported(): Boolean = true
-        override fun createProxy(): VcsProxy? = null
+        override fun isSupported() = true
+        override fun createProxy(directory: File) = fail()
     }
 
     @Test fun `test detect ignores unsupported`() {
         VcsProxyFactoryMock.resetRepository()
-        val vcs = VcsProxyFactory.detect()
+        val vcs = VcsProxyFactory.detect(File("."))
         assertNull(vcs)
     }
 
     @Test fun `test detect ignores undetected`() {
         VcsProxyFactoryMock.resetRepository()
-        val vcs = VcsProxyFactory.detect()
+        val vcs = VcsProxyFactory.detect(File("."))
         assertNull(vcs)
     }
 
     @Test fun `test detect uninitialized repository returns null`() {
         VcsProxyFactoryMock.resetRepository()
-        val vcs = VcsProxyFactory.detect()
+        val vcs = VcsProxyFactory.detect(File("."))
         assertNull(vcs)
     }
 
     @Test fun `test detect initialized repository returns non-null`() {
         VcsProxyFactoryMock.setRepository(emptyList())
-        val vcs = VcsProxyFactory.detect()
+        val vcs = VcsProxyFactory.detect(File("."))
         assertNotNull(vcs)
     }
 
     @Test fun `test connect to unsupported returns null`() {
         val vcsFactory = UnsupportedVcsProxyFactory()
-        val vcs = vcsFactory.connect()
+        val vcs = vcsFactory.connect(File("."))
         assertNull(vcs)
     }
 
     @Test fun `test connect to undetected returns null`() {
         val vcsFactory = UndetectedVcsProxyFactory()
-        val vcs = vcsFactory.connect()
+        val vcs = vcsFactory.connect(File("."))
         assertNull(vcs)
     }
 
     @Test fun `test connect to uninitialized repository returns non-null`() {
         VcsProxyFactoryMock.resetRepository()
         val vcsFactory = VcsProxyFactoryMock()
-        val vcs = vcsFactory.connect()
+        val vcs = vcsFactory.connect(File("."))
         assertNull(vcs)
     }
 
     @Test fun `test connect to initialized repository returns non-null`() {
         VcsProxyFactoryMock.setRepository(emptyList())
         val vcsFactory = VcsProxyFactoryMock()
-        val vcs = vcsFactory.connect()
+        val vcs = vcsFactory.connect(File("."))
         assertNotNull(vcs)
     }
 
     @Test fun `test get non-existing revision throws`() {
         VcsProxyFactoryMock.setRepository(emptyList())
-        val vcs = checkNotNull(VcsProxyFactory.detect())
+        val vcs = checkNotNull(VcsProxyFactory.detect(File(".")))
         assertFailsWith<IllegalArgumentException> {
             vcs.getRevision("non-existing")
         }

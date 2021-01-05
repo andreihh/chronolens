@@ -22,49 +22,55 @@ import org.chronolens.core.subprocess.Subprocess.execute
 import org.chronolens.test.core.model.assertEquals
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import org.junit.ClassRule
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.contrib.java.lang.system.ExpectedSystemExit
 import org.junit.contrib.java.lang.system.SystemOutRule
+import org.junit.rules.TemporaryFolder
 import java.io.BufferedReader
-import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
 @Ignore
 class MainTest {
     companion object {
+        @ClassRule
+        @JvmField
+        val tmp = TemporaryFolder.builder().assureDeletion().build()
+
         @BeforeClass
         @JvmStatic
         fun setupRepository() {
             val url = "https://github.com/google/guava.git"
-            execute("git", "clone", url, "./")
-            Main.main("persist")
+            execute(tmp.root, "git", "clone", url, "./")
+            Main.main("persist", "--repo-dir", tmp.root.absolutePath)
         }
 
         @AfterClass
         @JvmStatic
         fun cleanRepository() {
-            Main.main("clean")
-            File("./").listFiles().forEach { it.deleteRecursively() }
+            Main.main("clean", "--repo-dir", tmp.root.absolutePath)
+            tmp.root.listFiles()?.forEach { it.deleteRecursively() }
         }
     }
 
-    @Rule
-    @JvmField
+    @get:Rule
     val outRule = SystemOutRule().enableLog()
 
-    @Rule
-    @JvmField
+    @get:Rule
     val exitRule = ExpectedSystemExit.none()
+
+    private val repoDir = tmp.root.absolutePath
 
     private fun readResource(resource: String): String =
         javaClass.getResourceAsStream(resource).bufferedReader()
             .use(BufferedReader::readText)
 
-    @Test fun `test snapshot equals applied edits from history`() {
-        val repository = PersistentRepository.load(File(".")) ?: fail()
+    @Test
+    fun `test snapshot equals applied edits from history`() {
+        val repository = PersistentRepository.load(tmp.root) ?: fail()
         val expected = repository.getSnapshot()
 
         val actual = Project.empty()
@@ -75,7 +81,8 @@ class MainTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test no args prints help`() {
+    @Test
+    fun `test no args prints help`() {
         val expected = readResource("expected-help.txt")
 
         Main.main()
@@ -84,89 +91,100 @@ class MainTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test list tree`() {
+    @Test
+    fun `test list tree`() {
         val expected = readResource("expected-ls-tree.txt")
 
         val revision = "9fad64c2874ab1aa21d3ecad54f19ae4a25f27fd"
-        Main.main("ls-tree", "--rev", revision)
+        Main.main("ls-tree", "--rev", revision, "--repo-dir", repoDir)
         val actual = outRule.log
 
         assertEquals(expected, actual)
     }
 
-    @Test fun `test list tree invalid revision exits`() {
+    @Test
+    fun `test list tree invalid revision exits`() {
         exitRule.expectSystemExitWithStatus(1)
 
         val revision = "*#&%^!"
-        Main.main("ls-tree", "--rev", revision)
+        Main.main("ls-tree", "--rev", revision, "--repo-dir", repoDir)
     }
 
-    @Test fun `test list tree non-existing revision exits`() {
+    @Test
+    fun `test list tree non-existing revision exits`() {
         exitRule.expectSystemExitWithStatus(1)
 
         val revision = "abcdefghijklmnopqrstuvwxyz0123456789"
-        Main.main("ls-tree", "--rev", revision)
+        Main.main("ls-tree", "--rev", revision, "--repo-dir", repoDir)
     }
 
-    @Test fun `test rev list`() {
+    @Test
+    fun `test rev list`() {
         val expected = execute(
+            tmp.root,
             "git", "rev-list", "--first-parent", "--reverse", "HEAD", "--", ""
         ).get()
 
-        Main.main("rev-list")
+        Main.main("rev-list", "--repo-dir", repoDir)
         val actual = outRule.log
 
         assertEquals(expected, actual)
     }
 
-    @Test fun `test model`() {
+    @Test
+    fun `test model`() {
         val expected = readResource("expected-model.txt")
 
         val id = "guava/src/com/google/common/eventbus/Dispatcher.java"
         val revision = "9fad64c2874ab1aa21d3ecad54f19ae4a25f27fd"
-        Main.main("model", "--id", id, "--rev", revision)
+        Main.main("model", "--id", id, "--rev", revision, "--repo-dir", repoDir)
         val actual = outRule.log
 
         assertEquals(expected, actual)
     }
 
-    @Test fun `test model invalid path exits`() {
+    @Test
+    fun `test model invalid path exits`() {
         exitRule.expectSystemExitWithStatus(1)
 
         val id = "guava/../guava/src/com/google/common/eventbus/Dispatcher.java"
         val revision = "9fad64c2874ab1aa21d3ecad54f19ae4a25f27fd"
-        Main.main("model", "--id", id, "--rev", revision)
+        Main.main("model", "--id", id, "--rev", revision, "--repo-dir", repoDir)
     }
 
-    @Test fun `test model invalid revision exits`() {
+    @Test
+    fun `test model invalid revision exits`() {
         exitRule.expectSystemExitWithStatus(1)
 
         val id = "guava/src/com/google/common/eventbus/Dispatcher.java"
         val revision = "*#&%^!"
-        Main.main("model", "--id", id, "--rev", revision)
+        Main.main("model", "--id", id, "--rev", revision, "--repo-dir", repoDir)
     }
 
-    @Test fun `test model non-existing path exits`() {
+    @Test
+    fun `test model non-existing path exits`() {
         exitRule.expectSystemExitWithStatus(1)
 
         val id = "guava/src/com/google/common/eventbus/NonExisting.java"
         val revision = "9fad64c2874ab1aa21d3ecad54f19ae4a25f27fd"
-        Main.main("model", "--id", id, "--rev", revision)
+        Main.main("model", "--id", id, "--rev", revision, "--repo-dir", repoDir)
     }
 
-    @Test fun `test model non-existing revision exits`() {
+    @Test
+    fun `test model non-existing revision exits`() {
         exitRule.expectSystemExitWithStatus(1)
 
         val id = "guava/src/com/google/common/eventbus/Dispatcher.java"
         val revision = "abcdefghijklmnopqrstuvwxyz0123456789"
-        Main.main("model", "--id", id, "--rev", revision)
+        Main.main("model", "--id", id, "--rev", revision, "--repo-dir", repoDir)
     }
 
-    @Test fun `test model existing path non-existing id exits`() {
+    @Test
+    fun `test model existing path non-existing id exits`() {
         exitRule.expectSystemExitWithStatus(1)
 
         val id = "guava/src/com/google/common/eventbus/Dispatcher.java:Missing"
         val revision = "9fad64c2874ab1aa21d3ecad54f19ae4a25f27fd"
-        Main.main("model", "--id", id, "--rev", revision)
+        Main.main("model", "--id", id, "--rev", revision, "--repo-dir", repoDir)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,10 @@ package org.chronolens.git
 import org.chronolens.core.subprocess.Subprocess.execute
 import java.io.File
 
-fun init() {
-    execute("git", "init")
+fun init(directory: File) {
+    execute(directory, "git", "init")
 }
 
-fun clone(url: String) {
-    execute("git", "clone", url, "./")
-}
-
-fun clean() {
-    File("./").listFiles().forEach { it.deleteRecursively() }
+fun clone(directory: File, url: String) {
+    execute(directory, "git", "clone", url, "./")
 }

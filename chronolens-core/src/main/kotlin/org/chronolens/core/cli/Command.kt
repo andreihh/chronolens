@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,9 @@ public abstract class Command : Runnable {
     protected abstract val version: String?
     protected abstract val help: String
     protected abstract val standardHelpOptions: Boolean
+    protected val repositoryDirectory: String by option<String>("--repo-dir")
+        .help("the repository directory (default: '.')")
+        .defaultValue(".")
 
     protected fun <T : Any> builder(
         type: Class<T>,

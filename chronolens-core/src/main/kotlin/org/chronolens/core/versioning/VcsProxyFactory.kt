@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.chronolens.core.versioning
 
+import java.io.File
 import java.util.ServiceLoader
 
 /**
@@ -37,26 +38,27 @@ public abstract class VcsProxyFactory {
     protected abstract fun isSupported(): Boolean
 
     /**
-     * Returns a proxy for the repository detected in the current working
-     * directory, or `null` if no repository was detected.
+     * Returns a proxy for the repository detected in the given [directory], or
+     * `null` if no repository was detected.
      *
      * It is required for the associated VCS to be supported.
      *
      * @throws IllegalStateException if the detected repository is corrupted or
      * empty (doesn't have a [head][VcsProxy.getHead] revision)
      */
-    protected abstract fun createProxy(): VcsProxy?
+    protected abstract fun createProxy(directory: File): VcsProxy?
 
     /**
-     * Returns a VCS proxy for the repository detected in the current working
-     * directory, or `null` if the associated VCS is not supported in this
-     * environment or no repository could be detected.
+     * Returns a VCS proxy for the repository detected in the given [directory],
+     * or `null` if the associated VCS is not supported in this environment or
+     * no repository could be detected.
      *
      * @throws IllegalStateException if the detected repository is not in a
      * valid state (it is corrupted or doesn't have a [head][VcsProxy.getHead]
      * revision)
      */
-    public fun connect(): VcsProxy? = if (isSupported()) createProxy() else null
+    public fun connect(directory: File): VcsProxy? =
+        if (isSupported()) createProxy(directory) else null
 
     public companion object {
         private val vcsProxyFactories =
@@ -64,16 +66,16 @@ public abstract class VcsProxyFactory {
                 .filter(VcsProxyFactory::isSupported)
 
         /**
-         * Returns the VCS proxy for the repository detected in the current
-         * working directory, or `null` if no supported VCS repository was
+         * Returns the VCS proxy for the repository detected in the given
+         * [directory], or `null` if no supported VCS repository was
          * detected or if multiple repositories were detected.
          *
          * @throws IllegalStateException if the detected repository is corrupted
          * or empty (doesn't have a [head][VcsProxy.getHead] revision)
          */
         @JvmStatic
-        public fun detect(): VcsProxy? =
-            vcsProxyFactories.mapNotNull(VcsProxyFactory::createProxy)
+        public fun detect(directory: File): VcsProxy? =
+            vcsProxyFactories.mapNotNull { it.createProxy(directory) }
                 .singleOrNull()
     }
 }

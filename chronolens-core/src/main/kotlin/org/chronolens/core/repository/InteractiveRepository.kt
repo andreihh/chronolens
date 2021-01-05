@@ -25,6 +25,7 @@ import org.chronolens.core.parsing.Result
 import org.chronolens.core.versioning.Revision
 import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsProxyFactory
+import java.io.File
 import java.util.Collections.unmodifiableList
 import java.util.Collections.unmodifiableSet
 
@@ -136,14 +137,14 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
     public companion object {
         /**
          * Returns the instance which can query the repository detected in the
-         * current working directory for code metadata, or `null` if no
-         * supported VCS repository could be unambiguously detected
+         * given [directory] for code metadata, or `null` if no supported VCS
+         * repository could be unambiguously detected
          *
          * @throws CorruptedRepositoryException if the detected repository is
          * corrupted or empty (doesn't have a `head` revision)
          */
         @JvmStatic
-        public fun connect(): InteractiveRepository? =
-            VcsProxyFactory.detect()?.let(::InteractiveRepository)
+        public fun connect(directory: File): InteractiveRepository? =
+            VcsProxyFactory.detect(directory)?.let(::InteractiveRepository)
     }
 }

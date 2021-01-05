@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,27 @@ package org.chronolens.git
 import org.chronolens.core.subprocess.Subprocess.execute
 import org.chronolens.core.versioning.Revision
 import org.chronolens.core.versioning.VcsProxy
+import java.io.File
 import java.time.Instant
 
-internal class GitProxy(private val prefix: String) : VcsProxy {
+internal class GitProxy(
+    private val directory: File,
+    private val prefix: String,
+) : VcsProxy {
+
     private val vcs = "git"
     private val headId = "HEAD"
     private val format = "--format=%ct:%an"
-    private val head = getRevision(headId) ?: error("'$headId' must exist!")
 
-    private fun formatCommits(rawCommits: String): List<String> {
-        val lines = rawCommits.lines()
-        return (0 until lines.size - 1 step 2).map { i ->
-            "${lines[i]}:${lines[i + 1]}".removePrefix("commit ")
-        }
-    }
+    private fun execute(vararg command: String) =
+        execute(directory, *command)
+
+    private fun formatCommits(rawCommits: String): List<String> =
+        rawCommits.lines()
+            .takeWhile(String::isNotEmpty)
+            .chunked(2)
+            // .takeWhile { it.size == 2 }
+            .map { (first, second) -> "$first:$second".removePrefix("commit ") }
 
     private fun parseCommit(formattedCommit: String): Revision {
         val (id, rawDate, author) =
@@ -49,7 +56,8 @@ internal class GitProxy(private val prefix: String) : VcsProxy {
         require(result.isSuccess) { "Revision '$revisionId' doesn't exist!" }
     }
 
-    override fun getHead(): Revision = head
+    override fun getHead(): Revision =
+        getRevision(headId) ?: error("'$headId' must exist!")
 
     override fun getRevision(revisionId: String): Revision? {
         val result =

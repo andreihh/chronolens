@@ -50,14 +50,16 @@ public abstract class Subcommand : Command() {
      * exits if no repository is unambiguously detected.
      */
     protected fun connect(): InteractiveRepository =
-        InteractiveRepository.connect() ?: exit("Repository not found!")
+        InteractiveRepository.connect(File(repositoryDirectory))
+            ?: exit("Repository not found!")
 
     /**
      * Returns the persistent repository from the current working directory, or
      * exits if no persisted repository is found.
      */
     protected fun load(): PersistentRepository =
-        PersistentRepository.load(File(".")) ?: exit("Repository not found!")
+        PersistentRepository.load(File(repositoryDirectory))
+            ?: exit("Repository not found!")
 
     protected fun RequiredOption<String>.validateId(): RequiredOption<String> =
         validate { id ->

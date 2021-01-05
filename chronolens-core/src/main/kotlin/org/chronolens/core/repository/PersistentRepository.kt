@@ -68,7 +68,7 @@ private constructor(private val schema: RepositoryFileSchema) : Repository {
         history.asSequence().map { transactionId ->
             val file = schema.getTransactionFile(transactionId)
             try {
-                JsonModule.deserialize<Transaction>(file)
+                JsonModule.deserialize(file)
             } catch (e: IOException) {
                 throw UncheckedIOException(e)
             }
@@ -76,39 +76,35 @@ private constructor(private val schema: RepositoryFileSchema) : Repository {
 
     public companion object {
         /**
-         * Returns the persisted repository detected in the given
-         * [repositoryDirectory], or `null` if no repository was detected.
+         * Returns the persisted repository detected in the given [directory],
+         * or `null` if no repository was detected.
          *
          * @throws IOException if any input related errors occur
          * @throws CorruptedRepositoryException if the repository is corrupted
          */
         @Throws(IOException::class)
         @JvmStatic
-        public fun load(repositoryDirectory: File): PersistentRepository? {
-            val schema = RepositoryFileSchema(repositoryDirectory)
+        public fun load(directory: File): PersistentRepository? {
+            val schema = RepositoryFileSchema(directory)
             return if (!schema.rootDirectory.isDirectory) null
             else PersistentRepository(schema)
         }
 
         /**
-         * Persists this repository in the given [repositoryDirectory].
+         * Persists [this] repository in the given [directory], notifying the
+         * given [listener] of the progress if it is not `null`, and returns the
+         * persisted repository.
          *
-         * @receiver the repository to persist
-         * @param repositoryDirectory the directory where the repository should
-         * be persisted
-         * @param listener the listener which will be notified on the
-         * persistence progress, or `null` if no notification is required
-         * @return the persisted repository
          * @throws IOException if any output related errors occur
          * @throws CorruptedRepositoryException if the repository is corrupted
          */
         @Throws(IOException::class)
         @JvmStatic
         public fun Repository.persist(
-            repositoryDirectory: File,
+            directory: File,
             listener: ProgressListener? = null,
         ): PersistentRepository {
-            val schema = RepositoryFileSchema(repositoryDirectory)
+            val schema = RepositoryFileSchema(directory)
             if (this is PersistentRepository && schema == this.schema) {
                 return this
             }
@@ -118,7 +114,7 @@ private constructor(private val schema: RepositoryFileSchema) : Repository {
 
         /**
          * Deletes the previously persisted repository from the given
-         * [repositoryDirectory].
+         * [directory].
          *
          * All corresponding [PersistentRepository] instances will become
          * corrupted after this method is called.
@@ -127,8 +123,8 @@ private constructor(private val schema: RepositoryFileSchema) : Repository {
          */
         @Throws(IOException::class)
         @JvmStatic
-        public fun clean(repositoryDirectory: File) {
-            val schema = RepositoryFileSchema(repositoryDirectory)
+        public fun clean(directory: File) {
+            val schema = RepositoryFileSchema(directory)
             schema.rootDirectory.deleteRecursively()
         }
     }
