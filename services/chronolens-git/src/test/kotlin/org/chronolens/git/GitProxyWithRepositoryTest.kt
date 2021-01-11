@@ -19,7 +19,6 @@ package org.chronolens.git
 import org.chronolens.core.versioning.VcsProxyFactory
 import org.junit.BeforeClass
 import org.junit.ClassRule
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
@@ -89,7 +88,6 @@ class GitProxyWithRepositoryTest {
         }
     }
 
-    @Ignore // TODO: figure out why it fails on Travis.
     @Test fun `test get history`() {
         assertEquals(emptyList(), git.getHistory("non-existent.txt"))
         assertNotEquals(emptyList(), git.getHistory("README.md"))
