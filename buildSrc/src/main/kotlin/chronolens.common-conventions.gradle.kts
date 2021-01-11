@@ -1,4 +1,4 @@
-//import java.net.URL
+// import java.net.URL
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -91,6 +91,6 @@ val javadocJar by tasks.registering(Jar::class) {
 }
 
 artifacts {
-    add("archives", sourcesJar)
-    add("archives", javadocJar)
+    archives(sourcesJar)
+    archives(javadocJar)
 }
