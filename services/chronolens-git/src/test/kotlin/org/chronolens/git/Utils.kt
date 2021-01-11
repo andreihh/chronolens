@@ -21,8 +21,18 @@ import java.io.File
 
 fun init(directory: File) {
     execute(directory, "git", "init")
+    execute(directory, "git", "config", "user.email", "test@test.com")
+    execute(directory, "git", "config", "user.name", "test")
 }
 
 fun clone(directory: File, url: String) {
     execute(directory, "git", "clone", url, "./")
+}
+
+fun commit(directory: File, changeSet: Map<String, String>) {
+    for ((path, content) in changeSet) {
+        File(directory, path).writeText(content)
+    }
+    execute(directory, "git", "add", "-A")
+    execute(directory, "git", "commit", "-m", "Test commit.")
 }
