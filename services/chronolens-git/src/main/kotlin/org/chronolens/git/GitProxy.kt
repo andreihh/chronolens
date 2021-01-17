@@ -94,7 +94,7 @@ internal class GitProxy(
     override fun getHistory(path: String): List<Revision> {
         val result = execute(
             vcs, "rev-list", "--first-parent", "--reverse", format,
-            headId, "--", path
+            headId, "--", path.ifEmpty { "./" }
         )
         val rawCommits = result.get()
         val formattedCommits = formatCommits(rawCommits)

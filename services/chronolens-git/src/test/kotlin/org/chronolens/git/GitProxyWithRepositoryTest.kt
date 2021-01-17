@@ -49,7 +49,7 @@ class GitProxyWithRepositoryTest {
             commit(
                 directory = tmp.root,
                 changeSet = mapOf(
-                    "gradle.properties" to "org.gradle.daemon=true,"
+                    "gradle.properties" to "org.gradle.daemon=true",
                 )
             )
         }
