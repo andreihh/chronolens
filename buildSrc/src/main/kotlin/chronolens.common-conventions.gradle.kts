@@ -16,11 +16,14 @@ repositories {
     jcenter()
 }
 
+// Set versions for common dependencies.
+val junitVersion by extra("4.13")
+
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
 
     testImplementation(kotlin("test-junit"))
-    testImplementation("junit:junit:4.13")
+    testImplementation("junit:junit:$junitVersion")
 }
 
 tasks.withType<KotlinCompile> {
