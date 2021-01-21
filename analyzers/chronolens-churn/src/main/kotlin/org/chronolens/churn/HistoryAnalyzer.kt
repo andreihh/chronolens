@@ -21,11 +21,11 @@ import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.ListEdit
-import org.chronolens.core.model.Project
-import org.chronolens.core.model.ProjectEdit
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
+import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.sourcePath
@@ -45,11 +45,11 @@ internal class HistoryAnalyzer(
         require(skipDays >= 0) { "Invalid number of skipped days '$skipDays'!" }
     }
 
-    private val project = Project.empty()
+    private val sourceTree = SourceTree.empty()
     private val stats = hashMapOf<String, Stats>()
 
     private fun getSourcePath(id: String): String =
-        project.get<SourceNode>(id).sourcePath
+        sourceTree.get<SourceNode>(id).sourcePath
 
     private fun updateStats(
         id: String,
@@ -64,7 +64,7 @@ internal class HistoryAnalyzer(
             else nodeStats.updated(revisionId, churn)
     }
 
-    private fun visit(revisionId: String, date: Instant, edit: ProjectEdit) {
+    private fun visit(revisionId: String, date: Instant, edit: SourceTreeEdit) {
         val id = edit.id
         when (edit) {
             is AddNode -> {
@@ -74,7 +74,7 @@ internal class HistoryAnalyzer(
                     .associate { it.id to Stats.create(revisionId, date) }
             }
             is RemoveNode -> {
-                stats -= project.get<SourceNode>(id)
+                stats -= sourceTree.get<SourceNode>(id)
                     .walkSourceTree()
                     .filter(SourceNode::isMember)
                     .map(SourceNode::id)
@@ -82,7 +82,7 @@ internal class HistoryAnalyzer(
             is EditFunction -> updateStats(id, revisionId, date, edit.churn)
             is EditVariable -> updateStats(id, revisionId, date, edit.churn)
         }
-        project.apply(edit)
+        sourceTree.apply(edit)
     }
 
     private fun visit(transaction: Transaction) {
@@ -92,7 +92,7 @@ internal class HistoryAnalyzer(
     }
 
     private fun getMemberReport(id: String): MemberReport {
-        val size = getSize(project.get<SourceNode>(id))
+        val size = getSize(sourceTree.get<SourceNode>(id))
         val (_, revisions, changes, churn, weightedChurn) = stats.getValue(id)
         return MemberReport(
             id = id, size = size,
@@ -112,7 +112,7 @@ internal class HistoryAnalyzer(
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::visit)
         val membersByFile = stats.keys.groupBy(::getSourcePath)
-        val sourcePaths = project.sources.map(SourceFile::path)
+        val sourcePaths = sourceTree.sources.map(SourceFile::path)
         val fileReports = sourcePaths.map { path ->
             val members = membersByFile[path].orEmpty()
             val memberStats = members.map(stats::getValue)

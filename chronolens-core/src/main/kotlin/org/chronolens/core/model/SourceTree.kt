@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,21 +19,21 @@ package org.chronolens.core.model
 import java.util.Collections.unmodifiableCollection
 
 /**
- * A snapshot of a project at a specific point in time.
+ * A snapshot of a source tree at a specific point in time.
  *
  * It indexes all contained source nodes to allow fast access by id.
  */
-public class Project private constructor(
+public class SourceTree private constructor(
     private val sourceMap: HashMap<String, SourceFile>,
     private val nodeMap: HashMap<String, SourceNode>,
 ) {
 
-    /** The source files in this project. */
+    /** The source files in this source tree. */
     public val sources: Collection<SourceFile>
         get() = unmodifiableCollection(sourceMap.values)
 
-    /** Returns all the source nodes in this project. */
-    public val sourceTree: Iterable<SourceNode>
+    /** Returns all the source nodes in this source tree. */
+    public val sourceNodes: Iterable<SourceNode>
         get() = unmodifiableCollection(nodeMap.values)
 
     /**
@@ -56,12 +56,12 @@ public class Project private constructor(
     }
 
     /**
-     * Applies the given [edit] to this project.
+     * Applies the given [edit] to this source tree.
      *
-     * @throws IllegalStateException if this project has an invalid state and
-     * the given [edit] couldn't be applied
+     * @throws IllegalStateException if this source tree has an invalid state
+     * and the given [edit] couldn't be applied
      */
-    public fun apply(edit: ProjectEdit) {
+    public fun apply(edit: SourceTreeEdit) {
         val sourcePath = edit.sourcePath
         sourceMap -= sourcePath
         edit.applyOn(nodeMap)
@@ -72,37 +72,37 @@ public class Project private constructor(
     }
 
     /** Utility method. */
-    public fun apply(edits: List<ProjectEdit>) {
+    public fun apply(edits: List<SourceTreeEdit>) {
         edits.forEach(::apply)
     }
 
     /** Utility method. */
-    public fun apply(vararg edits: ProjectEdit) {
+    public fun apply(vararg edits: SourceTreeEdit) {
         apply(edits.asList())
     }
 
     public companion object {
         /**
-         * Creates and returns a project from the given [sources].
+         * Creates and returns a source tree from the given [sources].
          *
          * @throws IllegalArgumentException if the given [sources] contain
          * duplicate ids
          */
         @JvmStatic
-        public fun of(sources: Collection<SourceFile>): Project {
+        public fun of(sources: Collection<SourceFile>): SourceTree {
             val sourceMap = HashMap<String, SourceFile>(sources.size)
             for (source in sources) {
                 require(source.id !in sourceMap) {
-                    "Project contains duplicate source id '${source.id}'!"
+                    "Source tree contains duplicate source id '${source.id}'!"
                 }
                 sourceMap[source.id] = source
             }
             val nodeMap = buildVisit(sources)
-            return Project(sourceMap, nodeMap)
+            return SourceTree(sourceMap, nodeMap)
         }
 
-        /** Creates and returns an empty project. */
+        /** Creates and returns an empty source tree. */
         @JvmStatic
-        public fun empty(): Project = Project(HashMap(0), HashMap(0))
+        public fun empty(): SourceTree = SourceTree(HashMap(0), HashMap(0))
     }
 }

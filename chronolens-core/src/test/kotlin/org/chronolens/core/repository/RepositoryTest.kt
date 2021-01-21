@@ -18,8 +18,8 @@ package org.chronolens.core.repository
 
 import org.chronolens.core.versioning.VcsProxyFactoryMock
 import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.project
 import org.chronolens.test.core.model.sourceFile
+import org.chronolens.test.core.model.sourceTree
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -32,7 +32,8 @@ abstract class RepositoryTest {
 
     protected abstract fun createRepository(): Repository
 
-    @Before fun initVcsRepository() {
+    @Before
+    fun initVcsRepository() {
         VcsProxyFactoryMock.setRepository {
             revision {
                 change("src/Main.mock" to "{")
@@ -80,17 +81,20 @@ abstract class RepositoryTest {
         }
     }
 
-    @After fun resetVcsRepository() {
+    @After
+    fun resetVcsRepository() {
         VcsProxyFactoryMock.resetRepository()
     }
 
-    @Test fun `test get head id`() {
+    @Test
+    fun `test get head id`() {
         val expected = "1"
         val actual = repository.getHeadId()
         assertEquals(expected, actual)
     }
 
-    @Test fun `test list sources`() {
+    @Test
+    fun `test list sources`() {
         val expected = setOf(
             "src/Main.mock",
             "src/BuildVersion.mock",
@@ -101,13 +105,15 @@ abstract class RepositoryTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test list revisions`() {
+    @Test
+    fun `test list revisions`() {
         val expected = listOf("0", "1")
         val actual = repository.listRevisions()
         assertEquals(expected, actual)
     }
 
-    @Test fun `test get source`() {
+    @Test
+    fun `test get source`() {
         val expected = sourceFile("src/Main.mock").build {
             type("Main") {}
         }
@@ -115,17 +121,20 @@ abstract class RepositoryTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test get non-existing source returns null`() {
+    @Test
+    fun `test get non-existing source returns null`() {
         val actual = repository.getSource("src/Test.mock")
         assertNull(actual)
     }
 
-    @Test fun `test get non-parsable source returns null`() {
+    @Test
+    fun `test get non-parsable source returns null`() {
         val actual = repository.getSource("README.md")
         assertNull(actual)
     }
 
-    @Test fun `test get invalid source returns latest valid version`() {
+    @Test
+    fun `test get invalid source returns latest valid version`() {
         val expected = sourceFile("src/Worksheet.mock").build {
             function("println()") {}
         }
@@ -133,13 +142,15 @@ abstract class RepositoryTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test get invalid source with no history returns empty`() {
+    @Test
+    fun `test get invalid source with no history returns empty`() {
         val expected = sourceFile("src/Error.mock").build {}
         val actual = repository.getSource("src/Error.mock")
         assertEquals(expected, actual)
     }
 
-    @Test fun `test get invalid path throws`() {
+    @Test
+    fun `test get invalid path throws`() {
         assertFailsWith<IllegalArgumentException> {
             repository.getSource("src/../Main.mock")
         }
@@ -151,8 +162,9 @@ abstract class RepositoryTest {
         }
     }
 
-    @Test fun `test get snapshot`() {
-        val expected = project {
+    @Test
+    fun `test get snapshot`() {
+        val expected = sourceTree {
             sourceFile("src/Main.mock") {
                 type("Main") {}
             }
@@ -166,8 +178,9 @@ abstract class RepositoryTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test get history`() {
-        val expected = project {
+    @Test
+    fun `test get history`() {
+        val expected = sourceTree {
             sourceFile("src/Main.mock") {
                 type("Main") {}
             }
@@ -178,7 +191,7 @@ abstract class RepositoryTest {
             sourceFile("src/Error.mock") {}
         }
         val transactions = repository.getHistory()
-        val actual = project {}
+        val actual = sourceTree {}
         transactions.map(Transaction::edits).forEach(actual::apply)
         assertEquals(expected, actual)
     }

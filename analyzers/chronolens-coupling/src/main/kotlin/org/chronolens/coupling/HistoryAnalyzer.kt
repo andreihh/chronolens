@@ -19,11 +19,11 @@ package org.chronolens.coupling
 import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.Function
-import org.chronolens.core.model.Project
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
+import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
@@ -42,12 +42,12 @@ internal class HistoryAnalyzer(
         require(minCoupling >= 0.0) { "Invalid coupling '$minCoupling'!" }
     }
 
-    private val project = Project.empty()
+    private val sourceTree = SourceTree.empty()
     private val changes = hashMapOf<String, Int>()
     private val jointChanges = hashMapOf<String, HashMap<String, Int>>()
 
     private fun getSourcePath(id: String): String =
-        project.get<SourceEntity>(id).sourcePath
+        sourceTree.get<SourceEntity>(id).sourcePath
 
     private fun visit(edit: AddNode): Set<String> {
         val addedNodes = edit.node.walkSourceTree()
@@ -56,7 +56,7 @@ internal class HistoryAnalyzer(
     }
 
     private fun visit(edit: RemoveNode): Set<String> {
-        val removedNode = project.get<SourceNode>(edit.id)
+        val removedNode = sourceTree.get<SourceNode>(edit.id)
         val removedIds = removedNode
             .walkSourceTree()
             .filterIsInstance<Function>()
@@ -82,7 +82,7 @@ internal class HistoryAnalyzer(
                 is RemoveNode -> editedIds -= visit(edit)
                 is EditFunction -> editedIds += edit.id
             }
-            project.apply(edit)
+            sourceTree.apply(edit)
         }
         return editedIds
     }
@@ -118,7 +118,7 @@ internal class HistoryAnalyzer(
 
     private fun aggregate(): List<Graph> {
         val idsByFile = changes.keys.groupBy(::getSourcePath)
-        val sourcePaths = project.sources.map(SourceFile::path)
+        val sourcePaths = sourceTree.sources.map(SourceFile::path)
         return sourcePaths.map { path ->
             val ids = idsByFile[path].orEmpty()
             val edges = ids.flatMap { id1 ->

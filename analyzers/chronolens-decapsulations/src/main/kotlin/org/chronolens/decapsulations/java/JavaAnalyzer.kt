@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 package org.chronolens.decapsulations.java
 
 import org.chronolens.core.model.Function
-import org.chronolens.core.model.Project
 import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
+import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.parentId
@@ -36,14 +36,14 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
             .firstOrNull { it.firstOrNull()?.isUpperCase() == true }
             ?.let { "${it[0].toLowerCase()}${it.substring(1)}" }
 
-    override fun getField(project: Project, nodeId: String): String? {
-        val node = project[nodeId] ?: return null
+    override fun getField(sourceTree: SourceTree, nodeId: String): String? {
+        val node = sourceTree[nodeId] ?: return null
         return when (node) {
             is Variable -> node.id
             is Function -> {
                 val fieldName = getFieldName(node.signature) ?: return null
                 val fieldId = "${node.parentId}$MEMBER_SEPARATOR$fieldName"
-                val field = project[fieldId] as? Variable? ?: return null
+                val field = sourceTree[fieldId] as? Variable? ?: return null
                 field.id
             }
             else -> null
@@ -60,23 +60,23 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
     private val SourceNode?.isInterface: Boolean
         get() = this is Type && INTERFACE_MODIFIER in modifiers
 
-    override fun getVisibility(project: Project, nodeId: String): Int {
-        val node = project[nodeId]
+    override fun getVisibility(sourceTree: SourceTree, nodeId: String): Int {
+        val node = sourceTree[nodeId]
         return when (node) {
             is Type -> getVisibility(node.modifiers)
             is Function ->
-                if (project[node.parentId].isInterface) PUBLIC_LEVEL
+                if (sourceTree[node.parentId].isInterface) PUBLIC_LEVEL
                 else getVisibility(node.modifiers)
             is Variable -> getVisibility(node.modifiers)
             else -> throw AssertionError("'$nodeId' has no visibility!")
         }
     }
 
-    override fun isConstant(project: Project, nodeId: String): Boolean {
-        val node = project[nodeId] as? Variable? ?: return false
+    override fun isConstant(sourceTree: SourceTree, nodeId: String): Boolean {
+        val node = sourceTree[nodeId] as? Variable? ?: return false
         val modifiers = node.modifiers
         return (STATIC_MODIFIER in modifiers && FINAL_MODIFIER in modifiers) ||
-            project[node.parentId].isInterface
+            sourceTree[node.parentId].isInterface
     }
 
     companion object {

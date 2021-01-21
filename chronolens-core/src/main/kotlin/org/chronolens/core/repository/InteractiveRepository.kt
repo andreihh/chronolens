@@ -16,9 +16,9 @@
 
 package org.chronolens.core.repository
 
-import org.chronolens.core.model.Project
-import org.chronolens.core.model.ProjectEdit.Companion.diff
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.SourceTreeEdit.Companion.diff
 import org.chronolens.core.parsing.Parser
 import org.chronolens.core.parsing.Parser.Companion.canParse
 import org.chronolens.core.parsing.Result
@@ -112,13 +112,13 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
     override fun getSource(path: String): SourceFile? = getSource(path, head)
 
     override fun getHistory(): Sequence<Transaction> {
-        val project = Project.empty()
+        val sourceTree = SourceTree.empty()
         return history.asSequence().map { (revisionId, date, author) ->
             val changeSet = vcs.getChangeSet(revisionId)
             val before = HashSet<SourceFile>(changeSet.size)
             val after = HashSet<SourceFile>(changeSet.size)
             for (path in changeSet) {
-                val oldSource = project.get<SourceFile?>(path)
+                val oldSource = sourceTree.get<SourceFile?>(path)
                 before += listOfNotNull(oldSource)
                 val result = parseSource(revisionId, path)
                 val newSource = when (result) {
@@ -128,8 +128,8 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
                 }
                 after += listOfNotNull(newSource)
             }
-            val edits = Project.of(before).diff(Project.of(after))
-            project.apply(edits)
+            val edits = SourceTree.of(before).diff(SourceTree.of(after))
+            sourceTree.apply(edits)
             Transaction(revisionId, date, author, edits)
         }
     }

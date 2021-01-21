@@ -37,11 +37,11 @@ import org.chronolens.core.model.EditType
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.ListEdit
-import org.chronolens.core.model.ProjectEdit
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SetEdit
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
+import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import java.io.IOException
@@ -90,7 +90,7 @@ public object JsonModule {
             private val abstractTypes =
                 listOf(
                     SourceNode::class.java,
-                    ProjectEdit::class.java,
+                    SourceTreeEdit::class.java,
                     ListEdit::class.java,
                     SetEdit::class.java,
                 )

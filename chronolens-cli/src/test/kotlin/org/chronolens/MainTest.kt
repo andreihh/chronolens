@@ -16,10 +16,9 @@
 
 package org.chronolens
 
-import org.chronolens.core.model.Project
+import org.chronolens.core.model.SourceTree
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.subprocess.Subprocess.execute
-import org.chronolens.test.core.model.assertEquals
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.ClassRule
@@ -71,7 +70,7 @@ class MainTest {
         val repository = PersistentRepository.load(tmp.root) ?: fail()
         val expected = repository.getSnapshot()
 
-        val actual = Project.empty()
+        val actual = SourceTree.empty()
         for ((_, _, _, edits) in repository.getHistory()) {
             actual.apply(edits)
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
  * @throws IllegalArgumentException if the two source nodes have different ids
  * or types
  */
-internal fun SourceNode.diff(other: SourceNode): ProjectEdit? {
+internal fun SourceNode.diff(other: SourceNode): SourceTreeEdit? {
     require(id == other.id && this::class == other::class) {
         "Can't compute diff between '$id' and '${other.id}'!"
     }

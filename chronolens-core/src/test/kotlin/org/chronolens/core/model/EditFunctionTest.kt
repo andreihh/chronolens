@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package org.chronolens.core.model
 
 import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.project
 import org.chronolens.test.core.model.sourceFile
+import org.chronolens.test.core.model.sourceTree
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
@@ -30,7 +30,7 @@ class EditFunctionTest {
     }
 
     @Test fun `test add modifier to function`() {
-        val expected = project {
+        val expected = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {
                     function("getVersion()") {
@@ -44,7 +44,7 @@ class EditFunctionTest {
                 modifiers { +"@Override" }
             }
 
-        val actual = project {
+        val actual = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {
                     function("getVersion()") {}
@@ -57,7 +57,7 @@ class EditFunctionTest {
     }
 
     @Test fun `test swap function parameters`() {
-        val expected = project {
+        val expected = sourceTree {
             sourceFile("src/Test.java") {
                 function("getValue(int, int)") {
                     parameters("x", "y")
@@ -72,7 +72,7 @@ class EditFunctionTest {
                 }
             }
 
-        val actual = project {
+        val actual = sourceTree {
             sourceFile("src/Test.java") {
                 function("getValue(int, int)") {
                     parameters("y", "x")
@@ -85,7 +85,7 @@ class EditFunctionTest {
     }
 
     @Test fun `test edit non-existing function throws`() {
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 function("get_version()") {}
             }
@@ -93,12 +93,12 @@ class EditFunctionTest {
         val edit = sourceFile("src/Test.java").function("getVersion()").edit {}
 
         assertFailsWith<IllegalStateException> {
-            project.apply(edit)
+            sourceTree.apply(edit)
         }
     }
 
     @Test fun `test edit non-existing parameter throws`() {
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 function("getValue(int, int)") {
                     parameters("y", "x")
@@ -113,7 +113,7 @@ class EditFunctionTest {
             }
 
         assertFailsWith<IllegalStateException> {
-            project.apply(edit)
+            sourceTree.apply(edit)
         }
     }
 }

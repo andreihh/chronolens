@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,20 @@
 package org.chronolens.core.model
 
 import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.project
 import org.chronolens.test.core.model.sourceFile
+import org.chronolens.test.core.model.sourceTree
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
 class AddNodeTest {
     @Test fun `test add source file`() {
-        val expected = project {
+        val expected = sourceTree {
             sourceFile("src/Main.java") {}
             sourceFile("src/Test.java") {}
         }
         val edit = sourceFile("src/Test.java").add {}
 
-        val actual = project {
+        val actual = sourceTree {
             sourceFile("src/Main.java") {}
         }
         actual.apply(edit)
@@ -39,7 +39,7 @@ class AddNodeTest {
     }
 
     @Test fun `test add function to type`() {
-        val expected = project {
+        val expected = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {
                     function("getVersion()") {}
@@ -49,7 +49,7 @@ class AddNodeTest {
         val edit = sourceFile("src/Test.java").type("Test")
             .function("getVersion()").add {}
 
-        val actual = project {
+        val actual = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {}
             }
@@ -60,7 +60,7 @@ class AddNodeTest {
     }
 
     @Test fun `test add type with function with parameter`() {
-        val expected = project {
+        val expected = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {
                     function("getV(String)") {
@@ -75,7 +75,7 @@ class AddNodeTest {
             }
         }
 
-        val actual = project {
+        val actual = sourceTree {
             sourceFile("src/Test.java") {}
         }
         actual.apply(edit)
@@ -84,7 +84,7 @@ class AddNodeTest {
     }
 
     @Test fun `test add existing node throws`() {
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {}
             }
@@ -92,7 +92,7 @@ class AddNodeTest {
         val edit = sourceFile("src/Test.java").type("Test").add {}
 
         assertFailsWith<IllegalStateException> {
-            project.apply(edit)
+            sourceTree.apply(edit)
         }
     }
 
@@ -112,14 +112,14 @@ class AddNodeTest {
     }*/
 
     @Test fun `test add node to non-existing parent throws`() {
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Main.java") {}
         }
         val edit = sourceFile("src/Main.java").type("Main")
             .function("getVersion()").add {}
 
         assertFailsWith<IllegalStateException> {
-            project.apply(edit)
+            sourceTree.apply(edit)
         }
     }
 }

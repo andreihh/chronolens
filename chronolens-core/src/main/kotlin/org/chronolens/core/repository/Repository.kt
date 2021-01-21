@@ -16,14 +16,14 @@
 
 package org.chronolens.core.repository
 
-import org.chronolens.core.model.Project
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourceTree
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
 /**
  * A wrapper which connects to a repository and allows querying source code
- * metadata and the project history.
+ * metadata and the source tree history.
  */
 public interface Repository {
     /**
@@ -67,9 +67,9 @@ public interface Repository {
      * @throws CorruptedRepositoryException if the repository is corrupted
      * @see getSource for details about how the latest sources are retrieved
      */
-    public fun getSnapshot(): Project {
+    public fun getSnapshot(): SourceTree {
         val sources = listSources().map(::getSource).checkNoNulls()
-        return Project.of(sources)
+        return SourceTree.of(sources)
     }
 
     /**

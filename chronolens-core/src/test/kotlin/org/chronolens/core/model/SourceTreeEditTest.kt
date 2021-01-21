@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,22 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.ProjectEdit.Companion.diff
+import org.chronolens.core.model.SourceTreeEdit.Companion.diff
 import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.project
+import org.chronolens.test.core.model.sourceTree
 import org.junit.Test
 
-class ProjectEditTest {
-    private fun assertDiff(before: Project, after: Project) {
+class SourceTreeEditTest {
+    private fun assertDiff(before: SourceTree, after: SourceTree) {
         val edits = before.diff(after)
-        val actualAfter = Project.of(before.sources)
+        val actualAfter = SourceTree.of(before.sources)
         actualAfter.apply(edits)
         assertEquals(after, actualAfter)
     }
 
     @Test
-    fun `test diff equal projects`() {
-        val before = project {
+    fun `test diff equal source trees`() {
+        val before = sourceTree {
             sourceFile("src/Main.java") {
                 type("Main") {
                     function("getVersion(String)") {
@@ -45,7 +45,7 @@ class ProjectEditTest {
             }
         }
 
-        val after = project {
+        val after = sourceTree {
             sourceFile("src/Main.java") {
                 type("Main") {
                     function("getVersion(String)") {
@@ -63,13 +63,13 @@ class ProjectEditTest {
     }
 
     @Test fun `test diff change type modifiers`() {
-        val before = project {
+        val before = sourceTree {
             sourceFile("src/Main.java") {
                 type("Main") {}
             }
         }
 
-        val after = project {
+        val after = sourceTree {
             sourceFile("src/Main.java") {
                 type("Main") {
                     modifiers("interface")
@@ -81,13 +81,13 @@ class ProjectEditTest {
     }
 
     @Test fun `test diff change type supertypes`() {
-        val before = project {
+        val before = sourceTree {
             sourceFile("src/Main.java") {
                 type("Main") {}
             }
         }
 
-        val after = project {
+        val after = sourceTree {
             sourceFile("src/Main.java") {
                 type("Main") {
                     supertypes("Object")
@@ -99,13 +99,13 @@ class ProjectEditTest {
     }
 
     @Test fun `test diff change function modifiers`() {
-        val before = project {
+        val before = sourceTree {
             sourceFile("src/Test.java") {
                 function("getVersion()") {}
             }
         }
 
-        val after = project {
+        val after = sourceTree {
             sourceFile("src/Test.java") {
                 function("getVersion()") {
                     modifiers("abstract")
@@ -117,7 +117,7 @@ class ProjectEditTest {
     }
 
     @Test fun `test diff change function parameters`() {
-        val before = project {
+        val before = sourceTree {
             sourceFile("src/Test.java") {
                 function("getVersion(String, int)") {
                     parameters("name", "revision")
@@ -125,7 +125,7 @@ class ProjectEditTest {
             }
         }
 
-        val after = project {
+        val after = sourceTree {
             sourceFile("src/Test.java") {
                 function("getVersion(String, int)") {
                     parameters("className", "revision")
@@ -137,13 +137,13 @@ class ProjectEditTest {
     }
 
     @Test fun `test diff change function body`() {
-        val before = project {
+        val before = sourceTree {
             sourceFile("src/Test.java") {
                 function("getVersion()") { +"DEBUG" }
             }
         }
 
-        val after = project {
+        val after = sourceTree {
             sourceFile("src/Test.java") {
                 function("getVersion()") { +"RELEASE" }
             }
@@ -153,7 +153,7 @@ class ProjectEditTest {
     }
 
     @Test fun `test diff change variable modifiers`() {
-        val before = project {
+        val before = sourceTree {
             sourceFile("src/Test.java") {
                 variable("version") {
                     modifiers("public")
@@ -161,7 +161,7 @@ class ProjectEditTest {
             }
         }
 
-        val after = project {
+        val after = sourceTree {
             sourceFile("src/Test.java") {
                 variable("version") {}
             }
@@ -171,13 +171,13 @@ class ProjectEditTest {
     }
 
     @Test fun `test diff change variable initializer`() {
-        val before = project {
+        val before = sourceTree {
             sourceFile("src/Test.java") {
                 variable("version") { +"DEBUG" }
             }
         }
 
-        val after = project {
+        val after = sourceTree {
             sourceFile("src/Test.java") {
                 variable("version") { +"RELEASE" }
             }

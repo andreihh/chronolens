@@ -18,9 +18,9 @@
 
 package org.chronolens.test.core.repository
 
-import org.chronolens.core.model.Project
-import org.chronolens.core.model.ProjectEdit
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.Transaction
 import org.chronolens.test.core.BuilderMarker
@@ -40,7 +40,7 @@ public fun repository(init: Init<RepositoryBuilder>): Repository =
 public class TransactionBuilder(private val revisionId: String) {
     public var date: Instant = Instant.now()
     public var author: String = "<unknown-author>"
-    private val edits = mutableListOf<ProjectEdit>()
+    private val edits = mutableListOf<SourceTreeEdit>()
 
     public fun date(value: Instant): TransactionBuilder {
         date = value
@@ -52,12 +52,12 @@ public class TransactionBuilder(private val revisionId: String) {
         return this
     }
 
-    public fun edit(edit: ProjectEdit): TransactionBuilder {
+    public fun edit(edit: SourceTreeEdit): TransactionBuilder {
         edits += edit
         return this
     }
 
-    public operator fun ProjectEdit.unaryPlus() {
+    public operator fun SourceTreeEdit.unaryPlus() {
         edits += this
     }
 
@@ -68,7 +68,7 @@ public class TransactionBuilder(private val revisionId: String) {
 @BuilderMarker
 public class RepositoryBuilder {
     private val history = mutableListOf<Transaction>()
-    private val snapshot = Project.empty()
+    private val snapshot = SourceTree.empty()
 
     public fun transaction(
         revisionId: String,

@@ -20,30 +20,30 @@ import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
-import org.chronolens.core.model.Project
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
+import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
 
 internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
-    private val project = Project.empty()
+    private val sourceTree = SourceTree.empty()
     private val decapsulationsByField = hashMapOf<String, List<Decapsulation>>()
 
     private fun getSourcePath(id: String): String =
-        project.get<SourceNode>(id).sourcePath
+        sourceTree.get<SourceNode>(id).sourcePath
 
     private fun getField(nodeId: String): String? =
-        DecapsulationAnalyzer.getField(project, nodeId)
+        DecapsulationAnalyzer.getField(sourceTree, nodeId)
 
     private fun getVisibility(nodeId: String): Int? =
-        DecapsulationAnalyzer.getVisibility(project, nodeId)
+        DecapsulationAnalyzer.getVisibility(sourceTree, nodeId)
 
     private fun isConstant(nodeId: String): Boolean =
-        DecapsulationAnalyzer.isConstant(project, nodeId)
+        DecapsulationAnalyzer.isConstant(sourceTree, nodeId)
 
     private fun addDecapsulation(
         fieldId: String,
@@ -71,7 +71,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
 
     private fun visit(edit: RemoveNode): Set<String> {
         val removedIds = hashSetOf<String>()
-        val removedNode = project.get<SourceNode>(edit.id)
+        val removedNode = sourceTree.get<SourceNode>(edit.id)
         for (node in removedNode.walkSourceTree()) {
             decapsulationsByField -= node.id
             removedIds += node.id
@@ -105,7 +105,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private fun analyze(transaction: Transaction) {
         val editedIds = visit(transaction)
         val oldVisibility = getVisibility(editedIds)
-        project.apply(transaction.edits)
+        sourceTree.apply(transaction.edits)
         val newVisibility = getVisibility(editedIds)
 
         fun analyze(variable: Variable) {
@@ -144,7 +144,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         }
 
         for (id in editedIds) {
-            val node = project[id]
+            val node = sourceTree[id]
             when (node) {
                 is Variable -> analyze(node)
                 is Function -> analyze(node)
@@ -159,7 +159,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::analyze)
         val fieldsByFile = decapsulationsByField.keys.groupBy(::getSourcePath)
-        val sourcePaths = project.sources.map(SourceFile::path)
+        val sourcePaths = sourceTree.sources.map(SourceFile::path)
         val fileReports = sourcePaths.map { path ->
             val fields = fieldsByFile[path].orEmpty()
             val fieldReports = fields.map { id ->

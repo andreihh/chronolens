@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ package org.chronolens.core.model
  */
 public sealed class SourceNode {
     /**
-     * A fully qualified identifier among all nodes inside a [Project].
+     * A fully qualified identifier among all nodes inside a [SourceTree].
      *
      * The fully qualified identifier of a nested node will be the fully
      * qualified identifier of the enclosing node followed by the corresponding

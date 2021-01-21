@@ -19,8 +19,8 @@ package org.chronolens.core.model
 import org.chronolens.core.model.ListEdit.Companion.apply
 import org.chronolens.core.model.SetEdit.Companion.apply
 
-/** An atomic change which should be applied to a [Project]. */
-public sealed class ProjectEdit {
+/** An atomic change which should be applied to a [SourceTree]. */
+public sealed class SourceTreeEdit {
     /** The [SourceNode.id] of the edited node. */
     public abstract val id: String
 
@@ -34,11 +34,11 @@ public sealed class ProjectEdit {
 
     public companion object {
         /**
-         * Returns the edits which must be applied to [this] project in order to
-         * obtain the [other] project.
+         * Returns the edits which must be applied to [this] source tree in
+         * order to obtain the [other] source tree.
          */
         @JvmStatic
-        public fun Project.diff(other: Project): List<ProjectEdit> {
+        public fun SourceTree.diff(other: SourceTree): List<SourceTreeEdit> {
             val thisSources = this.sources.map(SourceFile::id)
             val otherSources = other.sources.map(SourceFile::id)
             val allSources = thisSources.union(otherSources)
@@ -72,11 +72,11 @@ public sealed class ProjectEdit {
 }
 
 /**
- * Indicates that a [SourceNode] should be added to a project.
+ * Indicates that a [SourceNode] should be added to a source tree.
  *
- * @property node the node which should be added to the project
+ * @property node the node which should be added to the source tree
  */
-public data class AddNode(val node: SourceNode) : ProjectEdit() {
+public data class AddNode(val node: SourceNode) : SourceTreeEdit() {
     override val id: String get() = node.id
 
     override fun applyOn(nodes: NodeHashMap) {
@@ -89,11 +89,11 @@ public data class AddNode(val node: SourceNode) : ProjectEdit() {
 }
 
 /**
- * Indicates that a [SourceNode] should be removed from a project.
+ * Indicates that a [SourceNode] should be removed from a source tree.
  *
  * @throws IllegalArgumentException if the `id` is not a valid node id
  */
-public data class RemoveNode(override val id: String) : ProjectEdit() {
+public data class RemoveNode(override val id: String) : SourceTreeEdit() {
     init {
         validateNodeId(id)
     }
@@ -108,7 +108,8 @@ public data class RemoveNode(override val id: String) : ProjectEdit() {
 }
 
 /**
- * Indicates that the properties of a [Type] within a project should be edited.
+ * Indicates that the properties of a [Type] within a [SourceTree] should be
+ * edited.
  *
  * @property supertypeEdits the edits which should be applied to the
  * [Type.supertypes] of the type with the given [id]
@@ -120,7 +121,7 @@ public data class EditType(
     override val id: String,
     val supertypeEdits: List<SetEdit<String>> = emptyList(),
     val modifierEdits: List<SetEdit<String>> = emptyList()
-) : ProjectEdit() {
+) : SourceTreeEdit() {
 
     init {
         validateTypeId(id)
@@ -137,7 +138,7 @@ public data class EditType(
 }
 
 /**
- * Indicates that the properties of a [Function] within a project should be
+ * Indicates that the properties of a [Function] within a [SourceTree] should be
  * edited.
  *
  * @property parameterEdits the edits which should be applied to the
@@ -153,7 +154,7 @@ public data class EditFunction(
     val parameterEdits: List<ListEdit<String>> = emptyList(),
     val modifierEdits: List<SetEdit<String>> = emptyList(),
     val bodyEdits: List<ListEdit<String>> = emptyList()
-) : ProjectEdit() {
+) : SourceTreeEdit() {
 
     init {
         validateFunctionId(id)
@@ -172,7 +173,7 @@ public data class EditFunction(
 }
 
 /**
- * Indicates that the properties of a [Variable] within a project should be
+ * Indicates that the properties of a [Variable] within a [SourceTree] should be
  * edited.
  *
  * @property modifierEdits the edits which should be applied to the
@@ -185,7 +186,7 @@ public data class EditVariable(
     override val id: String,
     val modifierEdits: List<SetEdit<String>> = emptyList(),
     val initializerEdits: List<ListEdit<String>> = emptyList()
-) : ProjectEdit() {
+) : SourceTreeEdit() {
 
     init {
         validateVariableId(id)

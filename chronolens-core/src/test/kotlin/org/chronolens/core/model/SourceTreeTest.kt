@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,18 @@
 package org.chronolens.core.model
 
 import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.project
 import org.chronolens.test.core.model.sourceFile
+import org.chronolens.test.core.model.sourceTree
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
-class ProjectTest {
-    @Test fun `test create project with duplicated source paths throws`() {
+class SourceTreeTest {
+    @Test fun `test create source tree with duplicated source paths throws`() {
         val source = sourceFile("src/Test.java").build {}
         assertFailsWith<IllegalArgumentException> {
-            Project.of(listOf(source, source))
+            SourceTree.of(listOf(source, source))
         }
     }
 
@@ -59,7 +59,7 @@ class ProjectTest {
         val expectedNodes =
             setOf(testSource, version, classType, classVersion, classFunction)
 
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {
                     modifiers("interface")
@@ -70,7 +70,7 @@ class ProjectTest {
                 variable("version") { +"2" }
             }
         }
-        val actualNodes = project.sourceTree.toSet()
+        val actualNodes = sourceTree.sourceNodes.toSet()
 
         assertEquals(expectedNodes, actualNodes)
     }
@@ -79,7 +79,7 @@ class ProjectTest {
         val expectedNode = sourceFile("src/Test.java").type("IClass")
             .variable("version").build { +"1" }
 
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {
                     modifiers("interface")
@@ -92,13 +92,13 @@ class ProjectTest {
         }
         val nodeId = sourceFile("src/Test.java").type("IClass")
             .variable("version").id()
-        val actualNode = project.get<Variable>(nodeId)
+        val actualNode = sourceTree.get<Variable>(nodeId)
 
         assertEquals(expectedNode, actualNode)
     }
 
     @Test fun `test get id with incorrect type throws`() {
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {}
             }
@@ -106,12 +106,12 @@ class ProjectTest {
         val nodeId = sourceFile("src/Test.java").type("IClass").id()
 
         assertFailsWith<IllegalStateException> {
-            project.get<Variable>(nodeId)
+            sourceTree.get<Variable>(nodeId)
         }
     }
 
     @Test fun `test get non-existing id throws`() {
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {}
                 variable("version") { +"1" }
@@ -120,12 +120,12 @@ class ProjectTest {
         val nodeId = sourceFile("src/Test.java").function("getVersion()").id()
 
         assertFailsWith<IllegalStateException> {
-            project.get<Function>(nodeId)
+            sourceTree.get<Function>(nodeId)
         }
     }
 
     @Test fun `test get non-existing id returns null`() {
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {}
                 variable("version") { +"1" }
@@ -133,11 +133,11 @@ class ProjectTest {
         }
         val nodeId = sourceFile("src/Test.java").function("getVersion()").id()
 
-        assertNull(project.get<Function?>(nodeId))
+        assertNull(sourceTree.get<Function?>(nodeId))
     }
 
     @Test fun `test apply chained edits`() {
-        val expected = project {
+        val expected = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {
                     modifiers("abstract")
@@ -147,7 +147,7 @@ class ProjectTest {
             }
         }
 
-        val actual = project {
+        val actual = sourceTree {
             sourceFile("src/Main.java") {}
         }
         actual.apply(

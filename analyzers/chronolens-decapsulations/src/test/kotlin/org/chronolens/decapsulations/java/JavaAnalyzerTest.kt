@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package org.chronolens.decapsulations.java
 
-import org.chronolens.core.model.Project
+import org.chronolens.core.model.SourceTree
 import org.chronolens.decapsulations.DecapsulationAnalyzer
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PACKAGE_LEVEL
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PRIVATE_LEVEL
@@ -25,7 +25,7 @@ import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PROTECTED_LEVEL
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PROTECTED_MODIFIER
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PUBLIC_LEVEL
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PUBLIC_MODIFIER
-import org.chronolens.test.core.model.project
+import org.chronolens.test.core.model.sourceTree
 import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -33,10 +33,10 @@ import kotlin.test.assertEquals
 // TODO: better tests
 @Ignore
 class JavaAnalyzerTest {
-    private fun getProjectWithType(
+    private fun getSourceTreeWithType(
         className: String,
         modifier: String? = null
-    ): Project = project {
+    ): SourceTree = sourceTree {
         sourceFile("$className.java") {
             type(className) {
                 if (modifier != null) {
@@ -46,7 +46,7 @@ class JavaAnalyzerTest {
         }
     }
 
-    private fun getProjectWithInterface(className: String): Project = project {
+    private fun getSourceTreeWithInterface(className: String): SourceTree = sourceTree {
         sourceFile("$className.java") {
             type(className) {
                 modifiers("interface")
@@ -58,46 +58,46 @@ class JavaAnalyzerTest {
 
     @Test fun `test private visibility`() {
         val name = "Main"
-        val project = getProjectWithType(name, PRIVATE_MODIFIER)
+        val sourceTree = getSourceTreeWithType(name, PRIVATE_MODIFIER)
         val id = "$name.java:$name"
         val expectedLevel = PRIVATE_LEVEL
-        val actualLevel = DecapsulationAnalyzer.getVisibility(project, id)
+        val actualLevel = DecapsulationAnalyzer.getVisibility(sourceTree, id)
         assertEquals(expectedLevel, actualLevel)
     }
 
     @Test fun `test package visibility`() {
         val name = "Main"
-        val project = getProjectWithType(name)
+        val sourceTree = getSourceTreeWithType(name)
         val id = "$name.java:$name"
         val expectedLevel = PACKAGE_LEVEL
-        val actualLevel = DecapsulationAnalyzer.getVisibility(project, id)
+        val actualLevel = DecapsulationAnalyzer.getVisibility(sourceTree, id)
         assertEquals(expectedLevel, actualLevel)
     }
 
     @Test fun `test protected visibility`() {
         val name = "Main"
-        val project = getProjectWithType(name, PROTECTED_MODIFIER)
+        val sourceTree = getSourceTreeWithType(name, PROTECTED_MODIFIER)
         val id = "$name.java:$name"
         val expectedLevel = PROTECTED_LEVEL
-        val actualLevel = DecapsulationAnalyzer.getVisibility(project, id)
+        val actualLevel = DecapsulationAnalyzer.getVisibility(sourceTree, id)
         assertEquals(expectedLevel, actualLevel)
     }
 
     @Test fun `test public visibility`() {
         val name = "Main"
-        val project = getProjectWithType(name, PUBLIC_MODIFIER)
+        val sourceTree = getSourceTreeWithType(name, PUBLIC_MODIFIER)
         val id = "$name.java:$name"
         val expectedLevel = PUBLIC_LEVEL
-        val actualLevel = DecapsulationAnalyzer.getVisibility(project, id)
+        val actualLevel = DecapsulationAnalyzer.getVisibility(sourceTree, id)
         assertEquals(expectedLevel, actualLevel)
     }
 
     @Test fun `test interface method is public`() {
         val name = "Main"
-        val project = getProjectWithInterface(name)
+        val sourceTree = getSourceTreeWithInterface(name)
         val id = "$name.java:$name:get()"
         val expectedLevel = PUBLIC_LEVEL
-        val actualLevel = DecapsulationAnalyzer.getVisibility(project, id)
+        val actualLevel = DecapsulationAnalyzer.getVisibility(sourceTree, id)
         assertEquals(expectedLevel, actualLevel)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package org.chronolens.core.model
 
 import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.project
 import org.chronolens.test.core.model.sourceFile
+import org.chronolens.test.core.model.sourceTree
 import org.junit.Test
 import kotlin.test.assertFailsWith
 
@@ -30,7 +30,7 @@ class EditTypeTest {
     }
 
     @Test fun `test add supertype to type`() {
-        val expected = project {
+        val expected = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {
                     supertypes("Object")
@@ -41,7 +41,7 @@ class EditTypeTest {
             supertypes { +"Object" }
         }
 
-        val actual = project {
+        val actual = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {}
             }
@@ -52,18 +52,18 @@ class EditTypeTest {
     }
 
     @Test fun `test edit non-existing type throws`() {
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Test.java") {}
         }
         val edit = sourceFile("src/Test.java").type("Test").edit {}
 
         assertFailsWith<IllegalStateException> {
-            project.apply(edit)
+            sourceTree.apply(edit)
         }
     }
 
     @Test fun `test edit type applied to variable id throws`() {
-        val project = project {
+        val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 variable("test") {}
             }
@@ -71,7 +71,7 @@ class EditTypeTest {
         val edit = sourceFile("src/Test.java").type("test").edit {}
 
         assertFailsWith<IllegalStateException> {
-            project.apply(edit)
+            sourceTree.apply(edit)
         }
     }
 }

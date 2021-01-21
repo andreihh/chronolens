@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public val SourceNode.sourcePath: String get() = id.sourcePath
 /**
  * The path of the [SourceFile] which contains the node affected by [this] edit.
  */
-public val ProjectEdit.sourcePath: String get() = id.sourcePath
+public val SourceTreeEdit.sourcePath: String get() = id.sourcePath
 
 /** The child source nodes contained in [this] source node. */
 public val SourceNode.children: Collection<SourceEntity>

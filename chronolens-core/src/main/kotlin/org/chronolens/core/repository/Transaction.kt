@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 
 package org.chronolens.core.repository
 
-import org.chronolens.core.model.Project
-import org.chronolens.core.model.ProjectEdit
+import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.sourcePath
 import java.time.Instant
 import java.util.Collections.unmodifiableSet
 
 /**
- * A transaction consisting of multiple changes applied to a [Project].
+ * A transaction consisting of multiple changes applied to a [SourceTree].
  *
  * @property revisionId the non-empty unique identifier of the revision
  * corresponding to this transaction, consisting of alphanumeric characters
@@ -38,7 +38,7 @@ public data class Transaction(
     val revisionId: String,
     val date: Instant,
     val author: String,
-    val edits: List<ProjectEdit> = emptyList(),
+    val edits: List<SourceTreeEdit> = emptyList(),
 ) {
 
     init {
@@ -47,5 +47,5 @@ public data class Transaction(
 
     /** The set of source files modified in this transaction. */
     public val changeSet: Set<String>
-        get() = unmodifiableSet(edits.map(ProjectEdit::sourcePath).toSet())
+        get() = unmodifiableSet(edits.map(SourceTreeEdit::sourcePath).toSet())
 }
