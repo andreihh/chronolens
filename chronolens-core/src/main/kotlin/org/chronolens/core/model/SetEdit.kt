@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ package org.chronolens.core.model
  *
  * @param T the type of the elements of the edited set
  */
-public sealed class SetEdit<T> : Edit<Set<T>> {
+public sealed class SetEdit<T> {
     /**
      * Applies this edit on the given mutable [subject].
      *

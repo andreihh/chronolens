@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,12 @@ import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.chronolens.core.model.AddNode
-import org.chronolens.core.model.Edit
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditType
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.ListEdit
+import org.chronolens.core.model.ProjectEdit
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SetEdit
 import org.chronolens.core.model.SourceFile
@@ -88,7 +88,12 @@ public object JsonModule {
     private val typeResolver =
         object : DefaultTypeResolverBuilder(OBJECT_AND_NON_CONCRETE) {
             private val abstractTypes =
-                listOf(SourceNode::class.java, Edit::class.java)
+                listOf(
+                    SourceNode::class.java,
+                    ProjectEdit::class.java,
+                    ListEdit::class.java,
+                    SetEdit::class.java,
+                )
 
             override fun useForType(t: JavaType): Boolean =
                 abstractTypes.any { it.isAssignableFrom(t.rawClass) }

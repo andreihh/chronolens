@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.chronolens.core.model.ListEdit.Companion.apply
 import org.chronolens.core.model.SetEdit.Companion.apply
 
 /** An atomic change which should be applied to a [Project]. */
-public sealed class ProjectEdit : Edit<Project> {
+public sealed class ProjectEdit {
     /** The [SourceNode.id] of the edited node. */
     public abstract val id: String
 
