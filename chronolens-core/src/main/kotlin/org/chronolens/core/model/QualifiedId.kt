@@ -19,12 +19,6 @@ package org.chronolens.core.model
 /** A unique identifier of a [SourceNode] within a [SourceTree]. */
 public data class QualifiedId(val parent: QualifiedId?, val id: String)
 
-/**
- * The path of the [SourceFile] that contains the [SourceNode] denoted by [this]
- * qualified id.
- */
-public val QualifiedId.sourcePath: String get() = parent?.sourcePath ?: id
-
 /** Creates a new qualified id from the given [parent] id and [identifier]. */
 public fun qualifiedIdOf(parent: QualifiedId, identifier: String): QualifiedId =
     QualifiedId(parent, identifier)
@@ -37,3 +31,9 @@ public fun qualifiedIdOf(path: String, vararg identifiers: String): QualifiedId 
     }
     return qualifier
 }
+
+/**
+ * The path of the [SourceFile] that contains the [SourceNode] denoted by [this]
+ * qualified id.
+ */
+public val QualifiedId.sourcePath: String get() = parent?.sourcePath ?: id
