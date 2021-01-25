@@ -19,10 +19,10 @@ package org.chronolens.core.model
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class QualifierTest {
+class QualifiedIdTest {
     @Test fun sourcePath_whenNoParent_returnsId() {
         val path = "src/main/java/Main.java"
-        val qualifier = qualifierOf(path)
+        val qualifier = qualifiedIdOf(path)
 
         assertEquals(path, qualifier.sourcePath)
     }
@@ -30,7 +30,7 @@ class QualifierTest {
     @Test fun sourcePath_whenParentIsSourceFile_returnsParentId() {
         val path = "src/main/java/Main.java"
         val type = "Main"
-        val qualifier = qualifierOf(path, type)
+        val qualifier = qualifiedIdOf(path, type)
 
         assertEquals(path, qualifier.sourcePath)
     }

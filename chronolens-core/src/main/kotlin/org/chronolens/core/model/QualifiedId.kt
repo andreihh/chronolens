@@ -17,25 +17,23 @@
 package org.chronolens.core.model
 
 /** A unique identifier of a [SourceNode] within a [SourceTree]. */
-public data class Qualifier(val parent: Qualifier?, val id: String)
+public data class QualifiedId(val parent: QualifiedId?, val id: String)
 
 /**
  * The path of the [SourceFile] that contains the [SourceNode] denoted by [this]
- * qualiier.
+ * qualified id.
  */
-public val Qualifier.sourcePath: String get() = parent?.sourcePath ?: id
+public val QualifiedId.sourcePath: String get() = parent?.sourcePath ?: id
 
-/**
- * Creates a new qualifier from the given [parent] qualifier and [identifier].
- */
-public fun qualifierOf(parent: Qualifier, identifier: String): Qualifier =
-    Qualifier(parent, identifier)
+/** Creates a new qualified id from the given [parent] id and [identifier]. */
+public fun qualifiedIdOf(parent: QualifiedId, identifier: String): QualifiedId =
+    QualifiedId(parent, identifier)
 
-/** Creates a new qualifier from the given [path] and [identifiers]. */
-public fun qualifierOf(path: String, vararg identifiers: String): Qualifier {
-    var qualifier = Qualifier(null, path)
+/** Creates a new qualified id from the given [path] and [identifiers]. */
+public fun qualifiedIdOf(path: String, vararg identifiers: String): QualifiedId {
+    var qualifier = QualifiedId(null, path)
     for (identifier in identifiers) {
-        qualifier = qualifierOf(qualifier, identifier)
+        qualifier = qualifiedIdOf(qualifier, identifier)
     }
     return qualifier
 }
