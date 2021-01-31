@@ -20,15 +20,23 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.PropertyAccessor
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DatabindContext
+import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JavaType
+import com.fasterxml.jackson.databind.KeyDeserializer
 import com.fasterxml.jackson.databind.MapperFeature
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTypeResolverBuilder
 import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.OBJECT_AND_NON_CONCRETE
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.chronolens.core.model.AddNode
@@ -37,6 +45,7 @@ import org.chronolens.core.model.EditType
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.ListEdit
+import org.chronolens.core.model.QualifiedId
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SetEdit
 import org.chronolens.core.model.SourceFile
@@ -44,6 +53,7 @@ import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
+import org.chronolens.core.model.parseQualifiedIdFromString
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -101,8 +111,54 @@ public object JsonModule {
             .inclusion(JsonTypeInfo.As.PROPERTY)
             .typeProperty("@class")
 
+    private class InvalidQualifiedIdException(cause: Throwable) :
+        JsonProcessingException(cause)
+
+    private object QualifiedIdSerializer :
+        StdSerializer<QualifiedId>(QualifiedId::class.java) {
+
+        override fun serialize(
+            value: QualifiedId,
+            gen: JsonGenerator,
+            provider: SerializerProvider?
+        ) {
+            gen.writeString(value.toString())
+        }
+    }
+
+    private object QualifiedIdDeserializer :
+        StdDeserializer<QualifiedId>(QualifiedId::class.java) {
+
+        override fun deserialize(
+            p: JsonParser,
+            ctxt: DeserializationContext?
+        ): QualifiedId = try {
+            parseQualifiedIdFromString(p.valueAsString)
+        } catch (e: IllegalArgumentException) {
+            throw InvalidQualifiedIdException(e)
+        }
+    }
+
+    private object QualifiedIdKeyDeserializer : KeyDeserializer() {
+        override fun deserializeKey(
+            key: String,
+            ctxt: DeserializationContext?
+        ): QualifiedId = try {
+            parseQualifiedIdFromString(key)
+        } catch (e: IllegalArgumentException) {
+            throw InvalidQualifiedIdException(e)
+        }
+    }
+
+    private val qualifiedIdModule = SimpleModule()
+        .addSerializer(QualifiedIdSerializer)
+        .addKeySerializer(QualifiedId::class.java, QualifiedIdSerializer)
+        .addDeserializer(QualifiedId::class.java, QualifiedIdDeserializer)
+        .addKeyDeserializer(QualifiedId::class.java, QualifiedIdKeyDeserializer)
+
     private val objectMapper = jacksonObjectMapper().apply {
         registerModule(JavaTimeModule())
+        registerModule(qualifiedIdModule)
         setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
         setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
         setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
