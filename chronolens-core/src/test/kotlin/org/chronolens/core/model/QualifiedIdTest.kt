@@ -16,22 +16,66 @@
 
 package org.chronolens.core.model
 
+import java.lang.IllegalArgumentException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class QualifiedIdTest {
-    @Test fun sourcePath_whenNoParent_returnsId() {
+    @Test
+    fun sourcePath_whenNoParent_returnsId() {
         val path = "src/main/java/Main.java"
-        val qualifier = qualifiedIdOf(path)
+        val qualifier = qualifiedPathOf(path)
 
         assertEquals(path, qualifier.sourcePath)
     }
 
-    @Test fun sourcePath_whenParentIsSourceFile_returnsParentId() {
+    @Test
+    fun sourcePath_whenParentIsSourceFile_returnsParentId() {
         val path = "src/main/java/Main.java"
         val type = "Main"
-        val qualifier = qualifiedIdOf(path, type)
+        val qualifier = qualifiedPathOf(path).appendType(type)
 
         assertEquals(path, qualifier.sourcePath)
+    }
+
+    @Test
+    fun parseQualifiedIdFromString_returnsOriginalQualifiedId() {
+        val qualifiedIds = listOf(
+            qualifiedPathOf("src/Main.java"),
+            qualifiedPathOf("src/Main.java").appendType("Main"),
+            qualifiedPathOf("src/Main.java").appendFunction("main(String[])"),
+            qualifiedPathOf("src/Main.java").appendVariable("VERSION"),
+            qualifiedPathOf("src/Main.java").appendType("Main")
+                .appendType("InnerMain"),
+            qualifiedPathOf("src/Main.java").appendType("Main")
+                .appendFunction("main(String[])"),
+            qualifiedPathOf("src/Main.java").appendType("Main")
+                .appendVariable("VERSION"),
+        )
+
+        for (qualifiedId in qualifiedIds) {
+            assertEquals(
+                expected = qualifiedId,
+                actual = parseQualifiedIdFromString(qualifiedId.toString()),
+            )
+        }
+    }
+
+    @Test
+    fun parseQualifiedIdFromString_whenInvalidId_throws() {
+        val rawQualifiedIds = listOf(
+            "",
+            "src/Main::Main",
+            "src/Main:#Main",
+            "src/Main.java:Main#main():VERSION",
+            "src/Main.java:Main#main()#main(String[])",
+        )
+
+        for (rawQualifiedId in rawQualifiedIds) {
+            assertFailsWith<IllegalArgumentException> {
+                parseQualifiedIdFromString(rawQualifiedId)
+            }
+        }
     }
 }

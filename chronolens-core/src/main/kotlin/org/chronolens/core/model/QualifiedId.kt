@@ -16,20 +16,88 @@
 
 package org.chronolens.core.model
 
+import org.chronolens.core.model.SourceNodeKind.FUNCTION
+import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
+import org.chronolens.core.model.SourceNodeKind.TYPE
+import org.chronolens.core.model.SourceNodeKind.VARIABLE
+
 /** A unique identifier of a [SourceNode] within a [SourceTree]. */
-public data class QualifiedId(val parent: QualifiedId?, val id: String)
+public data class QualifiedId(
+    val parent: QualifiedId?,
+    val id: String,
+    val kind: SourceNodeKind,
+) {
 
-/** Creates a new qualified id from the given [parent] id and [identifier]. */
-public fun qualifiedIdOf(parent: QualifiedId, identifier: String): QualifiedId =
-    QualifiedId(parent, identifier)
-
-/** Creates a new qualified id from the given [path] and [identifiers]. */
-public fun qualifiedIdOf(path: String, vararg identifiers: String): QualifiedId {
-    var qualifier = QualifiedId(null, path)
-    for (identifier in identifiers) {
-        qualifier = qualifiedIdOf(qualifier, identifier)
+    init {
+        if (parent == null) {
+            require(kind == SOURCE_FILE) {
+                "Top level qualified id '$id' must be a source path!"
+            }
+        } else {
+            require(parent.kind != FUNCTION) {
+                "Parent '$parent' of qualified id '$id' must not be a function!"
+            }
+            require(kind != SOURCE_FILE) {
+                "Qualified id '$id' with parent '$parent' must not be a file!"
+            }
+        }
     }
-    return qualifier
+
+    override fun toString(): String {
+        if (parent == null) return id
+
+        val builder = StringBuilder()
+
+        fun appendParentId(parentId: QualifiedId) {
+            if (parentId.parent != null) {
+                appendParentId(parentId.parent)
+                builder.append(':')
+            }
+            builder.append(parentId.id)
+        }
+
+        appendParentId(parent)
+        builder.append(if (kind == TYPE) ':' else '#')
+        builder.append(id)
+        return builder.toString()
+    }
+}
+
+/** Creates a new [SourceFile] qualified id from the given [path]. */
+public fun qualifiedPathOf(path: String): QualifiedId =
+    QualifiedId(null, path, SOURCE_FILE)
+
+/**
+ * Creates a new [Type] qualified id using [this] id as a parent and the given
+ * [identifier] as the type name.
+ *
+ * @throws IllegalStateException if [this] id qualifies a [Function]
+ */
+public fun QualifiedId.appendType(identifier: String): QualifiedId {
+    check(kind != FUNCTION) { "'$this' cannot be parent of '$identifier'!" }
+    return QualifiedId(this, identifier, TYPE)
+}
+
+/**
+ * Creates a new [Function] qualified id using [this] id as a parent and the
+ * given [signature].
+ *
+ * @throws IllegalStateException if [this] id qualifies a [Function]
+ */
+public fun QualifiedId.appendFunction(signature: String): QualifiedId {
+    check(kind != FUNCTION) { "'$this' cannot be parent of '$signature'!" }
+    return QualifiedId(this, signature, VARIABLE)
+}
+
+/**
+ * Creates a new [Variable] qualified id using [this] id as a parent and the
+ * given [identifier] as the variable name.
+ *
+ * @throws IllegalStateException if [this] id qualifies a [Function]
+ */
+public fun QualifiedId.appendVariable(identifier: String): QualifiedId {
+    check(kind != FUNCTION) { "'$this' cannot be parent of '$identifier'!" }
+    return QualifiedId(this, identifier, VARIABLE)
 }
 
 /**
@@ -37,3 +105,52 @@ public fun qualifiedIdOf(path: String, vararg identifiers: String): QualifiedId 
  * qualified id.
  */
 public val QualifiedId.sourcePath: String get() = parent?.sourcePath ?: id
+
+/**
+ * Parses the given [rawQualifiedId].
+ *
+ * @throws IllegalArgumentException if the given [rawQualifiedId] is invalid
+ */
+public fun parseQualifiedIdFromString(rawQualifiedId: String): QualifiedId {
+    validateMemberSeparators(rawQualifiedId)
+    val tokens = rawQualifiedId.split(*SEPARATORS)
+    require(tokens.isNotEmpty() && tokens.all(String::isNotBlank)) {
+        "Invalid qualified id '$rawQualifiedId'!"
+    }
+
+    // First token is always the source file path.
+    var qualifiedId = qualifiedPathOf(tokens.first())
+
+    // Stop if there is just one token.
+    if (tokens.size == 1) return qualifiedId
+
+    // Middle tokens are always type names.
+    for (token in tokens.subList(1, tokens.size - 1)) {
+        qualifiedId = qualifiedId.appendType(token)
+    }
+
+    // There are at least two tokens, so the separator exists.
+    val separator = rawQualifiedId[rawQualifiedId.lastIndexOfAny(SEPARATORS)]
+    val lastId = tokens.last()
+    val isSignature = '(' in lastId && lastId.endsWith(')')
+    return when {
+        separator == ':' -> qualifiedId.appendType(lastId)
+        separator == '#' && isSignature -> qualifiedId.appendFunction(lastId)
+        separator == '#' && !isSignature -> qualifiedId.appendVariable(lastId)
+        else -> error("Invalid separator '$separator' in '$rawQualifiedId'!!")
+    }
+}
+
+private fun validateMemberSeparators(rawQualifiedId: String) {
+    val memberIndex = rawQualifiedId.indexOf('#')
+    val nextIndex = rawQualifiedId.indexOfAny(SEPARATORS, memberIndex + 1)
+    require(memberIndex == -1 || nextIndex == -1) {
+        "Invalid qualified id '$rawQualifiedId'!"
+    }
+}
+
+private val SEPARATORS = charArrayOf(':', '#')
+
+public enum class SourceNodeKind {
+    SOURCE_FILE, TYPE, FUNCTION, VARIABLE,
+}
