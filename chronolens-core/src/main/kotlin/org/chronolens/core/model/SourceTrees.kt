@@ -43,20 +43,20 @@ public class SourceTree private constructor(
     public operator fun get(id: String): SourceNode? = nodeMap[id]
 
     /**
-     * Returns the node of type [T] with the specified [id], or `null` if no
-     * such node was found and [T] is a nullable type.
+     * Returns the node of type [T] with the specified [id].
      *
-     * @throws IllegalStateException if the requested node is not of type [T]
+     * @throws IllegalStateException if the requested node is not of type [T],
+     * or if no such node was found
      */
     @JvmName("getNode")
-    public inline fun <reified T : SourceNode?> get(id: String): T {
+    public inline fun <reified T : SourceNode> get(id: String): T {
         val node = get(id)
         check(node is T) { "'$id' is not of type '${T::class}'!" }
         return node
     }
 
     /** Utility method. */
-    public fun getSource(path: String): SourceFile? = get<SourceFile?>(path)
+    public fun getSource(path: String): SourceFile? = get(path) as SourceFile?
 
     /**
      * Applies the given [edit] to this source tree.
