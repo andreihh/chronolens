@@ -46,8 +46,8 @@ public sealed class SourceTreeEdit {
             val nodesBefore = NodeHashMap()
             val nodesAfter = NodeHashMap()
             for (path in allSources) {
-                this[path]?.let(nodesBefore::putSourceTree)
-                other[path]?.let(nodesAfter::putSourceTree)
+                this.getSource(path)?.let(nodesBefore::putSourceTree)
+                other.getSource(path)?.let(nodesAfter::putSourceTree)
             }
 
             fun parentExists(id: String): Boolean {
@@ -60,7 +60,7 @@ public sealed class SourceTreeEdit {
                 val before = nodesBefore[id]
                 val after = nodesAfter[id]
                 val edit = when {
-                    before == null && after != null -> AddNode(after)
+                    before == null && after != null -> AddNode(id, after)
                     before != null && after == null -> RemoveNode(id)
                     before != null && after != null -> before.diff(after)
                     else -> throw AssertionError("Node '$id' doesn't exist!")
@@ -76,9 +76,10 @@ public sealed class SourceTreeEdit {
  *
  * @property node the node which should be added to the source tree
  */
-public data class AddNode(val node: SourceNode) : SourceTreeEdit() {
-    override val id: String get() = node.id
-
+public data class AddNode(
+    override val id: String,
+    val node: SourceNode,
+) : SourceTreeEdit() {
     override fun applyOn(nodes: NodeHashMap) {
         check(id !in nodes) { "Node '$id' already exists!" }
         nodes.putSourceTree(node)

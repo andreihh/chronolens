@@ -45,7 +45,10 @@ class TransactionTest {
             date = Instant.now(),
             author = "",
             edits = listOf(
-                AddNode(Type("Main.java:Main:MainType")),
+                AddNode(
+                    id = "Main.java:Main:MainType",
+                    node = Type("Main.java:Main:MainType"),
+                ),
                 RemoveNode("Test.java:Test:TestType"),
                 EditType("MainTest.java:MainTest")
             )

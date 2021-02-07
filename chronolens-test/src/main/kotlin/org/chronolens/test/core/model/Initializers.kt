@@ -49,7 +49,7 @@ public class SourceFileInitializer(private val path: String) {
         VariableInitializer(path, name)
 
     public fun add(init: Init<SourceFileBuilder>): AddNode =
-        AddNode(SourceFileBuilder(path).apply(init).build())
+        AddNode(path, SourceFileBuilder(path).apply(init).build())
 
     public fun remove(): RemoveNode = RemoveNode(path)
 }
@@ -76,7 +76,7 @@ public class TypeInitializer(
         VariableInitializer(id, name)
 
     public fun add(init: Init<TypeBuilder>): AddNode =
-        AddNode(TypeBuilder(name).apply(init).build(parentId))
+        AddNode(id, TypeBuilder(name).apply(init).build(parentId))
 
     public fun remove(): RemoveNode = RemoveNode(id)
 
@@ -97,7 +97,7 @@ public class FunctionInitializer(
         FunctionBuilder(signature).apply(init).build(parentId)
 
     public fun add(init: Init<FunctionBuilder>): AddNode =
-        AddNode(FunctionBuilder(signature).apply(init).build(parentId))
+        AddNode(id, FunctionBuilder(signature).apply(init).build(parentId))
 
     public fun remove(): RemoveNode = RemoveNode(id)
 
@@ -118,7 +118,7 @@ public class VariableInitializer(
         VariableBuilder(name).apply(init).build(parentId)
 
     public fun add(init: Init<VariableBuilder>): AddNode =
-        AddNode(VariableBuilder(name).apply(init).build(parentId))
+        AddNode(id, VariableBuilder(name).apply(init).build(parentId))
 
     public fun remove(): RemoveNode = RemoveNode(id)
 
