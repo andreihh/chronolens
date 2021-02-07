@@ -45,6 +45,14 @@ public sealed class SourceNode {
         is Variable -> VARIABLE
     }
 
+    /** The child source nodes contained in [this] source node. */
+    public val children: Collection<SourceEntity>
+        get() = when (this) {
+            is SourceFile -> entities
+            is Type -> members
+            else -> emptySet()
+        }
+
     public companion object {
         /** Paths in [SourceFile] ids are separated by `/`. */
         public const val PATH_SEPARATOR: Char = '/'

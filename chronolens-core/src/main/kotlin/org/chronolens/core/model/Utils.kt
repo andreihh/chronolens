@@ -51,14 +51,6 @@ public val SourceNode.sourcePath: String get() = id.sourcePath
  */
 public val SourceTreeEdit.sourcePath: String get() = id.sourcePath
 
-/** The child source nodes contained in [this] source node. */
-public val SourceNode.children: Collection<SourceEntity>
-    get() = when (this) {
-        is SourceFile -> entities
-        is Type -> members
-        else -> emptySet()
-    }
-
 /**
  * Returns all the source nodes contained in [this] source tree in top-down
  * order.

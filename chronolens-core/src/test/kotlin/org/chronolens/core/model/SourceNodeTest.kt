@@ -16,9 +16,11 @@
 
 package org.chronolens.core.model
 
+import org.chronolens.test.core.model.sourceFile
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class SourceNodeTest {
     @Test fun `test duplicated entity in source file throws`() {
@@ -93,5 +95,32 @@ class SourceNodeTest {
         val id = "src/Test.java#$name"
         val variable = Variable(id)
         assertEquals(name, variable.name)
+    }
+
+    @Test fun `test children of source file are equal to entities`() {
+        val source = sourceFile("src/Test.java").build {
+            type("Test") {}
+        }
+        assertEquals(source.entities, source.children)
+    }
+
+    @Test fun `test children of type are equal to members`() {
+        val type = sourceFile("src/Test.java").type("Test").build {
+            variable("version") {}
+        }
+        assertEquals(type.members, type.children)
+    }
+
+    @Test fun `test children of function is empty collection`() {
+        val function = sourceFile("src/Test.java")
+            .function("getVersion(String)").build {
+                parameters("name")
+            }
+        assertTrue(function.children.isEmpty())
+    }
+
+    @Test fun `test children of variable is empty collection`() {
+        val variable = sourceFile("src/Test.java").variable("VERSION").build {}
+        assertTrue(variable.children.isEmpty())
     }
 }

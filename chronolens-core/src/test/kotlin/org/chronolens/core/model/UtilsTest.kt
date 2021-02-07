@@ -22,33 +22,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class UtilsTest {
-    @Test fun `test children of source file are equal to entities`() {
-        val source = sourceFile("src/Test.java").build {
-            type("Test") {}
-        }
-        assertEquals(source.entities, source.children)
-    }
-
-    @Test fun `test children of type are equal to members`() {
-        val type = sourceFile("src/Test.java").type("Test").build {
-            variable("version") {}
-        }
-        assertEquals(type.members, type.children)
-    }
-
-    @Test fun `test children of function is empty collection`() {
-        val function = sourceFile("src/Test.java")
-            .function("getVersion(String)").build {
-                parameters("name")
-            }
-        assertTrue(function.children.isEmpty())
-    }
-
-    @Test fun `test children of variable is empty collection`() {
-        val variable = sourceFile("src/Test.java").variable("VERSION").build {}
-        assertTrue(variable.children.isEmpty())
-    }
-
     @Test fun `test source path of source file`() {
         val source = sourceFile("src/Test.java").build {}
         assertEquals(source.path, source.sourcePath)
