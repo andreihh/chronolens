@@ -16,6 +16,7 @@
 
 package org.chronolens.core.model
 
+import org.chronolens.test.core.model.sourceFile
 import java.lang.IllegalArgumentException
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -77,5 +78,18 @@ class QualifiedIdTest {
                 parseQualifiedIdFromString(rawQualifiedId)
             }
         }
+    }
+
+    @Test
+    fun `test source path of source file`() {
+        val source = sourceFile("src/Test.java").build {}
+        assertEquals(source.path, source.sourcePath)
+    }
+
+    @Test
+    fun `test source path of node`() {
+        val path = "src/Test.java"
+        val node = sourceFile(path).function("getVersion(String)").build {}
+        assertEquals(path, node.sourcePath)
     }
 }

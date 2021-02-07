@@ -16,6 +16,8 @@
 
 package org.chronolens.core.model
 
+import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceNodeKind.FUNCTION
 import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
 import org.chronolens.core.model.SourceNodeKind.TYPE
@@ -150,3 +152,29 @@ private fun validateMemberSeparators(rawQualifiedId: String) {
 }
 
 private val SEPARATORS = charArrayOf(':', '#')
+
+private val separators = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
+
+public val String.sourcePath: String
+    get() {
+        val where = indexOfAny(separators)
+        return if (where == -1) this else substring(0, where)
+    }
+
+public val String.parentId: String?
+    get() {
+        val where = lastIndexOfAny(separators)
+        return if (where == -1) null else substring(0, where)
+    }
+
+/** The id of the [SourceNode] which contains [this] entity. */
+public val SourceEntity.parentId: String get() =
+    id.parentId ?: throw AssertionError("'$id' must have a parent node!")
+
+/** The path of the [SourceFile] which contains [this] node. */
+public val SourceNode.sourcePath: String get() = id.sourcePath
+
+/**
+ * The path of the [SourceFile] which contains the node affected by [this] edit.
+ */
+public val SourceTreeEdit.sourcePath: String get() = id.sourcePath
