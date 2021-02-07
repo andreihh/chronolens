@@ -73,28 +73,6 @@ public fun SourceNode.walkSourceTree(): List<SourceNode> {
     return nodes
 }
 
-private const val typePrefix = "@type:"
-private const val returnTypePrefix = "@return:"
-
-/** Returns the type of [this] variable, or `null` if not specified. */
-public val Variable.type: String?
-    get() = modifiers
-        .singleOrNull { it.startsWith(typePrefix) }
-        ?.removePrefix(typePrefix)
-
-/** Returns the return type of [this] function, or `null` if not specified. */
-public val Function.returnType: String?
-    get() = modifiers
-        .singleOrNull { it.startsWith(returnTypePrefix) }
-        ?.removePrefix(returnTypePrefix)
-
-/** Returns the modifier corresponding to the given [type]. */
-public fun typeModifierOf(type: String): String = "$typePrefix$type"
-
-/** Returns the modifier corresponding to the given [returnType]. */
-public fun returnTypeModifierOf(returnType: String): String =
-    "$returnTypePrefix$returnType"
-
 internal fun NodeHashMap.putSourceTree(root: SourceNode) {
     this += root.walkSourceTree().associateBy(SourceNode::id)
 }

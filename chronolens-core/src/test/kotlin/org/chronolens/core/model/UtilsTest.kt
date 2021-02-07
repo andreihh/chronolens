@@ -19,7 +19,6 @@ package org.chronolens.core.model
 import org.chronolens.test.core.model.sourceFile
 import org.junit.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class UtilsTest {
@@ -59,33 +58,5 @@ class UtilsTest {
         val path = "src/Test.java"
         val node = sourceFile(path).function("getVersion(String)").build {}
         assertEquals(path, node.sourcePath)
-    }
-
-    @Test fun `test return type`() {
-        val returnType = "int"
-        val function = sourceFile("src/Test.java")
-            .function("getVersion()").build {
-                modifiers("public", returnTypeModifierOf(returnType))
-            }
-        assertEquals(returnType, function.returnType)
-    }
-
-    @Test fun `test null return type`() {
-        val function = sourceFile("src/Test.java")
-            .function("getVersion()").build {}
-        assertNull(function.returnType)
-    }
-
-    @Test fun `test variable type`() {
-        val variableType = "String"
-        val variable = sourceFile("src/Test.java").variable("VERSION").build {
-            modifiers("public", typeModifierOf(variableType))
-        }
-        assertEquals(variableType, variable.type)
-    }
-
-    @Test fun `test null variable type`() {
-        val variable = sourceFile("src/Test.java").variable("VERSION").build {}
-        assertNull(variable.type)
     }
 }
