@@ -150,7 +150,3 @@ private fun validateMemberSeparators(rawQualifiedId: String) {
 }
 
 private val SEPARATORS = charArrayOf(':', '#')
-
-public enum class SourceNodeKind {
-    SOURCE_FILE, TYPE, FUNCTION, VARIABLE,
-}

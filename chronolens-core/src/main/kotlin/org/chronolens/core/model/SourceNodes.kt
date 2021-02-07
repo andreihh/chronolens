@@ -16,6 +16,11 @@
 
 package org.chronolens.core.model
 
+import org.chronolens.core.model.SourceNodeKind.FUNCTION
+import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
+import org.chronolens.core.model.SourceNodeKind.TYPE
+import org.chronolens.core.model.SourceNodeKind.VARIABLE
+
 /**
  * An immutable abstract representation of a source node.
  *
@@ -31,6 +36,14 @@ public sealed class SourceNode {
      * simple identifiers must not contain `/`, `:`, `'`, `"` or `\`.
      */
     public abstract val id: String
+
+    /** This kind of this source node. Denotes a final, non-abstract type. */
+    public val kind: SourceNodeKind get() = when (this) {
+        is SourceFile -> SOURCE_FILE
+        is Type -> TYPE
+        is Function -> FUNCTION
+        is Variable -> VARIABLE
+    }
 
     public companion object {
         /** Paths in [SourceFile] ids are separated by `/`. */
@@ -156,4 +169,9 @@ public data class Variable(
 
     /** The simple name of this variable. */
     public val name: String get() = id.substringAfterLast(MEMBER_SEPARATOR)
+}
+
+/** The final type of a source node. */
+public enum class SourceNodeKind {
+    SOURCE_FILE, TYPE, FUNCTION, VARIABLE
 }
