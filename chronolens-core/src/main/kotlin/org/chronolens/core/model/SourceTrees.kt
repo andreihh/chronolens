@@ -25,7 +25,7 @@ import java.util.Collections.unmodifiableCollection
  */
 public class SourceTree private constructor(
     private val sourceMap: HashMap<String, SourceFile>,
-    private val nodeMap: HashMap<String, SourceNode>,
+    private val nodeMap: NodeHashMap,
 ) {
 
     /** The source files in this source tree. */
@@ -103,6 +103,37 @@ public class SourceTree private constructor(
 
         /** Creates and returns an empty source tree. */
         @JvmStatic
-        public fun empty(): SourceTree = SourceTree(HashMap(0), HashMap(0))
+        public fun empty(): SourceTree = SourceTree(HashMap(0), NodeHashMap(0))
     }
+}
+
+/** A hash map from ids to source nodes. */
+internal typealias NodeHashMap = HashMap<String, SourceNode>
+
+/**
+ * Returns all the source nodes contained in [this] source tree in top-down
+ * order.
+ */
+public fun SourceNode.walkSourceTree(): List<SourceNode> {
+    val nodes = mutableListOf(this)
+    var i = 0
+    while (i < nodes.size) {
+        nodes += nodes[i].children
+        i++
+    }
+    return nodes
+}
+
+internal fun NodeHashMap.putSourceTree(root: SourceNode) {
+    this += root.walkSourceTree().associateBy(SourceNode::id)
+}
+
+internal fun NodeHashMap.removeSourceTree(root: SourceNode) {
+    this -= root.walkSourceTree().map(SourceNode::id)
+}
+
+private fun buildVisit(sources: Iterable<SourceFile>): NodeHashMap {
+    val nodes = NodeHashMap()
+    sources.forEach(nodes::putSourceTree)
+    return nodes
 }

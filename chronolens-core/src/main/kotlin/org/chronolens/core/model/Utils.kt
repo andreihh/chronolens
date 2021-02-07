@@ -22,9 +22,6 @@ package org.chronolens.core.model
 import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 
-/** A hash map from ids to source nodes. */
-internal typealias NodeHashMap = HashMap<String, SourceNode>
-
 private val separators = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
 
 public val String.sourcePath: String
@@ -50,31 +47,3 @@ public val SourceNode.sourcePath: String get() = id.sourcePath
  * The path of the [SourceFile] which contains the node affected by [this] edit.
  */
 public val SourceTreeEdit.sourcePath: String get() = id.sourcePath
-
-/**
- * Returns all the source nodes contained in [this] source tree in top-down
- * order.
- */
-public fun SourceNode.walkSourceTree(): List<SourceNode> {
-    val nodes = mutableListOf(this)
-    var i = 0
-    while (i < nodes.size) {
-        nodes += nodes[i].children
-        i++
-    }
-    return nodes
-}
-
-internal fun NodeHashMap.putSourceTree(root: SourceNode) {
-    this += root.walkSourceTree().associateBy(SourceNode::id)
-}
-
-internal fun NodeHashMap.removeSourceTree(root: SourceNode) {
-    this -= root.walkSourceTree().map(SourceNode::id)
-}
-
-internal fun buildVisit(sources: Iterable<SourceFile>): NodeHashMap {
-    val nodes = NodeHashMap()
-    sources.forEach(nodes::putSourceTree)
-    return nodes
-}
