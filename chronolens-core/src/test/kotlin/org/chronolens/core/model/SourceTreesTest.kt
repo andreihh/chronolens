@@ -133,7 +133,7 @@ class SourceTreeTest {
         }
         val nodeId = sourceFile("src/Test.java").function("getVersion()").id()
 
-        assertNull(sourceTree.get<Function?>(nodeId))
+        assertNull(sourceTree[nodeId])
     }
 
     @Test fun `test apply chained edits`() {

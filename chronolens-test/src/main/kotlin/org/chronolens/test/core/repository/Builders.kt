@@ -94,7 +94,7 @@ public class RepositoryBuilder {
             history.map(Transaction::revisionId)
 
         override fun getSource(path: String): SourceFile? =
-            snapshot.get<SourceFile?>(path)
+            snapshot.getSource(path)
 
         override fun getHistory(): Sequence<Transaction> = history.asSequence()
     }

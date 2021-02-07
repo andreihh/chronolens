@@ -55,6 +55,9 @@ public class SourceTree private constructor(
         return node
     }
 
+    /** Utility method. */
+    public fun getSource(path: String): SourceFile? = get<SourceFile?>(path)
+
     /**
      * Applies the given [edit] to this source tree.
      *
@@ -65,7 +68,7 @@ public class SourceTree private constructor(
         val sourcePath = edit.sourcePath
         sourceMap -= sourcePath
         edit.applyOn(nodeMap)
-        val newSource = get<SourceFile?>(sourcePath)
+        val newSource = getSource(sourcePath)
         if (newSource != null) {
             sourceMap[sourcePath] = newSource
         }
@@ -92,10 +95,10 @@ public class SourceTree private constructor(
         public fun of(sources: Collection<SourceFile>): SourceTree {
             val sourceMap = HashMap<String, SourceFile>(sources.size)
             for (source in sources) {
-                require(source.id !in sourceMap) {
-                    "Source tree contains duplicate source id '${source.id}'!"
+                require(source.path !in sourceMap) {
+                    "Source tree contains duplicate source '${source.path}'!"
                 }
-                sourceMap[source.id] = source
+                sourceMap[source.path] = source
             }
             val nodeMap = buildVisit(sources)
             return SourceTree(sourceMap, nodeMap)
