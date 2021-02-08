@@ -46,8 +46,8 @@ public sealed class SourceTreeEdit {
             val nodesBefore = NodeHashMap()
             val nodesAfter = NodeHashMap()
             for (path in allSources) {
-                this.getSource(path)?.let(nodesBefore::putSourceTree)
-                other.getSource(path)?.let(nodesAfter::putSourceTree)
+                this.get<SourceFile?>(path)?.let(nodesBefore::putSourceTree)
+                other.get<SourceFile?>(path)?.let(nodesAfter::putSourceTree)
             }
 
             fun parentExists(id: String): Boolean {

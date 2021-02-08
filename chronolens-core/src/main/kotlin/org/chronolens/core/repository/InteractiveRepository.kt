@@ -118,7 +118,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
             val before = HashSet<SourceFile>(changeSet.size)
             val after = HashSet<SourceFile>(changeSet.size)
             for (path in changeSet) {
-                val oldSource = sourceTree.getSource(path)
+                val oldSource = sourceTree.get<SourceFile?>(path)
                 before += listOfNotNull(oldSource)
                 val result = parseSource(revisionId, path)
                 val newSource = when (result) {

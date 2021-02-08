@@ -48,14 +48,11 @@ public class SourceTree private constructor(
      * or if no such node was found
      */
     @JvmName("getNode")
-    public inline fun <reified T : SourceNode> get(id: String): T {
+    public inline fun <reified T : SourceNode?> get(id: String): T {
         val node = get(id)
         check(node is T) { "'$id' is not of type '${T::class}'!" }
         return node
     }
-
-    /** Utility method. */
-    public fun getSource(path: String): SourceFile? = get(path) as SourceFile?
 
     /** Returns all the source nodes in this source tree in top-down order. */
     public fun walk(): Iterable<SourceNode> =
@@ -81,7 +78,7 @@ public class SourceTree private constructor(
         val sourcePath = edit.sourcePath
         sourceMap -= sourcePath
         edit.applyOn(nodeMap)
-        val newSource = getSource(sourcePath)
+        val newSource = get<SourceFile?>(sourcePath)
         if (newSource != null) {
             sourceMap[sourcePath] = newSource
         }
