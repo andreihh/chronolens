@@ -22,7 +22,9 @@ import org.chronolens.test.core.model.sourceTree
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class SourceTreeTest {
     @Test fun `test create source tree with duplicated source paths throws`() {
@@ -70,9 +72,43 @@ class SourceTreeTest {
                 variable("version") { +"2" }
             }
         }
-        val actualNodes = sourceTree.sourceNodes.toSet()
+        val actualNodes = sourceTree.walk().toSet()
 
         assertEquals(expectedNodes, actualNodes)
+    }
+
+    @Test fun `test contains existing node returns true`() {
+        val sourceTree = sourceTree {
+            sourceFile("src/Test.java") {
+                type("IClass") {
+                    modifiers("interface")
+                    supertypes("Object")
+                    variable("version") { +"1" }
+                    function("getVersion()") {}
+                }
+                variable("version") { +"2" }
+            }
+        }
+
+        for (id in sourceTree.walk().map(SourceNode::id)) {
+            assertTrue(id in sourceTree)
+        }
+    }
+
+    @Test fun `test contains non-existing node returns false`() {
+        val sourceTree = sourceTree {
+            sourceFile("src/Test.java") {
+                type("IClass") {
+                    modifiers("interface")
+                    supertypes("Object")
+                    variable("version") { +"1" }
+                    function("getVersion()") {}
+                }
+                variable("version") { +"2" }
+            }
+        }
+
+        assertFalse("src/Test.java:IClass#VERSION" in sourceTree)
     }
 
     @Test fun `test get node returns structurally equal node`() {

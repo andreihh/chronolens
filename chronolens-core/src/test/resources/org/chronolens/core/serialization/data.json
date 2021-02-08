@@ -4,6 +4,7 @@
   "author" : "unknown",
   "edits" : [ {
     "@class" : "AddNode",
+    "id": "res",
     "node" : {
       "@class" : "SourceFile",
       "id" : "res",

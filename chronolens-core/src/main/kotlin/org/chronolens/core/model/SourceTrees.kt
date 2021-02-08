@@ -32,15 +32,14 @@ public class SourceTree private constructor(
     public val sources: Collection<SourceFile>
         get() = unmodifiableCollection(sourceMap.values)
 
-    /** Returns all the source nodes in this source tree. */
-    public val sourceNodes: Iterable<SourceNode>
-        get() = unmodifiableCollection(nodeMap.values)
-
     /**
      * Returns the node with the specified [id], or `null` if no such node was
      * found.
      */
     public operator fun get(id: String): SourceNode? = nodeMap[id]
+
+    /** Returns whether the specified [id] exists in this source tree. */
+    public operator fun contains(id: String): Boolean = get(id) != null
 
     /**
      * Returns the node of type [T] with the specified [id].
@@ -57,6 +56,20 @@ public class SourceTree private constructor(
 
     /** Utility method. */
     public fun getSource(path: String): SourceFile? = get(path) as SourceFile?
+
+    /** Returns all the source nodes in this source tree in top-down order. */
+    public fun walk(): Iterable<SourceNode> =
+        sources.flatMap(SourceNode::walkSourceTree)
+
+    /**
+     * Returns all the source nodes in the subtree rooted at the given [id] in
+     * top-down order.
+     *
+     * @throws IllegalStateException if a node with the given [id] doesn't exist
+     */
+    public fun walk(id: String): Iterable<SourceNode> =
+        nodeMap[id]?.walkSourceTree()
+            ?: error("Source node '$id' doesn't exist in the source tree!")
 
     /**
      * Applies the given [edit] to this source tree.
@@ -121,7 +134,9 @@ public fun SourceNode.walkSourceTree(): List<SourceNode> {
     val nodes = mutableListOf(this)
     var i = 0
     while (i < nodes.size) {
-        nodes += nodes[i].children
+        for (child in nodes[i].children) {
+            nodes += child
+        }
         i++
     }
     return nodes

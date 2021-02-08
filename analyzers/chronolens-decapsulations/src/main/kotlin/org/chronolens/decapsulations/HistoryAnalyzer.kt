@@ -22,7 +22,6 @@ import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.sourcePath
@@ -32,9 +31,6 @@ import org.chronolens.core.repository.Transaction
 internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private val sourceTree = SourceTree.empty()
     private val decapsulationsByField = hashMapOf<String, List<Decapsulation>>()
-
-    private fun getSourcePath(id: String): String =
-        sourceTree.get<SourceNode>(id).sourcePath
 
     private fun getField(nodeId: String): String? =
         DecapsulationAnalyzer.getField(sourceTree, nodeId)
@@ -71,8 +67,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
 
     private fun visit(edit: RemoveNode): Set<String> {
         val removedIds = hashSetOf<String>()
-        val removedNode = sourceTree.get<SourceNode>(edit.id)
-        for (node in removedNode.walkSourceTree()) {
+        for (node in sourceTree.walk(edit.id)) {
             decapsulationsByField -= node.id
             removedIds += node.id
         }
@@ -158,7 +153,8 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
 
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::analyze)
-        val fieldsByFile = decapsulationsByField.keys.groupBy(::getSourcePath)
+        val fieldsByFile =
+            decapsulationsByField.keys.groupBy(String::sourcePath)
         val sourcePaths = sourceTree.sources.map(SourceFile::path)
         val fileReports = sourcePaths.map { path ->
             val fields = fieldsByFile[path].orEmpty()

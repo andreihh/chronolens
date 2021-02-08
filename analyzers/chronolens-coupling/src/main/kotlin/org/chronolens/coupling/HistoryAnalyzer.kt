@@ -20,7 +20,6 @@ import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.RemoveNode
-import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourceTree
@@ -46,21 +45,17 @@ internal class HistoryAnalyzer(
     private val changes = hashMapOf<String, Int>()
     private val jointChanges = hashMapOf<String, HashMap<String, Int>>()
 
-    private fun getSourcePath(id: String): String =
-        sourceTree.get<SourceEntity>(id).sourcePath
-
     private fun visit(edit: AddNode): Set<String> {
         val addedNodes = edit.node.walkSourceTree()
         val addedFunctions = addedNodes.filterIsInstance<Function>()
-        return addedFunctions.map(Function::id).toSet()
+        return addedFunctions.map(SourceNode::id).toSet()
     }
 
     private fun visit(edit: RemoveNode): Set<String> {
-        val removedNode = sourceTree.get<SourceNode>(edit.id)
-        val removedIds = removedNode
-            .walkSourceTree()
+        val removedIds = sourceTree
+            .walk(edit.id)
             .filterIsInstance<Function>()
-            .map(Function::id)
+            .map(SourceNode::id)
             .toSet()
 
         changes -= removedIds
@@ -117,7 +112,7 @@ internal class HistoryAnalyzer(
     }
 
     private fun aggregate(): List<Graph> {
-        val idsByFile = changes.keys.groupBy(::getSourcePath)
+        val idsByFile = changes.keys.groupBy(String::sourcePath)
         val sourcePaths = sourceTree.sources.map(SourceFile::path)
         return sourcePaths.map { path ->
             val ids = idsByFile[path].orEmpty()

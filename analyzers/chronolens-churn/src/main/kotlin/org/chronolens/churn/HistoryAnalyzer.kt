@@ -48,9 +48,6 @@ internal class HistoryAnalyzer(
     private val sourceTree = SourceTree.empty()
     private val stats = hashMapOf<String, Stats>()
 
-    private fun getSourcePath(id: String): String =
-        sourceTree.get<SourceNode>(id).sourcePath
-
     private fun updateStats(
         id: String,
         revisionId: String,
@@ -70,13 +67,15 @@ internal class HistoryAnalyzer(
             is AddNode -> {
                 stats += edit.node
                     .walkSourceTree()
-                    .filter(SourceNode::isMember)
-                    .associate { it.id to Stats.create(revisionId, date) }
+                    .filter { node -> node.isMember }
+                    .associate {
+                        it.id to Stats.create(revisionId, date)
+                    }
             }
             is RemoveNode -> {
-                stats -= sourceTree.get<SourceNode>(id)
-                    .walkSourceTree()
-                    .filter(SourceNode::isMember)
+                stats -= sourceTree
+                    .walk(id)
+                    .filter { node -> node.isMember }
                     .map(SourceNode::id)
             }
             is EditFunction -> updateStats(id, revisionId, date, edit.churn)
@@ -111,7 +110,7 @@ internal class HistoryAnalyzer(
 
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::visit)
-        val membersByFile = stats.keys.groupBy(::getSourcePath)
+        val membersByFile = stats.keys.groupBy(String::sourcePath)
         val sourcePaths = sourceTree.sources.map(SourceFile::path)
         val fileReports = sourcePaths.map { path ->
             val members = membersByFile[path].orEmpty()

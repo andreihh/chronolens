@@ -37,7 +37,8 @@ internal abstract class DecapsulationAnalyzer {
             sourceTree: SourceTree,
             id: String,
         ): DecapsulationAnalyzer? {
-            val sourcePath = sourceTree[id]?.sourcePath ?: return null
+            if (id !in sourceTree) return null
+            val sourcePath = id.sourcePath
             return analyzers.find { it.canProcess(sourcePath) }
         }
 

@@ -42,7 +42,7 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
             is Variable -> node.id
             is Function -> {
                 val fieldName = getFieldName(node.signature) ?: return null
-                val fieldId = "${node.parentId}$MEMBER_SEPARATOR$fieldName"
+                val fieldId = "${nodeId.parentId}$MEMBER_SEPARATOR$fieldName"
                 val field = sourceTree[fieldId] as? Variable? ?: return null
                 field.id
             }
@@ -60,12 +60,17 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
     private val SourceNode?.isInterface: Boolean
         get() = this is Type && INTERFACE_MODIFIER in modifiers
 
+    private fun SourceTree.parentNodeIsInterface(nodeId: String): Boolean {
+        val parentId = nodeId.parentId ?: return false
+        return get(parentId)?.isInterface ?: false
+    }
+
     override fun getVisibility(sourceTree: SourceTree, nodeId: String): Int {
         val node = sourceTree[nodeId]
         return when (node) {
             is Type -> getVisibility(node.modifiers)
             is Function ->
-                if (sourceTree[node.parentId].isInterface) PUBLIC_LEVEL
+                if (sourceTree.parentNodeIsInterface(nodeId)) PUBLIC_LEVEL
                 else getVisibility(node.modifiers)
             is Variable -> getVisibility(node.modifiers)
             else -> throw AssertionError("'$nodeId' has no visibility!")
@@ -76,7 +81,7 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
         val node = sourceTree[nodeId] as? Variable? ?: return false
         val modifiers = node.modifiers
         return (STATIC_MODIFIER in modifiers && FINAL_MODIFIER in modifiers) ||
-            sourceTree[node.parentId].isInterface
+            sourceTree.parentNodeIsInterface(nodeId)
     }
 
     companion object {
