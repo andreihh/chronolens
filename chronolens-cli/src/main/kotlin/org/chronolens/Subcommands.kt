@@ -79,7 +79,9 @@ class Model : Subcommand() {
         val path = id.sourcePath
         val model = repository.getSource(path, revision)
             ?: exit("File '$path' couldn't be interpreted or doesn't exist!")
-        val node = model.walkSourceTree().find { it.id == id }
+        val node = model.walkSourceTree()
+            .find { it.qualifiedId == id }
+            ?.sourceNode
             ?: exit("Source node '$id' doesn't exist!")
         PrettyPrinterVisitor(System.out).visit(node)
     }

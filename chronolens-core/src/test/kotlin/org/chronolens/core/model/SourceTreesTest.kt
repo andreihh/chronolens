@@ -60,6 +60,8 @@ class SourceTreeTest {
         )
         val expectedNodes =
             setOf(testSource, version, classType, classVersion, classFunction)
+                .map { node -> SourceTreeNode(node.id, node) }
+                .toSet()
 
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
@@ -90,7 +92,7 @@ class SourceTreeTest {
             }
         }
 
-        for (id in sourceTree.walk().map(SourceNode::id)) {
+        for (id in sourceTree.walk().map(SourceTreeNode<*>::qualifiedId)) {
             assertTrue(id in sourceTree)
         }
     }

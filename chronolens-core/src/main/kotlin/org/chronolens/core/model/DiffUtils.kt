@@ -59,46 +59,59 @@ internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
 
 /**
  * Returns the edit which must be applied on this source node in order to obtain
- * the [other] source node, or `null` if the two nodes are equal.
+ * the [other] source node, or `null` if the two nodes are equal (child nodes
+ * are not taken into account).
  *
  * @throws IllegalArgumentException if the two source nodes have different ids
  * or types
  */
-internal fun SourceNode.diff(other: SourceNode): SourceTreeEdit? {
-    require(id == other.id && this::class == other::class) {
-        "Can't compute diff between '$id' and '${other.id}'!"
+internal fun SourceTreeNode<*>.diff(other: SourceTreeNode<*>)
+    : SourceTreeEdit? {
+    val sameQualifiedId = qualifiedId == other.qualifiedId
+    val sameKind = sourceNode.kind == other.sourceNode.kind
+    require(sameQualifiedId && sameKind) {
+        "Can't compute diff between '$qualifiedId' and '${other.qualifiedId}'!"
     }
-    return when (this) {
-        is SourceFile -> null
-        is Type -> diff(other as Type)
-        is Function -> diff(other as Function)
-        is Variable -> diff(other as Variable)
+    val editBuilder = when (sourceNode) {
+        is SourceFile -> { _ -> null }
+        is Type -> sourceNode.diff(other.sourceNode as Type)
+        is Function -> sourceNode.diff(other.sourceNode as Function)
+        is Variable -> sourceNode.diff(other.sourceNode as Variable)
     }
+    return editBuilder.invoke(qualifiedId)
 }
 
-private fun Type.diff(other: Type): EditType? {
+private typealias SourceTreeEditBuilder = (String) -> SourceTreeEdit?
+
+private fun Type.diff(other: Type): SourceTreeEditBuilder {
     val supertypeEdits = supertypes.diff(other.supertypes)
     val modifierEdits = modifiers.diff(other.modifiers)
-    val edit = EditType(id, supertypeEdits, modifierEdits)
     val changed = supertypeEdits.isNotEmpty() || modifierEdits.isNotEmpty()
-    return if (changed) edit else null
+    return { qualifiedId ->
+        if (!changed) null
+        else EditType(qualifiedId, supertypeEdits, modifierEdits)
+    }
 }
 
-private fun Function.diff(other: Function): EditFunction? {
+private fun Function.diff(other: Function): SourceTreeEditBuilder {
     val parameterEdits = parameters.diff(other.parameters)
     val modifierEdits = modifiers.diff(other.modifiers)
     val bodyEdits = body.diff(other.body)
-    val edit = EditFunction(id, parameterEdits, modifierEdits, bodyEdits)
     val changed = parameterEdits.isNotEmpty() ||
         modifierEdits.isNotEmpty() ||
         bodyEdits.isNotEmpty()
-    return if (changed) edit else null
+    return { qualifiedId ->
+        if (!changed) null
+        else EditFunction(qualifiedId, parameterEdits, modifierEdits, bodyEdits)
+    }
 }
 
-private fun Variable.diff(other: Variable): EditVariable? {
+private fun Variable.diff(other: Variable): SourceTreeEditBuilder {
     val modifierEdits = modifiers.diff(other.modifiers)
     val initializerEdits = initializer.diff(other.initializer)
-    val edit = EditVariable(id, modifierEdits, initializerEdits)
     val changed = modifierEdits.isNotEmpty() || initializerEdits.isNotEmpty()
-    return if (changed) edit else null
+    return { qualifiedId ->
+        if (!changed) null
+        else EditVariable(qualifiedId, modifierEdits, initializerEdits)
+    }
 }

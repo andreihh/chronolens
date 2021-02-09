@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,13 @@ import kotlin.test.assertFailsWith
 class DiffUtilsTest {
     @Test fun `test diff nodes with different ids throws`() {
         val before = sourceFile("src/Test.java").build {}
+        val treeNodeBefore = SourceTreeNode(before.id, before)
+
         val after = sourceFile("src/Main.java").build {}
+        val treeNodeAfter = SourceTreeNode(after.id, after)
+
         assertFailsWith<IllegalArgumentException> {
-            before.diff(after)
+            treeNodeBefore.diff(treeNodeAfter)
         }
     }
 }

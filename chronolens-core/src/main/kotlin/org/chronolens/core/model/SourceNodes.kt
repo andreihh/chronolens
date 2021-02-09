@@ -45,7 +45,7 @@ public sealed class SourceNode {
         is Variable -> VARIABLE
     }
 
-    /** The child source nodes contained in [this] source node. */
+    /** The child source nodes contained in this source node. */
     public val children: Collection<SourceEntity>
         get() = when (this) {
             is SourceFile -> entities
@@ -179,7 +179,7 @@ public data class Variable(
     public val name: String get() = id.substringAfterLast(MEMBER_SEPARATOR)
 }
 
-/** The final type of a source node. */
+/** The final, non-abstract type of a source node. */
 public enum class SourceNodeKind {
     SOURCE_FILE, TYPE, FUNCTION, VARIABLE
 }

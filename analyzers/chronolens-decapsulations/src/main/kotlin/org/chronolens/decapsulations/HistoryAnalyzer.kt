@@ -54,12 +54,12 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
 
     private fun visit(edit: AddNode): Set<String> {
         val editedIds = hashSetOf<String>()
-        for (node in edit.node.walkSourceTree()) {
+        for ((id, node) in edit.sourceTreeNode.walkSourceTree()) {
             if (node is Variable) {
-                decapsulationsByField[node.id] = emptyList()
-                editedIds += node.id
+                decapsulationsByField[id] = emptyList()
+                editedIds += id
             } else if (node is Function) {
-                editedIds += node.id
+                editedIds += id
             }
         }
         return editedIds
@@ -68,8 +68,8 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private fun visit(edit: RemoveNode): Set<String> {
         val removedIds = hashSetOf<String>()
         for (node in sourceTree.walk(edit.id)) {
-            decapsulationsByField -= node.id
-            removedIds += node.id
+            decapsulationsByField -= node.qualifiedId
+            removedIds += node.qualifiedId
         }
         return removedIds
     }

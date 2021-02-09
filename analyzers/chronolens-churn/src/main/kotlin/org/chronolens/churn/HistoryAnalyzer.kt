@@ -26,6 +26,7 @@ import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit
+import org.chronolens.core.model.SourceTreeNode
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.sourcePath
@@ -65,18 +66,18 @@ internal class HistoryAnalyzer(
         val id = edit.id
         when (edit) {
             is AddNode -> {
-                stats += edit.node
+                stats += edit.sourceTreeNode
                     .walkSourceTree()
-                    .filter { node -> node.isMember }
+                    .filter { (_, node) -> node.isMember }
                     .associate {
-                        it.id to Stats.create(revisionId, date)
+                        it.qualifiedId to Stats.create(revisionId, date)
                     }
             }
             is RemoveNode -> {
                 stats -= sourceTree
                     .walk(id)
-                    .filter { node -> node.isMember }
-                    .map(SourceNode::id)
+                    .filter { (_, node) -> node.isMember }
+                    .map(SourceTreeNode<*>::qualifiedId)
             }
             is EditFunction -> updateStats(id, revisionId, date, edit.churn)
             is EditVariable -> updateStats(id, revisionId, date, edit.churn)

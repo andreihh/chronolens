@@ -23,6 +23,7 @@ import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.SourceTreeNode
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
@@ -46,16 +47,16 @@ internal class HistoryAnalyzer(
     private val jointChanges = hashMapOf<String, HashMap<String, Int>>()
 
     private fun visit(edit: AddNode): Set<String> {
-        val addedNodes = edit.node.walkSourceTree()
-        val addedFunctions = addedNodes.filterIsInstance<Function>()
-        return addedFunctions.map(SourceNode::id).toSet()
+        val addedNodes = edit.sourceTreeNode.walkSourceTree()
+        val addedFunctions = addedNodes.filter { (_, node) -> node is Function }
+        return addedFunctions.map(SourceTreeNode<*>::qualifiedId).toSet()
     }
 
     private fun visit(edit: RemoveNode): Set<String> {
         val removedIds = sourceTree
             .walk(edit.id)
-            .filterIsInstance<Function>()
-            .map(SourceNode::id)
+            .filter { (_, node) -> node is Function }
+            .map(SourceTreeNode<*>::qualifiedId)
             .toSet()
 
         changes -= removedIds
