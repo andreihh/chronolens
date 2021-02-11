@@ -50,7 +50,7 @@ public data class QualifiedId(
 
         val builder = StringBuilder()
 
-        fun appendParentId(parentId: QualifiedId<*>) {
+        fun appendParentId(parentId: QualifiedId) {
             if (parentId.parent != null) {
                 appendParentId(parentId.parent)
                 builder.append(':')
