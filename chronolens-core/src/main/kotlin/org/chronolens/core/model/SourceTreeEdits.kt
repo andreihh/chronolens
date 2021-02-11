@@ -39,8 +39,8 @@ public sealed class SourceTreeEdit {
          */
         @JvmStatic
         public fun SourceTree.diff(other: SourceTree): List<SourceTreeEdit> {
-            val thisSources = this.sources.map(SourceFile::id)
-            val otherSources = other.sources.map(SourceFile::id)
+            val thisSources = this.sources.map(SourceFile::path)
+            val otherSources = other.sources.map(SourceFile::path)
             val allSources = thisSources.union(otherSources)
 
             val nodesBefore = NodeHashMap()
@@ -87,7 +87,7 @@ public data class AddNode(
         check(id !in nodes) { "Node '$id' already exists!" }
         nodes.putSourceTree(sourceTreeNode)
         if (node is SourceEntity) {
-            updateAncestors(nodes, node)
+            updateAncestors(nodes, id, node)
         }
     }
 }
@@ -106,7 +106,7 @@ public data class RemoveNode(override val id: String) : SourceTreeEdit() {
         val node = nodes[id] ?: error("Node '$id' doesn't exist!")
         nodes.removeSourceTree(node)
         if (node.sourceNode is SourceEntity) {
-            updateAncestors(nodes, node.sourceNode)
+            updateAncestors(nodes, id, node.sourceNode)
         }
     }
 }
@@ -138,7 +138,7 @@ public data class EditType(
         val modifiers = type.modifiers.apply(modifierEdits)
         val newType = Type(id, supertypes, modifiers, type.members)
         nodes[id] = SourceTreeNode(id, newType)
-        updateAncestors(nodes, newType)
+        updateAncestors(nodes, id, newType)
     }
 }
 
@@ -173,7 +173,7 @@ public data class EditFunction(
         val body = function.body.apply(bodyEdits)
         val newFunction = Function(id, parameters, modifiers, body)
         nodes[id] = SourceTreeNode(id, newFunction)
-        updateAncestors(nodes, newFunction)
+        updateAncestors(nodes, id, newFunction)
     }
 }
 
@@ -204,7 +204,7 @@ public data class EditVariable(
         val initializer = variable.initializer.apply(initializerEdits)
         val newVariable = Variable(id, modifiers, initializer)
         nodes[id] = SourceTreeNode(id, newVariable)
-        updateAncestors(nodes, newVariable)
+        updateAncestors(nodes, id, newVariable)
     }
 }
 
@@ -215,20 +215,25 @@ public data class EditVariable(
  * @throws IllegalStateException if the given [nodes] have an invalid state and
  * the ancestors of the given [entity] couldn't be updated
  */
-private fun updateAncestors(nodes: NodeHashMap, entity: SourceEntity) {
-    fun <T : SourceEntity> Set<T>.updated(entity: T): Set<T> {
-        val newEntities = LinkedHashSet<T>(size)
-        this.filterTo(newEntities) { it.id != entity.id }
-        if (entity.id in nodes) {
+private fun updateAncestors(
+    nodes: NodeHashMap,
+    qualifiedId: String,
+    entity: SourceEntity,
+) {
+    fun Set<SourceEntity>.updatedWithEntity(): Set<SourceEntity> {
+        val newEntities = LinkedHashSet<SourceEntity>(size)
+        this.filterTo(newEntities) { it.id != qualifiedId }
+        if (qualifiedId in nodes) {
             newEntities += entity
         }
         return newEntities
     }
 
-    fun SourceFile.updated() = copy(entities = entities.updated(entity))
-    fun Type.updated() = copy(members = members.updated(entity))
+    fun SourceFile.updated() = copy(entities = entities.updatedWithEntity())
+    fun Type.updated() = copy(members = members.updatedWithEntity())
 
-    val parentId = entity.parentId
+    // TODO: simplify parentId computation.
+    val parentId = SourceTreeNode(qualifiedId, entity).parentId
     val parent = nodes[parentId]?.sourceNode
         ?: error("Parent '$parentId' doesn't exist!")
     val newParent = when (parent) {
@@ -238,6 +243,6 @@ private fun updateAncestors(nodes: NodeHashMap, entity: SourceEntity) {
     }
     nodes[parentId] = SourceTreeNode(parentId, newParent)
     if (newParent is SourceEntity) {
-        updateAncestors(nodes, newParent)
+        updateAncestors(nodes, parentId, newParent)
     }
 }

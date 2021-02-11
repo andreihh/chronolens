@@ -50,7 +50,7 @@ public data class QualifiedId(
 
         val builder = StringBuilder()
 
-        fun appendParentId(parentId: QualifiedId) {
+        fun appendParentId(parentId: QualifiedId<*>) {
             if (parentId.parent != null) {
                 appendParentId(parentId.parent)
                 builder.append(':')
@@ -161,20 +161,25 @@ public val String.sourcePath: String
         return if (where == -1) this else substring(0, where)
     }
 
+/** The path of the [SourceFile] which contains [this] node. */
+public val SourceTreeNode<*>.sourcePath: String get() = qualifiedId.sourcePath
+
+/**
+ * The path of the [SourceFile] which contains the node affected by [this] edit.
+ */
+public val SourceTreeEdit.sourcePath: String get() = id.sourcePath
+
+/**
+ * The qualified id of the parent node of the source note denoted by [this]
+ * qualified id, or `null` if this id denotes a [SourceFile].
+ */
 public val String.parentId: String?
     get() {
         val where = lastIndexOfAny(separators)
         return if (where == -1) null else substring(0, where)
     }
 
-/** The id of the [SourceNode] which contains [this] entity. */
-public val SourceEntity.parentId: String get() =
-    id.parentId ?: throw AssertionError("'$id' must have a parent node!")
-
-/** The path of the [SourceFile] which contains [this] node. */
-public val SourceNode.sourcePath: String get() = id.sourcePath
-
-/**
- * The path of the [SourceFile] which contains the node affected by [this] edit.
- */
-public val SourceTreeEdit.sourcePath: String get() = id.sourcePath
+/** The qualified id of the parent node of [this] source tree node. */
+public val SourceTreeNode<out SourceEntity>.parentId: String
+    get() = qualifiedId.parentId
+        ?: error("Source entity '$qualifiedId' must have a parent!")

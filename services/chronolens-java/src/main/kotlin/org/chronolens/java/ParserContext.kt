@@ -145,7 +145,7 @@ internal data class ParserContext(
         val entities = node.types()
             .requireIsInstance<AbstractTypeDeclaration>()
             .map(childContext::visit)
-        entities.map(Type::id).requireDistinct()
+        entities.map(Type::name).requireDistinct()
         return SourceFile(path, entities.toSet())
     }
 }

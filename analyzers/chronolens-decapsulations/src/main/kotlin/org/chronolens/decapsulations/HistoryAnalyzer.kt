@@ -103,35 +103,22 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         sourceTree.apply(transaction.edits)
         val newVisibility = getVisibility(editedIds)
 
-        fun analyze(variable: Variable) {
-            val old = oldVisibility[variable.id] ?: return
-            val new = newVisibility[variable.id] ?: return
-            if (new > old) {
-                addDecapsulation(
-                    fieldId = variable.id,
-                    nodeId = variable.id,
-                    revisionId = transaction.revisionId,
-                    message = "Relaxed field visibility!"
-                )
-            }
-        }
-
-        fun analyze(function: Function) {
-            val fieldId = getField(function.id) ?: return
+        fun analyze(qualifiedId: String) {
+            val fieldId = getField(qualifiedId) ?: return
             val fieldOld = oldVisibility[fieldId] ?: return
-            val old = oldVisibility[function.id]
-            val new = newVisibility[function.id] ?: return
+            val old = oldVisibility[qualifiedId]
+            val new = newVisibility[qualifiedId] ?: return
             if (old == null && new > fieldOld) {
                 addDecapsulation(
                     fieldId = fieldId,
-                    nodeId = function.id,
+                    nodeId = qualifiedId,
                     revisionId = transaction.revisionId,
                     message = "Added accessor with more relaxed visibility!"
                 )
             } else if (old != null && new > old) {
                 addDecapsulation(
                     fieldId = fieldId,
-                    nodeId = function.id,
+                    nodeId = qualifiedId,
                     revisionId = transaction.revisionId,
                     message = "Relaxed accessor visibility!"
                 )
@@ -140,9 +127,8 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
 
         for (id in editedIds) {
             val node = sourceTree[id]
-            when (node) {
-                is Variable -> analyze(node)
-                is Function -> analyze(node)
+            if (node is Variable || node is Function) {
+                analyze(id)
             }
         }
     }

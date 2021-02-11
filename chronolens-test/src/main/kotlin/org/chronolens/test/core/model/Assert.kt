@@ -27,7 +27,7 @@ public fun assertEquals(
     actual: SourceTree?,
     message: String? = null,
 ) {
-    val expectedSources = expected?.sources?.toList()?.sortedBy(SourceFile::id)
-    val actualSources = actual?.sources?.toList()?.sortedBy(SourceFile::id)
+    val expectedSources = expected?.sources?.sortedBy(SourceFile::path)
+    val actualSources = actual?.sources?.sortedBy(SourceFile::path)
     assertEqualsKt(expectedSources, actualSources, message)
 }

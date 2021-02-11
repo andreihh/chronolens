@@ -81,15 +81,21 @@ class QualifiedIdTest {
     }
 
     @Test
-    fun `test source path of source file`() {
-        val source = sourceFile("src/Test.java").build {}
-        assertEquals(source.path, source.sourcePath)
+    fun sourcePath_ofSourceFile_returnsPath() {
+        val path = "src/Test.java"
+        val source = SourceFile(path)
+        val sourceTreeNode = SourceTreeNode(path, source)
+
+        assertEquals(path, sourceTreeNode.sourcePath)
     }
 
     @Test
-    fun `test source path of node`() {
+    fun sourcePath_ofNode_returnsPathOfContainerSourceFile() {
+        val qualifiedId = "src/Test.java#getVersion(String)"
         val path = "src/Test.java"
         val node = sourceFile(path).function("getVersion(String)").build {}
-        assertEquals(path, node.sourcePath)
+        val sourceTreeNode = SourceTreeNode(qualifiedId, node)
+
+        assertEquals(path, sourceTreeNode.sourcePath)
     }
 }

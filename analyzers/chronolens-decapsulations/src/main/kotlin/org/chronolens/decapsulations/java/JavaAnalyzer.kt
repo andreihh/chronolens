@@ -39,12 +39,12 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
     override fun getField(sourceTree: SourceTree, nodeId: String): String? {
         val node = sourceTree[nodeId] ?: return null
         return when (node) {
-            is Variable -> node.id
+            is Variable -> nodeId
             is Function -> {
                 val fieldName = getFieldName(node.signature) ?: return null
                 val fieldId = "${nodeId.parentId}$MEMBER_SEPARATOR$fieldName"
-                val field = sourceTree[fieldId] as? Variable? ?: return null
-                field.id
+                // TODO: figure out if should check only for non-nullable type.
+                if (sourceTree[fieldId] is Variable?) fieldId else null
             }
             else -> null
         }
