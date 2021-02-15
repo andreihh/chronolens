@@ -23,10 +23,10 @@ import kotlin.test.assertFailsWith
 class DiffUtilsTest {
     @Test fun `test diff nodes with different ids throws`() {
         val before = sourceFile("src/Test.java").build {}
-        val treeNodeBefore = SourceTreeNode(before.id, before)
+        val treeNodeBefore = SourceTreeNode(before.path, before)
 
         val after = sourceFile("src/Main.java").build {}
-        val treeNodeAfter = SourceTreeNode(after.id, after)
+        val treeNodeAfter = SourceTreeNode(after.path, after)
 
         assertFailsWith<IllegalArgumentException> {
             treeNodeBefore.diff(treeNodeAfter)

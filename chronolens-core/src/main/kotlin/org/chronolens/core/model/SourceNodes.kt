@@ -37,6 +37,14 @@ public sealed class SourceNode {
      */
     public abstract val id: String
 
+    /** Returns the simple, unqualified id of this source node. */
+    public val simpleId: String get() = when (this) {
+        is SourceFile -> path
+        is Type -> name
+        is Function -> signature
+        is Variable -> name
+    }
+
     /** This kind of this source node. Denotes a final, non-abstract type. */
     public val kind: SourceNodeKind get() = when (this) {
         is SourceFile -> SOURCE_FILE

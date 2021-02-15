@@ -222,7 +222,9 @@ private fun updateAncestors(
 ) {
     fun Set<SourceEntity>.updatedWithEntity(): Set<SourceEntity> {
         val newEntities = LinkedHashSet<SourceEntity>(size)
-        this.filterTo(newEntities) { it.id != qualifiedId }
+        this.filterTo(newEntities) {
+            it.kind != entity.kind || it.simpleId != entity.simpleId
+        }
         if (qualifiedId in nodes) {
             newEntities += entity
         }

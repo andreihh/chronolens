@@ -45,15 +45,15 @@ private val node = Regex("$file|$entity")
  * with the id of this node or if this node contains duplicated children ids
  */
 internal fun SourceNode.validateChildrenIds() {
-    val ids = HashSet<String>(children.size)
+    val ids = HashSet<Pair<SourceNodeKind, String>>(children.size)
     for (child in children) {
         require(child.id.startsWith(id)) {
             "Node '$id' contains invalid child id '$id'!"
         }
-        require(child.id !in ids) {
-            "Node '$id' contains duplicated child id '$id'!"
+        require(child.kind to child.simpleId !in ids) {
+            "Node '$simpleId' contains duplicated child id '${child.simpleId}'!"
         }
-        ids += child.id
+        ids += child.kind to child.simpleId
     }
 }
 
@@ -67,7 +67,7 @@ internal fun Function.validateParameterNames() {
     val names = HashSet<String>(parameters.size)
     for (name in parameters) {
         require(name !in names) {
-            "Function '$id' contains duplicated parameter '$name'!"
+            "Function '$simpleId' contains duplicated parameter '$name'!"
         }
         names += name
     }

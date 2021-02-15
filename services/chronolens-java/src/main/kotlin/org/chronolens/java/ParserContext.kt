@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ internal data class ParserContext(
         val id = getTypeId(node.name())
         val childContext = copy(parentId = id)
         val members = node.members().mapNotNull(childContext::visitMember)
-        members.map(SourceEntity::id).requireDistinct()
+        members.map(SourceEntity::simpleId).requireDistinct()
         return Type(
             id = id,
             supertypes = node.supertypes(),
