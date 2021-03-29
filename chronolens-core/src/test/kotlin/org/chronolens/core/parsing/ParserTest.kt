@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ class ParserTest {
                 rawSource = """
                     {
                       "@class": "SourceFile",
-                      "id": "res:/Test.mock"
+                      "path": "res:/Test.mock"
                     }
                 """.trimIndent()
             )
@@ -60,7 +60,7 @@ class ParserTest {
                 rawSource = """
                     {
                       "@class": "SourceFile",
-                      "id": "Main.mock"
+                      "path": "Main.mock"
                     }
                 """.trimIndent()
             )

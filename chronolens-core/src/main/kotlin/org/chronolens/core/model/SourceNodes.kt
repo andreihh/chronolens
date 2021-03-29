@@ -27,16 +27,6 @@ import org.chronolens.core.model.SourceNodeKind.VARIABLE
  * All collections passed as constructor parameters must be unmodifiable.
  */
 public sealed class SourceNode {
-    /**
-     * A fully qualified identifier among all nodes inside a [SourceTree].
-     *
-     * The fully qualified identifier of a nested node will be the fully
-     * qualified identifier of the enclosing node followed by the corresponding
-     * separator and then followed by the simple identifier of the node. The
-     * simple identifiers must not contain `/`, `:`, `'`, `"` or `\`.
-     */
-    public abstract val id: String
-
     /** Returns the simple, unqualified id of this source node. */
     public val simpleId: String get() = when (this) {
         is SourceFile -> path
@@ -82,50 +72,44 @@ public sealed class SourceEntity : SourceNode()
 /**
  * The source code metadata of a source file.
  *
- * @property id the fully qualified identifier of this file
+ * @property path the fully qualified path of this file
  * @property entities the source entities contained by this source file
- * @throws IllegalArgumentException if the [id] is not valid or if the ids of
+ * @throws IllegalArgumentException if the [path] is not valid or if the ids of
  * the [entities] are not valid or if the [entities] contain duplicated ids
  */
 public data class SourceFile(
-    override val id: String,
+    val path: String,
     val entities: Set<SourceEntity> = emptySet(),
 ) : SourceNode() {
 
     init {
-        validateFileId(id)
+        validatePath(path)
         validateChildrenIds()
     }
-
-    /** The fully qualified path of this file, equal to [id]. */
-    public val path: String get() = id
 }
 
 /**
  * A type declaration found inside a [SourceFile].
  *
- * @property id the fully qualified name of this type
+ * @property name the name of this type
  * @property supertypes the supertypes of this type
  * @property modifiers the modifiers of this type
  * @property members the members of this type (functions, variables and
  * contained types)
- * @throws IllegalArgumentException if the [id] is not valid or if the ids of
+ * @throws IllegalArgumentException if the [name] is not valid or if the ids of
  * the [members] are not valid or if the [members] contain duplicated ids
  */
 public data class Type(
-    override val id: String,
+    val name: String,
     val supertypes: Set<String> = emptySet(),
     val modifiers: Set<String> = emptySet(),
     val members: Set<SourceEntity> = emptySet(),
 ) : SourceEntity() {
 
     init {
-        validateTypeId(id)
+        validateIdentifier(name)
         validateChildrenIds()
     }
-
-    /** The simple name of this type. */
-    public val name: String get() = id.substringAfterLast(CONTAINER_SEPARATOR)
 }
 
 /**
@@ -133,58 +117,48 @@ public data class Type(
  *
  * The parameters of a function must have unique names.
  *
- * @property id the fully qualified signature of this function
+ * @property signature the signature of this function; should be `name(type_1,
+ * type_2, ...)` if function overloading at the type level is allowed, or
+ * `name(n)` (where `n` is the arity of the function) if function overloading at
+ * the arity level is allowed, or `name()` otherwise.
  * @property parameters the names of the parameters of this function
  * @property modifiers the modifiers of this function
  * @property body the body lines of this function, or an empty list if it
  * doesn't have a body
- * @throws IllegalArgumentException if the [id] is not valid or if the ids of
- * the [parameters] are not valid or if the [parameters] contain duplicated ids
+ * @throws IllegalArgumentException if the [signature] is not valid or if the
+ * [parameters] contain invalid or duplicated names
  */
 public data class Function(
-    override val id: String,
+    val signature: String,
     val parameters: List<String> = emptyList(),
     val modifiers: Set<String> = emptySet(),
     val body: List<String> = emptyList(),
 ) : SourceEntity() {
 
     init {
-        validateFunctionId(id)
+        validateSignature(signature)
         validateParameterNames()
     }
-
-    /**
-     * The simple signature of this function.
-     *
-     * The signature of a function should be `name(type_1, type_2, ...)` if
-     * function overloading at the type level is allowed, or `name(n)` (where
-     * `n` is the arity of the function) if function overloading at the arity
-     * level is allowed, or `name()` otherwise.
-     */
-    public val signature: String get() = id.substringAfterLast(MEMBER_SEPARATOR)
 }
 
 /**
  * A variable declaration found inside a [SourceFile].
  *
- * @property id the fully qualified name of this variable
+ * @property name the name of this variable
  * @property modifiers the modifiers of this variable
  * @property initializer the initializer lines of this variable, or an empty
  * list if it doesn't have an initializer
- * @throws IllegalArgumentException if the [id] is not valid
+ * @throws IllegalArgumentException if the [name] is not valid
  */
 public data class Variable(
-    override val id: String,
+    val name: String,
     val modifiers: Set<String> = emptySet(),
     val initializer: List<String> = emptyList(),
 ) : SourceEntity() {
 
     init {
-        validateVariableId(id)
+        validateIdentifier(name)
     }
-
-    /** The simple name of this variable. */
-    public val name: String get() = id.substringAfterLast(MEMBER_SEPARATOR)
 }
 
 /** The final, non-abstract type of a source node. */

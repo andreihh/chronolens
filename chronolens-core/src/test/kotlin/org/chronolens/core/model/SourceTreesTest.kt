@@ -35,33 +35,21 @@ class SourceTreeTest {
     }
 
     @Test fun `test source tree returns structurally equal nodes`() {
-        val classVersion = Variable(
-            id = sourceFile("src/Test.java").type("IClass")
-                .variable("version").id(),
-            initializer = listOf("1")
-        )
-        val classFunction = Function(
-            id = sourceFile("src/Test.java").type("IClass")
-                .function("getVersion()").id()
-        )
+        val classVersion = Variable(name = "version", initializer = listOf("1"))
+        val classFunction = Function(signature = "getVersion()")
         val classType = Type(
-            id = sourceFile("src/Test.java").type("IClass").id(),
+            name = "IClass",
             supertypes = setOf("Object"),
             modifiers = setOf("interface"),
             members = setOf(classVersion, classFunction)
         )
-        val version = Variable(
-            id = sourceFile("src/Test.java").variable("version").id(),
-            initializer = listOf("2")
-        )
+        val version = Variable(name = "version", initializer = listOf("2"))
         val testSource = SourceFile(
-            id = sourceFile("src/Test.java").id(),
+            path = "src/Test.java",
             entities = setOf(classType, version)
         )
         val expectedNodes =
             setOf(testSource, version, classType, classVersion, classFunction)
-                .map { node -> SourceTreeNode(node.id, node) }
-                .toSet()
 
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
@@ -74,7 +62,8 @@ class SourceTreeTest {
                 variable("version") { +"2" }
             }
         }
-        val actualNodes = sourceTree.walk().toSet()
+        val actualNodes =
+            sourceTree.walk().map(SourceTreeNode<*>::sourceNode).toSet()
 
         assertEquals(expectedNodes, actualNodes)
     }

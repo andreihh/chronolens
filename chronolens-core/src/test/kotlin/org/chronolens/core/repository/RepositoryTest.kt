@@ -39,23 +39,23 @@ abstract class RepositoryTest {
                 change("src/Main.mock" to "{")
                 change(
                     "src/Worksheet.mock" to """{
-                        "id": "src/Worksheet.mock",
+                        "path": "src/Worksheet.mock",
                         "@class": "SourceFile",
                         "entities": [{
-                            "id": "src/Worksheet.mock#println()",
+                            "signature": "println()",
                             "@class": "Function"
                         }]
                     }"""
                 )
                 change(
                     "src/Test.mock" to """{
-                        "id": "src/Test.mock",
+                        "path": "src/Test.mock",
                         "@class": "SourceFile"
                     }"""
                 )
                 change(
                     "src/BuildVersion.mock" to """
-                        "id": "src/BuildVersion.mock",
+                        "path": "src/BuildVersion.mock",
                         "@class": "SourceFile"
                     """
                 )
@@ -65,10 +65,10 @@ abstract class RepositoryTest {
             revision {
                 change(
                     "src/Main.mock" to """{
-                        "id": "src/Main.mock",
+                        "path": "src/Main.mock",
                         "@class": "SourceFile",
                         "entities": [{
-                            "id": "src/Main.mock:Main",
+                            "name": "Main",
                             "@class": "Type"
                         }]
                     }"""

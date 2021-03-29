@@ -7,32 +7,32 @@
     "id": "res",
     "node" : {
       "@class" : "SourceFile",
-      "id" : "res",
+      "path" : "res",
       "entities" : [ {
         "@class" : "Variable",
-        "id" : "res#DEBUG",
+        "name" : "DEBUG",
         "initializer" : [ "true" ]
       }, {
         "@class" : "Variable",
-        "id" : "res#RELEASE",
+        "name" : "RELEASE",
         "initializer" : [ "false" ]
       }, {
         "@class" : "Function",
-        "id" : "res#createIClass()"
+        "signature" : "createIClass()"
       }, {
         "@class" : "Type",
-        "id" : "res:IClass",
+        "name" : "IClass",
         "supertypes" : [ "Interface", "Object" ],
         "members" : [ {
           "@class" : "Type",
-          "id" : "res:IClass:InnerClass"
+          "name" : "InnerClass"
         }, {
           "@class" : "Variable",
-          "id" : "res:IClass#version",
+          "name" : "version",
           "initializer" : [ "1" ]
         }, {
           "@class" : "Function",
-          "id" : "res:IClass#getVersion()",
+          "signature" : "getVersion()",
           "body" : [ "1" ]
         } ]
       } ]

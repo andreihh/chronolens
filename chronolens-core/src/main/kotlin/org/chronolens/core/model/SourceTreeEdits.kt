@@ -21,7 +21,7 @@ import org.chronolens.core.model.SetEdit.Companion.apply
 
 /** An atomic change which should be applied to a [SourceTree]. */
 public sealed class SourceTreeEdit {
-    /** The [SourceNode.id] of the edited node. */
+    /** The qualified id of the edited node. */
     public abstract val id: String
 
     /**
@@ -134,9 +134,10 @@ public data class EditType(
     override fun applyOn(nodes: NodeHashMap) {
         val type = nodes[id]?.sourceNode as? Type?
             ?: error("Type '$id' doesn't exist!")
-        val supertypes = type.supertypes.apply(supertypeEdits)
-        val modifiers = type.modifiers.apply(modifierEdits)
-        val newType = Type(id, supertypes, modifiers, type.members)
+        val newType = type.copy(
+            supertypes = type.supertypes.apply(supertypeEdits),
+            modifiers = type.modifiers.apply(modifierEdits),
+        )
         nodes[id] = SourceTreeNode(id, newType)
         updateAncestors(nodes, id, newType)
     }
@@ -168,10 +169,11 @@ public data class EditFunction(
     override fun applyOn(nodes: NodeHashMap) {
         val function = nodes[id]?.sourceNode as Function?
             ?: error("Function '$id' doesn't exist!")
-        val parameters = function.parameters.apply(parameterEdits)
-        val modifiers = function.modifiers.apply(modifierEdits)
-        val body = function.body.apply(bodyEdits)
-        val newFunction = Function(id, parameters, modifiers, body)
+        val newFunction = function.copy(
+            parameters = function.parameters.apply(parameterEdits),
+            modifiers = function.modifiers.apply(modifierEdits),
+            body = function.body.apply(bodyEdits),
+        )
         nodes[id] = SourceTreeNode(id, newFunction)
         updateAncestors(nodes, id, newFunction)
     }
@@ -200,9 +202,10 @@ public data class EditVariable(
     override fun applyOn(nodes: NodeHashMap) {
         val variable = nodes[id]?.sourceNode as? Variable?
             ?: error("Variable '$id' doesn't exist!")
-        val modifiers = variable.modifiers.apply(modifierEdits)
-        val initializer = variable.initializer.apply(initializerEdits)
-        val newVariable = Variable(id, modifiers, initializer)
+        val newVariable = variable.copy(
+            modifiers = variable.modifiers.apply(modifierEdits),
+            initializer = variable.initializer.apply(initializerEdits),
+        )
         nodes[id] = SourceTreeNode(id, newVariable)
         updateAncestors(nodes, id, newVariable)
     }

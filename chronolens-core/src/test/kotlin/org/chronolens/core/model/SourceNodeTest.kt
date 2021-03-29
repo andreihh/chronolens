@@ -24,77 +24,31 @@ import kotlin.test.assertTrue
 
 class SourceNodeTest {
     @Test fun `test duplicated entity in source file throws`() {
-        val id = "src/Test.java"
         val entities = setOf(
-            Type(id = "$id:Type", modifiers = setOf("abstract")),
-            Type(id = "$id:Type", modifiers = setOf("interface"))
+            Type(name = "Type", modifiers = setOf("abstract")),
+            Type(name = "Type", modifiers = setOf("interface"))
         )
         assertFailsWith<IllegalArgumentException> {
-            SourceFile(id = id, entities = entities)
-        }
-    }
-
-    @Test fun `test invalid entity id in source file throws`() {
-        val id = "src/Test.java"
-        val entities = setOf(Type("src/Test:Type"))
-        assertFailsWith<IllegalArgumentException> {
-            SourceFile(id = id, entities = entities)
+            SourceFile(path = "src/Test.java", entities = entities)
         }
     }
 
     @Test fun `test duplicated entity in type throws`() {
-        val id = "src/Test.java:Type"
         val members = setOf(
-            Type(id = "$id:InnerType", modifiers = setOf("abstract")),
-            Type(id = "$id:InnerType", modifiers = setOf("interface"))
+            Type(name = "InnerType", modifiers = setOf("abstract")),
+            Type(name = "InnerType", modifiers = setOf("interface"))
         )
         assertFailsWith<IllegalArgumentException> {
-            Type(id = id, members = members)
-        }
-    }
-
-    @Test fun `test invalid entity id in type throws`() {
-        val id = "src/Test.java:Type"
-        val members = setOf(Type("src/Test.java:type"))
-        assertFailsWith<IllegalArgumentException> {
-            Type(id = id, members = members)
+            Type(name = "Type", members = members)
         }
     }
 
     @Test fun `test duplicated parameter in function throws`() {
-        val id = "src/Test.java#getVersion(int, int)"
+        val signature = "getVersion(int, int)"
         val parameters = listOf("param", "param")
         assertFailsWith<IllegalArgumentException> {
-            Function(id = id, parameters = parameters)
+            Function(signature = signature, parameters = parameters)
         }
-    }
-
-    @Test fun `test path equals source file id`() {
-        val path = "src/Test.java"
-        val id = "src/Test.java"
-        val source = SourceFile(id)
-        assertEquals(path, source.path)
-    }
-
-    @Test fun `test name equals simple type id`() {
-        val name = "Type"
-        val id = "src/Test.java:$name"
-        val type = Type(id)
-        assertEquals(name, type.name)
-    }
-
-    @Test fun `test signature equals simple function id`() {
-        val signature = "getVersion(int)"
-        val id = "src/Test.java#$signature"
-        val function = Function(id)
-        assertEquals(signature, function.signature)
-    }
-
-    @Test fun `test name equals simple variable id`() {
-        val name = "VERSION"
-        val id = "src/Test.java#$name"
-        val variable = Variable(id)
-        assertEquals(name, variable.name)
     }
 
     @Test fun `test children of source file are equal to entities`() {

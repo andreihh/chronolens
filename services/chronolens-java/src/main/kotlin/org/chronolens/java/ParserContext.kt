@@ -93,7 +93,7 @@ internal data class ParserContext(
         val members = node.members().mapNotNull(childContext::visitMember)
         members.map(SourceEntity::simpleId).requireDistinct()
         return Type(
-            id = id,
+            name = node.name(),
             supertypes = node.supertypes(),
             modifiers = node.modifierSet(),
             members = members.toSet()
@@ -102,29 +102,17 @@ internal data class ParserContext(
 
     private fun visit(node: AnnotationTypeMemberDeclaration): Variable {
         requireNotMalformed(node)
-        return Variable(
-            id = getVariableId(node.name()),
-            modifiers = node.modifierSet(),
-            initializer = node.defaultValue()
-        )
+        return Variable(node.name(), node.modifierSet(), node.defaultValue())
     }
 
     private fun visit(node: EnumConstantDeclaration): Variable {
         requireNotMalformed(node)
-        return Variable(
-            id = getVariableId(node.name()),
-            modifiers = node.modifierSet(),
-            initializer = node.initializer()
-        )
+        return Variable(node.name(), node.modifierSet(), node.initializer())
     }
 
     private fun visit(node: VariableDeclaration): Variable {
         requireNotMalformed(node)
-        return Variable(
-            id = getVariableId(node.name()),
-            modifiers = node.modifierSet(),
-            initializer = node.initializer()
-        )
+        return Variable(node.name(), node.modifierSet(), node.initializer())
     }
 
     private fun visit(node: MethodDeclaration): Function {
@@ -132,7 +120,7 @@ internal data class ParserContext(
         val parameters = node.parameterList()
         parameters.requireDistinct()
         return Function(
-            id = getFunctionId(node.signature()),
+            signature = node.signature(),
             parameters = parameters,
             modifiers = node.modifierSet(),
             body = node.body()

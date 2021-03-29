@@ -47,7 +47,7 @@ class TransactionTest {
             edits = listOf(
                 AddNode(
                     id = "Main.java:Main:MainType",
-                    node = Type("Main.java:Main:MainType"),
+                    node = Type("MainType"),
                 ),
                 RemoveNode("Test.java:Test:TestType"),
                 EditType("MainTest.java:MainTest")

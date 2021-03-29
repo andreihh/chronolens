@@ -21,7 +21,6 @@ package org.chronolens.test.core.model
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
@@ -74,7 +73,7 @@ public class SourceFileBuilder(private val path: String) {
     ): SourceFileBuilder = addEntity(name, init)
 
     public fun build(): SourceFile = SourceFile(
-        id = path,
+        path = path,
         entities = entities.map { it.build(path) }.toSet(),
     )
 }
@@ -118,7 +117,7 @@ public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
     override fun build(parentId: String): Type {
         val id = "$parentId$CONTAINER_SEPARATOR$name"
         return Type(
-            id = id,
+            name = name,
             supertypes = supertypes,
             modifiers = modifiers,
             members = members.map { it.build(id) }.toSet()
@@ -153,10 +152,8 @@ public class FunctionBuilder(
         body += this
     }
 
-    override fun build(parentId: String): Function {
-        val id = "$parentId$MEMBER_SEPARATOR$signature"
-        return Function(id, parameters, modifiers, body)
-    }
+    override fun build(parentId: String): Function =
+        Function(signature, parameters, modifiers, body)
 }
 
 public class VariableBuilder(
@@ -181,7 +178,7 @@ public class VariableBuilder(
     }
 
     override fun build(parentId: String): Variable = Variable(
-        id = "$parentId$MEMBER_SEPARATOR$name",
+        name = name,
         modifiers = modifiers,
         initializer = initializer
     )

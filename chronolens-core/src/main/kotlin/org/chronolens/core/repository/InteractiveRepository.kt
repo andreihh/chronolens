@@ -82,6 +82,8 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
                 return result.source
             }
         }
+        // TODO: figure out if should return null or empty file if no valid
+        // version is found.
         return SourceFile(path)
     }
 

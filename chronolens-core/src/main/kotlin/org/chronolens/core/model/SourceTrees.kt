@@ -16,6 +16,10 @@
 
 package org.chronolens.core.model
 
+import org.chronolens.core.model.SourceNodeKind.FUNCTION
+import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
+import org.chronolens.core.model.SourceNodeKind.TYPE
+import org.chronolens.core.model.SourceNodeKind.VARIABLE
 import java.util.Collections.unmodifiableCollection
 
 /**
@@ -144,8 +148,17 @@ public fun SourceTreeNode<*>.walkSourceTree(): List<SourceTreeNode<*>> {
     val nodes = mutableListOf(this)
     var i = 0
     while (i < nodes.size) {
-        for (child in nodes[i].sourceNode.children) {
-            nodes += SourceTreeNode(child.id, child)
+        val (qualifiedId, node) = nodes[i]
+        for (child in node.children) {
+            val childId = child.simpleId
+            // TODO: simplify once migrated to QualifiedId.
+            val separator = when (child.kind) {
+                TYPE -> ':'
+                VARIABLE, FUNCTION -> '#'
+                SOURCE_FILE ->
+                    error("Node '$qualifiedId' cannot contain '$childId'!!")
+            }
+            nodes += SourceTreeNode("$qualifiedId$separator$childId", child)
         }
         i++
     }
