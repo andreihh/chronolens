@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 package org.chronolens.core.serialization
 
+import org.chronolens.core.model.Identifier
+import org.chronolens.core.model.Signature
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.repository.Transaction
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.repository.transaction
@@ -87,6 +90,66 @@ class JsonModuleTest {
         val src = "{}".byteInputStream()
         assertFailsWith<JsonException> {
             JsonModule.deserialize<Array<Transaction>>(src)
+        }
+    }
+
+    @Test fun serializeSourceNodeId_printsString() {
+        val ids = listOf(
+            SourcePath("src/Main.java"),
+            Identifier("Main"),
+            Signature("getVersion(String)"),
+        )
+
+        for (id in ids) {
+            val out = ByteArrayOutputStream()
+            JsonModule.serialize(out, id)
+
+            assertEquals("\"$id\"", out.toByteArray().decodeToString())
+        }
+    }
+
+    @Test fun deserializeSourcePath_parsesString() {
+        val path = SourcePath("src/Main.java")
+        val src = "\"$path\"".byteInputStream()
+
+        assertEquals(path, JsonModule.deserialize(src))
+    }
+
+    @Test fun deserializeSourcePath_whenInvalid_fails() {
+        val src = "\"src\\getVersion\"".byteInputStream()
+
+        assertFailsWith<JsonException> {
+            JsonModule.deserialize<SourcePath>(src)
+        }
+    }
+
+    @Test fun deserializeIdentifier_parsesString() {
+        val identifier = Identifier("Main")
+        val src = "\"$identifier\"".byteInputStream()
+
+        assertEquals(identifier, JsonModule.deserialize(src))
+    }
+
+    @Test fun deserializeIdentifier_whenInvalid_fails() {
+        val src = "\"Main/main\"".byteInputStream()
+
+        assertFailsWith<JsonException> {
+            JsonModule.deserialize<Identifier>(src)
+        }
+    }
+
+    @Test fun deserializeSignature_parsesString() {
+        val signature = Signature("getVersion(String)")
+        val src = "\"$signature\"".byteInputStream()
+
+        assertEquals(signature, JsonModule.deserialize(src))
+    }
+
+    @Test fun deserializeSignature_whenInvalid_fails() {
+        val src = "\"getVersion)\"".byteInputStream()
+
+        assertFailsWith<JsonException> {
+            JsonModule.deserialize<Signature>(src)
         }
     }
 }

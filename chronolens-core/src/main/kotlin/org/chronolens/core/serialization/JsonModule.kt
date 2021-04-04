@@ -44,16 +44,21 @@ import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditType
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
+import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.ListEdit
 import org.chronolens.core.model.QualifiedId
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SetEdit
+import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
+import org.chronolens.core.model.SourceNodeId
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.parseQualifiedIdFromString
+import org.chronolens.core.serialization.JsonModule.InvalidQualifiedIdException
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -151,6 +156,10 @@ public object JsonModule {
     }
 
     private val qualifiedIdModule = SimpleModule()
+        .addSerializer(SourceNodeIdSerializer)
+        .addDeserializer(SourcePath::class.java, SourcePathDeserializer)
+        .addDeserializer(Identifier::class.java, IdentifierDeserializer)
+        .addDeserializer(Signature::class.java, SignatureDeserializer)
         .addSerializer(QualifiedIdSerializer)
         .addKeySerializer(QualifiedId::class.java, QualifiedIdSerializer)
         .addDeserializer(QualifiedId::class.java, QualifiedIdDeserializer)
@@ -209,3 +218,52 @@ public object JsonModule {
     public inline fun <reified T : Any> deserialize(src: InputStream): T =
         deserialize(src, T::class.java)
 }
+
+private class InvalidSourceNodeIdException(cause: Throwable) :
+    JsonProcessingException(cause)
+
+private object SourceNodeIdSerializer :
+    StdSerializer<SourceNodeId>(SourceNodeId::class.java) {
+
+    override fun serialize(
+        value: SourceNodeId,
+        gen: JsonGenerator,
+        provider: SerializerProvider?
+    ) {
+        gen.writeString(value.toString())
+    }
+}
+
+private object SourcePathDeserializer :
+    StdDeserializer<SourcePath>(SourcePath::class.java) {
+
+    override fun deserialize(
+        p: JsonParser,
+        ctxt: DeserializationContext?
+    ): SourcePath = tryParseSourceNodeId { SourcePath(p.valueAsString) }
+}
+
+private object IdentifierDeserializer :
+    StdDeserializer<Identifier>(Identifier::class.java) {
+
+    override fun deserialize(
+        p: JsonParser,
+        ctxt: DeserializationContext?
+    ): Identifier = tryParseSourceNodeId { Identifier(p.valueAsString) }
+}
+
+private object SignatureDeserializer :
+    StdDeserializer<Signature>(Signature::class.java) {
+
+    override fun deserialize(
+        p: JsonParser,
+        ctxt: DeserializationContext?
+    ): Signature = tryParseSourceNodeId { Signature(p.valueAsString) }
+}
+
+private fun <T : SourceNodeId> tryParseSourceNodeId(parseBlock: () -> T): T =
+    try {
+        parseBlock()
+    } catch (e: IllegalArgumentException) {
+        throw InvalidSourceNodeIdException(e)
+    }
