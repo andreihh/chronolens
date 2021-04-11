@@ -26,13 +26,14 @@ import org.chronolens.core.model.SourceNodeKind.VARIABLE
 /** A unique identifier of a [SourceNode] within a [SourceTree]. */
 public data class QualifiedId(
     val parent: QualifiedId?,
-    val id: String,
+    val id: SourceNodeId,
     val kind: SourceNodeKind,
 ) {
 
     init {
+        validateKindAndIdPair(parent, id, kind)
         if (parent == null) {
-            require(kind == SOURCE_FILE) {
+            require(kind == SOURCE_FILE && id is SourcePath) {
                 "Top level qualified id '$id' must be a source path!"
             }
         } else {
@@ -46,7 +47,7 @@ public data class QualifiedId(
     }
 
     override fun toString(): String {
-        if (parent == null) return id
+        if (parent == null) return id.toString()
 
         val builder = StringBuilder()
 
@@ -65,9 +66,28 @@ public data class QualifiedId(
     }
 }
 
+private fun validateKindAndIdPair(
+    parent: QualifiedId?,
+    id: SourceNodeId,
+    kind: SourceNodeKind,
+) {
+    val lazyMessage = {
+        "Source node id '$id' with parent '$parent' mismatches kind '$kind'!"
+    }
+    when (kind) {
+        SOURCE_FILE -> require(id is SourcePath, lazyMessage)
+        TYPE, VARIABLE -> require(id is Identifier, lazyMessage)
+        FUNCTION -> require(id is Signature, lazyMessage)
+    }
+}
+
 /** Creates a new [SourceFile] qualified id from the given [path]. */
-public fun qualifiedPathOf(path: String): QualifiedId =
+public fun qualifiedPathOf(path: SourcePath): QualifiedId =
     QualifiedId(null, path, SOURCE_FILE)
+
+/** Utility method. */
+public fun qualifiedPathOf(path: String): QualifiedId =
+    qualifiedPathOf(SourcePath(path))
 
 /**
  * Creates a new [Type] qualified id using [this] id as a parent and the given
@@ -75,10 +95,14 @@ public fun qualifiedPathOf(path: String): QualifiedId =
  *
  * @throws IllegalStateException if [this] id qualifies a [Function]
  */
-public fun QualifiedId.appendType(identifier: String): QualifiedId {
+public fun QualifiedId.appendType(identifier: Identifier): QualifiedId {
     check(kind != FUNCTION) { "'$this' cannot be parent of '$identifier'!" }
     return QualifiedId(this, identifier, TYPE)
 }
+
+/** Utility method. */
+public fun QualifiedId.appendType(identifier: String): QualifiedId =
+    appendType(Identifier(identifier))
 
 /**
  * Creates a new [Function] qualified id using [this] id as a parent and the
@@ -86,10 +110,14 @@ public fun QualifiedId.appendType(identifier: String): QualifiedId {
  *
  * @throws IllegalStateException if [this] id qualifies a [Function]
  */
-public fun QualifiedId.appendFunction(signature: String): QualifiedId {
+public fun QualifiedId.appendFunction(signature: Signature): QualifiedId {
     check(kind != FUNCTION) { "'$this' cannot be parent of '$signature'!" }
-    return QualifiedId(this, signature, VARIABLE)
+    return QualifiedId(this, signature, FUNCTION)
 }
+
+/** Utility method. */
+public fun QualifiedId.appendFunction(signature: String): QualifiedId =
+    appendFunction(Signature(signature))
 
 /**
  * Creates a new [Variable] qualified id using [this] id as a parent and the
@@ -97,16 +125,21 @@ public fun QualifiedId.appendFunction(signature: String): QualifiedId {
  *
  * @throws IllegalStateException if [this] id qualifies a [Function]
  */
-public fun QualifiedId.appendVariable(identifier: String): QualifiedId {
+public fun QualifiedId.appendVariable(identifier: Identifier): QualifiedId {
     check(kind != FUNCTION) { "'$this' cannot be parent of '$identifier'!" }
     return QualifiedId(this, identifier, VARIABLE)
 }
+
+/** Utility method. */
+public fun QualifiedId.appendVariable(identifier: String): QualifiedId =
+    appendVariable(Identifier(identifier))
 
 /**
  * The path of the [SourceFile] that contains the [SourceNode] denoted by [this]
  * qualified id.
  */
-public val QualifiedId.sourcePath: String get() = parent?.sourcePath ?: id
+public val QualifiedId.sourcePath: SourcePath
+    get() = parent?.sourcePath ?: (id as SourcePath)
 
 /**
  * Parses the given [rawQualifiedId].

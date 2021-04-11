@@ -28,7 +28,7 @@ class QualifiedIdTest {
         val path = "src/main/java/Main.java"
         val qualifier = qualifiedPathOf(path)
 
-        assertEquals(path, qualifier.sourcePath)
+        assertEquals(SourcePath(path), qualifier.sourcePath)
     }
 
     @Test
@@ -37,7 +37,7 @@ class QualifiedIdTest {
         val type = "Main"
         val qualifier = qualifiedPathOf(path).appendType(type)
 
-        assertEquals(path, qualifier.sourcePath)
+        assertEquals(SourcePath(path), qualifier.sourcePath)
     }
 
     @Test

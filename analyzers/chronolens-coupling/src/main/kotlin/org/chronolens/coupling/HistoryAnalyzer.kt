@@ -21,7 +21,6 @@ import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeNode
 import org.chronolens.core.model.sourcePath
