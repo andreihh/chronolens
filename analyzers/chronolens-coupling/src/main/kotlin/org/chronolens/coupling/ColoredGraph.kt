@@ -28,7 +28,9 @@ internal data class ColoredGraph(
     }
 }
 
-internal fun Graph.colorNodes(groups: Collection<Set<String>>): ColoredGraph {
+internal fun Graph.colorNodes(
+    groups: Collection<Iterable<String>>
+): ColoredGraph {
     val colors = hashMapOf<String, Int>()
     var color = 0
     for ((label, _) in nodes) {

@@ -137,3 +137,23 @@ internal class HistoryAnalyzer(
 
     data class Report(val graphs: List<Graph>)
 }
+
+internal typealias CouplingMap<K, V> = Map<K, Map<K, V>>
+internal typealias CouplingHashMap<K, V> = HashMap<K, HashMap<K, V>>
+
+internal fun <K, V : Number> emptyCouplingHashMap(): CouplingHashMap<K, V> =
+    hashMapOf()
+
+internal operator fun <K, V : Number> CouplingMap<K, V>.get(x: K, y: K): V? =
+    this[x].orEmpty()[y]
+
+internal operator fun <K, V : Number> CouplingHashMap<K, V>.set(
+    x: K,
+    y: K,
+    value: V,
+) {
+    if (x !in this) {
+        this[x] = hashMapOf()
+    }
+    this.getValue(x)[y] = value
+}

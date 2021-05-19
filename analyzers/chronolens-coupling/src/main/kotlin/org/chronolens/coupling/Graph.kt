@@ -46,6 +46,9 @@ internal data class Graph(
     }
 }
 
+internal fun Graph.mergeWith(other: Graph): Graph =
+    Graph("$label+${other.label}", nodes + other.nodes, edges + other.edges)
+
 internal inline fun Graph.filterNodes(predicate: (Node) -> Boolean): Graph {
     val newNodes = nodes.filter(predicate).toSet()
     val newLabels = newNodes.map(Node::label).toSet()
