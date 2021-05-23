@@ -58,6 +58,7 @@ public class FeatureEnvyCommand : Subcommand() {
         val featureEnvyInstances = mutableListOf<FeatureEnvy>()
         for ((graph, graphNodes, _) in graphs) {
             for ((node, _) in graphNodes) {
+                if (!node.startsWith(graph)) continue
                 val selfCoupling = getCoupling(node, graph)
                 var maxCouplingGraph: String? = null
                 var maxCoupling = 0.0
@@ -82,6 +83,7 @@ public class FeatureEnvyCommand : Subcommand() {
             }
         }
         return featureEnvyInstances
+            .sortedByDescending(FeatureEnvy::enviedCoupling)
     }
 
     private fun buildColoredGraphs(
