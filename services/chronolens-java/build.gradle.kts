@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     api(project(":chronolens-core"))
-    implementation("org.eclipse.jdt:org.eclipse.jdt.core:3.13.102")
+    implementation("org.eclipse.jdt:org.eclipse.jdt.core:3.26.0")
 
     testImplementation(project(":chronolens-test"))
 }
