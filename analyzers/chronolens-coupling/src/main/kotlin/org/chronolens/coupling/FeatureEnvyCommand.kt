@@ -22,9 +22,10 @@ import org.chronolens.core.model.sourcePath
 import org.chronolens.core.repository.Transaction
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.coupling.Graph.Node
+import org.chronolens.coupling.Graph.Subgraph
 import java.io.File
 
-public class FeatureEnvyCommand : Subcommand() {
+internal class FeatureEnvyCommand : Subcommand() {
     override val help: String
         get() = """
         Loads the persisted repository, builds the temporal coupling graphs for
@@ -112,6 +113,14 @@ public class FeatureEnvyCommand : Subcommand() {
         }
     }
 
+    private fun groupFeatureEnvyInstancesByFile(
+        featureEnvyInstances: List<FeatureEnvy>
+    ): List<FileReport> = featureEnvyInstances
+        .groupBy(FeatureEnvy::graph)
+        .map { (file, featureEnvyInstances) ->
+            FileReport(file, featureEnvyInstances)
+        }
+
     private fun analyze(history: Sequence<Transaction>): Report {
         val analyzer = HistoryAnalyzer(maxChangeSet, minRevisions, minCoupling)
         val graphs = analyzer.analyze(history).graphs
@@ -125,14 +134,15 @@ public class FeatureEnvyCommand : Subcommand() {
         }
         val featureEnvyInstances =
             findFeatureEnvyInstances(graphs, nodeToGraphCoupling)
+        val fileReports = groupFeatureEnvyInstancesByFile(featureEnvyInstances)
         val coloredGraphs = buildColoredGraphs(graphs, featureEnvyInstances)
-        return Report(graphs, featureEnvyInstances, coloredGraphs)
+        return Report(fileReports, coloredGraphs)
     }
 
     override fun run() {
         val repository = load()
         val report = analyze(repository.getHistory())
-        JsonModule.serialize(System.out, report.featureEnvyInstances)
+        JsonModule.serialize(System.out, report)
         val directory = File(".chronolens", "feature-envy")
         for (coloredGraph in report.coloredGraphs) {
             val graphDirectory = File(directory, coloredGraph.graph.label)
@@ -143,18 +153,29 @@ public class FeatureEnvyCommand : Subcommand() {
             }
         }
     }
+
+    data class Report(
+        val files: List<FileReport>,
+        val coloredGraphs: List<ColoredGraph>,
+    )
+
+    data class FileReport(
+        val file: String,
+        val featureEnvyInstances: List<FeatureEnvy>,
+    ) {
+
+        val featureEnvyCount: Int = featureEnvyInstances.size
+
+        val category: String = "Temporal Coupling Anti-Patterns"
+        val name: String = "Feature Envy"
+        val value: Int = featureEnvyCount
+    }
+
+    data class FeatureEnvy(
+        val node: String,
+        val graph: String,
+        val coupling: Double,
+        val enviedGraph: String,
+        val enviedCoupling: Double,
+    )
 }
-
-private data class Report(
-    val graphs: List<Graph>,
-    val featureEnvyInstances: List<FeatureEnvy>,
-    val coloredGraphs: List<ColoredGraph>,
-)
-
-private data class FeatureEnvy(
-    val node: String,
-    val graph: String,
-    val coupling: Double,
-    val enviedGraph: String,
-    val enviedCoupling: Double,
-)
