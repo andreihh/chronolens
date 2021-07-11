@@ -49,6 +49,11 @@ internal class FeatureEnvyCommand : Subcommand() {
         .help("the minimum ratio of coupling to another graph")
         .defaultValue(1.0).restrictTo(min = 0.0, max = 1.0)
 
+    private val minMetricValue by option<Int>().help(
+        """ignore source files that have less Feature Envy instances than the
+        specified limit"""
+    ).defaultValue(1).restrictTo(min = 0)
+
     private fun findFeatureEnvyInstances(
         graphs: List<Graph>,
         nodeToGraphCoupling: CouplingMap<String, Double>,
@@ -142,7 +147,8 @@ internal class FeatureEnvyCommand : Subcommand() {
     override fun run() {
         val repository = load()
         val report = analyze(repository.getHistory())
-        JsonModule.serialize(System.out, report)
+        val files = report.files.filter { it.value >= minMetricValue }
+        JsonModule.serialize(System.out, files)
         val directory = File(".chronolens", "feature-envy")
         for (coloredGraph in report.coloredGraphs) {
             val graphDirectory = File(directory, coloredGraph.graph.label)
