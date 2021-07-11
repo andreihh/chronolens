@@ -1,5 +1,5 @@
 language: java
-jdk: openjdk9
+jdk: openjdk11
 sudo: false
 script: ./gradlew check codeCoverageReport
 after_success: bash <(curl -s https://codecov.io/bash)
