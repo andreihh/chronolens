@@ -20,30 +20,26 @@ import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.RemoveNode
-import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeNode
-import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
-import org.chronolens.coupling.Graph.Edge
-import org.chronolens.coupling.Graph.Node
 
 internal class HistoryAnalyzer(
     private val maxChangeSet: Int,
     private val minRevisions: Int,
     private val minCoupling: Double,
 ) {
-
     init {
-        require(maxChangeSet > 0) { "Invalid change set '$maxChangeSet'!" }
+        require(maxChangeSet > 0) { "Invalid change set size '$maxChangeSet'!" }
         require(minRevisions > 0) { "Invalid revisions '$minRevisions'!" }
         require(minCoupling >= 0.0) { "Invalid coupling '$minCoupling'!" }
     }
 
     private val sourceTree = SourceTree.empty()
     private val changes = hashMapOf<String, Int>()
-    private val jointChanges = hashMapOf<String, HashMap<String, Int>>()
+    private val jointChanges = emptySparseHashMatrix<String, Int>()
+    private val temporalCoupling = emptySparseHashMatrix<String, Double>()
 
     private fun visit(edit: AddNode): Set<String> {
         val addedNodes = edit.sourceTreeNode.walkSourceTree()
@@ -91,69 +87,31 @@ internal class HistoryAnalyzer(
         for (id1 in editedIds) {
             for (id2 in editedIds) {
                 if (id1 == id2) continue
-                val jointChangesWithId1 = jointChanges.getOrPut(id1, ::HashMap)
-                jointChangesWithId1[id2] = (jointChangesWithId1[id2] ?: 0) + 1
+                jointChanges[id1, id2] = (jointChanges[id1, id2] ?: 0) + 1
             }
         }
     }
 
-    private fun takeNode(node: Node): Boolean =
-        node.revisions >= minRevisions
-
-    private fun takeEdge(edge: Edge): Boolean =
-        edge.revisions >= minRevisions && edge.coupling >= minCoupling
-
-    private fun makeEdge(id1: String, id2: String, revisions: Int): Edge {
-        val countId1 = changes.getValue(id1)
-        val countId2 = changes.getValue(id2)
-        val totalCount = countId1 + countId2 - revisions
-        val coupling = 1.0 * revisions / totalCount
-        return Edge(id1, id2, revisions, coupling)
+    private fun computeTemporalCoupling(id1: String, id2: String): Double {
+        val countId1 = changes[id1] ?: return 0.0
+        val countId2 = changes[id2] ?: return 0.0
+        val countId1AndId2 = jointChanges[id1, id2] ?: return 0.0
+        val countId1OrId2 = countId1 + countId2 - countId1AndId2
+        return 1.0 * countId1AndId2 / countId1OrId2
     }
 
-    private fun aggregate(): List<Graph> {
-        val idsByFile = changes.keys.groupBy(String::sourcePath)
-        val sourcePaths = sourceTree.sources.map(SourceFile::path)
-        return sourcePaths.map { path ->
-            val ids = idsByFile[path].orEmpty()
-            val edges = ids.flatMap { id1 ->
-                jointChanges[id1].orEmpty()
-                    .filter { (id2, _) -> id1 < id2 }
-                    .map { (id2, revisions) -> makeEdge(id1, id2, revisions) }
+    private fun computeTemporalCoupling() {
+        for ((id1, row) in jointChanges.entries) {
+            for (id2 in row.keys) {
+                temporalCoupling[id1, id2] = computeTemporalCoupling(id1, id2)
             }
-            val nodes = (ids + edges.getEndpoints())
-                .map { id -> Node(id, changes.getValue(id)) }
-                .toSet()
-            Graph(path, nodes, edges)
-                .filterNodes(::takeNode)
-                .filterEdges(::takeEdge)
         }
     }
 
-    fun analyze(history: Sequence<Transaction>): Report {
+    fun analyze(history: Sequence<Transaction>): TemporalContext {
         history.forEach(::analyze)
-        return Report(aggregate())
+        computeTemporalCoupling()
+        return TemporalContext(changes, jointChanges, temporalCoupling)
+            .filter(minRevisions, minCoupling)
     }
-
-    data class Report(val graphs: List<Graph>)
-}
-
-internal typealias CouplingMap<K, V> = Map<K, Map<K, V>>
-internal typealias CouplingHashMap<K, V> = HashMap<K, HashMap<K, V>>
-
-internal fun <K, V : Number> emptyCouplingHashMap(): CouplingHashMap<K, V> =
-    hashMapOf()
-
-internal operator fun <K, V : Number> CouplingMap<K, V>.get(x: K, y: K): V? =
-    this[x].orEmpty()[y]
-
-internal operator fun <K, V : Number> CouplingHashMap<K, V>.set(
-    x: K,
-    y: K,
-    value: V,
-) {
-    if (x !in this) {
-        this[x] = hashMapOf()
-    }
-    this.getValue(x)[y] = value
 }

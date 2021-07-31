@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,27 @@ internal data class Graph(
     companion object {
         const val MAX_SIZE: Int = 300
     }
+}
+
+internal fun TemporalContext.buildGraphFrom(
+    label: String,
+    nodeIds: Set<String>,
+): Graph {
+    val nodes = hashSetOf<Node>()
+    for (id in nodeIds) {
+        val revisions = revisionsOrNull(id) ?: continue
+        nodes += Node(id, revisions)
+    }
+    val edges = arrayListOf<Edge>()
+    for (id1 in nodeIds) {
+        for (id2 in nodeIds) {
+            if (id1 >= id2) continue
+            val revisions = revisionsOrNull(id1, id2) ?: continue
+            val coupling = couplingOrNull(id1, id2) ?: continue
+            edges += Edge(id1, id2, revisions, coupling)
+        }
+    }
+    return Graph(label, nodes, edges)
 }
 
 internal fun Graph.mergeWith(other: Graph): Graph =

@@ -21,8 +21,8 @@ import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.repository.Transaction
 import org.chronolens.core.serialization.JsonModule
+import org.chronolens.coupling.FeatureEnvyCommand.FeatureEnvy
 import org.chronolens.coupling.Graph.Node
-import org.chronolens.coupling.Graph.Subgraph
 import java.io.File
 
 internal class FeatureEnvyCommand : Subcommand() {
@@ -46,7 +46,7 @@ internal class FeatureEnvyCommand : Subcommand() {
         .defaultValue(0.1).restrictTo(min = 0.0)
 
     private val minEnvyRatio by option<Double>()
-        .help("the minimum ratio of coupling to another graph")
+        .help("the minimum ratio of coupling to another source file")
         .defaultValue(1.0).restrictTo(min = 0.0, max = 1.0)
 
     private val minMetricValue by option<Int>().help(
@@ -54,93 +54,69 @@ internal class FeatureEnvyCommand : Subcommand() {
         specified limit"""
     ).defaultValue(1).restrictTo(min = 0)
 
-    private fun findFeatureEnvyInstances(
-        graphs: List<Graph>,
-        nodeToGraphCoupling: CouplingMap<String, Double>,
-    ): List<FeatureEnvy> {
-        fun getCoupling(node: String, graph: String): Double =
-            nodeToGraphCoupling[node, graph] ?: 0.0
+    private fun TemporalContext.buildColoredGraphs(
+        featureEnvyInstancesByFile: Map<String, List<FeatureEnvy>>,
+    ): List<ColoredGraph> {
+        val idsByFile = ids.groupBy(String::sourcePath)
+        val graphs = featureEnvyInstancesByFile.map { (path, instances) ->
+            val enviedFiles = instances.map(FeatureEnvy::enviedGraph).toSet()
+            val nodeIds =
+                (enviedFiles + path).map(idsByFile::getValue).flatten().toSet()
+            buildGraphFrom(path, nodeIds)
+        }
+        return graphs
+            .map { graph -> graph.colorNodes(featureEnvyInstancesByFile) }
+    }
 
-        val featureEnvyInstances = mutableListOf<FeatureEnvy>()
-        for ((graph, graphNodes, _) in graphs) {
-            for ((node, _) in graphNodes) {
-                if (!node.startsWith(graph)) continue
-                val selfCoupling = getCoupling(node, graph)
-                var maxCouplingGraph: String? = null
-                var maxCoupling = 0.0
-                for ((otherGraph, _, _) in graphs) {
-                    if (otherGraph == graph) continue
-                    val otherCoupling = getCoupling(node, otherGraph)
-                    if (maxCoupling < otherCoupling) {
-                        maxCouplingGraph = otherGraph
-                        maxCoupling = otherCoupling
-                    }
-                }
-                maxCouplingGraph ?: continue
-                if (maxCoupling > selfCoupling * minEnvyRatio) {
-                    featureEnvyInstances += FeatureEnvy(
-                        node = node,
-                        graph = graph,
-                        coupling = selfCoupling,
-                        enviedGraph = maxCouplingGraph,
-                        enviedCoupling = maxCoupling,
-                    )
-                }
+    private fun TemporalContext.computeFunctionToFileCouplings():
+        SparseMatrix<String, Double> {
+            val functionToFileCoupling = emptySparseHashMatrix<String, Double>()
+            for ((id1, id2) in cells) {
+                val function = id1
+                val file = id2.sourcePath
+                val coupling = coupling(id1, id2)
+                functionToFileCoupling[function, file] =
+                    (functionToFileCoupling[function, file] ?: 0.0) + coupling
+            }
+            return functionToFileCoupling
+        }
+
+    private fun findFeatureEnvyInstances(
+        functionToFileCoupling: SparseMatrix<String, Double>,
+    ): List<FeatureEnvy> {
+        val featureEnvyInstances = arrayListOf<FeatureEnvy>()
+        for ((function, fileCouplings) in functionToFileCoupling) {
+            val file = function.sourcePath
+            val selfCoupling = fileCouplings[file] ?: 0.0
+            val couplingThreshold = selfCoupling * minEnvyRatio
+            val (enviedFile, enviedCoupling) =
+                fileCouplings.maxByOrNull { it.value } ?: continue
+            if (file != enviedFile && enviedCoupling > couplingThreshold) {
+                featureEnvyInstances += FeatureEnvy(
+                    function,
+                    selfCoupling,
+                    enviedFile,
+                    enviedCoupling,
+                )
             }
         }
         return featureEnvyInstances
             .sortedByDescending(FeatureEnvy::enviedCoupling)
     }
 
-    private fun buildColoredGraphs(
-        graphs: List<Graph>,
-        featureEnvyInstances: List<FeatureEnvy>,
-    ): List<ColoredGraph> {
-        val graphsByLabel = graphs.associateBy(Graph::label)
-        val featureEnvyNodes =
-            featureEnvyInstances.map(FeatureEnvy::node).toSet()
-        val graphPairs =
-            featureEnvyInstances.map { (_, graph, _, enviedGraph, _) ->
-                if (graph < enviedGraph) graph to enviedGraph
-                else enviedGraph to graph
-            }.toSet()
-        return graphPairs.map { (g1Label, g2Label) ->
-            val g1 = graphsByLabel.getValue(g1Label)
-            val g2 = graphsByLabel.getValue(g2Label)
-            val mergedGraph = g1.mergeWith(g2)
-            val groups = listOf(
-                g1.nodes.map(Node::label) - featureEnvyNodes,
-                g2.nodes.map(Node::label) - featureEnvyNodes,
-            ) + mergedGraph.nodes.map(Node::label)
-                .filter(featureEnvyNodes::contains)
-                .map(::listOf)
-            mergedGraph.colorNodes(groups)
-        }
-    }
-
-    private fun groupFeatureEnvyInstancesByFile(
-        featureEnvyInstances: List<FeatureEnvy>
-    ): List<FileReport> = featureEnvyInstances
-        .groupBy(FeatureEnvy::graph)
-        .map { (file, featureEnvyInstances) ->
-            FileReport(file, featureEnvyInstances)
-        }
-
     private fun analyze(history: Sequence<Transaction>): Report {
         val analyzer = HistoryAnalyzer(maxChangeSet, minRevisions, minCoupling)
-        val graphs = analyzer.analyze(history).graphs
-        val nodeToGraphCoupling = emptyCouplingHashMap<String, Double>()
-        for (graph in graphs) {
-            for (edge in graph.edges) {
-                val (id1, id2, _, coupling) = edge
-                nodeToGraphCoupling[id1, id2.sourcePath] =
-                    (nodeToGraphCoupling[id1, id2.sourcePath] ?: 0.0) + coupling
-            }
-        }
-        val featureEnvyInstances =
-            findFeatureEnvyInstances(graphs, nodeToGraphCoupling)
-        val fileReports = groupFeatureEnvyInstancesByFile(featureEnvyInstances)
-        val coloredGraphs = buildColoredGraphs(graphs, featureEnvyInstances)
+        val temporalContext = analyzer.analyze(history)
+        val functionToFileCoupling =
+            temporalContext.computeFunctionToFileCouplings()
+        val featureEnvyInstancesByFile =
+            findFeatureEnvyInstances(functionToFileCoupling)
+                .groupBy(FeatureEnvy::file)
+        val fileReports = featureEnvyInstancesByFile
+            .map { (file, instances) -> FileReport(file, instances) }
+            .sortedByDescending(FileReport::featureEnvyCount)
+        val coloredGraphs =
+            temporalContext.buildColoredGraphs(featureEnvyInstancesByFile)
         return Report(fileReports, coloredGraphs)
     }
 
@@ -179,9 +155,20 @@ internal class FeatureEnvyCommand : Subcommand() {
 
     data class FeatureEnvy(
         val node: String,
-        val graph: String,
         val coupling: Double,
         val enviedGraph: String,
         val enviedCoupling: Double,
-    )
+    ) {
+        val file: String get() = node.sourcePath
+    }
+}
+
+private fun Graph.colorNodes(
+    featureEnvyInstancesByFile: Map<String, List<FeatureEnvy>>,
+): ColoredGraph {
+    val instances =
+        featureEnvyInstancesByFile.getValue(label).map(FeatureEnvy::node)
+    val fileGroups = nodes.map(Node::label).groupBy { it.sourcePath }.values
+    val groups = fileGroups + instances.map(::listOf)
+    return colorNodes(groups)
 }

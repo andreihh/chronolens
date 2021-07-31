@@ -18,6 +18,7 @@ package org.chronolens.coupling
 
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
+import org.chronolens.core.model.sourcePath
 import org.chronolens.core.repository.Transaction
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.coupling.Graph.Subgraph
@@ -60,11 +61,18 @@ internal class DivergentChangeCommand : Subcommand() {
         specified limit"""
     ).defaultValue(0).restrictTo(min = 0)
 
+    private fun TemporalContext.aggregateGraphs(): List<Graph> {
+        val idsByFile = ids.groupBy(String::sourcePath)
+        return idsByFile.keys.map { path ->
+            val ids = idsByFile[path].orEmpty().toSet()
+            buildGraphFrom(path, ids)
+        }
+    }
+
     private fun analyze(history: Sequence<Transaction>): Report {
         val analyzer = HistoryAnalyzer(maxChangeSet, minRevisions, minCoupling)
-        val graphs = analyzer.analyze(history).graphs.map { graph ->
-            graph.filterNodes { (label, _) -> label.startsWith(graph.label) }
-        }
+        val temporalContext = analyzer.analyze(history)
+        val graphs = temporalContext.aggregateGraphs()
         val coloredGraphs = mutableListOf<ColoredGraph>()
         val files = mutableListOf<FileReport>()
         for (graph in graphs) {
