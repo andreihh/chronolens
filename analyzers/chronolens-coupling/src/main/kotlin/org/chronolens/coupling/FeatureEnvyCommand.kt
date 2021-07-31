@@ -59,7 +59,7 @@ internal class FeatureEnvyCommand : Subcommand() {
     ): List<ColoredGraph> {
         val idsByFile = ids.groupBy(String::sourcePath)
         val graphs = featureEnvyInstancesByFile.map { (path, instances) ->
-            val enviedFiles = instances.map(FeatureEnvy::enviedGraph).toSet()
+            val enviedFiles = instances.map(FeatureEnvy::enviedFile).toSet()
             val nodeIds =
                 (enviedFiles + path).map(idsByFile::getValue).flatten().toSet()
             buildGraphFrom(path, nodeIds)
@@ -154,12 +154,12 @@ internal class FeatureEnvyCommand : Subcommand() {
     }
 
     data class FeatureEnvy(
-        val node: String,
+        val function: String,
         val coupling: Double,
-        val enviedGraph: String,
+        val enviedFile: String,
         val enviedCoupling: Double,
     ) {
-        val file: String get() = node.sourcePath
+        val file: String get() = function.sourcePath
     }
 }
 
@@ -167,8 +167,8 @@ private fun Graph.colorNodes(
     featureEnvyInstancesByFile: Map<String, List<FeatureEnvy>>,
 ): ColoredGraph {
     val instances =
-        featureEnvyInstancesByFile.getValue(label).map(FeatureEnvy::node)
-    val fileGroups = nodes.map(Node::label).groupBy { it.sourcePath }.values
+        featureEnvyInstancesByFile.getValue(label).map(FeatureEnvy::function)
+    val fileGroups = nodes.map(Node::label).groupBy(String::sourcePath).values
     val groups = fileGroups + instances.map(::listOf)
     return colorNodes(groups)
 }
