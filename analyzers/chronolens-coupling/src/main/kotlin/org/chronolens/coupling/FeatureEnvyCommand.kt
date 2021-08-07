@@ -49,6 +49,11 @@ internal class FeatureEnvyCommand : Subcommand() {
         .help("the minimum ratio of coupling to another source file")
         .defaultValue(1.0).restrictTo(min = 0.0, max = 1.0)
 
+    private val maxEnviedFiles by option<Int>().help(
+        """the maximum number of files envied by a method that will be
+        reported"""
+    ).defaultValue(1).restrictTo(min = 1)
+
     private val minMetricValue by option<Int>().help(
         """ignore source files that have less Feature Envy instances than the
         specified limit"""
@@ -86,19 +91,19 @@ internal class FeatureEnvyCommand : Subcommand() {
     ): List<FeatureEnvy> {
         val featureEnvyInstances = arrayListOf<FeatureEnvy>()
         for ((function, fileCouplings) in functionToFileCoupling) {
+            fun couplingWithFile(f: String): Double = fileCouplings[f] ?: 0.0
+
             val file = function.sourcePath
-            val selfCoupling = fileCouplings[file] ?: 0.0
+            val selfCoupling = couplingWithFile(file)
             val couplingThreshold = selfCoupling * minEnvyRatio
-            val (enviedFile, enviedCoupling) =
-                fileCouplings.maxByOrNull { it.value } ?: continue
-            if (file != enviedFile && enviedCoupling > couplingThreshold) {
-                featureEnvyInstances += FeatureEnvy(
-                    function,
-                    selfCoupling,
-                    enviedFile,
-                    enviedCoupling,
-                )
-            }
+            val enviedFiles =
+                (fileCouplings - file).keys
+                    .sortedByDescending(::couplingWithFile)
+                    .takeWhile { f -> couplingWithFile(f) > couplingThreshold }
+            featureEnvyInstances +=
+                enviedFiles.take(maxEnviedFiles).map { f ->
+                    FeatureEnvy(function, selfCoupling, f, couplingWithFile(f))
+                }
         }
         return featureEnvyInstances
             .sortedByDescending(FeatureEnvy::enviedCoupling)
@@ -167,7 +172,9 @@ private fun Graph.colorNodes(
     featureEnvyInstancesByFile: Map<String, List<FeatureEnvy>>,
 ): ColoredGraph {
     val instances =
-        featureEnvyInstancesByFile.getValue(label).map(FeatureEnvy::function)
+        featureEnvyInstancesByFile.getValue(label)
+            .map(FeatureEnvy::function)
+            .toSet()
     val fileGroups = nodes.map(Node::label).groupBy(String::sourcePath).values
     val groups = fileGroups + instances.map(::listOf)
     return colorNodes(groups)
