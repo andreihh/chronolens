@@ -4,6 +4,5 @@ rootProject.name = "chronolens-conventions"
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        jcenter()
     }
 }

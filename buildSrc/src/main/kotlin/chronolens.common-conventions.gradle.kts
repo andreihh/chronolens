@@ -13,7 +13,6 @@ version = "0.2.11"
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 // Set versions for common dependencies.
@@ -29,7 +28,7 @@ dependencies {
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         languageVersion = "1.4"
-        jvmTarget = "1.8"
+        jvmTarget = "11"
         freeCompilerArgs += "-Xjvm-default=all"
     }
 }
@@ -56,9 +55,9 @@ tasks.jacocoTestReport {
     dependsOn(tasks.test)
 
     reports {
-        html.isEnabled = true
-        xml.isEnabled = true
-        csv.isEnabled = false
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(false)
     }
 }
 
