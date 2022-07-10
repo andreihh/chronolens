@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.SourceTreeNode
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
+import org.chronolens.core.model.apply
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
@@ -39,7 +40,7 @@ import kotlin.math.roundToInt
 
 internal class HistoryAnalyzer(
     private val metric: Metric,
-    private val skipDays: Int,
+    private val skipDays: Int
 ) {
 
     init {
@@ -95,9 +96,12 @@ internal class HistoryAnalyzer(
         val size = getSize(sourceTree.get<SourceNode>(id))
         val (_, revisions, changes, churn, weightedChurn) = stats.getValue(id)
         return MemberReport(
-            id = id, size = size,
-            revisions = revisions.size, changes = changes.size,
-            churn = churn, weightedChurn = weightedChurn
+            id = id,
+            size = size,
+            revisions = revisions.size,
+            changes = changes.size,
+            churn = churn,
+            weightedChurn = weightedChurn
         )
     }
 

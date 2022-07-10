@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,14 @@ import org.chronolens.core.model.Function
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeNode
+import org.chronolens.core.model.apply
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
 
 internal class HistoryAnalyzer(
     private val maxChangeSet: Int,
     private val minRevisions: Int,
-    private val minCoupling: Double,
+    private val minCoupling: Double
 ) {
     init {
         require(maxChangeSet > 0) { "Invalid change set size '$maxChangeSet'!" }

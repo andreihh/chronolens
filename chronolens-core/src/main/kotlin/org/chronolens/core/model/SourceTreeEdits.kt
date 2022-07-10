@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,24 @@ import org.chronolens.core.model.SetEdit.Companion.apply
 public sealed class SourceTreeEdit {
     /** The qualified id of the edited node. */
     public abstract val id: String
+
+    /**
+     * Applies this edit to the given [sourceTree].
+     *
+     * @throws IllegalStateException if the [sourceTree] has an invalid state
+     * and this edit couldn't be applied
+     */
+    public fun applyOn(sourceTree: SourceTree) {
+        sourceTree.mutate { sourceMap, nodeMap ->
+            val sourcePath = sourcePath
+            sourceMap -= sourcePath
+            applyOn(nodeMap)
+            val newSource = get<SourceFile?>(sourcePath)
+            if (newSource != null) {
+                sourceMap[sourcePath] = newSource
+            }
+        }
+    }
 
     /**
      * Applies this edit on the given mutable map of [nodes].
@@ -60,7 +78,10 @@ public sealed class SourceTreeEdit {
                 val before = nodesBefore[id]
                 val after = nodesAfter[id]
                 val edit = when {
-                    before == null && after != null -> AddNode(id, after.sourceNode)
+                    before == null && after != null -> AddNode(
+                        id,
+                        after.sourceNode
+                    )
                     before != null && after == null -> RemoveNode(id)
                     before != null && after != null -> before.diff(after)
                     else -> throw AssertionError("Node '$id' doesn't exist!")
@@ -78,7 +99,7 @@ public sealed class SourceTreeEdit {
  */
 public data class AddNode(
     override val id: String,
-    val node: SourceNode,
+    val node: SourceNode
 ) : SourceTreeEdit() {
 
     val sourceTreeNode: SourceTreeNode<*> get() = SourceTreeNode(id, node)
@@ -136,7 +157,7 @@ public data class EditType(
             ?: error("Type '$id' doesn't exist!")
         val newType = type.copy(
             supertypes = type.supertypes.apply(supertypeEdits),
-            modifiers = type.modifiers.apply(modifierEdits),
+            modifiers = type.modifiers.apply(modifierEdits)
         )
         nodes[id] = SourceTreeNode(id, newType)
         updateAncestors(nodes, id, newType)
@@ -172,7 +193,7 @@ public data class EditFunction(
         val newFunction = function.copy(
             parameters = function.parameters.apply(parameterEdits),
             modifiers = function.modifiers.apply(modifierEdits),
-            body = function.body.apply(bodyEdits),
+            body = function.body.apply(bodyEdits)
         )
         nodes[id] = SourceTreeNode(id, newFunction)
         updateAncestors(nodes, id, newFunction)
@@ -204,7 +225,7 @@ public data class EditVariable(
             ?: error("Variable '$id' doesn't exist!")
         val newVariable = variable.copy(
             modifiers = variable.modifiers.apply(modifierEdits),
-            initializer = variable.initializer.apply(initializerEdits),
+            initializer = variable.initializer.apply(initializerEdits)
         )
         nodes[id] = SourceTreeNode(id, newVariable)
         updateAncestors(nodes, id, newVariable)
@@ -221,7 +242,7 @@ public data class EditVariable(
 private fun updateAncestors(
     nodes: NodeHashMap,
     qualifiedId: String,
-    entity: SourceEntity,
+    entity: SourceEntity
 ) {
     fun Set<SourceEntity>.updatedWithEntity(): Set<SourceEntity> {
         val newEntities = LinkedHashSet<SourceEntity>(size)
@@ -250,4 +271,24 @@ private fun updateAncestors(
     if (newParent is SourceEntity) {
         updateAncestors(nodes, parentId, newParent)
     }
+}
+
+/**
+ * Applies the given [edit] to this source tree.
+ *
+ * @throws IllegalStateException if this source tree has an invalid state
+ * and the given [edit] couldn't be applied
+ */
+public fun SourceTree.apply(edit: SourceTreeEdit) {
+    edit.applyOn(this)
+}
+
+/** Utility method. */
+public fun SourceTree.apply(edits: List<SourceTreeEdit>) {
+    edits.forEach(::apply)
+}
+
+/** Utility method. */
+public fun SourceTree.apply(vararg edits: SourceTreeEdit) {
+    apply(edits.asList())
 }

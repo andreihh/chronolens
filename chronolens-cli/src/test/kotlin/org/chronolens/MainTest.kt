@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.chronolens
 
 import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.apply
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.subprocess.Subprocess.execute
 import org.junit.AfterClass
@@ -120,7 +121,13 @@ class MainTest {
     fun `test rev list`() {
         val expected = execute(
             tmp.root,
-            "git", "rev-list", "--first-parent", "--reverse", "HEAD", "--", ""
+            "git",
+            "rev-list",
+            "--first-parent",
+            "--reverse",
+            "HEAD",
+            "--",
+            ""
         ).get()
 
         Main.main("rev-list", "--repo-dir", repoDir)

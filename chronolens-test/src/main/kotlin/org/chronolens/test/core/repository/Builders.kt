@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package org.chronolens.test.core.repository
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit
+import org.chronolens.core.model.apply
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.Transaction
 import org.chronolens.test.core.BuilderMarker
@@ -30,7 +31,7 @@ import java.time.Instant
 
 public fun transaction(
     revisionId: String,
-    init: Init<TransactionBuilder>,
+    init: Init<TransactionBuilder>
 ): Transaction = TransactionBuilder(revisionId).apply(init).build()
 
 public fun repository(init: Init<RepositoryBuilder>): Repository =
@@ -72,7 +73,7 @@ public class RepositoryBuilder {
 
     public fun transaction(
         revisionId: String,
-        init: Init<TransactionBuilder>,
+        init: Init<TransactionBuilder>
     ): RepositoryBuilder {
         val transaction = TransactionBuilder(revisionId).apply(init).build()
         history += transaction

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import java.util.Collections.unmodifiableCollection
  */
 public class SourceTree private constructor(
     private val sourceMap: HashMap<String, SourceFile>,
-    private val nodeMap: NodeHashMap,
+    private val nodeMap: NodeHashMap
 ) {
 
     /** The source files in this source tree. */
@@ -72,30 +72,13 @@ public class SourceTree private constructor(
         nodeMap[id]?.walkSourceTree()
             ?: error("Source node '$id' doesn't exist in the source tree!")
 
-    /**
-     * Applies the given [edit] to this source tree.
-     *
-     * @throws IllegalStateException if this source tree has an invalid state
-     * and the given [edit] couldn't be applied
-     */
-    public fun apply(edit: SourceTreeEdit) {
-        val sourcePath = edit.sourcePath
-        sourceMap -= sourcePath
-        edit.applyOn(nodeMap)
-        val newSource = get<SourceFile?>(sourcePath)
-        if (newSource != null) {
-            sourceMap[sourcePath] = newSource
-        }
-    }
-
-    /** Utility method. */
-    public fun apply(edits: List<SourceTreeEdit>) {
-        edits.forEach(::apply)
-    }
-
-    /** Utility method. */
-    public fun apply(vararg edits: SourceTreeEdit) {
-        apply(edits.asList())
+    internal fun mutate(
+        block: SourceTree.(
+            sourceMap: HashMap<String, SourceFile>,
+            nodeMap: NodeHashMap
+        ) -> Unit
+    ) {
+        this.block(sourceMap, nodeMap)
     }
 
     public companion object {
@@ -134,7 +117,7 @@ public class SourceTree private constructor(
  */
 public data class SourceTreeNode<T : SourceNode>(
     val qualifiedId: String,
-    val sourceNode: T,
+    val sourceNode: T
 )
 
 /** A hash map from ids to source tree nodes. */

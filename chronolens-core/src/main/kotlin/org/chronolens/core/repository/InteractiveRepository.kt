@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.chronolens.core.repository
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.diff
+import org.chronolens.core.model.apply
 import org.chronolens.core.parsing.Parser
 import org.chronolens.core.parsing.Parser.Companion.canParse
 import org.chronolens.core.parsing.Result
@@ -69,7 +70,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
 
     private fun getLatestValidSource(
         revisionId: String,
-        path: String,
+        path: String
     ): SourceFile {
         checkValidRevisionId(revisionId)
         checkValidPath(path)

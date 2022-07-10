@@ -38,12 +38,14 @@ spotless {
     ratchetFrom("origin/master")
 
     kotlin {
-        ktlint("0.40.0")
+        //ktfmt("0.39").dropboxStyle()
+        ktlint("0.46.0")
         licenseHeaderFile("$rootDir/spotless.kotlin.license")
     }
     kotlinGradle {
         target("*.gradle.kts")
-        ktlint("0.40.0")
+        //ktfmt("0.39").dropboxStyle()
+        ktlint("0.46.0")
     }
 }
 
