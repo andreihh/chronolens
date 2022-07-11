@@ -8,10 +8,3 @@ include(
     "analyzers:chronolens-coupling",
     "analyzers:chronolens-decapsulations"
 )
-
-// Required for Dokka.
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-    }
-}
