@@ -1,14 +1,14 @@
 [versions]
 ktfmt = "0.39"
-junit = "4.13.2"
 fasterxml = "2.13.2"
 
 [libraries]
+junit = { module = "junit:junit", version = "4.13.2" }
 fasterxml-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "fasterxml" }
 fasterxml-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "fasterxml" }
 picocli = { module = "info.picocli:picocli", version = "3.8.1" }
-eclipse-jdt = { module = "org.eclipse.jdt:org.eclipse.jdt.core", version = "3.26.0" }
 systemrules = { module = "com.github.stefanbirkner:system-rules", version = "1.17.1" }
+eclipse-jdt = { module = "org.eclipse.jdt:org.eclipse.jdt.core", version = "3.26.0" }
 
 [bundles]
 fasterxml = ["fasterxml-kotlin", "fasterxml-jsr310"]
