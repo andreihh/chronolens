@@ -141,16 +141,19 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
 
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::analyze)
-        val fieldsByFile =
-            decapsulationsByField.keys.groupBy(String::sourcePath)
+        val fieldsByFile = decapsulationsByField.keys.groupBy(String::sourcePath)
         val sourcePaths = sourceTree.sources.map(SourceFile::path)
-        val fileReports = sourcePaths.map { path ->
-            val fields = fieldsByFile[path].orEmpty()
-            val fieldReports = fields.map { id ->
-                FieldReport(id, getDecapsulations(id))
-            }.sortedByDescending { it.decapsulations.size }
-            FileReport(path, fieldReports)
-        }.sortedByDescending(FileReport::value)
+        val fileReports =
+            sourcePaths
+                .map { path ->
+                    val fields = fieldsByFile[path].orEmpty()
+                    val fieldReports =
+                        fields
+                            .map { id -> FieldReport(id, getDecapsulations(id)) }
+                            .sortedByDescending { it.decapsulations.size }
+                    FileReport(path, fieldReports)
+                }
+                .sortedByDescending(FileReport::value)
         return Report(fileReports)
     }
 
@@ -164,8 +167,5 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         val value: Int = decapsulations
     }
 
-    data class FieldReport(
-        val id: String,
-        val decapsulations: List<Decapsulation>
-    )
+    data class FieldReport(val id: String, val decapsulations: List<Decapsulation>)
 }

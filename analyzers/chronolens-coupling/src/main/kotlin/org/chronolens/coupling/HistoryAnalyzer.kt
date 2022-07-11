@@ -49,11 +49,12 @@ internal class HistoryAnalyzer(
     }
 
     private fun visit(edit: RemoveNode): Set<String> {
-        val removedIds = sourceTree
-            .walk(edit.id)
-            .filter { (_, node) -> node is Function }
-            .map(SourceTreeNode<*>::qualifiedId)
-            .toSet()
+        val removedIds =
+            sourceTree
+                .walk(edit.id)
+                .filter { (_, node) -> node is Function }
+                .map(SourceTreeNode<*>::qualifiedId)
+                .toSet()
 
         changes -= removedIds
         for (id in removedIds) {
