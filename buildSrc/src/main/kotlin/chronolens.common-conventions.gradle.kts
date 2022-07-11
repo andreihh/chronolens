@@ -27,7 +27,7 @@ dependencies {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        languageVersion = "1.4"
+        languageVersion = "1.7"
         jvmTarget = "11"
         freeCompilerArgs += "-Xjvm-default=all"
     }

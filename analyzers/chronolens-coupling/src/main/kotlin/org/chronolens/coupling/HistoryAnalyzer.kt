@@ -73,6 +73,7 @@ internal class HistoryAnalyzer(
                 is AddNode -> editedIds += visit(edit)
                 is RemoveNode -> editedIds -= visit(edit)
                 is EditFunction -> editedIds += edit.id
+                else -> {}
             }
             sourceTree.apply(edit)
         }

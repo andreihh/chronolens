@@ -82,6 +82,7 @@ internal class HistoryAnalyzer(
             }
             is EditFunction -> updateStats(id, revisionId, date, edit.churn)
             is EditVariable -> updateStats(id, revisionId, date, edit.churn)
+            else -> {}
         }
         sourceTree.apply(edit)
     }

@@ -83,6 +83,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
                 is RemoveNode -> editedIds -= visit(edit)
                 is EditFunction -> editedIds += edit.id
                 is EditVariable -> editedIds += edit.id
+                else -> {}
             }
         }
         return editedIds
