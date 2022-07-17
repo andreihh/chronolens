@@ -7,3 +7,12 @@ plugins {
 kotlin {
     explicitApi()
 }
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["kotlin"])
+        }
+    }
+}
+
