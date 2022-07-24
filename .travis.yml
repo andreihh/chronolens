@@ -1,5 +1,5 @@
 git: depth: false
 language: java
 jdk: openjdk11
-script: ./gradlew check codeCoverageReport
+script: ./gradlew check
 after_success: bash <(curl -s https://codecov.io/bash)

@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
-    id("com.diffplug.spotless")
     jacoco
+    id("com.diffplug.spotless")
 }
 
 group = "org.chronolens"
@@ -48,16 +48,6 @@ spotless {
 tasks.jar {
     from(rootProject.file("LICENSE"))
     from(rootProject.file("NOTICE"))
-}
-
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
-
-    reports {
-        html.required.set(true)
-        xml.required.set(true)
-        csv.required.set(false)
-    }
 }
 
 val sourcesJar by tasks.registering(Jar::class) {

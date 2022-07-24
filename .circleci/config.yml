@@ -9,9 +9,9 @@ jobs:
       - checkout
       - run: ./gradlew check codeCoverageReport
       - store_test_results:
-          path: build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
+          path: build/reports/tests/unit-test/aggregated-results
       - store_artifacts:
-          path: build/reports/jacoco/codeCoverageReport
+          path: build/reports/tests/unit-test/aggregated-results
       - run: bash <(curl -s https://codecov.io/bash)
 
 workflows:

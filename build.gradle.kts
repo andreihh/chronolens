@@ -1,6 +1,7 @@
 plugins {
     base
-    jacoco
+    id("test-report-aggregation")
+    id("jacoco-report-aggregation")
 }
 
 repositories {
@@ -11,26 +12,29 @@ tasks.wrapper {
     distributionType = Wrapper.DistributionType.ALL
 }
 
-val Project.jacocoReportTasks get() = tasks.withType<JacocoReport>()
+dependencies {
+    // Direct and transitive project dependencies are selected for aggregation.
+    // The ":chronolens-cli" application project should assemble all other
+    // subprojects (":chronolens-core", all ":services" subprojects, and all
+    // ":analyzers" subprojects).
+    testReportAggregation(project(":chronolens-cli"))
+    jacocoAggregation(project(":chronolens-cli"))
+}
 
-tasks.register<JacocoReport>("codeCoverageReport") {
-    group = JavaBasePlugin.VERIFICATION_GROUP
-    description = "Generates a combined code coverage report for all tests."
-
-    executionData(
-        fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
-    )
-
-    subprojects
-        .filter { it.jacocoReportTasks.isNotEmpty() }
-        .forEach {
-            dependsOn(it.jacocoReportTasks)
-            sourceSets(it.the<SourceSetContainer>()["main"])
+reporting {
+    reports {
+        val testAggregateTestReport by creating(AggregateTestReport::class) {
+            testType.set(TestSuiteType.UNIT_TEST)
         }
 
-    reports {
-        html.required.set(true)
-        xml.required.set(true)
-        csv.required.set(false)
+        val testCodeCoverageReport by creating(JacocoCoverageReport::class) {
+            testType.set(TestSuiteType.UNIT_TEST)
+        }
     }
 }
+
+tasks.check {
+    dependsOn(tasks.named<TestReport>("testAggregateTestReport"))
+    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
+}
+
