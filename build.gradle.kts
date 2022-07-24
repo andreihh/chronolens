@@ -33,8 +33,3 @@ reporting {
     }
 }
 
-tasks.check {
-    dependsOn(tasks.named<TestReport>("testAggregateTestReport"))
-    dependsOn(tasks.named<JacocoReport>("testCodeCoverageReport"))
-}
-
