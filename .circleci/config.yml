@@ -13,9 +13,13 @@ jobs:
       - run:
           name: Generate code coverage report
           command: ./gradlew testCodeCoverageReport --continue
+      - run:
+          name: Upload Codecov report
+          command: |
+            bash <(curl -s https://codecov.io/bash) -f \
+                build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml
       - store_artifacts:
           path: build/reports/tests/unit-test/aggregated-results
-      - run: bash <(curl -s https://codecov.io/bash)
 
 workflows:
   test:

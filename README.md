@@ -1,7 +1,7 @@
 # ChronoLens
 
 [![](https://jitpack.io/v/andreihh/chronolens.svg)](https://jitpack.io/#andreihh/chronolens)
-[![Build Status](https://app.travis-ci.com/andreihh/chronolens.svg?branch=master)](https://app.travis-ci.com/andreihh/chronolens)
+[![andreihh](https://circleci.com/gh/andreihh/chronolens/tree/master.svg?style=shield)](https://circleci.com/gh/andreihh/chronolens?branch=master)
 [![codecov](https://codecov.io/gh/andreihh/chronolens/branch/master/graph/badge.svg)](https://codecov.io/gh/andreihh/chronolens)
 [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
