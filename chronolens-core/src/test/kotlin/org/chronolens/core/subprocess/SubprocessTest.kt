@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,60 +16,51 @@
 
 package org.chronolens.core.subprocess
 
-import org.junit.Test
-import java.io.BufferedReader
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import org.junit.Test
 
 class SubprocessTest {
-    private val script = javaClass.getResourceAsStream("test_script.py")
-        .bufferedReader().use(BufferedReader::readText)
-
-    private fun execute(
-        out: String = "",
-        err: String = "",
-        delaySeconds: Int = 0,
-        exitValue: Int = 0
-    ): Result = Subprocess.execute(
-        "python", "-c", script, out, err, "$delaySeconds", "$exitValue"
-    )
-
-    @Test fun `test get output`() {
+    @Test
+    fun `test get stdout`() {
         val message = "Hello, world!"
         val expected = "$message\n"
-        val actual = execute(out = message).get()
+        val actual = Subprocess.execute("echo", message).get()
         assertEquals(expected, actual)
     }
 
-    @Test fun `test get error`() {
-        val expectedMessage = "Hello, error!"
+    @Test
+    fun `test get error`() {
+        val message = "Hello, error!"
+        val expectedMessage = "$message\n"
         val expectedExitValue = 1
-        val actual = execute(
-            err = expectedMessage,
-            exitValue = expectedExitValue
-        ) as Result.Error
-        assertEquals(expectedExitValue, actual.exitValue)
+
+        val script = "echo $message >&2; exit $expectedExitValue"
+        val actual = Subprocess.execute("bash", "-c", script) as Result.Error
+
         assertEquals(expectedMessage, actual.message)
+        assertEquals(expectedExitValue, actual.exitValue)
     }
 
-    @Test fun `test killed throws`() {
+    @Test
+    fun `test killed throws`() {
         assertFailsWith<SubprocessException> {
-            execute(exitValue = 137) // UNIX SIGKILL
+            Subprocess.execute("bash", "-c", "exit 137") // UNIX SIGKILL
         }
     }
 
-    @Test fun `test interrupt throws`() {
+    @Test
+    fun `test interrupt throws`() {
         Thread.currentThread().interrupt()
         assertFailsWith<SubprocessException> {
             while (true) {
-                execute(delaySeconds = 1).get()
+                Subprocess.execute("bash", "-c", "sleep 1").get()
             }
         }
     }
 
-    @Test fun `test invalid command throws`() {
-        assertFailsWith<SubprocessException> {
-            Subprocess.execute("non-existing-program")
-        }
+    @Test
+    fun `test invalid command throws`() {
+        assertFailsWith<SubprocessException> { Subprocess.execute("non-existing-program") }
     }
 }
