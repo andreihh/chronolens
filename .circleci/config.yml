@@ -7,7 +7,7 @@ jobs:
     working_directory: ~/chronolens
     steps:
       - checkout
-      - run: ./gradlew check codeCoverageReport
+      - run: ./gradlew check
       - store_test_results:
           path: build/reports/tests/unit-test/aggregated-results
       - store_artifacts:
