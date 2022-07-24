@@ -8,11 +8,9 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Test
-          command: ./gradlew testAggregateTestReport --continue
-      - run:
-          name: Generate code coverage report
-          command: ./gradlew testCodeCoverageReport --continue
+          name: Run tests and generate code coverage report
+          command: |
+            ./gradlew testAggregateTestReport testCodeCoverageReport --continue
       - run:
           name: Upload Codecov report
           command: |
