@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,42 +28,33 @@ import org.chronolens.core.model.SourceNodeKind.VARIABLE
  */
 public sealed class SourceNode {
     /** Returns the simple, unqualified id of this source node. */
-    public val simpleId: String get() = when (this) {
-        is SourceFile -> path
-        is Type -> name
-        is Function -> signature
-        is Variable -> name
-    }
+    public val simpleId: String
+        get() =
+            when (this) {
+                is SourceFile -> path
+                is Type -> name
+                is Function -> signature
+                is Variable -> name
+            }
 
-    /** This kind of this source node. Denotes a final, non-abstract type. */
-    public val kind: SourceNodeKind get() = when (this) {
-        is SourceFile -> SOURCE_FILE
-        is Type -> TYPE
-        is Function -> FUNCTION
-        is Variable -> VARIABLE
-    }
+    /** The kind of this source node. Denotes a final, non-abstract type. */
+    public val kind: SourceNodeKind
+        get() =
+            when (this) {
+                is SourceFile -> SOURCE_FILE
+                is Type -> TYPE
+                is Function -> FUNCTION
+                is Variable -> VARIABLE
+            }
 
     /** The child source nodes contained in this source node. */
     public val children: Collection<SourceEntity>
-        get() = when (this) {
-            is SourceFile -> entities
-            is Type -> members
-            else -> emptySet()
-        }
-
-    public companion object {
-        /** Paths in [SourceFile] ids are separated by `/`. */
-        public const val PATH_SEPARATOR: Char = '/'
-
-        /** [Type] identifiers are separated by `:` from the parent id. */
-        public const val CONTAINER_SEPARATOR: Char = ':'
-
-        /**
-         * [Function] and [Variable] identifiers are separated by `#` from the
-         * parent id.
-         */
-        public const val MEMBER_SEPARATOR: Char = '#'
-    }
+        get() =
+            when (this) {
+                is SourceFile -> entities
+                is Type -> members
+                else -> emptySet()
+            }
 }
 
 /** An abstract representation of a source entity within a [SourceFile]. */
@@ -74,8 +65,8 @@ public sealed class SourceEntity : SourceNode()
  *
  * @property path the fully qualified path of this file
  * @property entities the source entities contained by this source file
- * @throws IllegalArgumentException if the [path] is not valid or if the ids of
- * the [entities] are not valid or if the [entities] contain duplicated ids
+ * @throws IllegalArgumentException if the [path] is not valid or if the ids of the [entities] are
+ * not valid or if the [entities] contain duplicated ids
  */
 public data class SourceFile(
     val path: String,
@@ -94,10 +85,9 @@ public data class SourceFile(
  * @property name the name of this type
  * @property supertypes the supertypes of this type
  * @property modifiers the modifiers of this type
- * @property members the members of this type (functions, variables and
- * contained types)
- * @throws IllegalArgumentException if the [name] is not valid or if the ids of
- * the [members] are not valid or if the [members] contain duplicated ids
+ * @property members the members of this type (functions, variables and contained types)
+ * @throws IllegalArgumentException if the [name] is not valid or if the ids of the [members] are
+ * not valid or if the [members] contain duplicated ids
  */
 public data class Type(
     val name: String,
@@ -117,16 +107,14 @@ public data class Type(
  *
  * The parameters of a function must have unique names.
  *
- * @property signature the signature of this function; should be `name(type_1,
- * type_2, ...)` if function overloading at the type level is allowed, or
- * `name(n)` (where `n` is the arity of the function) if function overloading at
- * the arity level is allowed, or `name()` otherwise.
+ * @property signature the signature of this function; should be `name(type_1, type_2, ...)` if
+ * function overloading at the type level is allowed, or `name(n)` (where `n` is the arity of the
+ * function) if function overloading at the arity level is allowed, or `name()` otherwise.
  * @property parameters the names of the parameters of this function
  * @property modifiers the modifiers of this function
- * @property body the body lines of this function, or an empty list if it
- * doesn't have a body
- * @throws IllegalArgumentException if the [signature] is not valid or if the
- * [parameters] contain invalid or duplicated names
+ * @property body the body lines of this function, or an empty list if it doesn't have a body
+ * @throws IllegalArgumentException if the [signature] is not valid or if the [parameters] contain
+ * invalid or duplicated names
  */
 public data class Function(
     val signature: String,
@@ -146,8 +134,8 @@ public data class Function(
  *
  * @property name the name of this variable
  * @property modifiers the modifiers of this variable
- * @property initializer the initializer lines of this variable, or an empty
- * list if it doesn't have an initializer
+ * @property initializer the initializer lines of this variable, or an empty list if it doesn't have
+ * an initializer
  * @throws IllegalArgumentException if the [name] is not valid
  */
 public data class Variable(
@@ -163,5 +151,8 @@ public data class Variable(
 
 /** The final, non-abstract type of a source node. */
 public enum class SourceNodeKind {
-    SOURCE_FILE, TYPE, FUNCTION, VARIABLE
+    SOURCE_FILE,
+    TYPE,
+    FUNCTION,
+    VARIABLE
 }

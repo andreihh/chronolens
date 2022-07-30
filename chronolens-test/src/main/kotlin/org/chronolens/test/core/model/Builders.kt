@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
 package org.chronolens.test.core.model
 
 import org.chronolens.core.model.Function
+import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
@@ -35,16 +35,12 @@ public fun sourceTree(init: Init<SourceTreeBuilder>): SourceTree =
 public class SourceTreeBuilder {
     private val sources = mutableListOf<SourceFileBuilder>()
 
-    public fun sourceFile(
-        path: String,
-        init: Init<SourceFileBuilder>,
-    ): SourceTreeBuilder {
+    public fun sourceFile(path: String, init: Init<SourceFileBuilder>): SourceTreeBuilder {
         sources += SourceFileBuilder(path).apply(init)
         return this
     }
 
-    public fun build(): SourceTree =
-        SourceTree.of(sources.map(SourceFileBuilder::build))
+    public fun build(): SourceTree = SourceTree.of(sources.map(SourceFileBuilder::build))
 }
 
 @BuilderMarker
@@ -53,7 +49,7 @@ public class SourceFileBuilder(private val path: String) {
 
     private inline fun <reified T : EntityBuilder<*>> addEntity(
         simpleId: String,
-        init: Init<T>,
+        init: Init<T>
     ): SourceFileBuilder {
         entities += newBuilder<T>(simpleId).apply(init)
         return this
@@ -62,20 +58,14 @@ public class SourceFileBuilder(private val path: String) {
     public fun type(name: String, init: Init<TypeBuilder>): SourceFileBuilder =
         addEntity(name, init)
 
-    public fun function(
-        signature: String,
-        init: Init<FunctionBuilder>,
-    ): SourceFileBuilder = addEntity(signature, init)
+    public fun function(signature: String, init: Init<FunctionBuilder>): SourceFileBuilder =
+        addEntity(signature, init)
 
-    public fun variable(
-        name: String,
-        init: Init<VariableBuilder>,
-    ): SourceFileBuilder = addEntity(name, init)
+    public fun variable(name: String, init: Init<VariableBuilder>): SourceFileBuilder =
+        addEntity(name, init)
 
-    public fun build(): SourceFile = SourceFile(
-        path = path,
-        entities = entities.map { it.build(path) }.toSet(),
-    )
+    public fun build(): SourceFile =
+        SourceFile(path = path, entities = entities.map { it.build(path) }.toSet())
 }
 
 public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
@@ -101,34 +91,21 @@ public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
         return this
     }
 
-    public fun type(name: String, init: Init<TypeBuilder>): TypeBuilder =
+    public fun type(name: String, init: Init<TypeBuilder>): TypeBuilder = addMember(name, init)
+
+    public fun function(signature: String, init: Init<FunctionBuilder>): TypeBuilder =
+        addMember(signature, init)
+
+    public fun variable(name: String, init: Init<VariableBuilder>): TypeBuilder =
         addMember(name, init)
-
-    public fun function(
-        signature: String,
-        init: Init<FunctionBuilder>,
-    ): TypeBuilder = addMember(signature, init)
-
-    public fun variable(
-        name: String,
-        init: Init<VariableBuilder>,
-    ): TypeBuilder = addMember(name, init)
 
     override fun build(parentId: String): Type {
         val id = "$parentId$CONTAINER_SEPARATOR$name"
-        return Type(
-            name = name,
-            supertypes = supertypes,
-            modifiers = modifiers,
-            members = members.map { it.build(id) }.toSet()
-        )
+        return Type(name, supertypes, modifiers, members.map { it.build(id) }.toSet())
     }
 }
 
-public class FunctionBuilder(
-    private val signature: String,
-) : EntityBuilder<Function> {
-
+public class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
     private var modifiers = emptySet<String>()
     private var parameters = emptyList<String>()
     private val body = mutableListOf<String>()
@@ -156,10 +133,7 @@ public class FunctionBuilder(
         Function(signature, parameters, modifiers, body)
 }
 
-public class VariableBuilder(
-    private val name: String,
-) : EntityBuilder<Variable> {
-
+public class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
     private var modifiers = emptySet<String>()
     private val initializer = mutableListOf<String>()
 
@@ -177,11 +151,8 @@ public class VariableBuilder(
         initializer += this
     }
 
-    override fun build(parentId: String): Variable = Variable(
-        name = name,
-        modifiers = modifiers,
-        initializer = initializer
-    )
+    override fun build(parentId: String): Variable =
+        Variable(name = name, modifiers = modifiers, initializer = initializer)
 }
 
 private inline fun <reified T> newBuilder(simpleId: String): T =

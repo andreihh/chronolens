@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,16 @@ import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditType
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
+import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
 
-public fun sourceFile(path: String): SourceFileInitializer =
-    SourceFileInitializer(path)
+public fun sourceFile(path: String): SourceFileInitializer = SourceFileInitializer(path)
 
 public class SourceFileInitializer(private val path: String) {
     public fun id(): String = path
@@ -39,14 +38,12 @@ public class SourceFileInitializer(private val path: String) {
     public fun build(init: Init<SourceFileBuilder>): SourceFile =
         SourceFileBuilder(path).apply(init).build()
 
-    public fun type(name: String): TypeInitializer =
-        TypeInitializer(path, name)
+    public fun type(name: String): TypeInitializer = TypeInitializer(path, name)
 
     public fun function(signature: String): FunctionInitializer =
         FunctionInitializer(path, signature)
 
-    public fun variable(name: String): VariableInitializer =
-        VariableInitializer(path, name)
+    public fun variable(name: String): VariableInitializer = VariableInitializer(path, name)
 
     public fun add(init: Init<SourceFileBuilder>): AddNode =
         AddNode(path, SourceFileBuilder(path).apply(init).build())
@@ -54,40 +51,28 @@ public class SourceFileInitializer(private val path: String) {
     public fun remove(): RemoveNode = RemoveNode(path)
 }
 
-public class TypeInitializer(
-    private val parentId: String,
-    private val name: String,
-) {
-
+public class TypeInitializer(private val parentId: String, private val name: String) {
     private val id: String = "$parentId$CONTAINER_SEPARATOR$name"
 
     public fun id(): String = id
 
-    public fun build(init: Init<TypeBuilder>): Type =
-        TypeBuilder(name).apply(init).build(parentId)
+    public fun build(init: Init<TypeBuilder>): Type = TypeBuilder(name).apply(init).build(parentId)
 
-    public fun type(name: String): TypeInitializer =
-        TypeInitializer(id, name)
+    public fun type(name: String): TypeInitializer = TypeInitializer(id, name)
 
-    public fun function(signature: String): FunctionInitializer =
-        FunctionInitializer(id, signature)
+    public fun function(signature: String): FunctionInitializer = FunctionInitializer(id, signature)
 
-    public fun variable(name: String): VariableInitializer =
-        VariableInitializer(id, name)
+    public fun variable(name: String): VariableInitializer = VariableInitializer(id, name)
 
     public fun add(init: Init<TypeBuilder>): AddNode =
         AddNode(id, TypeBuilder(name).apply(init).build(parentId))
 
     public fun remove(): RemoveNode = RemoveNode(id)
 
-    public fun edit(init: Init<EditTypeBuilder>): EditType =
-        EditTypeBuilder(id).apply(init).build()
+    public fun edit(init: Init<EditTypeBuilder>): EditType = EditTypeBuilder(id).apply(init).build()
 }
 
-public class FunctionInitializer(
-    private val parentId: String,
-    private val signature: String,
-) {
+public class FunctionInitializer(private val parentId: String, private val signature: String) {
 
     private val id: String = "$parentId$MEMBER_SEPARATOR$signature"
 
@@ -105,10 +90,7 @@ public class FunctionInitializer(
         EditFunctionBuilder(id).apply(init).build()
 }
 
-public class VariableInitializer(
-    private val parentId: String,
-    private val name: String,
-) {
+public class VariableInitializer(private val parentId: String, private val name: String) {
 
     private val id: String = "$parentId$MEMBER_SEPARATOR$name"
 

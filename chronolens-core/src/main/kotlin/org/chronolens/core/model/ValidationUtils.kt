@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
-import org.chronolens.core.model.SourceNode.Companion.PATH_SEPARATOR
+import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
+import org.chronolens.core.model.SourcePath.Companion.PATH_SEPARATOR
 
-private const val separators =
-    "$PATH_SEPARATOR$CONTAINER_SEPARATOR$MEMBER_SEPARATOR\"\\\\"
+private const val separators = "$PATH_SEPARATOR$CONTAINER_SEPARATOR$MEMBER_SEPARATOR\"\\\\"
 
 private val fileComponent = Regex("(?>[^$separators]++)")
 private val identifierRegex = Regex("(?>[^$separators()]++)")
@@ -42,8 +41,8 @@ private val node = Regex("$file|$entity")
 /**
  * Validates the ids of the children of this node.
  *
- * @throws IllegalArgumentException if any child has an id which doesn't start
- * with the id of this node or if this node contains duplicated children ids
+ * @throws IllegalArgumentException if any child has an id which doesn't start with the id of this
+ * node or if this node contains duplicated children ids
  */
 internal fun SourceNode.validateChildrenIds() {
     val ids = HashSet<Pair<SourceNodeKind, String>>(children.size)
@@ -61,15 +60,12 @@ internal fun SourceNode.validateChildrenIds() {
 /**
  * Validates the names of the parameters of this function.
  *
- * @throws IllegalArgumentException if this function has duplicated parameter
- * names
+ * @throws IllegalArgumentException if this function has duplicated parameter names
  */
 internal fun Function.validateParameterNames() {
     val names = HashSet<String>(parameters.size)
     for (name in parameters) {
-        require(name !in names) {
-            "Function '$simpleId' contains duplicated parameter '$name'!"
-        }
+        require(name !in names) { "Function '$simpleId' contains duplicated parameter '$name'!" }
         names += name
     }
 }
@@ -79,22 +75,17 @@ internal fun validatePath(path: String) {
 }
 
 internal fun validateIdentifier(identifier: String) {
-    require(identifier.matches(identifierRegex)) {
-        "Invalid identifier '$identifier'!"
-    }
+    require(identifier.matches(identifierRegex)) { "Invalid identifier '$identifier'!" }
 }
 
 internal fun validateSignature(signature: String) {
-    require(signature.matches(signatureRegex)) {
-        "Invalid signature '$signature'!"
-    }
+    require(signature.matches(signatureRegex)) { "Invalid signature '$signature'!" }
 }
 
 /**
  * Validates the given [SourceNode] [id].
  *
- * @throws IllegalArgumentException if the given [id] is not a valid source node
- * id
+ * @throws IllegalArgumentException if the given [id] is not a valid source node id
  */
 internal fun validateNodeId(id: String) {
     require(id.matches(node)) { "Invalid node id '$id'!" }
@@ -103,8 +94,7 @@ internal fun validateNodeId(id: String) {
 /**
  * Validates the given [SourceEntity] [id].
  *
- * @throws IllegalArgumentException if the given [id] is not a valid source
- * entity id
+ * @throws IllegalArgumentException if the given [id] is not a valid source entity id
  */
 internal fun validateEntityId(id: String) {
     require(id.matches(entity)) { "Invalid entity id '$id'!" }
@@ -113,8 +103,7 @@ internal fun validateEntityId(id: String) {
 /**
  * Validates the given [SourceFile] [id].
  *
- * @throws IllegalArgumentException if the given [id] is not a valid source file
- * id
+ * @throws IllegalArgumentException if the given [id] is not a valid source file id
  */
 internal fun validateFileId(id: String) {
     require(id.matches(file)) { "Invalid file id '$id'!" }

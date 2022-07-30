@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2021-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,11 @@ public data class SourcePath(val path: String) : SourceNodeId() {
     }
 
     override fun toString(): String = path
+
+    public companion object {
+        /** Paths in [SourcePath] ids are separated by `/`. */
+        public const val PATH_SEPARATOR: Char = '/'
+    }
 }
 
 /** The simple name of a [Type] or [Variable]. */

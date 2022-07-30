@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 package org.chronolens.java
 
 import org.chronolens.core.model.Function
+import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.returnTypeModifierOf
@@ -40,26 +40,22 @@ internal data class ParserContext(
     private val parentId: String
 ) {
 
-    private fun ASTNode.toSource(): String =
-        source.substring(startPosition, startPosition + length)
+    private fun ASTNode.toSource(): String = source.substring(startPosition, startPosition + length)
 
     private fun ASTNode.modifierSet(): Set<String> {
-        val additionalModifier = when (this) {
-            is AbstractTypeDeclaration -> typeModifier()
-            is MethodDeclaration -> returnType()?.let(::returnTypeModifierOf)
-            else -> type()?.let(::typeModifierOf)
-        }
-        val modifiers = getModifiers(this)
-            .map { it.toSource() }
-            .requireDistinct()
+        val additionalModifier =
+            when (this) {
+                is AbstractTypeDeclaration -> typeModifier()
+                is MethodDeclaration -> returnType()?.let(::returnTypeModifierOf)
+                else -> type()?.let(::typeModifierOf)
+            }
+        val modifiers = getModifiers(this).map { it.toSource() }.requireDistinct()
         return modifiers + listOfNotNull(additionalModifier)
     }
 
-    private fun MethodDeclaration.body(): List<String> =
-        body?.toSource().toBlock()
+    private fun MethodDeclaration.body(): List<String> = body?.toSource().toBlock()
 
-    private fun VariableDeclaration.initializer(): List<String> =
-        initializer?.toSource().toBlock()
+    private fun VariableDeclaration.initializer(): List<String> = initializer?.toSource().toBlock()
 
     private fun EnumConstantDeclaration.initializer(): List<String> =
         anonymousClassDeclaration?.toSource().toBlock()
@@ -67,24 +63,22 @@ internal data class ParserContext(
     private fun AnnotationTypeMemberDeclaration.defaultValue(): List<String> =
         default?.toSource().toBlock()
 
-    private fun getTypeId(name: String): String =
-        "$parentId$CONTAINER_SEPARATOR$name"
+    private fun getTypeId(name: String): String = "$parentId$CONTAINER_SEPARATOR$name"
 
-    private fun getFunctionId(signature: String): String =
-        "$parentId$MEMBER_SEPARATOR$signature"
+    private fun getFunctionId(signature: String): String = "$parentId$MEMBER_SEPARATOR$signature"
 
-    private fun getVariableId(name: String): String =
-        "$parentId$MEMBER_SEPARATOR$name"
+    private fun getVariableId(name: String): String = "$parentId$MEMBER_SEPARATOR$name"
 
-    private fun visitMember(node: Any?): SourceEntity? = when (node) {
-        is AbstractTypeDeclaration -> visit(node)
-        is AnnotationTypeMemberDeclaration -> visit(node)
-        is EnumConstantDeclaration -> visit(node)
-        is VariableDeclaration -> visit(node)
-        is MethodDeclaration -> visit(node)
-        is Initializer -> null
-        else -> throw AssertionError("Unknown declaration '$node'!")
-    }
+    private fun visitMember(node: Any?): SourceEntity? =
+        when (node) {
+            is AbstractTypeDeclaration -> visit(node)
+            is AnnotationTypeMemberDeclaration -> visit(node)
+            is EnumConstantDeclaration -> visit(node)
+            is VariableDeclaration -> visit(node)
+            is MethodDeclaration -> visit(node)
+            is Initializer -> null
+            else -> throw AssertionError("Unknown declaration '$node'!")
+        }
 
     private fun visit(node: AbstractTypeDeclaration): Type {
         requireNotMalformed(node)
@@ -130,9 +124,8 @@ internal data class ParserContext(
     fun visit(node: CompilationUnit): SourceFile {
         requireNotMalformed(node)
         val childContext = copy(parentId = path)
-        val entities = node.types()
-            .requireIsInstance<AbstractTypeDeclaration>()
-            .map(childContext::visit)
+        val entities =
+            node.types().requireIsInstance<AbstractTypeDeclaration>().map(childContext::visit)
         entities.map(Type::name).requireDistinct()
         return SourceFile(path, entities.toSet())
     }

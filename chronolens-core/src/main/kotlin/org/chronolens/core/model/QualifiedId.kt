@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2021-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,88 +16,76 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.SourceNode.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
-import org.chronolens.core.model.SourceNodeKind.FUNCTION
-import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
-import org.chronolens.core.model.SourceNodeKind.TYPE
-import org.chronolens.core.model.SourceNodeKind.VARIABLE
+import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
 
 /** A unique identifier of a [SourceNode] within a [SourceTree]. */
 public data class QualifiedId(
     val parent: QualifiedId?,
     val id: SourceNodeId,
-    val kind: SourceNodeKind,
+    val isContainer: Boolean
 ) {
 
     init {
-        validateKindAndIdPair(parent, id, kind)
-        if (parent == null) {
-            require(kind == SOURCE_FILE && id is SourcePath) {
-                "Top level qualified id '$id' must be a source path!"
+        if (isContainer) {
+            require(id is SourcePath || id is Identifier) {
+                "Id '$id' must be a container id (source path or identifier)!"
             }
         } else {
-            require(parent.kind != FUNCTION) {
-                "Parent '$parent' of qualified id '$id' must not be a function!"
+            require(id is Identifier || id is Signature) {
+                "Id '$id' must be a member id (identifier or signature)!"
             }
-            require(kind != SOURCE_FILE) {
-                "Qualified id '$id' with parent '$parent' must not be a file!"
+        }
+        if (parent == null) {
+            require(id is SourcePath) { "Top level qualified id '$id' must be a source path!" }
+        } else {
+            require(id !is SourcePath) {
+                "Id '$id' with parent '$parent' must not be a source path!"
             }
+            require(parent.isContainer) { "Parent '$parent' of id '$id' must not be a signature!" }
         }
     }
 
     override fun toString(): String {
-        if (parent == null) return id.toString()
-
         val builder = StringBuilder()
 
-        fun appendParentId(parentId: QualifiedId) {
-            if (parentId.parent != null) {
-                appendParentId(parentId.parent)
-                builder.append(':')
+        fun appendId(qualifiedId: QualifiedId) {
+            if (qualifiedId.parent != null) {
+                appendId(qualifiedId.parent)
+                builder.append(if (qualifiedId.isContainer) ':' else '#')
             }
-            builder.append(parentId.id)
+            builder.append(qualifiedId.id)
         }
 
-        appendParentId(parent)
-        builder.append(if (kind == TYPE) ':' else '#')
-        builder.append(id)
+        appendId(this)
         return builder.toString()
     }
-}
 
-private fun validateKindAndIdPair(
-    parent: QualifiedId?,
-    id: SourceNodeId,
-    kind: SourceNodeKind,
-) {
-    val lazyMessage = {
-        "Source node id '$id' with parent '$parent' mismatches kind '$kind'!"
-    }
-    when (kind) {
-        SOURCE_FILE -> require(id is SourcePath, lazyMessage)
-        TYPE, VARIABLE -> require(id is Identifier, lazyMessage)
-        FUNCTION -> require(id is Signature, lazyMessage)
+    public companion object {
+        /** [Type] identifiers are separated by `:` from the parent id. */
+        public const val CONTAINER_SEPARATOR: Char = ':'
+
+        /** [Function] and [Variable] identifiers are separated by `#` from the parent id. */
+        public const val MEMBER_SEPARATOR: Char = '#'
     }
 }
 
 /** Creates a new [SourceFile] qualified id from the given [path]. */
 public fun qualifiedPathOf(path: SourcePath): QualifiedId =
-    QualifiedId(null, path, SOURCE_FILE)
+    QualifiedId(null, path, isContainer = true)
 
 /** Utility method. */
-public fun qualifiedPathOf(path: String): QualifiedId =
-    qualifiedPathOf(SourcePath(path))
+public fun qualifiedPathOf(path: String): QualifiedId = qualifiedPathOf(SourcePath(path))
 
 /**
- * Creates a new [Type] qualified id using [this] id as a parent and the given
- * [identifier] as the type name.
+ * Creates a new [Type] qualified id using [this] id as a parent and the given [identifier] as the
+ * type name.
  *
  * @throws IllegalStateException if [this] id qualifies a [Function]
  */
 public fun QualifiedId.appendType(identifier: Identifier): QualifiedId {
-    check(kind != FUNCTION) { "'$this' cannot be parent of '$identifier'!" }
-    return QualifiedId(this, identifier, TYPE)
+    check(isContainer) { "'$this' cannot be parent of '$identifier'!" }
+    return QualifiedId(this, identifier, isContainer = true)
 }
 
 /** Utility method. */
@@ -105,14 +93,13 @@ public fun QualifiedId.appendType(identifier: String): QualifiedId =
     appendType(Identifier(identifier))
 
 /**
- * Creates a new [Function] qualified id using [this] id as a parent and the
- * given [signature].
+ * Creates a new [Function] qualified id using [this] id as a parent and the given [signature].
  *
  * @throws IllegalStateException if [this] id qualifies a [Function]
  */
 public fun QualifiedId.appendFunction(signature: Signature): QualifiedId {
-    check(kind != FUNCTION) { "'$this' cannot be parent of '$signature'!" }
-    return QualifiedId(this, signature, FUNCTION)
+    check(isContainer) { "'$this' cannot be parent of '$signature'!" }
+    return QualifiedId(this, signature, isContainer = false)
 }
 
 /** Utility method. */
@@ -120,24 +107,21 @@ public fun QualifiedId.appendFunction(signature: String): QualifiedId =
     appendFunction(Signature(signature))
 
 /**
- * Creates a new [Variable] qualified id using [this] id as a parent and the
- * given [identifier] as the variable name.
+ * Creates a new [Variable] qualified id using [this] id as a parent and the given [identifier] as
+ * the variable name.
  *
  * @throws IllegalStateException if [this] id qualifies a [Function]
  */
 public fun QualifiedId.appendVariable(identifier: Identifier): QualifiedId {
-    check(kind != FUNCTION) { "'$this' cannot be parent of '$identifier'!" }
-    return QualifiedId(this, identifier, VARIABLE)
+    check(isContainer) { "'$this' cannot be parent of '$identifier'!" }
+    return QualifiedId(this, identifier, isContainer = false)
 }
 
 /** Utility method. */
 public fun QualifiedId.appendVariable(identifier: String): QualifiedId =
     appendVariable(Identifier(identifier))
 
-/**
- * The path of the [SourceFile] that contains the [SourceNode] denoted by [this]
- * qualified id.
- */
+/** The path of the [SourceFile] that contains the [SourceNode] denoted by [this] qualified id. */
 public val QualifiedId.sourcePath: SourcePath
     get() = parent?.sourcePath ?: (id as SourcePath)
 
@@ -146,7 +130,7 @@ public val QualifiedId.sourcePath: SourcePath
  *
  * @throws IllegalArgumentException if the given [rawQualifiedId] is invalid
  */
-public fun parseQualifiedIdFromString(rawQualifiedId: String): QualifiedId {
+public fun parseQualifiedIdFrom(rawQualifiedId: String): QualifiedId {
     validateMemberSeparators(rawQualifiedId)
     val tokens = rawQualifiedId.split(*SEPARATORS)
     require(tokens.isNotEmpty() && tokens.all(String::isNotBlank)) {
@@ -169,50 +153,45 @@ public fun parseQualifiedIdFromString(rawQualifiedId: String): QualifiedId {
     val lastId = tokens.last()
     val isSignature = '(' in lastId && lastId.endsWith(')')
     return when {
-        separator == ':' -> qualifiedId.appendType(lastId)
-        separator == '#' && isSignature -> qualifiedId.appendFunction(lastId)
-        separator == '#' && !isSignature -> qualifiedId.appendVariable(lastId)
-        else -> error("Invalid separator '$separator' in '$rawQualifiedId'!!")
+        separator == CONTAINER_SEPARATOR -> qualifiedId.appendType(lastId)
+        separator == MEMBER_SEPARATOR && isSignature -> qualifiedId.appendFunction(lastId)
+        separator == MEMBER_SEPARATOR && !isSignature -> qualifiedId.appendVariable(lastId)
+        else -> error("Invalid separator '$separator' in '$rawQualifiedId'!")
     }
 }
 
 private fun validateMemberSeparators(rawQualifiedId: String) {
-    val memberIndex = rawQualifiedId.indexOf('#')
+    val memberIndex = rawQualifiedId.indexOf(MEMBER_SEPARATOR)
     val nextIndex = rawQualifiedId.indexOfAny(SEPARATORS, memberIndex + 1)
-    require(memberIndex == -1 || nextIndex == -1) {
-        "Invalid qualified id '$rawQualifiedId'!"
-    }
+    require(memberIndex == -1 || nextIndex == -1) { "Invalid qualified id '$rawQualifiedId'!" }
 }
 
-private val SEPARATORS = charArrayOf(':', '#')
-
-private val separators = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
+private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
 
 public val String.sourcePath: String
     get() {
-        val where = indexOfAny(separators)
+        val where = indexOfAny(SEPARATORS)
         return if (where == -1) this else substring(0, where)
     }
 
 /** The path of the [SourceFile] which contains [this] node. */
-public val SourceTreeNode<*>.sourcePath: String get() = qualifiedId.sourcePath
+public val SourceTreeNode<*>.sourcePath: String
+    get() = qualifiedId.sourcePath
+
+/** The path of the [SourceFile] which contains the node affected by [this] edit. */
+public val SourceTreeEdit.sourcePath: String
+    get() = id.sourcePath
 
 /**
- * The path of the [SourceFile] which contains the node affected by [this] edit.
- */
-public val SourceTreeEdit.sourcePath: String get() = id.sourcePath
-
-/**
- * The qualified id of the parent node of the source note denoted by [this]
- * qualified id, or `null` if this id denotes a [SourceFile].
+ * The qualified id of the parent node of the source note denoted by [this] qualified id, or `null`
+ * if this id denotes a [SourceFile].
  */
 public val String.parentId: String?
     get() {
-        val where = lastIndexOfAny(separators)
+        val where = lastIndexOfAny(SEPARATORS)
         return if (where == -1) null else substring(0, where)
     }
 
 /** The qualified id of the parent node of [this] source tree node. */
 public val SourceTreeNode<out SourceEntity>.parentId: String
-    get() = qualifiedId.parentId
-        ?: error("Source entity '$qualifiedId' must have a parent!")
+    get() = qualifiedId.parentId ?: error("Source entity '$qualifiedId' must have a parent!")

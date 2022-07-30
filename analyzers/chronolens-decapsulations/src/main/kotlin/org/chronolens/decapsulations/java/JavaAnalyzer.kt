@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package org.chronolens.decapsulations.java
 
 import org.chronolens.core.model.Function
+import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceNode
-import org.chronolens.core.model.SourceNode.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
@@ -26,8 +26,7 @@ import org.chronolens.core.model.parentId
 import org.chronolens.decapsulations.DecapsulationAnalyzer
 
 internal class JavaAnalyzer : DecapsulationAnalyzer() {
-    override fun canProcess(sourcePath: String): Boolean =
-        sourcePath.endsWith(".java")
+    override fun canProcess(sourcePath: String): Boolean = sourcePath.endsWith(".java")
 
     private fun getFieldName(signature: String): String? =
         listOf("is", "get", "set")
@@ -50,12 +49,13 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
         }
     }
 
-    private fun getVisibility(modifiers: Set<String>): Int = when {
-        PRIVATE_MODIFIER in modifiers -> PRIVATE_LEVEL
-        PROTECTED_MODIFIER in modifiers -> PROTECTED_LEVEL
-        PUBLIC_MODIFIER in modifiers -> PUBLIC_LEVEL
-        else -> PACKAGE_LEVEL
-    }
+    private fun getVisibility(modifiers: Set<String>): Int =
+        when {
+            PRIVATE_MODIFIER in modifiers -> PRIVATE_LEVEL
+            PROTECTED_MODIFIER in modifiers -> PROTECTED_LEVEL
+            PUBLIC_MODIFIER in modifiers -> PUBLIC_LEVEL
+            else -> PACKAGE_LEVEL
+        }
 
     private val SourceNode?.isInterface: Boolean
         get() = this is Type && INTERFACE_MODIFIER in modifiers

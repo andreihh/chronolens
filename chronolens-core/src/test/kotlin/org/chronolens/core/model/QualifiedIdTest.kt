@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2021-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.test.core.model.sourceFile
 import java.lang.IllegalArgumentException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import org.chronolens.test.core.model.sourceFile
 
 class QualifiedIdTest {
     @Test
@@ -42,41 +42,40 @@ class QualifiedIdTest {
 
     @Test
     fun parseQualifiedIdFromString_returnsOriginalQualifiedId() {
-        val qualifiedIds = listOf(
-            qualifiedPathOf("src/Main.java"),
-            qualifiedPathOf("src/Main.java").appendType("Main"),
-            qualifiedPathOf("src/Main.java").appendFunction("main(String[])"),
-            qualifiedPathOf("src/Main.java").appendVariable("VERSION"),
-            qualifiedPathOf("src/Main.java").appendType("Main")
-                .appendType("InnerMain"),
-            qualifiedPathOf("src/Main.java").appendType("Main")
-                .appendFunction("main(String[])"),
-            qualifiedPathOf("src/Main.java").appendType("Main")
-                .appendVariable("VERSION"),
-        )
+        val qualifiedIds =
+            listOf(
+                qualifiedPathOf("src/Main.java"),
+                qualifiedPathOf("src/Main.java").appendType("Main"),
+                qualifiedPathOf("src/Main.java").appendFunction("main(String[])"),
+                qualifiedPathOf("src/Main.java").appendVariable("VERSION"),
+                qualifiedPathOf("src/Main.java").appendType("Main").appendType("InnerMain"),
+                qualifiedPathOf("src/Main.java")
+                    .appendType("Main")
+                    .appendFunction("main(String[])"),
+                qualifiedPathOf("src/Main.java").appendType("Main").appendVariable("VERSION"),
+            )
 
         for (qualifiedId in qualifiedIds) {
             assertEquals(
                 expected = qualifiedId,
-                actual = parseQualifiedIdFromString(qualifiedId.toString()),
+                actual = parseQualifiedIdFrom(qualifiedId.toString()),
             )
         }
     }
 
     @Test
     fun parseQualifiedIdFromString_whenInvalidId_throws() {
-        val rawQualifiedIds = listOf(
-            "",
-            "src/Main::Main",
-            "src/Main:#Main",
-            "src/Main.java:Main#main():VERSION",
-            "src/Main.java:Main#main()#main(String[])",
-        )
+        val rawQualifiedIds =
+            listOf(
+                "",
+                "src/Main::Main",
+                "src/Main:#Main",
+                "src/Main.java:Main#main():VERSION",
+                "src/Main.java:Main#main()#main(String[])",
+            )
 
         for (rawQualifiedId in rawQualifiedIds) {
-            assertFailsWith<IllegalArgumentException> {
-                parseQualifiedIdFromString(rawQualifiedId)
-            }
+            assertFailsWith<IllegalArgumentException> { parseQualifiedIdFrom(rawQualifiedId) }
         }
     }
 
