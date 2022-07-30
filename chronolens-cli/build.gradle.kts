@@ -15,5 +15,5 @@ dependencies {
     runtimeOnly(project(":analyzers:chronolens-decapsulations"))
 
     testImplementation(project(":chronolens-test"))
-    testImplementation("com.github.stefanbirkner:system-rules:1.17.1")
+    testImplementation(libs.systemrules)
 }

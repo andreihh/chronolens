@@ -1,4 +1,3 @@
-// import java.net.URL
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -14,8 +13,10 @@ repositories {
     mavenCentral()
 }
 
-// Set versions for common dependencies.
-val junitVersion by extra("4.13")
+// Set versions for common dependencies, as library catalogs are not yet
+// avalable in buildSrc implementation files.
+val junitVersion by extra("4.13.2")
+val ktfmtVersion by extra("0.39")
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -36,12 +37,12 @@ spotless {
     ratchetFrom("origin/master")
 
     kotlin {
-        ktfmt("0.39").kotlinlangStyle()
+        ktfmt(ktfmtVersion).kotlinlangStyle()
         licenseHeaderFile("$rootDir/spotless.kotlin.license")
     }
     kotlinGradle {
         target("*.gradle.kts")
-        ktfmt("0.39").kotlinlangStyle()
+        ktfmt(ktfmtVersion).kotlinlangStyle()
     }
 }
 
