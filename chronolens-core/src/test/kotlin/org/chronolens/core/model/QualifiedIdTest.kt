@@ -82,7 +82,7 @@ class QualifiedIdTest {
     @Test
     fun sourcePath_ofSourceFile_returnsPath() {
         val path = "src/Test.java"
-        val source = SourceFile(path)
+        val source = SourceFile(SourcePath(path))
         val sourceTreeNode = SourceTreeNode(path, source)
 
         assertEquals(path, sourceTreeNode.sourcePath)

@@ -21,10 +21,10 @@ public sealed class SourceNodeId {
     abstract override fun toString(): String
 }
 
-/** The fully qualified path of a [SourceFile]. */
+/** The qualified path of a [SourceFile]. */
 public data class SourcePath(val path: String) : SourceNodeId() {
     init {
-        validatePath(path)
+        require(isValid(path)) { "Invalid source path '$path'!" }
     }
 
     override fun toString(): String = path
@@ -32,6 +32,9 @@ public data class SourcePath(val path: String) : SourceNodeId() {
     public companion object {
         /** Paths in [SourcePath] ids are separated by `/`. */
         public const val PATH_SEPARATOR: Char = '/'
+
+        /** Returns whether the given [path] is valid. */
+        public fun isValid(path: String): Boolean = path.matches(sourcePathRegex)
     }
 }
 

@@ -31,7 +31,7 @@ public sealed class SourceNode {
     public val simpleId: String
         get() =
             when (this) {
-                is SourceFile -> path
+                is SourceFile -> path.path
                 is Type -> name.identifier
                 is Function -> signature.signature
                 is Variable -> name.identifier
@@ -63,18 +63,16 @@ public sealed class SourceEntity : SourceNode()
 /**
  * The source code metadata of a source file.
  *
- * @property path the fully qualified path of this file
+ * @property path the path of this source file
  * @property entities the source entities contained by this source file
- * @throws IllegalArgumentException if the [path] is not valid or if the ids of the [entities] are
- * not valid or if the [entities] contain duplicated ids
+ * @throws IllegalArgumentException if the [entities] contain duplicated ids
  */
 public data class SourceFile(
-    val path: String,
+    val path: SourcePath,
     val entities: Set<SourceEntity> = emptySet(),
 ) : SourceNode() {
 
     init {
-        validatePath(path)
         validateChildrenIds()
     }
 }
@@ -138,7 +136,7 @@ public data class Variable(
     val name: Identifier,
     val modifiers: Set<String> = emptySet(),
     val initializer: List<String> = emptyList(),
-) : SourceEntity() {}
+) : SourceEntity()
 
 /** The final, non-abstract type of a source node. */
 public enum class SourceNodeKind {

@@ -45,7 +45,8 @@ class SourceTreeTest {
                 members = setOf(classVersion, classFunction)
             )
         val version = Variable(name = Identifier("version"), initializer = listOf("2"))
-        val testSource = SourceFile(path = "src/Test.java", entities = setOf(classType, version))
+        val testSource =
+            SourceFile(path = SourcePath("src/Test.java"), entities = setOf(classType, version))
         val expectedNodes = setOf(testSource, version, classType, classVersion, classFunction)
 
         val sourceTree = sourceTree {

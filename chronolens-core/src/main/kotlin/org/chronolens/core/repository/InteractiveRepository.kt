@@ -16,7 +16,11 @@
 
 package org.chronolens.core.repository
 
+import java.io.File
+import java.util.Collections.unmodifiableList
+import java.util.Collections.unmodifiableSet
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.diff
 import org.chronolens.core.model.apply
@@ -26,9 +30,6 @@ import org.chronolens.core.parsing.Result
 import org.chronolens.core.versioning.Revision
 import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsProxyFactory
-import java.io.File
-import java.util.Collections.unmodifiableList
-import java.util.Collections.unmodifiableSet
 
 /**
  * A wrapper around a repository persisted in a version control system (VCS).
@@ -44,15 +45,12 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
 
     override fun listSources(): Set<String> = unmodifiableSet(headSources)
 
-    override fun listRevisions(): List<String> =
-        unmodifiableList(history.map(Revision::id))
+    override fun listRevisions(): List<String> = unmodifiableList(history.map(Revision::id))
 
     /**
-     * Returns the interpretable source units from the revision with the
-     * specified [revisionId].
+     * Returns the interpretable source units from the revision with the specified [revisionId].
      *
-     * @throws IllegalArgumentException if [revisionId] is invalid or doesn't
-     * exist
+     * @throws IllegalArgumentException if [revisionId] is invalid or doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
     public fun listSources(revisionId: String): Set<String> {
@@ -68,15 +66,10 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
         return Parser.parse(path, rawSource)
     }
 
-    private fun getLatestValidSource(
-        revisionId: String,
-        path: String
-    ): SourceFile {
+    private fun getLatestValidSource(revisionId: String, path: String): SourceFile {
         checkValidRevisionId(revisionId)
         checkValidPath(path)
-        val revisions = vcs.getHistory(path)
-            .asReversed()
-            .dropWhile { it.id != revisionId }
+        val revisions = vcs.getHistory(path).asReversed().dropWhile { it.id != revisionId }
         for ((id, _, _) in revisions) {
             val result = parseSource(id, path)
             if (result is Result.Success) {
@@ -85,27 +78,26 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
         }
         // TODO: figure out if should return null or empty file if no valid
         // version is found.
-        return SourceFile(path)
+        return SourceFile(SourcePath(path))
     }
 
     /**
-     * Returns the source unit found at the given [path] in the revision with
-     * the specified [revisionId], or `null` if the [path] doesn't exist in the
-     * specified revision or couldn't be interpreted.
+     * Returns the source unit found at the given [path] in the revision with the specified
+     * [revisionId], or `null` if the [path] doesn't exist in the specified revision or couldn't be
+     * interpreted.
      *
-     * If the source contains syntax errors, then the most recent version which
-     * can be parsed without errors will be returned. If all versions of the
-     * source contain errors, then the empty source unit will be returned.
+     * If the source contains syntax errors, then the most recent version which can be parsed
+     * without errors will be returned. If all versions of the source contain errors, then the empty
+     * source unit will be returned.
      *
-     * @throws IllegalArgumentException if [path] or [revisionId] are invalid or
-     * if [revisionId] doesn't exist
+     * @throws IllegalArgumentException if [path] or [revisionId] are invalid or if [revisionId]
+     * doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
     public fun getSource(path: String, revisionId: String): SourceFile? {
         validatePath(path)
         validateRevisionId(revisionId)
-        val result = parseSource(revisionId, path)
-        return when (result) {
+        return when (val result = parseSource(revisionId, path)) {
             is Result.Success -> result.source
             Result.SyntaxError -> getLatestValidSource(revisionId, path)
             null -> null
@@ -123,12 +115,12 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
             for (path in changeSet) {
                 val oldSource = sourceTree.get<SourceFile?>(path)
                 before += listOfNotNull(oldSource)
-                val result = parseSource(revisionId, path)
-                val newSource = when (result) {
-                    is Result.Success -> result.source
-                    Result.SyntaxError -> oldSource ?: SourceFile(path)
-                    null -> null
-                }
+                val newSource =
+                    when (val result = parseSource(revisionId, path)) {
+                        is Result.Success -> result.source
+                        Result.SyntaxError -> oldSource ?: SourceFile(SourcePath(path))
+                        null -> null
+                    }
                 after += listOfNotNull(newSource)
             }
             val edits = SourceTree.of(before).diff(SourceTree.of(after))
@@ -139,12 +131,11 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
 
     public companion object {
         /**
-         * Returns the instance which can query the repository detected in the
-         * given [directory] for code metadata, or `null` if no supported VCS
-         * repository could be unambiguously detected
+         * Returns the instance which can query the repository detected in the given [directory] for
+         * code metadata, or `null` if no supported VCS repository could be unambiguously detected
          *
-         * @throws CorruptedRepositoryException if the detected repository is
-         * corrupted or empty (doesn't have a `head` revision)
+         * @throws CorruptedRepositoryException if the detected repository is corrupted or empty
+         * (doesn't have a `head` revision)
          */
         @JvmStatic
         public fun connect(directory: File): InteractiveRepository? =

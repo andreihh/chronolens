@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,19 @@
 
 package org.chronolens.core.model
 
+import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.sourceFile
 import org.junit.Test
-import kotlin.test.assertFailsWith
 
 class DiffUtilsTest {
-    @Test fun `test diff nodes with different ids throws`() {
+    @Test
+    fun `test diff nodes with different ids throws`() {
         val before = sourceFile("src/Test.java").build {}
-        val treeNodeBefore = SourceTreeNode(before.path, before)
+        val treeNodeBefore = SourceTreeNode(before.path.path, before)
 
         val after = sourceFile("src/Main.java").build {}
-        val treeNodeAfter = SourceTreeNode(after.path, after)
+        val treeNodeAfter = SourceTreeNode(after.path.path, after)
 
-        assertFailsWith<IllegalArgumentException> {
-            treeNodeBefore.diff(treeNodeAfter)
-        }
+        assertFailsWith<IllegalArgumentException> { treeNodeBefore.diff(treeNodeAfter) }
     }
 }

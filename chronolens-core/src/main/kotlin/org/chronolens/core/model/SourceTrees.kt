@@ -16,18 +16,19 @@
 
 package org.chronolens.core.model
 
+import java.util.Collections.unmodifiableCollection
 import org.chronolens.core.model.SourceNodeKind.FUNCTION
 import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
 import org.chronolens.core.model.SourceNodeKind.TYPE
 import org.chronolens.core.model.SourceNodeKind.VARIABLE
-import java.util.Collections.unmodifiableCollection
 
 /**
  * A snapshot of a source tree at a specific point in time.
  *
  * It indexes all contained source nodes to allow fast access by id.
  */
-public class SourceTree private constructor(
+public class SourceTree
+private constructor(
     private val sourceMap: HashMap<String, SourceFile>,
     private val nodeMap: NodeHashMap
 ) {
@@ -36,10 +37,7 @@ public class SourceTree private constructor(
     public val sources: Collection<SourceFile>
         get() = unmodifiableCollection(sourceMap.values)
 
-    /**
-     * Returns the node with the specified [id], or `null` if no such node was
-     * found.
-     */
+    /** Returns the node with the specified [id], or `null` if no such node was found. */
     public operator fun get(id: String): SourceNode? = nodeMap[id]?.sourceNode
 
     /** Returns whether the specified [id] exists in this source tree. */
@@ -48,8 +46,8 @@ public class SourceTree private constructor(
     /**
      * Returns the node of type [T] with the specified [id].
      *
-     * @throws IllegalStateException if the requested node is not of type [T],
-     * or if no such node was found
+     * @throws IllegalStateException if the requested node is not of type [T], or if no such node
+     * was found
      */
     @JvmName("getNode")
     public inline fun <reified T : SourceNode?> get(id: String): T {
@@ -59,12 +57,10 @@ public class SourceTree private constructor(
     }
 
     /** Returns all the source nodes in this source tree in top-down order. */
-    public fun walk(): Iterable<SourceTreeNode<*>> =
-        sources.flatMap(SourceFile::walkSourceTree)
+    public fun walk(): Iterable<SourceTreeNode<*>> = sources.flatMap(SourceFile::walkSourceTree)
 
     /**
-     * Returns all the source nodes in the subtree rooted at the given [id] in
-     * top-down order.
+     * Returns all the source nodes in the subtree rooted at the given [id] in top-down order.
      *
      * @throws IllegalStateException if a node with the given [id] doesn't exist
      */
@@ -73,10 +69,7 @@ public class SourceTree private constructor(
             ?: error("Source node '$id' doesn't exist in the source tree!")
 
     internal fun mutate(
-        block: SourceTree.(
-            sourceMap: HashMap<String, SourceFile>,
-            nodeMap: NodeHashMap
-        ) -> Unit
+        block: SourceTree.(sourceMap: HashMap<String, SourceFile>, nodeMap: NodeHashMap) -> Unit
     ) {
         this.block(sourceMap, nodeMap)
     }
@@ -85,25 +78,23 @@ public class SourceTree private constructor(
         /**
          * Creates and returns a source tree from the given [sources].
          *
-         * @throws IllegalArgumentException if the given [sources] contain
-         * duplicate ids
+         * @throws IllegalArgumentException if the given [sources] contain duplicate ids
          */
         @JvmStatic
         public fun of(sources: Collection<SourceFile>): SourceTree {
             val sourceMap = HashMap<String, SourceFile>(sources.size)
             for (source in sources) {
-                require(source.path !in sourceMap) {
+                require(source.path.path !in sourceMap) {
                     "Source tree contains duplicate source '${source.path}'!"
                 }
-                sourceMap[source.path] = source
+                sourceMap[source.path.path] = source
             }
             val nodeMap = buildVisit(sources)
             return SourceTree(sourceMap, nodeMap)
         }
 
         /** Creates and returns an empty source tree. */
-        @JvmStatic
-        public fun empty(): SourceTree = SourceTree(HashMap(0), NodeHashMap(0))
+        @JvmStatic public fun empty(): SourceTree = SourceTree(HashMap(0), NodeHashMap(0))
     }
 }
 
@@ -111,22 +102,16 @@ public class SourceTree private constructor(
  * A fully qualified [SourceNode] within a source tree.
  *
  * @param T the type of the wrapped source node
- * @param qualifiedId the fully qualified id of the source node that uniquely
- * identifies it within the source tree
+ * @param qualifiedId the fully qualified id of the source node that uniquely identifies it within
+ * the source tree
  * @param sourceNode the wrapped source node
  */
-public data class SourceTreeNode<T : SourceNode>(
-    val qualifiedId: String,
-    val sourceNode: T
-)
+public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val sourceNode: T)
 
 /** A hash map from ids to source tree nodes. */
 internal typealias NodeHashMap = HashMap<String, SourceTreeNode<*>>
 
-/**
- * Returns all the source nodes contained in [this] source tree in top-down
- * order.
- */
+/** Returns all the source nodes contained in [this] source tree in top-down order. */
 public fun SourceTreeNode<*>.walkSourceTree(): List<SourceTreeNode<*>> {
     val nodes = mutableListOf(this)
     var i = 0
@@ -135,12 +120,13 @@ public fun SourceTreeNode<*>.walkSourceTree(): List<SourceTreeNode<*>> {
         for (child in node.children) {
             val childId = child.simpleId
             // TODO: simplify once migrated to QualifiedId.
-            val separator = when (child.kind) {
-                TYPE -> ':'
-                VARIABLE, FUNCTION -> '#'
-                SOURCE_FILE ->
-                    error("Node '$qualifiedId' cannot contain '$childId'!!")
-            }
+            val separator =
+                when (child.kind) {
+                    TYPE -> ':'
+                    VARIABLE,
+                    FUNCTION -> '#'
+                    SOURCE_FILE -> error("Node '$qualifiedId' cannot contain '$childId'!!")
+                }
             nodes += SourceTreeNode("$qualifiedId$separator$childId", child)
         }
         i++
@@ -149,18 +135,18 @@ public fun SourceTreeNode<*>.walkSourceTree(): List<SourceTreeNode<*>> {
 }
 
 public fun SourceFile.walkSourceTree(): List<SourceTreeNode<*>> =
-    SourceTreeNode(path, this).walkSourceTree()
+    SourceTreeNode(path.path, this).walkSourceTree()
 
 internal fun NodeHashMap.putSourceTree(root: SourceTreeNode<*>) {
     this += root.walkSourceTree().associateBy(SourceTreeNode<*>::qualifiedId)
 }
 
 internal fun NodeHashMap.putSourceTree(root: SourceFile) {
-    putSourceTree(SourceTreeNode(root.path, root))
+    putSourceTree(SourceTreeNode(root.path.path, root))
 }
 
 internal fun NodeHashMap.removeSourceTree(root: SourceTreeNode<*>) {
-    this -= root.walkSourceTree().map(SourceTreeNode<*>::qualifiedId)
+    this -= root.walkSourceTree().map(SourceTreeNode<*>::qualifiedId).toSet()
 }
 
 private fun buildVisit(sources: Iterable<SourceFile>): NodeHashMap {

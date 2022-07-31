@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2021-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.chronolens.core.repository
 
+import java.io.IOException
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
 import org.chronolens.core.serialization.JsonModule
-import java.io.IOException
 
 internal class RepositoryPersister(
     private val repository: Repository,
@@ -30,16 +30,14 @@ internal class RepositoryPersister(
     @Throws(IOException::class)
     fun persist() {
         mkdirs(schema.rootDirectory)
-        schema.headFile.printWriter().use { out ->
-            out.println(repository.getHeadId())
-        }
+        schema.headFile.printWriter().use { out -> out.println(repository.getHeadId()) }
         persistSnapshot()
         persistHistory()
     }
 
     private fun persistSource(source: SourceFile) {
-        mkdirs(schema.getSourceDirectory(source.path))
-        schema.getSourceFile(source.path).outputStream().use { out ->
+        mkdirs(schema.getSourceDirectory(source.path.path))
+        schema.getSourceFile(source.path.path).outputStream().use { out ->
             JsonModule.serialize(out, source)
         }
     }
@@ -52,10 +50,9 @@ internal class RepositoryPersister(
         mkdirs(schema.snapshotDirectory)
         schema.sourcesFile.printWriter().use { out ->
             for (path in repository.listSources()) {
-                val source = repository.getSource(path)
-                    ?: throw CorruptedRepositoryException(
-                        "'$path' couldn't be interpreted!"
-                    )
+                val source =
+                    repository.getSource(path)
+                        ?: throw CorruptedRepositoryException("'$path' couldn't be interpreted!")
                 out.println(path)
                 persistSource(source)
                 listener?.onSourcePersisted(path)
@@ -66,9 +63,7 @@ internal class RepositoryPersister(
 
     private fun persistTransaction(transaction: Transaction) {
         val file = schema.getTransactionFile(transaction.revisionId)
-        file.outputStream().use { out ->
-            JsonModule.serialize(out, transaction)
-        }
+        file.outputStream().use { out -> JsonModule.serialize(out, transaction) }
     }
 
     private fun persistHistory() {

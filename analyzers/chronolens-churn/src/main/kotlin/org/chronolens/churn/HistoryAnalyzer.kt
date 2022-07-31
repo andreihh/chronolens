@@ -28,6 +28,7 @@ import org.chronolens.core.model.ListEdit
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.SourceTreeNode
@@ -110,7 +111,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::visit)
         val membersByFile = stats.keys.groupBy(String::sourcePath)
-        val sourcePaths = sourceTree.sources.map(SourceFile::path)
+        val sourcePaths = sourceTree.sources.map(SourceFile::path).map(SourcePath::path)
         val fileReports =
             sourcePaths
                 .map { path ->

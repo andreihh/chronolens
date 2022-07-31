@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package org.chronolens.core.repository
 
+import java.io.File
+import java.io.IOException
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.repository.Repository.Companion.isValidPath
 import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
 import org.chronolens.core.serialization.JsonException
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.core.versioning.Revision
-import java.io.File
-import java.io.IOException
 
 /**
  * Validates the given revision [id].
@@ -68,23 +69,21 @@ internal fun checkValidRevisionId(id: String): String {
  * @throws CorruptedRepositoryException if the given [path] is invalid
  */
 internal fun checkValidPath(path: String): String {
-    checkState(isValidPath(path)) { "Invalid source file path '$path'!" }
+    checkState(SourcePath.isValid(path)) { "Invalid source file path '$path'!" }
     return path
 }
 
 /**
  * Checks that the given [sources] are valid.
  *
- * @throws CorruptedRepositoryException if the given [sources] contain any
- * invalid or duplicated paths
+ * @throws CorruptedRepositoryException if the given [sources] contain any invalid or duplicated
+ * paths
  */
 internal fun checkValidSources(sources: Collection<String>): Set<String> {
     val sourceFiles = LinkedHashSet<String>(sources.size)
     for (source in sources) {
         checkValidPath(source)
-        checkState(source !in sourceFiles) {
-            "Duplicated source file '$source'!"
-        }
+        checkState(source !in sourceFiles) { "Duplicated source file '$source'!" }
         sourceFiles += source
     }
     return sourceFiles
@@ -108,8 +107,8 @@ internal fun checkValidHistory(history: List<String>): List<String> {
 /**
  * Checks that the given list of revisions represent a valid [history].
  *
- * @throws CorruptedRepositoryException if the given [history] contains invalid
- * or duplicated revision ids
+ * @throws CorruptedRepositoryException if the given [history] contains invalid or duplicated
+ * revision ids
  */
 @JvmName("checkValidRevisionHistory")
 internal fun checkValidHistory(history: List<Revision>): List<Revision> {
@@ -128,15 +127,13 @@ internal fun <T : Any> Collection<T?>.checkNoNulls(): Collection<T> {
             throw CorruptedRepositoryException("'null' found in '$this'!")
         }
     }
-    @Suppress("UNCHECKED_CAST")
-    return this as Collection<T>
+    @Suppress("UNCHECKED_CAST") return this as Collection<T>
 }
 
 /**
  * Checks that the given [file] exists and is a file.
  *
- * @throws CorruptedRepositoryException if the given [file] doesn't exist or is
- * not a file
+ * @throws CorruptedRepositoryException if the given [file] doesn't exist or is not a file
  */
 internal fun checkFileExists(file: File) {
     checkState(file.isFile) { "File '$file' does not exist or is not a file!" }
@@ -145,8 +142,8 @@ internal fun checkFileExists(file: File) {
 /**
  * Delegates to [JsonModule.serialize].
  *
- * @throws CorruptedRepositoryException if the deserialization failed with a
- * [JsonException] or the given [src] file doesn't exist or is not a file
+ * @throws CorruptedRepositoryException if the deserialization failed with a [JsonException] or the
+ * given [src] file doesn't exist or is not a file
  * @throws IOException if any I/O errors occur
  */
 @Throws(IOException::class)
@@ -161,8 +158,7 @@ internal inline fun <reified T : Any> JsonModule.deserialize(src: File): T =
 /**
  * Delegates to [File.readLines] and keeps the lines up to the first empty line.
  *
- * @throws CorruptedRepositoryException if [this] file doesn't exist or is not
- * a file
+ * @throws CorruptedRepositoryException if [this] file doesn't exist or is not a file
  * @throws IOException if any I/O errors occur
  */
 @Throws(IOException::class)

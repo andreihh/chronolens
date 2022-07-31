@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,11 @@
 
 package org.chronolens.test.core.model
 
-import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.SourceTree
 import kotlin.test.assertEquals as assertEqualsKt
+import org.chronolens.core.model.SourceTree
 
-public fun assertEquals(
-    expected: SourceTree?,
-    actual: SourceTree?,
-    message: String? = null,
-) {
-    val expectedSources = expected?.sources?.sortedBy(SourceFile::path)
-    val actualSources = actual?.sources?.sortedBy(SourceFile::path)
+public fun assertEquals(expected: SourceTree?, actual: SourceTree?, message: String? = null) {
+    val expectedSources = expected?.sources?.sortedBy { it.path.path }
+    val actualSources = actual?.sources?.sortedBy { it.path.path }
     assertEqualsKt(expectedSources, actualSources, message)
 }

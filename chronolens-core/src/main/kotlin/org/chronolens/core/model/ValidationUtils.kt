@@ -38,6 +38,8 @@ private val variable = Regex("($type|$file)$MEMBER_SEPARATOR$identifierRegex")
 private val entity = Regex("$function|$type|$variable")
 private val node = Regex("$file|$entity")
 
+internal val sourcePathRegex = file
+
 /**
  * Validates the ids of the children of this node.
  *
@@ -68,10 +70,6 @@ internal fun Function.validateParameterNames() {
         require(name !in names) { "Function '$simpleId' contains duplicated parameter '$name'!" }
         names += name
     }
-}
-
-internal fun validatePath(path: String) {
-    require(path.matches(file)) { "Invalid path '$path'!" }
 }
 
 /**

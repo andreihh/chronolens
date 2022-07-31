@@ -31,7 +31,7 @@ class SourceNodeTest {
                 Type(name = Identifier("Type"), modifiers = setOf("interface"))
             )
         assertFailsWith<IllegalArgumentException> {
-            SourceFile(path = "src/Test.java", entities = entities)
+            SourceFile(path = SourcePath("src/Test.java"), entities = entities)
         }
     }
 

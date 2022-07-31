@@ -23,6 +23,7 @@ import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
@@ -67,7 +68,7 @@ public class SourceFileBuilder(private val path: String) {
         addEntity(name, init)
 
     public fun build(): SourceFile =
-        SourceFile(path = path, entities = entities.map { it.build(path) }.toSet())
+        SourceFile(path = SourcePath(path), entities = entities.map { it.build(path) }.toSet())
 }
 
 public class TypeBuilder(private val name: String) : EntityBuilder<Type> {

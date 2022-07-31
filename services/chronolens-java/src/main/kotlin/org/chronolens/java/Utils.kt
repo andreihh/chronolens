@@ -18,6 +18,7 @@ package org.chronolens.java
 
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.Signature
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.parsing.SyntaxErrorException
 import org.eclipse.jdt.core.dom.ASTNode
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration
@@ -58,6 +59,12 @@ internal fun <T> Collection<T>.requireDistinct(): Set<T> {
         unique += element
     }
     return unique
+}
+
+internal fun requireValidPath(path: String) {
+    if (!SourcePath.isValid(path)) {
+        throw SyntaxErrorException("Invalid path '$path'!")
+    }
 }
 
 internal fun requireValidIdentifier(identifier: String) {

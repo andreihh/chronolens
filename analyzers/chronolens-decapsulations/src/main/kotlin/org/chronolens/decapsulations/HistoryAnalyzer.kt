@@ -22,6 +22,7 @@ import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.apply
@@ -142,7 +143,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::analyze)
         val fieldsByFile = decapsulationsByField.keys.groupBy(String::sourcePath)
-        val sourcePaths = sourceTree.sources.map(SourceFile::path)
+        val sourcePaths = sourceTree.sources.map(SourceFile::path).map(SourcePath::path)
         val fileReports =
             sourcePaths
                 .map { path ->

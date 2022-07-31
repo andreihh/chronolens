@@ -18,7 +18,9 @@
 
 package org.chronolens.test.core.repository
 
+import java.time.Instant
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.apply
@@ -27,12 +29,9 @@ import org.chronolens.core.repository.Transaction
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
-import java.time.Instant
 
-public fun transaction(
-    revisionId: String,
-    init: Init<TransactionBuilder>
-): Transaction = TransactionBuilder(revisionId).apply(init).build()
+public fun transaction(revisionId: String, init: Init<TransactionBuilder>): Transaction =
+    TransactionBuilder(revisionId).apply(init).build()
 
 public fun repository(init: Init<RepositoryBuilder>): Repository =
     RepositoryBuilder().apply(init).build()
@@ -62,8 +61,7 @@ public class TransactionBuilder(private val revisionId: String) {
         edits += this
     }
 
-    public fun build(): Transaction =
-        Transaction(revisionId, date, author, edits)
+    public fun build(): Transaction = Transaction(revisionId, date, author, edits)
 }
 
 @BuilderMarker
@@ -71,32 +69,28 @@ public class RepositoryBuilder {
     private val history = mutableListOf<Transaction>()
     private val snapshot = SourceTree.empty()
 
-    public fun transaction(
-        revisionId: String,
-        init: Init<TransactionBuilder>
-    ): RepositoryBuilder {
+    public fun transaction(revisionId: String, init: Init<TransactionBuilder>): RepositoryBuilder {
         val transaction = TransactionBuilder(revisionId).apply(init).build()
         history += transaction
         snapshot.apply(transaction.edits)
         return this
     }
 
-    public fun build(): Repository = object : Repository {
-        init {
-            check(history.isNotEmpty())
+    public fun build(): Repository =
+        object : Repository {
+            init {
+                check(history.isNotEmpty())
+            }
+
+            override fun getHeadId(): String = history.last().revisionId
+
+            override fun listSources(): Set<String> =
+                snapshot.sources.map(SourceFile::path).map(SourcePath::path).toSet()
+
+            override fun listRevisions(): List<String> = history.map(Transaction::revisionId)
+
+            override fun getSource(path: String): SourceFile? = snapshot.get<SourceFile?>(path)
+
+            override fun getHistory(): Sequence<Transaction> = history.asSequence()
         }
-
-        override fun getHeadId(): String = history.last().revisionId
-
-        override fun listSources(): Set<String> =
-            snapshot.sources.map(SourceFile::path).toSet()
-
-        override fun listRevisions(): List<String> =
-            history.map(Transaction::revisionId)
-
-        override fun getSource(path: String): SourceFile? =
-            snapshot.get<SourceFile?>(path)
-
-        override fun getHistory(): Sequence<Transaction> = history.asSequence()
-    }
 }

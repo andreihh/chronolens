@@ -22,6 +22,7 @@ import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.returnTypeModifierOf
@@ -125,10 +126,11 @@ internal data class ParserContext(
 
     fun visit(node: CompilationUnit): SourceFile {
         requireNotMalformed(node)
+        requireValidPath(path)
         val childContext = copy(parentId = path)
         val entities =
             node.types().requireIsInstance<AbstractTypeDeclaration>().map(childContext::visit)
         entities.map(Type::name).requireDistinct()
-        return SourceFile(path, entities.toSet())
+        return SourceFile(SourcePath(path), entities.toSet())
     }
 }
