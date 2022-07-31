@@ -21,7 +21,11 @@ public sealed class SourceNodeId {
     abstract override fun toString(): String
 }
 
-/** The qualified path of a [SourceFile]. */
+/**
+ * The qualified path of a [SourceFile].
+ *
+ * @throws IllegalArgumentException if the given [path] is invalid
+ */
 public data class SourcePath(val path: String) : SourceNodeId() {
     init {
         require(isValid(path)) { "Invalid source path '$path'!" }
@@ -41,7 +45,7 @@ public data class SourcePath(val path: String) : SourceNodeId() {
 /**
  * The simple name of a [Type] or [Variable].
  *
- * @throws IllegalArgumentException if the given [identifier] is not valid
+ * @throws IllegalArgumentException if the given [identifier] is invalid
  */
 public data class Identifier(val identifier: String) : SourceNodeId() {
     init {
@@ -57,7 +61,11 @@ public data class Identifier(val identifier: String) : SourceNodeId() {
     }
 }
 
-/** The signature of a [Function]. */
+/**
+ * The signature of a [Function].
+ *
+ * @throws [IllegalArgumentException] if the given [signature] is invalid
+ */
 public data class Signature(val signature: String) : SourceNodeId() {
     init {
         require(isValid(signature)) { "Invalid signature '$signature'!" }
