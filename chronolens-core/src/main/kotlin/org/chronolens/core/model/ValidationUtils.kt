@@ -47,7 +47,7 @@ internal val sourcePathRegex = file
  * node or if this node contains duplicated children ids
  */
 internal fun SourceNode.validateChildrenIds() {
-    val ids = HashSet<Pair<SourceNodeKind, String>>(children.size)
+    val ids = HashSet<Pair<SourceNodeKind, SourceNodeId>>(children.size)
     for (child in children) {
         require(child.kind != SOURCE_FILE) {
             "Node '$simpleId' cannot contain source file '${child.simpleId}'!"

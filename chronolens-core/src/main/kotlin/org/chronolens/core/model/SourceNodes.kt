@@ -28,13 +28,13 @@ import org.chronolens.core.model.SourceNodeKind.VARIABLE
  */
 public sealed class SourceNode {
     /** Returns the simple, unqualified id of this source node. */
-    public val simpleId: String
+    public val simpleId: SourceNodeId
         get() =
             when (this) {
-                is SourceFile -> path.path
-                is Type -> name.identifier
-                is Function -> signature.signature
-                is Variable -> name.identifier
+                is SourceFile -> path
+                is Type -> name
+                is Function -> signature
+                is Variable -> name
             }
 
     /** The kind of this source node. Denotes a final, non-abstract type. */
