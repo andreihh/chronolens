@@ -17,8 +17,9 @@
 package org.chronolens.java
 
 import org.chronolens.core.model.Function
+import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
+import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.Type
@@ -65,10 +66,6 @@ internal data class ParserContext(
 
     private fun getTypeId(name: String): String = "$parentId$CONTAINER_SEPARATOR$name"
 
-    private fun getFunctionId(signature: String): String = "$parentId$MEMBER_SEPARATOR$signature"
-
-    private fun getVariableId(name: String): String = "$parentId$MEMBER_SEPARATOR$name"
-
     private fun visitMember(node: Any?): SourceEntity? =
         when (node) {
             is AbstractTypeDeclaration -> visit(node)
@@ -82,12 +79,13 @@ internal data class ParserContext(
 
     private fun visit(node: AbstractTypeDeclaration): Type {
         requireNotMalformed(node)
+        requireValidIdentifier(node.name())
         val id = getTypeId(node.name())
         val childContext = copy(parentId = id)
         val members = node.members().mapNotNull(childContext::visitMember)
         members.map(SourceEntity::simpleId).requireDistinct()
         return Type(
-            name = node.name(),
+            name = Identifier(node.name()),
             supertypes = node.supertypes(),
             modifiers = node.modifierSet(),
             members = members.toSet()
@@ -96,25 +94,29 @@ internal data class ParserContext(
 
     private fun visit(node: AnnotationTypeMemberDeclaration): Variable {
         requireNotMalformed(node)
-        return Variable(node.name(), node.modifierSet(), node.defaultValue())
+        requireValidIdentifier(node.name())
+        return Variable(Identifier(node.name()), node.modifierSet(), node.defaultValue())
     }
 
     private fun visit(node: EnumConstantDeclaration): Variable {
         requireNotMalformed(node)
-        return Variable(node.name(), node.modifierSet(), node.initializer())
+        requireValidIdentifier(node.name())
+        return Variable(Identifier(node.name()), node.modifierSet(), node.initializer())
     }
 
     private fun visit(node: VariableDeclaration): Variable {
         requireNotMalformed(node)
-        return Variable(node.name(), node.modifierSet(), node.initializer())
+        requireValidIdentifier(node.name())
+        return Variable(Identifier(node.name()), node.modifierSet(), node.initializer())
     }
 
     private fun visit(node: MethodDeclaration): Function {
         requireNotMalformed(node)
+        requireValidSignature(node.signature())
         val parameters = node.parameterList()
         parameters.requireDistinct()
         return Function(
-            signature = node.signature(),
+            signature = Signature(node.signature()),
             parameters = parameters,
             modifiers = node.modifierSet(),
             body = node.body()

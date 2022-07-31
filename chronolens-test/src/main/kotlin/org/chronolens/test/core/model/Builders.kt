@@ -19,7 +19,9 @@
 package org.chronolens.test.core.model
 
 import org.chronolens.core.model.Function
+import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
@@ -101,7 +103,7 @@ public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
 
     override fun build(parentId: String): Type {
         val id = "$parentId$CONTAINER_SEPARATOR$name"
-        return Type(name, supertypes, modifiers, members.map { it.build(id) }.toSet())
+        return Type(Identifier(name), supertypes, modifiers, members.map { it.build(id) }.toSet())
     }
 }
 
@@ -130,7 +132,7 @@ public class FunctionBuilder(private val signature: String) : EntityBuilder<Func
     }
 
     override fun build(parentId: String): Function =
-        Function(signature, parameters, modifiers, body)
+        Function(Signature(signature), parameters, modifiers, body)
 }
 
 public class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
@@ -152,7 +154,7 @@ public class VariableBuilder(private val name: String) : EntityBuilder<Variable>
     }
 
     override fun build(parentId: String): Variable =
-        Variable(name = name, modifiers = modifiers, initializer = initializer)
+        Variable(name = Identifier(name), modifiers = modifiers, initializer = initializer)
 }
 
 private inline fun <reified T> newBuilder(simpleId: String): T =

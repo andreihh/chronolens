@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,40 +16,37 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.sourceFile
-import org.chronolens.test.core.model.sourceTree
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.chronolens.test.core.model.assertEquals
+import org.chronolens.test.core.model.sourceFile
+import org.chronolens.test.core.model.sourceTree
+import org.junit.Test
 
 class SourceTreeTest {
-    @Test fun `test create source tree with duplicated source paths throws`() {
+    @Test
+    fun `test create source tree with duplicated source paths throws`() {
         val source = sourceFile("src/Test.java").build {}
-        assertFailsWith<IllegalArgumentException> {
-            SourceTree.of(listOf(source, source))
-        }
+        assertFailsWith<IllegalArgumentException> { SourceTree.of(listOf(source, source)) }
     }
 
-    @Test fun `test source tree returns structurally equal nodes`() {
-        val classVersion = Variable(name = "version", initializer = listOf("1"))
-        val classFunction = Function(signature = "getVersion()")
-        val classType = Type(
-            name = "IClass",
-            supertypes = setOf("Object"),
-            modifiers = setOf("interface"),
-            members = setOf(classVersion, classFunction)
-        )
-        val version = Variable(name = "version", initializer = listOf("2"))
-        val testSource = SourceFile(
-            path = "src/Test.java",
-            entities = setOf(classType, version)
-        )
-        val expectedNodes =
-            setOf(testSource, version, classType, classVersion, classFunction)
+    @Test
+    fun `test source tree returns structurally equal nodes`() {
+        val classVersion = Variable(name = Identifier("version"), initializer = listOf("1"))
+        val classFunction = Function(signature = Signature("getVersion()"))
+        val classType =
+            Type(
+                name = Identifier("IClass"),
+                supertypes = setOf("Object"),
+                modifiers = setOf("interface"),
+                members = setOf(classVersion, classFunction)
+            )
+        val version = Variable(name = Identifier("version"), initializer = listOf("2"))
+        val testSource = SourceFile(path = "src/Test.java", entities = setOf(classType, version))
+        val expectedNodes = setOf(testSource, version, classType, classVersion, classFunction)
 
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
@@ -62,13 +59,13 @@ class SourceTreeTest {
                 variable("version") { +"2" }
             }
         }
-        val actualNodes =
-            sourceTree.walk().map(SourceTreeNode<*>::sourceNode).toSet()
+        val actualNodes = sourceTree.walk().map(SourceTreeNode<*>::sourceNode).toSet()
 
         assertEquals(expectedNodes, actualNodes)
     }
 
-    @Test fun `test contains existing node returns true`() {
+    @Test
+    fun `test contains existing node returns true`() {
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {
@@ -86,7 +83,8 @@ class SourceTreeTest {
         }
     }
 
-    @Test fun `test contains non-existing node returns false`() {
+    @Test
+    fun `test contains non-existing node returns false`() {
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {
@@ -102,9 +100,10 @@ class SourceTreeTest {
         assertFalse("src/Test.java:IClass#VERSION" in sourceTree)
     }
 
-    @Test fun `test get node returns structurally equal node`() {
-        val expectedNode = sourceFile("src/Test.java").type("IClass")
-            .variable("version").build { +"1" }
+    @Test
+    fun `test get node returns structurally equal node`() {
+        val expectedNode =
+            sourceFile("src/Test.java").type("IClass").variable("version").build { +"1" }
 
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
@@ -117,27 +116,22 @@ class SourceTreeTest {
                 variable("version") { +"2" }
             }
         }
-        val nodeId = sourceFile("src/Test.java").type("IClass")
-            .variable("version").id()
+        val nodeId = sourceFile("src/Test.java").type("IClass").variable("version").id()
         val actualNode = sourceTree.get<Variable>(nodeId)
 
         assertEquals(expectedNode, actualNode)
     }
 
-    @Test fun `test get id with incorrect type throws`() {
-        val sourceTree = sourceTree {
-            sourceFile("src/Test.java") {
-                type("IClass") {}
-            }
-        }
+    @Test
+    fun `test get id with incorrect type throws`() {
+        val sourceTree = sourceTree { sourceFile("src/Test.java") { type("IClass") {} } }
         val nodeId = sourceFile("src/Test.java").type("IClass").id()
 
-        assertFailsWith<IllegalStateException> {
-            sourceTree.get<Variable>(nodeId)
-        }
+        assertFailsWith<IllegalStateException> { sourceTree.get<Variable>(nodeId) }
     }
 
-    @Test fun `test get non-existing id throws`() {
+    @Test
+    fun `test get non-existing id throws`() {
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {}
@@ -146,12 +140,11 @@ class SourceTreeTest {
         }
         val nodeId = sourceFile("src/Test.java").function("getVersion()").id()
 
-        assertFailsWith<IllegalStateException> {
-            sourceTree.get<Function>(nodeId)
-        }
+        assertFailsWith<IllegalStateException> { sourceTree.get<Function>(nodeId) }
     }
 
-    @Test fun `test get non-existing id returns null`() {
+    @Test
+    fun `test get non-existing id returns null`() {
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {}
@@ -163,7 +156,8 @@ class SourceTreeTest {
         assertNull(sourceTree[nodeId])
     }
 
-    @Test fun `test apply chained edits`() {
+    @Test
+    fun `test apply chained edits`() {
         val expected = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {
@@ -174,15 +168,12 @@ class SourceTreeTest {
             }
         }
 
-        val actual = sourceTree {
-            sourceFile("src/Main.java") {}
-        }
+        val actual = sourceTree { sourceFile("src/Main.java") {} }
         actual.apply(
             sourceFile("src/Main.java").remove(),
             sourceFile("src/Test.java").add {},
             sourceFile("src/Test.java").type("Test").add {},
-            sourceFile("src/Test.java").type("Test")
-                .function("getVersion()").add {},
+            sourceFile("src/Test.java").type("Test").function("getVersion()").add {},
             sourceFile("src/Test.java").type("Test").edit {
                 modifiers { +"abstract" }
                 supertypes { +"Object" }

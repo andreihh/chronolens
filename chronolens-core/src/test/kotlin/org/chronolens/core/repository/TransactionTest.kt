@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,43 +16,50 @@
 
 package org.chronolens.core.repository
 
-import org.chronolens.core.model.AddNode
-import org.chronolens.core.model.EditType
-import org.chronolens.core.model.RemoveNode
-import org.chronolens.core.model.Type
-import org.junit.Test
 import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import org.chronolens.core.model.AddNode
+import org.chronolens.core.model.EditType
+import org.chronolens.core.model.Identifier
+import org.chronolens.core.model.RemoveNode
+import org.chronolens.core.model.Type
+import org.junit.Test
 
 class TransactionTest {
-    @Test fun `test transaction with empty id throws`() {
+    @Test
+    fun `test transaction with empty id throws`() {
         assertFailsWith<IllegalArgumentException> {
             Transaction(revisionId = "", date = Instant.now(), author = "")
         }
     }
 
-    @Test fun `test transaction with invalid characters in id throws`() {
+    @Test
+    fun `test transaction with invalid characters in id throws`() {
         assertFailsWith<IllegalArgumentException> {
             Transaction(revisionId = "12aA_", date = Instant.now(), author = "")
         }
     }
 
-    @Test fun `test change set`() {
+    @Test
+    fun `test change set`() {
         val expected = setOf("Main.java", "Test.java", "MainTest.java")
-        val actual = Transaction(
-            revisionId = "123",
-            date = Instant.now(),
-            author = "",
-            edits = listOf(
-                AddNode(
-                    id = "Main.java:Main:MainType",
-                    node = Type("MainType"),
-                ),
-                RemoveNode("Test.java:Test:TestType"),
-                EditType("MainTest.java:MainTest")
-            )
-        ).changeSet
+        val actual =
+            Transaction(
+                    revisionId = "123",
+                    date = Instant.now(),
+                    author = "",
+                    edits =
+                        listOf(
+                            AddNode(
+                                id = "Main.java:Main:MainType",
+                                node = Type(Identifier("MainType")),
+                            ),
+                            RemoveNode("Test.java:Test:TestType"),
+                            EditType("MainTest.java:MainTest")
+                        )
+                )
+                .changeSet
         assertEquals(expected, actual)
     }
 }

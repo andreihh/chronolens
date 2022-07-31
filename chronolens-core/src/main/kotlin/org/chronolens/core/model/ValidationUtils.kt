@@ -27,8 +27,8 @@ import org.chronolens.core.model.SourcePath.Companion.PATH_SEPARATOR
 private const val separators = "$PATH_SEPARATOR$CONTAINER_SEPARATOR$MEMBER_SEPARATOR\"\\\\"
 
 private val fileComponent = Regex("(?>[^$separators]++)")
-private val identifierRegex = Regex("(?>[^$separators()]++)")
-private val signatureRegex = Regex("(?>$identifierRegex\\([^$separators]*\\))")
+internal val identifierRegex = Regex("(?>[^$separators()]++)")
+internal val signatureRegex = Regex("(?>$identifierRegex\\([^$separators]*\\))")
 
 private val file = Regex("$fileComponent($PATH_SEPARATOR$fileComponent)*+")
 private val type = Regex("$file($CONTAINER_SEPARATOR$identifierRegex)+?")
@@ -72,14 +72,6 @@ internal fun Function.validateParameterNames() {
 
 internal fun validatePath(path: String) {
     require(path.matches(file)) { "Invalid path '$path'!" }
-}
-
-internal fun validateIdentifier(identifier: String) {
-    require(identifier.matches(identifierRegex)) { "Invalid identifier '$identifier'!" }
-}
-
-internal fun validateSignature(signature: String) {
-    require(signature.matches(signatureRegex)) { "Invalid signature '$signature'!" }
 }
 
 /**

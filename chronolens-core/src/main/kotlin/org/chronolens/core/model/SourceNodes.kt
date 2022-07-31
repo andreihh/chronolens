@@ -32,9 +32,9 @@ public sealed class SourceNode {
         get() =
             when (this) {
                 is SourceFile -> path
-                is Type -> name
-                is Function -> signature
-                is Variable -> name
+                is Type -> name.identifier
+                is Function -> signature.signature
+                is Variable -> name.identifier
             }
 
     /** The kind of this source node. Denotes a final, non-abstract type. */
@@ -86,18 +86,17 @@ public data class SourceFile(
  * @property supertypes the supertypes of this type
  * @property modifiers the modifiers of this type
  * @property members the members of this type (functions, variables and contained types)
- * @throws IllegalArgumentException if the [name] is not valid or if the ids of the [members] are
- * not valid or if the [members] contain duplicated ids
+ * @throws IllegalArgumentException if the ids of the [members] are not valid or if the [members]
+ * contain duplicated ids
  */
 public data class Type(
-    val name: String,
+    val name: Identifier,
     val supertypes: Set<String> = emptySet(),
     val modifiers: Set<String> = emptySet(),
     val members: Set<SourceEntity> = emptySet(),
 ) : SourceEntity() {
 
     init {
-        validateIdentifier(name)
         validateChildrenIds()
     }
 }
@@ -113,18 +112,16 @@ public data class Type(
  * @property parameters the names of the parameters of this function
  * @property modifiers the modifiers of this function
  * @property body the body lines of this function, or an empty list if it doesn't have a body
- * @throws IllegalArgumentException if the [signature] is not valid or if the [parameters] contain
- * invalid or duplicated names
+ * @throws IllegalArgumentException if the [parameters] contain invalid or duplicated names
  */
 public data class Function(
-    val signature: String,
+    val signature: Signature,
     val parameters: List<String> = emptyList(),
     val modifiers: Set<String> = emptySet(),
     val body: List<String> = emptyList(),
 ) : SourceEntity() {
 
     init {
-        validateSignature(signature)
         validateParameterNames()
     }
 }
@@ -136,18 +133,12 @@ public data class Function(
  * @property modifiers the modifiers of this variable
  * @property initializer the initializer lines of this variable, or an empty list if it doesn't have
  * an initializer
- * @throws IllegalArgumentException if the [name] is not valid
  */
 public data class Variable(
-    val name: String,
+    val name: Identifier,
     val modifiers: Set<String> = emptySet(),
     val initializer: List<String> = emptyList(),
-) : SourceEntity() {
-
-    init {
-        validateIdentifier(name)
-    }
-}
+) : SourceEntity() {}
 
 /** The final, non-abstract type of a source node. */
 public enum class SourceNodeKind {

@@ -35,20 +35,36 @@ public data class SourcePath(val path: String) : SourceNodeId() {
     }
 }
 
-/** The simple name of a [Type] or [Variable]. */
+/**
+ * The simple name of a [Type] or [Variable].
+ *
+ * @throws IllegalArgumentException if the given [identifier] is not valid
+ */
 public data class Identifier(val identifier: String) : SourceNodeId() {
     init {
-        validateIdentifier(identifier)
+        require(isValid(identifier)) { "Invalid identifier '$identifier'!" }
     }
 
     override fun toString(): String = identifier
+
+    public companion object {
+        /** Returns whether the given [identifier] is valid. */
+        @JvmStatic
+        public fun isValid(identifier: String): Boolean = identifier.matches(identifierRegex)
+    }
 }
 
 /** The signature of a [Function]. */
 public data class Signature(val signature: String) : SourceNodeId() {
     init {
-        validateSignature(signature)
+        require(isValid(signature)) { "Invalid signature '$signature'!" }
     }
 
     override fun toString(): String = signature
+
+    public companion object {
+        /** Returns whether the given [signature] is valid. */
+        @JvmStatic
+        public fun isValid(signature: String): Boolean = signature.matches(signatureRegex)
+    }
 }
