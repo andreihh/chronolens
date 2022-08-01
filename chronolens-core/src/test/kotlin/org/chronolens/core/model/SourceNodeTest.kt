@@ -50,7 +50,7 @@ class SourceNodeTest {
     @Test
     fun `test duplicated parameter in function throws`() {
         val signature = "getVersion(int, int)"
-        val parameters = listOf("param", "param")
+        val parameters = listOf(Identifier("param"), Identifier("param"))
         assertFailsWith<IllegalArgumentException> {
             Function(signature = Signature(signature), parameters = parameters)
         }

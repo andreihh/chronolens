@@ -94,26 +94,26 @@ public class EditTypeBuilder(private val id: String) {
 @BuilderMarker
 public class EditFunctionBuilder(private val id: String) {
     private val modifierEdits = mutableListOf<SetEdit<String>>()
-    private val parameterEdits = mutableListOf<ListEdit<String>>()
+    private val parameterEdits = mutableListOf<ListEdit<Identifier>>()
     private val bodyEdits = mutableListOf<ListEdit<String>>()
 
-    public fun parameters(
-        init: Init<ListEditsBuilder<String>>,
-    ): EditFunctionBuilder {
-        parameterEdits += ListEditsBuilder<String>().apply(init).build()
+    public fun parameters(init: Init<ListEditsBuilder<String>>): EditFunctionBuilder {
+        parameterEdits +=
+            ListEditsBuilder<String>().apply(init).build().map { edit ->
+                when (edit) {
+                    is ListEdit.Add -> ListEdit.Add(edit.index, Identifier(edit.value))
+                    is ListEdit.Remove -> ListEdit.Remove(edit.index)
+                }
+            }
         return this
     }
 
-    public fun modifiers(
-        init: Init<SetEditsBuilder<String>>,
-    ): EditFunctionBuilder {
+    public fun modifiers(init: Init<SetEditsBuilder<String>>): EditFunctionBuilder {
         modifierEdits += SetEditsBuilder<String>().apply(init).build()
         return this
     }
 
-    public fun body(
-        init: Init<ListEditsBuilder<String>>,
-    ): EditFunctionBuilder {
+    public fun body(init: Init<ListEditsBuilder<String>>): EditFunctionBuilder {
         bodyEdits += ListEditsBuilder<String>().apply(init).build()
         return this
     }
@@ -126,16 +126,12 @@ public class EditVariableBuilder(private val id: String) {
     private val modifierEdits = mutableListOf<SetEdit<String>>()
     private val initializerEdits = mutableListOf<ListEdit<String>>()
 
-    public fun modifiers(
-        init: Init<SetEditsBuilder<String>>,
-    ): EditVariableBuilder {
+    public fun modifiers(init: Init<SetEditsBuilder<String>>): EditVariableBuilder {
         modifierEdits += SetEditsBuilder<String>().apply(init).build()
         return this
     }
 
-    public fun initializer(
-        init: Init<ListEditsBuilder<String>>,
-    ): EditVariableBuilder {
+    public fun initializer(init: Init<ListEditsBuilder<String>>): EditVariableBuilder {
         initializerEdits += ListEditsBuilder<String>().apply(init).build()
         return this
     }

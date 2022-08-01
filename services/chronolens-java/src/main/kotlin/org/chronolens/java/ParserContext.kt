@@ -115,11 +115,10 @@ internal data class ParserContext(
     private fun visit(node: MethodDeclaration): Function {
         requireNotMalformed(node)
         requireValidSignature(node.signature())
-        val parameters = node.parameterList()
-        parameters.requireDistinct()
+        node.parameterList().onEach(::requireValidIdentifier).requireDistinct()
         return Function(
             signature = Signature(node.signature()),
-            parameters = parameters,
+            parameters = node.parameterList().map(::Identifier),
             modifiers = node.modifierSet(),
             body = node.body()
         )

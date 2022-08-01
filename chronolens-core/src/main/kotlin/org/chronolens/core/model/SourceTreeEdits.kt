@@ -172,7 +172,7 @@ public data class EditType(
  */
 public data class EditFunction(
     override val id: String,
-    val parameterEdits: List<ListEdit<String>> = emptyList(),
+    val parameterEdits: List<ListEdit<Identifier>> = emptyList(),
     val modifierEdits: List<SetEdit<String>> = emptyList(),
     val bodyEdits: List<ListEdit<String>> = emptyList()
 ) : SourceTreeEdit() {

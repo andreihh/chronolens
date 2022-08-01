@@ -113,13 +113,16 @@ public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
 
 public class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
     private var modifiers = emptySet<String>()
-    private var parameters = emptyList<String>()
+    private var parameters = emptyList<Identifier>()
     private val body = mutableListOf<String>()
 
-    public fun parameters(vararg parameters: String): FunctionBuilder {
+    public fun parameters(vararg parameters: Identifier): FunctionBuilder {
         this.parameters = parameters.requireDistinct().toList()
         return this
     }
+
+    public fun parameters(vararg parameters: String): FunctionBuilder =
+        parameters(*parameters.map(::Identifier).toTypedArray())
 
     public fun modifiers(vararg modifiers: String): FunctionBuilder {
         this.modifiers = modifiers.requireDistinct()

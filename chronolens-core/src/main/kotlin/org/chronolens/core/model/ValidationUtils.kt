@@ -21,7 +21,6 @@ package org.chronolens.core.model
 
 import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
-import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
 import org.chronolens.core.model.SourcePath.Companion.PATH_SEPARATOR
 
 private const val separators = "$PATH_SEPARATOR$CONTAINER_SEPARATOR$MEMBER_SEPARATOR\"\\\\"
@@ -39,38 +38,6 @@ private val entity = Regex("$function|$type|$variable")
 private val node = Regex("$file|$entity")
 
 internal val sourcePathRegex = file
-
-/**
- * Validates the ids of the children of this node.
- *
- * @throws IllegalArgumentException if any child has an id which doesn't start with the id of this
- * node or if this node contains duplicated children ids
- */
-internal fun SourceNode.validateChildrenIds() {
-    val ids = HashSet<Pair<SourceNodeKind, SourceNodeId>>(children.size)
-    for (child in children) {
-        require(child.kind != SOURCE_FILE) {
-            "Node '$simpleId' cannot contain source file '${child.simpleId}'!"
-        }
-        require(child.kind to child.simpleId !in ids) {
-            "Node '$simpleId' contains duplicated child id '${child.simpleId}'!"
-        }
-        ids += child.kind to child.simpleId
-    }
-}
-
-/**
- * Validates the names of the parameters of this function.
- *
- * @throws IllegalArgumentException if this function has duplicated parameter names
- */
-internal fun Function.validateParameterNames() {
-    val names = HashSet<String>(parameters.size)
-    for (name in parameters) {
-        require(name !in names) { "Function '$simpleId' contains duplicated parameter '$name'!" }
-        names += name
-    }
-}
 
 /**
  * Validates the given [SourceNode] [id].

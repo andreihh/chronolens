@@ -110,11 +110,11 @@ public data class Type(
  * @property parameters the names of the parameters of this function
  * @property modifiers the modifiers of this function
  * @property body the body lines of this function, or an empty list if it doesn't have a body
- * @throws IllegalArgumentException if the [parameters] contain invalid or duplicated names
+ * @throws IllegalArgumentException if the [parameters] contain duplicates
  */
 public data class Function(
     val signature: Signature,
-    val parameters: List<String> = emptyList(),
+    val parameters: List<Identifier> = emptyList(),
     val modifiers: Set<String> = emptySet(),
     val body: List<String> = emptyList(),
 ) : SourceEntity {
@@ -144,4 +144,35 @@ public enum class SourceNodeKind {
     TYPE,
     FUNCTION,
     VARIABLE
+}
+
+/**
+ * Validates the ids of the children of this node.
+ *
+ * @throws IllegalArgumentException if this node contains duplicated children ids
+ */
+private fun SourceNode.validateChildrenIds() {
+    val ids = HashSet<Pair<SourceNodeKind, SourceNodeId>>(children.size)
+    for (child in children) {
+        require(child.kind != SOURCE_FILE) {
+            "Node '$simpleId' cannot contain source file '${child.simpleId}'!"
+        }
+        require(child.kind to child.simpleId !in ids) {
+            "Node '$simpleId' contains duplicated child id '${child.simpleId}'!"
+        }
+        ids += child.kind to child.simpleId
+    }
+}
+
+/**
+ * Validates the names of the parameters of this function.
+ *
+ * @throws IllegalArgumentException if this function has duplicated parameter names
+ */
+private fun Function.validateParameterNames() {
+    val names = HashSet<Identifier>(parameters.size)
+    for (name in parameters) {
+        require(name !in names) { "Function '$signature' contains duplicated parameter '$name'!" }
+        names += name
+    }
 }
