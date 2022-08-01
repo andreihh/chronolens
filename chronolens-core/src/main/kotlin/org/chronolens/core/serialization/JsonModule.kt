@@ -238,18 +238,14 @@ private object QualifiedSourceNodeIdDeserializer :
     override fun deserialize(
         p: JsonParser,
         ctxt: DeserializationContext?
-    ): QualifiedSourceNodeId<*> = tryParseQualifiedSourceNodeId {
-        QualifiedSourceNodeId.parseFrom(p.valueAsString)
-    }
+    ): QualifiedSourceNodeId<*> = tryParseQualifiedSourceNodeId(p.valueAsString)
 }
 
 private object QualifiedSourceNodeIdKeyDeserializer : KeyDeserializer() {
     override fun deserializeKey(
         key: String,
         ctxt: DeserializationContext?
-    ): QualifiedSourceNodeId<*> = tryParseQualifiedSourceNodeId {
-        QualifiedSourceNodeId.parseFrom(key)
-    }
+    ): QualifiedSourceNodeId<*> = tryParseQualifiedSourceNodeId(key)
 }
 
 private class InvalidSourceNodeIdException(cause: Throwable) : JsonProcessingException(cause)
@@ -262,35 +258,32 @@ private object SourceNodeIdSerializer : StdSerializer<SourceNodeId>(SourceNodeId
 
 private object SourcePathDeserializer : StdDeserializer<SourcePath>(SourcePath::class.java) {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): SourcePath =
-        tryParseSourceNodeId {
-            SourcePath(p.valueAsString)
-        }
+        tryParseSourceNodeId(p.valueAsString, ::SourcePath)
 }
 
 private object IdentifierDeserializer : StdDeserializer<Identifier>(Identifier::class.java) {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): Identifier =
-        tryParseSourceNodeId {
-            Identifier(p.valueAsString)
-        }
+        tryParseSourceNodeId(p.valueAsString, ::Identifier)
 }
 
 private object SignatureDeserializer : StdDeserializer<Signature>(Signature::class.java) {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): Signature =
-        tryParseSourceNodeId {
-            Signature(p.valueAsString)
-        }
+        tryParseSourceNodeId(p.valueAsString, ::Signature)
 }
 
-private fun <T : QualifiedSourceNodeId<*>> tryParseQualifiedSourceNodeId(parseBlock: () -> T): T =
+private fun tryParseQualifiedSourceNodeId(rawQualifiedId: String): QualifiedSourceNodeId<*> =
     try {
-        parseBlock()
+        QualifiedSourceNodeId.parseFrom(rawQualifiedId)
     } catch (e: IllegalArgumentException) {
         throw InvalidQualifiedSourceNodeIdException(e)
     }
 
-private fun <T : SourceNodeId> tryParseSourceNodeId(parseBlock: () -> T): T =
+private fun <T : SourceNodeId> tryParseSourceNodeId(
+    rawSimpleId: String,
+    builder: (String) -> T
+): T =
     try {
-        parseBlock()
+        builder(rawSimpleId)
     } catch (e: IllegalArgumentException) {
         throw InvalidSourceNodeIdException(e)
     }

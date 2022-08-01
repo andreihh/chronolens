@@ -160,7 +160,7 @@ class JsonModuleTest {
         val qualifiedPath = QualifiedSourceNodeId.fromPath("src/Main.java")
         val src = "\"$qualifiedPath\"".byteInputStream()
 
-        assertEquals(qualifiedPath, JsonModule.deserialize(src))
+        assertEquals(qualifiedPath, JsonModule.deserialize<QualifiedSourceNodeId<*>>(src))
     }
 
     @Test

@@ -161,7 +161,7 @@ private fun SourceContainer.validateChildrenIds() {
             "Node '$simpleId' cannot contain source file '${child.simpleId}'!"
         }
         require(child.kind to child.simpleId !in ids) {
-            "Node '$simpleId' contains duplicated child id '${child.simpleId}'!"
+            "Node '$simpleId' contains duplicated child ('${child.kind}', '${child.simpleId}')!"
         }
         ids += child.kind to child.simpleId
     }
