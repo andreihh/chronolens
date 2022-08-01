@@ -139,7 +139,7 @@ public data class RemoveNode(override val id: String) : SourceTreeEdit() {
  */
 public data class EditType(
     override val id: String,
-    val supertypeEdits: List<SetEdit<String>> = emptyList(),
+    val supertypeEdits: List<SetEdit<Identifier>> = emptyList(),
     val modifierEdits: List<SetEdit<String>> = emptyList()
 ) : SourceTreeEdit() {
 

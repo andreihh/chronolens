@@ -40,7 +40,7 @@ class SourceTreeTest {
         val classType =
             Type(
                 name = Identifier("IClass"),
-                supertypes = setOf("Object"),
+                supertypes = setOf(Identifier("Object")),
                 modifiers = setOf("interface"),
                 members = setOf(classVersion, classFunction)
             )

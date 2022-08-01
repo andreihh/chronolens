@@ -81,13 +81,14 @@ internal data class ParserContext(
     private fun visit(node: AbstractTypeDeclaration): Type {
         requireNotMalformed(node)
         requireValidIdentifier(node.name())
+        node.supertypes().forEach(::requireValidIdentifier)
         val id = getTypeId(node.name())
         val childContext = copy(parentId = id)
         val members = node.members().mapNotNull(childContext::visitMember)
         members.map(SourceEntity::simpleId).requireDistinct()
         return Type(
             name = Identifier(node.name()),
-            supertypes = node.supertypes(),
+            supertypes = node.supertypes().map(::Identifier).toSet(),
             modifiers = node.modifierSet(),
             members = members.toSet()
         )

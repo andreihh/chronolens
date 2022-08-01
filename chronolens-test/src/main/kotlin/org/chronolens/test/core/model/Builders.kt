@@ -72,7 +72,7 @@ public class SourceFileBuilder(private val path: String) {
 }
 
 public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
-    private var supertypes = emptySet<String>()
+    private var supertypes = emptySet<Identifier>()
     private var modifiers = emptySet<String>()
     private val members = mutableListOf<EntityBuilder<*>>()
 
@@ -84,10 +84,13 @@ public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
         return this
     }
 
-    public fun supertypes(vararg supertypes: String): TypeBuilder {
+    public fun supertypes(vararg supertypes: Identifier): TypeBuilder {
         this.supertypes = supertypes.requireDistinct()
         return this
     }
+
+    public fun supertypes(vararg supertypes: String): TypeBuilder =
+        supertypes(*supertypes.map(::Identifier).toTypedArray())
 
     public fun modifiers(vararg modifiers: String): TypeBuilder {
         this.modifiers = modifiers.requireDistinct()

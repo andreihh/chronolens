@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.chronolens.test.core.model
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditType
 import org.chronolens.core.model.EditVariable
+import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.ListEdit
 import org.chronolens.core.model.SetEdit
 import org.chronolens.test.core.BuilderMarker
@@ -68,13 +69,17 @@ public class ListEditsBuilder<T> {
 
 @BuilderMarker
 public class EditTypeBuilder(private val id: String) {
-    private val supertypeEdits = mutableListOf<SetEdit<String>>()
+    private val supertypeEdits = mutableListOf<SetEdit<Identifier>>()
     private val modifierEdits = mutableListOf<SetEdit<String>>()
 
-    public fun supertypes(
-        init: Init<SetEditsBuilder<String>>,
-    ): EditTypeBuilder {
-        supertypeEdits += SetEditsBuilder<String>().apply(init).build()
+    public fun supertypes(init: Init<SetEditsBuilder<String>>): EditTypeBuilder {
+        supertypeEdits +=
+            SetEditsBuilder<String>().apply(init).build().map { edit ->
+                when (edit) {
+                    is SetEdit.Add -> SetEdit.Add(Identifier(edit.value))
+                    is SetEdit.Remove -> SetEdit.Remove(Identifier(edit.value))
+                }
+            }
         return this
     }
 
@@ -113,8 +118,7 @@ public class EditFunctionBuilder(private val id: String) {
         return this
     }
 
-    public fun build(): EditFunction =
-        EditFunction(id, parameterEdits, modifierEdits, bodyEdits)
+    public fun build(): EditFunction = EditFunction(id, parameterEdits, modifierEdits, bodyEdits)
 }
 
 @BuilderMarker
@@ -136,6 +140,5 @@ public class EditVariableBuilder(private val id: String) {
         return this
     }
 
-    public fun build(): EditVariable =
-        EditVariable(id, modifierEdits, initializerEdits)
+    public fun build(): EditVariable = EditVariable(id, modifierEdits, initializerEdits)
 }

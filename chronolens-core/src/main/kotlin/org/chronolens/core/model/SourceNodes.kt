@@ -89,7 +89,7 @@ public data class SourceFile(
  */
 public data class Type(
     val name: Identifier,
-    val supertypes: Set<String> = emptySet(),
+    val supertypes: Set<Identifier> = emptySet(),
     val modifiers: Set<String> = emptySet(),
     val members: Set<SourceEntity> = emptySet(),
 ) : SourceEntity {
