@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@
 package org.chronolens.core.parsing
 
 import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.validateFileId
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.serialization.JsonException
 import org.chronolens.core.serialization.JsonModule
 
 class ParserMock : Parser() {
-    override fun canParse(path: String): Boolean = path.endsWith(".mock")
+    override fun canParse(path: SourcePath): Boolean = path.toString().endsWith(".mock")
 
-    override fun parse(path: String, rawSource: String): SourceFile = try {
-        validateFileId(path)
-        JsonModule.deserialize(rawSource.byteInputStream())
-    } catch (e: JsonException) {
-        throw SyntaxErrorException(e)
-    }
+    override fun parse(path: SourcePath, rawSource: String): SourceFile =
+        try {
+            JsonModule.deserialize(rawSource.byteInputStream())
+        } catch (e: JsonException) {
+            throw SyntaxErrorException(e)
+        }
 }

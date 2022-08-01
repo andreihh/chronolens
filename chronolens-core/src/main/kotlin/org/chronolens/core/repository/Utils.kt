@@ -19,7 +19,6 @@ package org.chronolens.core.repository
 import java.io.File
 import java.io.IOException
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.repository.Repository.Companion.isValidPath
 import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
 import org.chronolens.core.serialization.JsonException
 import org.chronolens.core.serialization.JsonModule
@@ -32,16 +31,6 @@ import org.chronolens.core.versioning.Revision
  */
 internal fun validateRevisionId(id: String) {
     require(isValidRevisionId(id)) { "Invalid revision id '$id'!" }
-}
-
-/**
- * Validates the given [path].
- *
- * @throws IllegalArgumentException if the given [path] is invalid
- */
-internal fun validatePath(path: String): String {
-    require(isValidPath(path)) { "Invalid source file path '$path'!" }
-    return path
 }
 
 /**
@@ -68,9 +57,9 @@ internal fun checkValidRevisionId(id: String): String {
  *
  * @throws CorruptedRepositoryException if the given [path] is invalid
  */
-internal fun checkValidPath(path: String): String {
+internal fun checkValidPath(path: String): SourcePath {
     checkState(SourcePath.isValid(path)) { "Invalid source file path '$path'!" }
-    return path
+    return SourcePath(path)
 }
 
 /**
@@ -79,10 +68,9 @@ internal fun checkValidPath(path: String): String {
  * @throws CorruptedRepositoryException if the given [sources] contain any invalid or duplicated
  * paths
  */
-internal fun checkValidSources(sources: Collection<String>): Set<String> {
-    val sourceFiles = LinkedHashSet<String>(sources.size)
-    for (source in sources) {
-        checkValidPath(source)
+internal fun checkValidSources(sources: Collection<String>): Set<SourcePath> {
+    val sourceFiles = LinkedHashSet<SourcePath>(sources.size)
+    for (source in sources.map(::checkValidPath)) {
         checkState(source !in sourceFiles) { "Duplicated source file '$source'!" }
         sourceFiles += source
     }

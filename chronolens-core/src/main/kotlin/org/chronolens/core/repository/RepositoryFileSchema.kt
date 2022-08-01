@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2021-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.chronolens.core.repository
 
 import java.io.File
+import org.chronolens.core.model.SourcePath
 
 internal data class RepositoryFileSchema(val repositoryDirectory: File) {
     val rootDirectory: File = File(repositoryDirectory, ".chronolens")
@@ -26,11 +27,9 @@ internal data class RepositoryFileSchema(val repositoryDirectory: File) {
     val snapshotDirectory: File = File(rootDirectory, "snapshot")
     val transactionsDirectory: File = File(rootDirectory, "transactions")
 
-    fun getSourceDirectory(path: String): File = File(snapshotDirectory, path)
+    fun getSourceDirectory(path: SourcePath): File = File(snapshotDirectory, path.toString())
 
-    fun getSourceFile(path: String): File =
-        File(getSourceDirectory(path), "model.json")
+    fun getSourceFile(path: SourcePath): File = File(getSourceDirectory(path), "model.json")
 
-    fun getTransactionFile(id: String): File =
-        File(transactionsDirectory, "$id.json")
+    fun getTransactionFile(id: String): File = File(transactionsDirectory, "$id.json")
 }

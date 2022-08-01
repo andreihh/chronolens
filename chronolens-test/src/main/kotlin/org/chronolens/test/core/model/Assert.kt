@@ -22,7 +22,7 @@ import kotlin.test.assertEquals as assertEqualsKt
 import org.chronolens.core.model.SourceTree
 
 public fun assertEquals(expected: SourceTree?, actual: SourceTree?, message: String? = null) {
-    val expectedSources = expected?.sources?.sortedBy { it.path.path }
-    val actualSources = actual?.sources?.sortedBy { it.path.path }
+    val expectedSources = expected?.sources?.sortedBy { it.path.toString() }
+    val actualSources = actual?.sources?.sortedBy { it.path.toString() }
     assertEqualsKt(expectedSources, actualSources, message)
 }

@@ -43,7 +43,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
 
     override fun getHeadId(): String = head
 
-    override fun listSources(): Set<String> = unmodifiableSet(headSources)
+    override fun listSources(): Set<SourcePath> = unmodifiableSet(headSources)
 
     override fun listRevisions(): List<String> = unmodifiableList(history.map(Revision::id))
 
@@ -53,23 +53,22 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
      * @throws IllegalArgumentException if [revisionId] is invalid or doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun listSources(revisionId: String): Set<String> {
+    public fun listSources(revisionId: String): Set<SourcePath> {
         validateRevisionId(revisionId)
-        val sources = vcs.listFiles(revisionId).filter(::canParse)
-        return checkValidSources(sources)
+        val allSources = checkValidSources(vcs.listFiles(revisionId))
+        return allSources.filter(::canParse).toSet()
     }
 
-    private fun parseSource(revisionId: String, path: String): Result? {
+    private fun parseSource(revisionId: String, path: SourcePath): Result? {
         checkValidRevisionId(revisionId)
-        checkValidPath(path)
-        val rawSource = vcs.getFile(revisionId, path) ?: return null
+        val rawSource = vcs.getFile(revisionId, path.toString()) ?: return null
         return Parser.parse(path, rawSource)
     }
 
-    private fun getLatestValidSource(revisionId: String, path: String): SourceFile {
+    private fun getLatestValidSource(revisionId: String, path: SourcePath): SourceFile {
         checkValidRevisionId(revisionId)
-        checkValidPath(path)
-        val revisions = vcs.getHistory(path).asReversed().dropWhile { it.id != revisionId }
+        val revisions =
+            vcs.getHistory(path.toString()).asReversed().dropWhile { it.id != revisionId }
         for ((id, _, _) in revisions) {
             val result = parseSource(id, path)
             if (result is Result.Success) {
@@ -78,7 +77,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
         }
         // TODO: figure out if should return null or empty file if no valid
         // version is found.
-        return SourceFile(SourcePath(path))
+        return SourceFile(path)
     }
 
     /**
@@ -90,12 +89,10 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
      * without errors will be returned. If all versions of the source contain errors, then the empty
      * source unit will be returned.
      *
-     * @throws IllegalArgumentException if [path] or [revisionId] are invalid or if [revisionId]
-     * doesn't exist
+     * @throws IllegalArgumentException if [revisionId] is invalid or doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun getSource(path: String, revisionId: String): SourceFile? {
-        validatePath(path)
+    public fun getSource(path: SourcePath, revisionId: String): SourceFile? {
         validateRevisionId(revisionId)
         return when (val result = parseSource(revisionId, path)) {
             is Result.Success -> result.source
@@ -104,21 +101,21 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
         }
     }
 
-    override fun getSource(path: String): SourceFile? = getSource(path, head)
+    override fun getSource(path: SourcePath): SourceFile? = getSource(path, head)
 
     override fun getHistory(): Sequence<Transaction> {
         val sourceTree = SourceTree.empty()
         return history.asSequence().map { (revisionId, date, author) ->
-            val changeSet = vcs.getChangeSet(revisionId)
+            val changeSet = vcs.getChangeSet(revisionId).map(::checkValidPath)
             val before = HashSet<SourceFile>(changeSet.size)
             val after = HashSet<SourceFile>(changeSet.size)
             for (path in changeSet) {
-                val oldSource = sourceTree.get<SourceFile?>(path)
+                val oldSource = sourceTree[path]
                 before += listOfNotNull(oldSource)
                 val newSource =
                     when (val result = parseSource(revisionId, path)) {
                         is Result.Success -> result.source
-                        Result.SyntaxError -> oldSource ?: SourceFile(SourcePath(path))
+                        Result.SyntaxError -> oldSource ?: SourceFile(path)
                         null -> null
                     }
                 after += listOfNotNull(newSource)

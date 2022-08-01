@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,23 @@
 
 package org.chronolens.core.repository
 
-import org.chronolens.core.model.SourceFile
-import org.chronolens.core.serialization.JsonModule
 import java.io.File
 import java.io.IOException
 import java.io.UncheckedIOException
 import java.util.Collections.unmodifiableList
 import java.util.Collections.unmodifiableSet
+import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourcePath
+import org.chronolens.core.serialization.JsonModule
 
 /**
- * A wrapper around a repository which has all its interpreted data persisted on
- * disk.
+ * A wrapper around a repository which has all its interpreted data persisted on disk.
  *
- * All queries read the interpreted data directly from disk, not having to
- * reinterpret it again or to communicate with other subprocesses.
+ * All queries read the interpreted data directly from disk, not having to reinterpret it again or
+ * to communicate with other subprocesses.
  */
-public class PersistentRepository
-private constructor(private val schema: RepositoryFileSchema) : Repository {
+public class PersistentRepository private constructor(private val schema: RepositoryFileSchema) :
+    Repository {
 
     private val head by lazy {
         val rawHeadId = schema.headFile.readFileLines()
@@ -54,12 +54,11 @@ private constructor(private val schema: RepositoryFileSchema) : Repository {
 
     override fun getHeadId(): String = head
 
-    override fun listSources(): Set<String> = unmodifiableSet(sources)
+    override fun listSources(): Set<SourcePath> = unmodifiableSet(sources)
 
     override fun listRevisions(): List<String> = unmodifiableList(history)
 
-    override fun getSource(path: String): SourceFile? {
-        validatePath(path)
+    override fun getSource(path: SourcePath): SourceFile? {
         val file = schema.getSourceFile(path)
         return if (path in sources) JsonModule.deserialize(file) else null
     }
@@ -76,8 +75,8 @@ private constructor(private val schema: RepositoryFileSchema) : Repository {
 
     public companion object {
         /**
-         * Returns the persisted repository detected in the given [directory],
-         * or `null` if no repository was detected.
+         * Returns the persisted repository detected in the given [directory], or `null` if no
+         * repository was detected.
          *
          * @throws IOException if any input related errors occur
          * @throws CorruptedRepositoryException if the repository is corrupted
@@ -86,14 +85,12 @@ private constructor(private val schema: RepositoryFileSchema) : Repository {
         @JvmStatic
         public fun load(directory: File): PersistentRepository? {
             val schema = RepositoryFileSchema(directory)
-            return if (!schema.rootDirectory.isDirectory) null
-            else PersistentRepository(schema)
+            return if (!schema.rootDirectory.isDirectory) null else PersistentRepository(schema)
         }
 
         /**
-         * Persists [this] repository in the given [directory], notifying the
-         * given [listener] of the progress if it is not `null`, and returns the
-         * persisted repository.
+         * Persists [this] repository in the given [directory], notifying the given [listener] of
+         * the progress if it is not `null`, and returns the persisted repository.
          *
          * @throws IOException if any output related errors occur
          * @throws CorruptedRepositoryException if the repository is corrupted
@@ -113,11 +110,10 @@ private constructor(private val schema: RepositoryFileSchema) : Repository {
         }
 
         /**
-         * Deletes the previously persisted repository from the given
-         * [directory].
+         * Deletes the previously persisted repository from the given [directory].
          *
-         * All corresponding [PersistentRepository] instances will become
-         * corrupted after this method is called.
+         * All corresponding [PersistentRepository] instances will become corrupted after this
+         * method is called.
          *
          * @throws IOException if any input or output related errors occur
          */
@@ -132,7 +128,7 @@ private constructor(private val schema: RepositoryFileSchema) : Repository {
     /** A listener notified on the progress of persisting a repository. */
     public interface ProgressListener {
         public fun onSnapshotStart(headId: String, sourceCount: Int)
-        public fun onSourcePersisted(path: String)
+        public fun onSourcePersisted(path: SourcePath)
         public fun onSnapshotEnd()
         public fun onHistoryStart(revisionCount: Int)
         public fun onTransactionPersisted(id: String)

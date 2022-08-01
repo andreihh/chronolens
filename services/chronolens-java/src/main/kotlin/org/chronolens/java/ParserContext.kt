@@ -37,7 +37,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
 
 internal data class ParserContext(
-    private val path: String,
+    private val path: SourcePath,
     private val source: String,
     private val parentId: String
 ) {
@@ -126,11 +126,10 @@ internal data class ParserContext(
 
     fun visit(node: CompilationUnit): SourceFile {
         requireNotMalformed(node)
-        requireValidPath(path)
-        val childContext = copy(parentId = path)
+        val childContext = copy(parentId = path.toString())
         val entities =
             node.types().requireIsInstance<AbstractTypeDeclaration>().map(childContext::visit)
         entities.map(Type::name).requireDistinct()
-        return SourceFile(SourcePath(path), entities.toSet())
+        return SourceFile(path, entities.toSet())
     }
 }

@@ -111,7 +111,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::visit)
         val membersByFile = stats.keys.groupBy(String::sourcePath)
-        val sourcePaths = sourceTree.sources.map(SourceFile::path).map(SourcePath::path)
+        val sourcePaths = sourceTree.sources.map(SourceFile::path).map(SourcePath::toString)
         val fileReports =
             sourcePaths
                 .map { path ->

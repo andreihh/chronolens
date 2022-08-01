@@ -16,6 +16,9 @@
 
 package org.chronolens.core.repository
 
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.apply
 import org.chronolens.core.versioning.VcsProxyFactoryMock
 import org.chronolens.test.core.model.assertEquals
@@ -24,9 +27,6 @@ import org.chronolens.test.core.model.sourceTree
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
 
 abstract class RepositoryTest {
     protected val repository: Repository by lazy { createRepository() }
@@ -39,7 +39,8 @@ abstract class RepositoryTest {
             revision {
                 change("src/Main.mock" to "{")
                 change(
-                    "src/Worksheet.mock" to """{
+                    "src/Worksheet.mock" to
+                        """{
                         "path": "src/Worksheet.mock",
                         "@class": "SourceFile",
                         "entities": [{
@@ -49,13 +50,15 @@ abstract class RepositoryTest {
                     }"""
                 )
                 change(
-                    "src/Test.mock" to """{
+                    "src/Test.mock" to
+                        """{
                         "path": "src/Test.mock",
                         "@class": "SourceFile"
                     }"""
                 )
                 change(
-                    "src/BuildVersion.mock" to """
+                    "src/BuildVersion.mock" to
+                        """
                         "path": "src/BuildVersion.mock",
                         "@class": "SourceFile"
                     """
@@ -65,7 +68,8 @@ abstract class RepositoryTest {
 
             revision {
                 change(
-                    "src/Main.mock" to """{
+                    "src/Main.mock" to
+                        """{
                         "path": "src/Main.mock",
                         "@class": "SourceFile",
                         "entities": [{
@@ -96,12 +100,13 @@ abstract class RepositoryTest {
 
     @Test
     fun `test list sources`() {
-        val expected = setOf(
-            "src/Main.mock",
-            "src/BuildVersion.mock",
-            "src/Error.mock",
-            "src/Worksheet.mock"
-        )
+        val expected =
+            setOf(
+                SourcePath("src/Main.mock"),
+                SourcePath("src/BuildVersion.mock"),
+                SourcePath("src/Error.mock"),
+                SourcePath("src/Worksheet.mock")
+            )
         val actual = repository.listSources()
         assertEquals(expected, actual)
     }
@@ -115,64 +120,43 @@ abstract class RepositoryTest {
 
     @Test
     fun `test get source`() {
-        val expected = sourceFile("src/Main.mock").build {
-            type("Main") {}
-        }
-        val actual = repository.getSource("src/Main.mock")
+        val expected = sourceFile("src/Main.mock").build { type("Main") {} }
+        val actual = repository.getSource(SourcePath("src/Main.mock"))
         assertEquals(expected, actual)
     }
 
     @Test
     fun `test get non-existing source returns null`() {
-        val actual = repository.getSource("src/Test.mock")
+        val actual = repository.getSource(SourcePath("src/Test.mock"))
         assertNull(actual)
     }
 
     @Test
     fun `test get non-parsable source returns null`() {
-        val actual = repository.getSource("README.md")
+        val actual = repository.getSource(SourcePath("README.md"))
         assertNull(actual)
     }
 
     @Test
     fun `test get invalid source returns latest valid version`() {
-        val expected = sourceFile("src/Worksheet.mock").build {
-            function("println()") {}
-        }
-        val actual = repository.getSource("src/Worksheet.mock")
+        val expected = sourceFile("src/Worksheet.mock").build { function("println()") {} }
+        val actual = repository.getSource(SourcePath("src/Worksheet.mock"))
         assertEquals(expected, actual)
     }
 
     @Test
     fun `test get invalid source with no history returns empty`() {
         val expected = sourceFile("src/Error.mock").build {}
-        val actual = repository.getSource("src/Error.mock")
+        val actual = repository.getSource(SourcePath("src/Error.mock"))
         assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `test get invalid path throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            repository.getSource("src/../Main.mock")
-        }
-        assertFailsWith<IllegalArgumentException> {
-            repository.getSource("src/./Main.mock")
-        }
-        assertFailsWith<IllegalArgumentException> {
-            repository.getSource("src//Main.mock")
-        }
     }
 
     @Test
     fun `test get snapshot`() {
         val expected = sourceTree {
-            sourceFile("src/Main.mock") {
-                type("Main") {}
-            }
+            sourceFile("src/Main.mock") { type("Main") {} }
             sourceFile("src/BuildVersion.mock") {}
-            sourceFile("src/Worksheet.mock") {
-                function("println()") {}
-            }
+            sourceFile("src/Worksheet.mock") { function("println()") {} }
             sourceFile("src/Error.mock") {}
         }
         val actual = repository.getSnapshot()
@@ -182,13 +166,9 @@ abstract class RepositoryTest {
     @Test
     fun `test get history`() {
         val expected = sourceTree {
-            sourceFile("src/Main.mock") {
-                type("Main") {}
-            }
+            sourceFile("src/Main.mock") { type("Main") {} }
             sourceFile("src/BuildVersion.mock") {}
-            sourceFile("src/Worksheet.mock") {
-                function("println()") {}
-            }
+            sourceFile("src/Worksheet.mock") { function("println()") {} }
             sourceFile("src/Error.mock") {}
         }
         val transactions = repository.getHistory()

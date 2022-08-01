@@ -18,6 +18,7 @@ package org.chronolens.core.parsing
 
 import java.util.ServiceLoader
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourcePath
 
 /**
  * An abstract source file parser for a specific programming language.
@@ -27,16 +28,15 @@ import org.chronolens.core.model.SourceFile
  */
 public abstract class Parser {
     /** Returns whether this parser can interpret the given file [path]. */
-    protected abstract fun canParse(path: String): Boolean
+    protected abstract fun canParse(path: SourcePath): Boolean
 
     /**
      * Parses the given `UTF-8` encoded [rawSource] assuming it is located at the specified [path].
      *
      * @throws SyntaxErrorException if the [rawSource] contains errors
-     * @throws IllegalArgumentException if the given [path] is not a valid [SourceFile] path
      */
     @Throws(SyntaxErrorException::class)
-    protected abstract fun parse(path: String, rawSource: String): SourceFile
+    protected abstract fun parse(path: SourcePath, rawSource: String): SourceFile
 
     public companion object {
         private val parsers = ServiceLoader.load(Parser::class.java)
@@ -45,26 +45,23 @@ public abstract class Parser {
          * Returns a parser which can interpret the given file [path], or `null` if no such parser
          * was provided.
          */
-        private fun getParser(path: String): Parser? = parsers.firstOrNull { it.canParse(path) }
+        private fun getParser(path: SourcePath): Parser? = parsers.firstOrNull { it.canParse(path) }
 
         /** Returns whether a provided parser can interpret the given file [path]. */
-        public fun canParse(path: String): Boolean = getParser(path) != null
+        public fun canParse(path: SourcePath): Boolean = getParser(path) != null
 
         /**
          * Parses the given `UTF-8` encoded [rawSource] assuming it is located at the specified
          * [path] and returns the result, or `null` if no such parser was provided.
          *
-         * @throws IllegalArgumentException if the given [path] is not a valid [SourceFile] path
          * @throws IllegalStateException if the parsed source file has a different path than the
          * given [path]
          */
-        public fun parse(path: String, rawSource: String): Result? {
+        public fun parse(path: SourcePath, rawSource: String): Result? {
             val parser = getParser(path) ?: return null
             return try {
                 val source = parser.parse(path, rawSource)
-                check(source.path.path == path) {
-                    "Source '${source.path}' must be located at '$path'!"
-                }
+                check(source.path == path) { "Source '${source.path}' must be located at '$path'!" }
                 Result.Success(source)
             } catch (e: SyntaxErrorException) {
                 Result.SyntaxError

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@
 
 package org.chronolens.core.repository
 
-import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.SourceTree
 import java.util.stream.Stream
 import kotlin.streams.asStream
+import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.SourceTree
 
 /**
- * A wrapper which connects to a repository and allows querying source code
- * metadata and the source tree history.
+ * A wrapper which connects to a repository and allows querying source code metadata and the source
+ * tree history.
  */
 public interface Repository {
     /**
@@ -38,7 +39,7 @@ public interface Repository {
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun listSources(): Set<String>
+    public fun listSources(): Set<SourcePath>
 
     /**
      * Returns the list of all revisions in chronological order.
@@ -48,18 +49,16 @@ public interface Repository {
     public fun listRevisions(): List<String>
 
     /**
-     * Returns the source file found at the given [path] in the `head` revision,
-     * or `null` if the [path] doesn't exist in the `head` revision or couldn't
-     * be interpreted.
+     * Returns the source file found at the given [path] in the `head` revision, or `null` if the
+     * [path] doesn't exist in the `head` revision or couldn't be interpreted.
      *
-     * If the source contains syntax errors, then the most recent version which
-     * can be parsed without errors will be returned. If all versions of the
-     * source contain errors, then the empty source file will be returned.
+     * If the source contains syntax errors, then the most recent version which can be parsed
+     * without errors will be returned. If all versions of the source contain errors, then the empty
+     * source file will be returned.
      *
-     * @throws IllegalArgumentException if the given [path] is invalid
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun getSource(path: String): SourceFile?
+    public fun getSource(path: SourcePath): SourceFile?
 
     /**
      * Returns the snapshot of the repository at the `head` revision.
@@ -73,12 +72,10 @@ public interface Repository {
     }
 
     /**
-     * Returns a lazy view of the transactions applied to the repository in
-     * chronological order.
+     * Returns a lazy view of the transactions applied to the repository in chronological order.
      *
-     * Iterating over the sequence may throw an [java.io.UncheckedIOException]
-     * if any I/O errors occur, or a [CorruptedRepositoryException] if the
-     * repository is corrupted.
+     * Iterating over the sequence may throw an [java.io.UncheckedIOException] if any I/O errors
+     * occur, or a [CorruptedRepositoryException] if the repository is corrupted.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
      */

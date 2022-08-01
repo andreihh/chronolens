@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2021-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,87 +20,97 @@ import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 class SourceNodeIdsTest {
-    @Test fun emptySourcePath_isInvalid() {
-        assertFailsWith<IllegalArgumentException> {
-            SourcePath("")
-        }
+    @Test
+    fun emptySourcePath_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { SourcePath("") }
     }
 
-    @Test fun backslashInSourcePath_isInvalid() {
-        assertFailsWith<IllegalArgumentException> {
-            SourcePath("src\\Main.java")
-        }
+    @Test
+    fun backslashInSourcePath_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { SourcePath("src\\Main.java") }
     }
 
-    @Test fun validSourcePath_isCreatedSuccessfully() {
+    @Test
+    fun relativeToCurrentDirectoryInSourcePath_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { SourcePath("src/./Main.mock") }
+    }
+
+    @Test
+    fun relativeToParentDirectoryInSourcePath_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { SourcePath("src/../Main.mock") }
+    }
+
+    @Test
+    fun doubleSlashInSourcePath_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { SourcePath("src//Main.mock") }
+    }
+
+    @Test
+    fun slashAtBeginningInSourcePath_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { SourcePath("/src/Main.mock") }
+    }
+
+    @Test
+    fun slashAtEndInSourcePath_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { SourcePath("src/Main.mock/") }
+    }
+
+    @Test
+    fun validSourcePath_isCreatedSuccessfully() {
         SourcePath("src/Main.java")
     }
 
-    @Test fun emptyIdentifier_isInvalid() {
-        assertFailsWith<IllegalArgumentException> {
-            Identifier("")
-        }
+    @Test
+    fun emptyIdentifier_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Identifier("") }
     }
 
-    @Test fun slashInIdentifier_isInvalid() {
-        assertFailsWith<IllegalArgumentException> {
-            Identifier("Main/version")
-        }
+    @Test
+    fun slashInIdentifier_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Identifier("Main/version") }
     }
 
-    @Test fun backslashInIdentifier_isInvalid() {
-        assertFailsWith<IllegalArgumentException> {
-            Identifier("Main\\version")
-        }
+    @Test
+    fun backslashInIdentifier_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Identifier("Main\\version") }
     }
 
-    @Test fun parensInIdentifier_isInvalid() {
-        assertFailsWith<IllegalArgumentException> {
-            Identifier("version(")
-        }
-        assertFailsWith<IllegalArgumentException> {
-            Identifier("version)")
-        }
-        assertFailsWith<IllegalArgumentException> {
-            Identifier("version()")
-        }
+    @Test
+    fun parensInIdentifier_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Identifier("version(") }
+        assertFailsWith<IllegalArgumentException> { Identifier("version)") }
+        assertFailsWith<IllegalArgumentException> { Identifier("version()") }
     }
 
-    @Test fun validIdentifier_isCreatedSuccessfully() {
+    @Test
+    fun validIdentifier_isCreatedSuccessfully() {
         Identifier("Main")
     }
 
-    @Test fun emptySignature_isInvalid() {
-        assertFailsWith<IllegalArgumentException> {
-            Signature("")
-        }
+    @Test
+    fun emptySignature_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Signature("") }
     }
 
-    @Test fun slashInSignature_isInvalid() {
-        assertFailsWith<IllegalArgumentException> {
-            Signature("Main/getVersion()")
-        }
+    @Test
+    fun slashInSignature_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Signature("Main/getVersion()") }
     }
 
-    @Test fun backslashInSignature_isInvalid() {
-        assertFailsWith<IllegalArgumentException> {
-            Signature("Main\\getVersion()")
-        }
+    @Test
+    fun backslashInSignature_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Signature("Main\\getVersion()") }
     }
 
-    @Test fun missingParensInSignature_isInvalid() {
-        assertFailsWith<IllegalArgumentException> {
-            Signature("getVersion")
-        }
-        assertFailsWith<IllegalArgumentException> {
-            Signature("getVersion(")
-        }
-        assertFailsWith<IllegalArgumentException> {
-            Signature("getVersion)")
-        }
+    @Test
+    fun missingParensInSignature_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Signature("getVersion") }
+        assertFailsWith<IllegalArgumentException> { Signature("getVersion(") }
+        assertFailsWith<IllegalArgumentException> { Signature("getVersion)") }
     }
 
-    @Test fun validSignature_isCreatedSuccessfully() {
+    @Test
+    fun validSignature_isCreatedSuccessfully() {
         Signature("getMinorVer(String app, Set<T> majorVer)")
     }
 }

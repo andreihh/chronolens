@@ -41,7 +41,7 @@ private constructor(
     public operator fun get(id: String): SourceNode? = nodeMap[id]?.sourceNode
 
     /** Returns the source file with the specified [path], or `null` if no such file was found. */
-    public operator fun get(path: SourcePath): SourceFile? = get<SourceFile?>(path.path)
+    public operator fun get(path: SourcePath): SourceFile? = get<SourceFile?>(path.toString())
 
     /** Returns whether the specified [id] exists in this source tree. */
     public operator fun contains(id: String): Boolean = get(id) != null
@@ -109,7 +109,13 @@ private constructor(
  * the source tree
  * @param sourceNode the wrapped source node
  */
-public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val sourceNode: T)
+public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val sourceNode: T) {
+    public companion object {
+        @JvmStatic
+        public fun of(sourceFile: SourceFile): SourceTreeNode<SourceFile> =
+            SourceTreeNode(sourceFile.path.toString(), sourceFile)
+    }
+}
 
 /** A hash map from ids to source tree nodes. */
 internal typealias NodeHashMap = HashMap<String, SourceTreeNode<*>>
@@ -138,15 +144,13 @@ public fun SourceTreeNode<*>.walkSourceTree(): List<SourceTreeNode<*>> {
 }
 
 public fun SourceFile.walkSourceTree(): List<SourceTreeNode<*>> =
-    SourceTreeNode(path.path, this).walkSourceTree()
+    SourceTreeNode.of(this).walkSourceTree()
 
 internal fun NodeHashMap.putSourceTree(root: SourceTreeNode<*>) {
     this += root.walkSourceTree().associateBy(SourceTreeNode<*>::qualifiedId)
 }
 
-internal fun NodeHashMap.putSourceTree(root: SourceFile) {
-    putSourceTree(SourceTreeNode(root.path.path, root))
-}
+internal fun NodeHashMap.putSourceTree(root: SourceFile) = putSourceTree(SourceTreeNode.of(root))
 
 internal fun NodeHashMap.removeSourceTree(root: SourceTreeNode<*>) {
     this -= root.walkSourceTree().map(SourceTreeNode<*>::qualifiedId).toSet()

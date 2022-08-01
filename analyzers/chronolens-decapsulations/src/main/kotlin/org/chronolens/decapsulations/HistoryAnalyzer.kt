@@ -143,7 +143,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::analyze)
         val fieldsByFile = decapsulationsByField.keys.groupBy(String::sourcePath)
-        val sourcePaths = sourceTree.sources.map(SourceFile::path).map(SourcePath::path)
+        val sourcePaths = sourceTree.sources.map(SourceFile::path).map(SourcePath::toString)
         val fileReports =
             sourcePaths
                 .map { path ->

@@ -36,8 +36,8 @@ internal class RepositoryPersister(
     }
 
     private fun persistSource(source: SourceFile) {
-        mkdirs(schema.getSourceDirectory(source.path.path))
-        schema.getSourceFile(source.path.path).outputStream().use { out ->
+        mkdirs(schema.getSourceDirectory(source.path))
+        schema.getSourceFile(source.path).outputStream().use { out ->
             JsonModule.serialize(out, source)
         }
     }

@@ -26,7 +26,7 @@ public sealed interface SourceNodeId {
  *
  * @throws IllegalArgumentException if the given [path] is invalid
  */
-public data class SourcePath(val path: String) : SourceNodeId {
+public data class SourcePath(private val path: String) : SourceNodeId {
     init {
         require(isValid(path)) { "Invalid source path '$path'!" }
     }
@@ -38,7 +38,8 @@ public data class SourcePath(val path: String) : SourceNodeId {
         public const val PATH_SEPARATOR: Char = '/'
 
         /** Returns whether the given [path] is valid. */
-        public fun isValid(path: String): Boolean = path.matches(sourcePathRegex)
+        public fun isValid(path: String): Boolean =
+            path.matches(sourcePathRegex) && "/$path/".indexOfAny(listOf("//", "/./", "/../")) == -1
     }
 }
 
@@ -47,7 +48,7 @@ public data class SourcePath(val path: String) : SourceNodeId {
  *
  * @throws IllegalArgumentException if the given [identifier] is invalid
  */
-public data class Identifier(val identifier: String) : SourceNodeId {
+public data class Identifier(private val identifier: String) : SourceNodeId {
     init {
         require(isValid(identifier)) { "Invalid identifier '$identifier'!" }
     }
@@ -66,7 +67,7 @@ public data class Identifier(val identifier: String) : SourceNodeId {
  *
  * @throws [IllegalArgumentException] if the given [signature] is invalid
  */
-public data class Signature(val signature: String) : SourceNodeId {
+public data class Signature(private val signature: String) : SourceNodeId {
     init {
         require(isValid(signature)) { "Invalid signature '$signature'!" }
     }

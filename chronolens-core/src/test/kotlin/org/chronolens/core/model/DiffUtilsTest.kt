@@ -24,10 +24,10 @@ class DiffUtilsTest {
     @Test
     fun `test diff nodes with different ids throws`() {
         val before = sourceFile("src/Test.java").build {}
-        val treeNodeBefore = SourceTreeNode(before.path.path, before)
+        val treeNodeBefore = SourceTreeNode.of(before)
 
         val after = sourceFile("src/Main.java").build {}
-        val treeNodeAfter = SourceTreeNode(after.path.path, after)
+        val treeNodeAfter = SourceTreeNode.of(after)
 
         assertFailsWith<IllegalArgumentException> { treeNodeBefore.diff(treeNodeAfter) }
     }

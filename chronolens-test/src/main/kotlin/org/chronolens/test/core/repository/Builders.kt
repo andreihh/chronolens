@@ -84,12 +84,12 @@ public class RepositoryBuilder {
 
             override fun getHeadId(): String = history.last().revisionId
 
-            override fun listSources(): Set<String> =
-                snapshot.sources.map(SourceFile::path).map(SourcePath::path).toSet()
+            override fun listSources(): Set<SourcePath> =
+                snapshot.sources.map(SourceFile::path).toSet()
 
             override fun listRevisions(): List<String> = history.map(Transaction::revisionId)
 
-            override fun getSource(path: String): SourceFile? = snapshot.get<SourceFile?>(path)
+            override fun getSource(path: SourcePath): SourceFile? = snapshot[path]
 
             override fun getHistory(): Sequence<Transaction> = history.asSequence()
         }

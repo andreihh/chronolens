@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,34 +16,37 @@
 
 package org.chronolens.core.parsing
 
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import org.chronolens.core.model.SourcePath
+import org.junit.Test
 
 class ParserTest {
-    @Test fun `test can parse language with provided parser returns true`() {
-        assertTrue(Parser.canParse("Test.mock"))
+    @Test
+    fun `test can parse language with provided parser returns true`() {
+        assertTrue(Parser.canParse(SourcePath("Test.mock")))
     }
 
-    @Test fun `test can parse unknown language returns false`() {
-        assertFalse(Parser.canParse("file.mp3"))
+    @Test
+    fun `test can parse unknown language returns false`() {
+        assertFalse(Parser.canParse(SourcePath("file.mp3")))
     }
 
-    @Test fun `test parse source with errors returns syntax error`() {
-        val result = Parser.parse(
-            path = "res.mock",
-            rawSource = "{\"invalid\":2"
-        )
+    @Test
+    fun `test parse source with errors returns syntax error`() {
+        val result = Parser.parse(path = SourcePath("res.mock"), rawSource = "{\"invalid\":2")
         assertEquals(Result.SyntaxError, result)
     }
 
-    @Test fun `test parse invalid path throws`() {
+    @Test
+    fun `test parse invalid path throws`() {
         assertFailsWith<IllegalArgumentException> {
             Parser.parse(
-                path = "res:/Test.mock",
-                rawSource = """
+                path = SourcePath("res:/Test.mock"),
+                rawSource =
+                    """
                     {
                       "@class": "SourceFile",
                       "path": "res:/Test.mock"
@@ -53,11 +56,13 @@ class ParserTest {
         }
     }
 
-    @Test fun `test parsed source with different path throws`() {
+    @Test
+    fun `test parsed source with different path throws`() {
         assertFailsWith<IllegalStateException> {
             Parser.parse(
-                path = "Test.mock",
-                rawSource = """
+                path = SourcePath("Test.mock"),
+                rawSource =
+                    """
                     {
                       "@class": "SourceFile",
                       "path": "Main.mock"
