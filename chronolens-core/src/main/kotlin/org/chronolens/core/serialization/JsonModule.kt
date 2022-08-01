@@ -50,6 +50,11 @@ import org.chronolens.core.model.Function
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.ListEdit
 import org.chronolens.core.model.QualifiedId
+import org.chronolens.core.model.QualifiedSignature
+import org.chronolens.core.model.QualifiedSourceNodeId
+import org.chronolens.core.model.QualifiedSourcePath
+import org.chronolens.core.model.QualifiedTypeIdentifier
+import org.chronolens.core.model.QualifiedVariableIdentifier
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SetEdit
 import org.chronolens.core.model.Signature
@@ -114,16 +119,32 @@ public object JsonModule {
             .inclusion(JsonTypeInfo.As.PROPERTY)
             .typeProperty("@class")
 
+    private inline fun <reified T> SimpleModule.addDeserializer(deserializer: StdDeserializer<T>) =
+        addDeserializer(T::class.java, deserializer)
+
+    private inline fun <reified T> SimpleModule.addKeySerializer(serializer: StdSerializer<T>) =
+        addKeySerializer(T::class.java, serializer)
+
+    private inline fun <reified T> SimpleModule.addKeyDeserializer(deserializer: KeyDeserializer) =
+        addKeyDeserializer(T::class.java, deserializer)
+
     private val qualifiedIdModule =
         SimpleModule()
             .addSerializer(SourceNodeIdSerializer)
-            .addDeserializer(SourcePath::class.java, SourcePathDeserializer)
-            .addDeserializer(Identifier::class.java, IdentifierDeserializer)
-            .addDeserializer(Signature::class.java, SignatureDeserializer)
+            .addDeserializer(SourcePathDeserializer)
+            .addDeserializer(IdentifierDeserializer)
+            .addDeserializer(SignatureDeserializer)
+            .addSerializer(QualifiedSourceNodeIdSerializer)
+            .addDeserializer(qualifiedSourceNodeIdDeserializer<QualifiedSourcePath>())
+            .addDeserializer(qualifiedSourceNodeIdDeserializer<QualifiedTypeIdentifier>())
+            .addDeserializer(qualifiedSourceNodeIdDeserializer<QualifiedSignature>())
+            .addDeserializer(qualifiedSourceNodeIdDeserializer<QualifiedVariableIdentifier>())
+            .addKeySerializer(QualifiedSourceNodeIdSerializer)
+            .addKeyDeserializer<QualifiedSourceNodeId>(QualifiedSourceNodeIdKeyDeserializer)
             .addSerializer(QualifiedIdSerializer)
             .addKeySerializer(QualifiedId::class.java, QualifiedIdSerializer)
-            .addDeserializer(QualifiedId::class.java, QualifiedIdDeserializer)
-            .addKeyDeserializer(QualifiedId::class.java, QualifiedIdKeyDeserializer)
+            .addDeserializer(QualifiedIdDeserializer)
+            .addKeyDeserializer<QualifiedId>(QualifiedIdKeyDeserializer)
 
     private val objectMapper =
         jacksonObjectMapper().apply {
@@ -180,14 +201,12 @@ public object JsonModule {
 private class InvalidQualifiedIdException(cause: Throwable) : JsonProcessingException(cause)
 
 private object QualifiedIdSerializer : StdSerializer<QualifiedId>(QualifiedId::class.java) {
-
     override fun serialize(value: QualifiedId, gen: JsonGenerator, provider: SerializerProvider?) {
         gen.writeString(value.toString())
     }
 }
 
 private object QualifiedIdDeserializer : StdDeserializer<QualifiedId>(QualifiedId::class.java) {
-
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): QualifiedId =
         try {
             parseQualifiedIdFrom(p.valueAsString)
@@ -205,17 +224,45 @@ private object QualifiedIdKeyDeserializer : KeyDeserializer() {
         }
 }
 
+private class InvalidQualifiedSourceNodeIdException(cause: Throwable) :
+    JsonProcessingException(cause)
+
+private object QualifiedSourceNodeIdSerializer :
+    StdSerializer<QualifiedSourceNodeId>(QualifiedSourceNodeId::class.java) {
+
+    override fun serialize(
+        value: QualifiedSourceNodeId,
+        gen: JsonGenerator,
+        provider: SerializerProvider?
+    ) {
+        gen.writeString(value.toString())
+    }
+}
+
+private inline fun <reified T : QualifiedSourceNodeId> qualifiedSourceNodeIdDeserializer() =
+    object : StdDeserializer<T>(T::class.java) {
+        override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): T =
+            tryParseQualifiedSourceNodeId {
+                QualifiedSourceNodeId.parseFrom(p.valueAsString) as T
+            }
+    }
+
+private object QualifiedSourceNodeIdKeyDeserializer : KeyDeserializer() {
+    override fun deserializeKey(key: String, ctxt: DeserializationContext?): QualifiedSourceNodeId =
+        tryParseQualifiedSourceNodeId {
+            QualifiedSourceNodeId.parseFrom(key)
+        }
+}
+
 private class InvalidSourceNodeIdException(cause: Throwable) : JsonProcessingException(cause)
 
 private object SourceNodeIdSerializer : StdSerializer<SourceNodeId>(SourceNodeId::class.java) {
-
     override fun serialize(value: SourceNodeId, gen: JsonGenerator, provider: SerializerProvider?) {
         gen.writeString(value.toString())
     }
 }
 
 private object SourcePathDeserializer : StdDeserializer<SourcePath>(SourcePath::class.java) {
-
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): SourcePath =
         tryParseSourceNodeId {
             SourcePath(p.valueAsString)
@@ -223,7 +270,6 @@ private object SourcePathDeserializer : StdDeserializer<SourcePath>(SourcePath::
 }
 
 private object IdentifierDeserializer : StdDeserializer<Identifier>(Identifier::class.java) {
-
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): Identifier =
         tryParseSourceNodeId {
             Identifier(p.valueAsString)
@@ -231,12 +277,18 @@ private object IdentifierDeserializer : StdDeserializer<Identifier>(Identifier::
 }
 
 private object SignatureDeserializer : StdDeserializer<Signature>(Signature::class.java) {
-
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): Signature =
         tryParseSourceNodeId {
             Signature(p.valueAsString)
         }
 }
+
+private fun <T : QualifiedSourceNodeId> tryParseQualifiedSourceNodeId(parseBlock: () -> T): T =
+    try {
+        parseBlock()
+    } catch (e: IllegalArgumentException) {
+        throw InvalidQualifiedSourceNodeIdException(e)
+    }
 
 private fun <T : SourceNodeId> tryParseSourceNodeId(parseBlock: () -> T): T =
     try {

@@ -16,64 +16,65 @@
 
 package org.chronolens.core.serialization
 
+import java.io.ByteArrayOutputStream
+import java.time.Instant
+import kotlin.test.Ignore
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import org.chronolens.core.model.Identifier
+import org.chronolens.core.model.QualifiedSourceNodeId
+import org.chronolens.core.model.QualifiedSourcePath
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.repository.Transaction
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.repository.transaction
 import org.junit.Test
-import java.io.ByteArrayOutputStream
-import java.time.Instant
-import kotlin.test.Ignore
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class JsonModuleTest {
-    private val data = transaction("HEAD") {
-        date = Instant.ofEpochMilli(1824733L)
-        author = "unknown"
-        +sourceFile("res").add {
-            variable("DEBUG") { +"true" }
-            variable("RELEASE") { +"false" }
-            function("createIClass()") {}
-            type("IClass") {
-                supertypes("Interface", "Object")
-                type("InnerClass") {}
-                variable("version") { +"1" }
-                function("getVersion()") { +"1" }
+    private val data =
+        transaction("HEAD") {
+            date = Instant.ofEpochMilli(1824733L)
+            author = "unknown"
+            +sourceFile("res").add {
+                variable("DEBUG") { +"true" }
+                variable("RELEASE") { +"false" }
+                function("createIClass()") {}
+                type("IClass") {
+                    supertypes("Interface", "Object")
+                    type("InnerClass") {}
+                    variable("version") { +"1" }
+                    function("getVersion()") { +"1" }
+                }
             }
-        }
-        +sourceFile("res").function("createIClass()").remove()
-        +sourceFile("res").variable("DEBUG").edit {
-            initializer {
-                remove(0)
-                add(index = 0, value = "false")
+            +sourceFile("res").function("createIClass()").remove()
+            +sourceFile("res").variable("DEBUG").edit {
+                initializer {
+                    remove(0)
+                    add(index = 0, value = "false")
+                }
             }
+            +sourceFile("res").variable("RELEASE").remove()
+            +sourceFile("res").type("IClass").edit { supertypes { -"Interface" } }
         }
-        +sourceFile("res").variable("RELEASE").remove()
-        +sourceFile("res").type("IClass").edit {
-            supertypes { -"Interface" }
-        }
-    }
 
     // TODO: figure out why this doesn't pass anymore.
     @Ignore
     @Test
     fun `test serialize class loader throws`() {
         val dst = ByteArrayOutputStream()
-        assertFailsWith<JsonException> {
-            JsonModule.serialize(dst, javaClass.classLoader)
-        }
+        assertFailsWith<JsonException> { JsonModule.serialize(dst, javaClass.classLoader) }
     }
 
-    @Test fun `test deserialize transaction`() {
+    @Test
+    fun `test deserialize transaction`() {
         val src = javaClass.getResourceAsStream("data.json")
         val actualData = JsonModule.deserialize<Transaction>(src)
         assertEquals(data, actualData)
     }
 
-    @Test fun `test serialize and deserialize transaction`() {
+    @Test
+    fun `test serialize and deserialize transaction`() {
         val out = ByteArrayOutputStream()
         JsonModule.serialize(out, data)
         val src = out.toByteArray().inputStream()
@@ -81,7 +82,8 @@ class JsonModuleTest {
         assertEquals(data, actualData)
     }
 
-    @Test fun `test serialize and deserialize history`() {
+    @Test
+    fun `test serialize and deserialize history`() {
         val history = List(size = 10) { data }
         val out = ByteArrayOutputStream()
         JsonModule.serialize(out, history)
@@ -90,19 +92,16 @@ class JsonModuleTest {
         assertEquals(history, actualHistory.asList())
     }
 
-    @Test fun `test deserialize history from invalid json throws`() {
+    @Test
+    fun `test deserialize history from invalid json throws`() {
         val src = "{}".byteInputStream()
-        assertFailsWith<JsonException> {
-            JsonModule.deserialize<Array<Transaction>>(src)
-        }
+        assertFailsWith<JsonException> { JsonModule.deserialize<Array<Transaction>>(src) }
     }
 
-    @Test fun serializeSourceNodeId_printsString() {
-        val ids = listOf(
-            SourcePath("src/Main.java"),
-            Identifier("Main"),
-            Signature("getVersion(String)")
-        )
+    @Test
+    fun serializeSourceNodeId_printsString() {
+        val ids =
+            listOf(SourcePath("src/Main.java"), Identifier("Main"), Signature("getVersion(String)"))
 
         for (id in ids) {
             val out = ByteArrayOutputStream()
@@ -112,48 +111,65 @@ class JsonModuleTest {
         }
     }
 
-    @Test fun deserializeSourcePath_parsesString() {
+    @Test
+    fun deserializeSourcePath_parsesString() {
         val path = SourcePath("src/Main.java")
         val src = "\"$path\"".byteInputStream()
 
         assertEquals(path, JsonModule.deserialize(src))
     }
 
-    @Test fun deserializeSourcePath_whenInvalid_fails() {
+    @Test
+    fun deserializeSourcePath_whenInvalid_fails() {
         val src = "\"src\\getVersion\"".byteInputStream()
 
-        assertFailsWith<JsonException> {
-            JsonModule.deserialize<SourcePath>(src)
-        }
+        assertFailsWith<JsonException> { JsonModule.deserialize<SourcePath>(src) }
     }
 
-    @Test fun deserializeIdentifier_parsesString() {
+    @Test
+    fun deserializeIdentifier_parsesString() {
         val identifier = Identifier("Main")
         val src = "\"$identifier\"".byteInputStream()
 
         assertEquals(identifier, JsonModule.deserialize(src))
     }
 
-    @Test fun deserializeIdentifier_whenInvalid_fails() {
+    @Test
+    fun deserializeIdentifier_whenInvalid_fails() {
         val src = "\"Main/main\"".byteInputStream()
 
-        assertFailsWith<JsonException> {
-            JsonModule.deserialize<Identifier>(src)
-        }
+        assertFailsWith<JsonException> { JsonModule.deserialize<Identifier>(src) }
     }
 
-    @Test fun deserializeSignature_parsesString() {
+    @Test
+    fun deserializeSignature_parsesString() {
         val signature = Signature("getVersion(String)")
         val src = "\"$signature\"".byteInputStream()
 
         assertEquals(signature, JsonModule.deserialize(src))
     }
 
-    @Test fun deserializeSignature_whenInvalid_fails() {
+    @Test
+    fun deserializeSignature_whenInvalid_fails() {
         val src = "\"getVersion)\"".byteInputStream()
 
-        assertFailsWith<JsonException> {
-            JsonModule.deserialize<Signature>(src)
-        }
+        assertFailsWith<JsonException> { JsonModule.deserialize<Signature>(src) }
     }
+
+    @Test
+    fun deserializeQualifiedSourcePath_parsesString() {
+        val qualifiedPath = QualifiedSourcePath.of("src/Main.java")
+        val src = "\"$qualifiedPath\"".byteInputStream()
+
+        assertEquals(qualifiedPath, JsonModule.deserialize(src))
+    }
+
+    @Test
+    fun deserializeQualifiedSourceNodeId_whenInvalid_fails() {
+        val src = "\"src/Main.java/../:getVersion\"".byteInputStream()
+
+        assertFailsWith<JsonException> { JsonModule.deserialize<QualifiedSourceNodeId>(src) }
+    }
+
+    @Test fun deserializeQualifiedSourceNodeIdKey_whenInvalid_fails() {}
 }
