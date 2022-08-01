@@ -247,15 +247,16 @@ private fun updateAncestors(nodes: NodeHashMap, qualifiedId: String, entity: Sou
     // TODO: simplify parentId computation.
     val parentId = SourceTreeNode(qualifiedId, entity).parentId
     val parent = nodes[parentId]?.sourceNode ?: error("Parent '$parentId' doesn't exist!")
-    val newParent =
-        when (parent) {
-            is SourceFile -> parent.updated()
-            is Type -> parent.updated()
-            else -> error("Unknown container '${parent::class}'!")
+    when (parent) {
+        is SourceFile -> {
+            nodes[parentId] = SourceTreeNode(parentId, parent.updated())
         }
-    nodes[parentId] = SourceTreeNode(parentId, newParent)
-    if (newParent is SourceEntity) {
-        updateAncestors(nodes, parentId, newParent)
+        is Type -> {
+            val newParent = parent.updated()
+            nodes[parentId] = SourceTreeNode(parentId, newParent)
+            updateAncestors(nodes, parentId, newParent)
+        }
+        else -> error("Unknown container '${parent::class}'!")
     }
 }
 

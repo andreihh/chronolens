@@ -31,12 +31,13 @@ import org.chronolens.core.model.SourceNodeKind.VARIABLE
  * @param parent the id of the parent node of the node denoted by this qualified id, or `null` if
  * this id denotes a source file
  * @param id the simple id of the node denoted by this qualified id
+ * @param nodeType the reflective instantiation of [T]
  * @throws IllegalArgumentException if this qualified id denotes a source file but [parent] is not
  * null, or if this qualified id denotes a source entity but [parent] is `null`, or if [T] denotes
  * an abstract type, or if the simple [id] is not valid for the denoted node type [T]
  */
 public data class QualifiedSourceNodeId<T : SourceNode>(
-    public val parent: QualifiedSourceNodeId<out SourceContainer>?,
+    private val parent: QualifiedSourceNodeId<out SourceContainer>?,
     public val id: SourceNodeId,
     private val nodeType: Class<T>
 ) {
@@ -76,7 +77,7 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
      * by this qualified id
      */
     public fun <S : SourceNode> toTyped(nodeType: Class<S>): QualifiedSourceNodeId<S> {
-        require(nodeType == this.nodeType) {
+        require(nodeType.isAssignableFrom(this.nodeType)) {
             "Failed to cast qualified id '$this' with kind '$kind' to denote node type '$nodeType'!"
         }
         @Suppress("UNCHECKED_CAST") return this as QualifiedSourceNodeId<S>
@@ -88,7 +89,6 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
      * @throws IllegalArgumentException if the given node type [S] doesn't match the node type
      * denoted by this qualified id
      */
-    // TODO: evaluate if this is necessary.
     public inline fun <reified S : SourceNode> toTyped(): QualifiedSourceNodeId<S> =
         toTyped(S::class.java)
 
@@ -179,6 +179,21 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
                 else -> error("Invalid separator '$separator' in '$rawQualifiedId'!")
             }
         }
+
+        /**
+         * Returns the qualified id of the parent of the node denoted by this qualified id, or
+         * `null` if this id denotes a [SourceFile].
+         */
+        @JvmStatic
+        @get:JvmName("getParentIdOrNull")
+        public val QualifiedSourceNodeId<*>.parentId: QualifiedSourceNodeId<out SourceContainer>?
+            get() = parent
+
+        /** Returns the qualified id of the parent of the node denoted by this qualified id. */
+        @JvmStatic
+        public val QualifiedSourceNodeId<out SourceEntity>.parentId:
+            QualifiedSourceNodeId<out SourceContainer>
+            get() = checkNotNull(parent)
     }
 }
 
