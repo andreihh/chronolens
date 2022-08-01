@@ -17,7 +17,7 @@
 package org.chronolens.core.model
 
 /** The simple id of a [SourceNode]. */
-public sealed class SourceNodeId {
+public sealed interface SourceNodeId {
     abstract override fun toString(): String
 }
 
@@ -26,7 +26,7 @@ public sealed class SourceNodeId {
  *
  * @throws IllegalArgumentException if the given [path] is invalid
  */
-public data class SourcePath(val path: String) : SourceNodeId() {
+public data class SourcePath(val path: String) : SourceNodeId {
     init {
         require(isValid(path)) { "Invalid source path '$path'!" }
     }
@@ -47,7 +47,7 @@ public data class SourcePath(val path: String) : SourceNodeId() {
  *
  * @throws IllegalArgumentException if the given [identifier] is invalid
  */
-public data class Identifier(val identifier: String) : SourceNodeId() {
+public data class Identifier(val identifier: String) : SourceNodeId {
     init {
         require(isValid(identifier)) { "Invalid identifier '$identifier'!" }
     }
@@ -66,7 +66,7 @@ public data class Identifier(val identifier: String) : SourceNodeId() {
  *
  * @throws [IllegalArgumentException] if the given [signature] is invalid
  */
-public data class Signature(val signature: String) : SourceNodeId() {
+public data class Signature(val signature: String) : SourceNodeId {
     init {
         require(isValid(signature)) { "Invalid signature '$signature'!" }
     }

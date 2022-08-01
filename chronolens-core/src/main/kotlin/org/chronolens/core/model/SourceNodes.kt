@@ -26,7 +26,7 @@ import org.chronolens.core.model.SourceNodeKind.VARIABLE
  *
  * All collections passed as constructor parameters must be unmodifiable.
  */
-public sealed class SourceNode {
+public sealed interface SourceNode {
     /** Returns the simple, unqualified id of this source node. */
     public val simpleId: SourceNodeId
         get() =
@@ -58,7 +58,7 @@ public sealed class SourceNode {
 }
 
 /** An abstract representation of a source entity within a [SourceFile]. */
-public sealed class SourceEntity : SourceNode()
+public sealed interface SourceEntity : SourceNode
 
 /**
  * The source code metadata of a source file.
@@ -70,7 +70,7 @@ public sealed class SourceEntity : SourceNode()
 public data class SourceFile(
     val path: SourcePath,
     val entities: Set<SourceEntity> = emptySet(),
-) : SourceNode() {
+) : SourceNode {
 
     init {
         validateChildrenIds()
@@ -92,7 +92,7 @@ public data class Type(
     val supertypes: Set<String> = emptySet(),
     val modifiers: Set<String> = emptySet(),
     val members: Set<SourceEntity> = emptySet(),
-) : SourceEntity() {
+) : SourceEntity {
 
     init {
         validateChildrenIds()
@@ -117,7 +117,7 @@ public data class Function(
     val parameters: List<String> = emptyList(),
     val modifiers: Set<String> = emptySet(),
     val body: List<String> = emptyList(),
-) : SourceEntity() {
+) : SourceEntity {
 
     init {
         validateParameterNames()
@@ -136,7 +136,7 @@ public data class Variable(
     val name: Identifier,
     val modifiers: Set<String> = emptySet(),
     val initializer: List<String> = emptyList(),
-) : SourceEntity()
+) : SourceEntity
 
 /** The final, non-abstract type of a source node. */
 public enum class SourceNodeKind {
