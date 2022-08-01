@@ -23,6 +23,7 @@ import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditType
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.RemoveNode
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.Type
 import org.junit.Test
 
@@ -43,7 +44,8 @@ class TransactionTest {
 
     @Test
     fun `test change set`() {
-        val expected = setOf("Main.java", "Test.java", "MainTest.java")
+        val expected =
+            setOf(SourcePath("Main.java"), SourcePath("Test.java"), SourcePath("MainTest.java"))
         val actual =
             Transaction(
                     revisionId = "123",
@@ -53,7 +55,7 @@ class TransactionTest {
                         listOf(
                             AddNode(
                                 id = "Main.java:Main:MainType",
-                                node = Type(Identifier("MainType")),
+                                node = Type(Identifier("MainType"))
                             ),
                             RemoveNode("Test.java:Test:TestType"),
                             EditType("MainTest.java:MainTest")

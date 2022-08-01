@@ -29,7 +29,7 @@ import org.chronolens.core.model.SourceNodeKind.VARIABLE
  */
 public class SourceTree
 private constructor(
-    private val sourceMap: HashMap<String, SourceFile>,
+    private val sourceMap: HashMap<SourcePath, SourceFile>,
     private val nodeMap: NodeHashMap
 ) {
 
@@ -39,6 +39,9 @@ private constructor(
 
     /** Returns the node with the specified [id], or `null` if no such node was found. */
     public operator fun get(id: String): SourceNode? = nodeMap[id]?.sourceNode
+
+    /** Returns the source file with the specified [path], or `null` if no such file was found. */
+    public operator fun get(path: SourcePath): SourceFile? = get<SourceFile?>(path.path)
 
     /** Returns whether the specified [id] exists in this source tree. */
     public operator fun contains(id: String): Boolean = get(id) != null
@@ -69,7 +72,7 @@ private constructor(
             ?: error("Source node '$id' doesn't exist in the source tree!")
 
     internal fun mutate(
-        block: SourceTree.(sourceMap: HashMap<String, SourceFile>, nodeMap: NodeHashMap) -> Unit
+        block: SourceTree.(sourceMap: HashMap<SourcePath, SourceFile>, nodeMap: NodeHashMap) -> Unit
     ) {
         this.block(sourceMap, nodeMap)
     }
@@ -82,12 +85,12 @@ private constructor(
          */
         @JvmStatic
         public fun of(sources: Collection<SourceFile>): SourceTree {
-            val sourceMap = HashMap<String, SourceFile>(sources.size)
+            val sourceMap = HashMap<SourcePath, SourceFile>(sources.size)
             for (source in sources) {
-                require(source.path.path !in sourceMap) {
+                require(source.path !in sourceMap) {
                     "Source tree contains duplicate source '${source.path}'!"
                 }
-                sourceMap[source.path.path] = source
+                sourceMap[source.path] = source
             }
             val nodeMap = buildVisit(sources)
             return SourceTree(sourceMap, nodeMap)

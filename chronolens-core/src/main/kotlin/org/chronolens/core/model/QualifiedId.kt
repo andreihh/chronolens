@@ -179,8 +179,8 @@ public val SourceTreeNode<*>.sourcePath: String
     get() = qualifiedId.sourcePath
 
 /** The path of the [SourceFile] which contains the node affected by [this] edit. */
-public val SourceTreeEdit.sourcePath: String
-    get() = id.sourcePath
+public val SourceTreeEdit.sourcePath: SourcePath
+    get() = SourcePath(id.sourcePath)
 
 /**
  * The qualified id of the parent node of the source note denoted by [this] qualified id, or `null`

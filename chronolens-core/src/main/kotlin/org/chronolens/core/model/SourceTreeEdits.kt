@@ -35,7 +35,7 @@ public sealed class SourceTreeEdit {
             val sourcePath = sourcePath
             sourceMap -= sourcePath
             applyOn(nodeMap)
-            val newSource = get<SourceFile?>(sourcePath)
+            val newSource = get(sourcePath)
             if (newSource != null) {
                 sourceMap[sourcePath] = newSource
             }
