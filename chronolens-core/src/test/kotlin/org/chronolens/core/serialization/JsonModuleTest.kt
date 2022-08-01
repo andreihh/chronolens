@@ -23,7 +23,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.QualifiedSourceNodeId
-import org.chronolens.core.model.QualifiedSourcePath
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.repository.Transaction
@@ -158,7 +157,7 @@ class JsonModuleTest {
 
     @Test
     fun deserializeQualifiedSourcePath_parsesString() {
-        val qualifiedPath = QualifiedSourcePath.of("src/Main.java")
+        val qualifiedPath = QualifiedSourceNodeId.fromPath("src/Main.java")
         val src = "\"$qualifiedPath\"".byteInputStream()
 
         assertEquals(qualifiedPath, JsonModule.deserialize(src))
@@ -168,7 +167,7 @@ class JsonModuleTest {
     fun deserializeQualifiedSourceNodeId_whenInvalid_fails() {
         val src = "\"src/Main.java/../:getVersion\"".byteInputStream()
 
-        assertFailsWith<JsonException> { JsonModule.deserialize<QualifiedSourceNodeId>(src) }
+        assertFailsWith<JsonException> { JsonModule.deserialize<QualifiedSourceNodeId<*>>(src) }
     }
 
     @Test fun deserializeQualifiedSourceNodeIdKey_whenInvalid_fails() {}

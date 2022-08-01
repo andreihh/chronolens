@@ -24,13 +24,31 @@ import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
 import org.chronolens.core.model.SourceNodeKind.TYPE
 import org.chronolens.core.model.SourceNodeKind.VARIABLE
 
-public sealed interface QualifiedSourceNodeId {
-    public val parent: QualifiedContainerNodeId?
-    public val id: SourceNodeId
-    public val kind: SourceNodeKind
-    public val sourcePath: SourcePath
+public data class QualifiedSourceNodeId<T : SourceNode>(
+    private val parent: QualifiedSourceNodeId<out SourceContainer>?,
+    private val id: SourceNodeId,
+    private val kind: SourceNodeKind
+) {
 
-    public abstract override fun toString(): String
+    public override fun toString(): String {
+        val builder = StringBuilder()
+
+        fun appendId(qualifiedId: QualifiedSourceNodeId<*>) {
+            qualifiedId.parent?.let(::appendId)
+            val separator =
+                when (qualifiedId.kind) {
+                    SOURCE_FILE -> ""
+                    TYPE -> CONTAINER_SEPARATOR
+                    FUNCTION,
+                    VARIABLE -> MEMBER_SEPARATOR
+                }
+            builder.append(separator)
+            builder.append(qualifiedId.id)
+        }
+
+        appendId(this)
+        return builder.toString()
+    }
 
     public companion object {
         /** [Type] identifiers are separated by `:` from the parent id. */
@@ -39,7 +57,25 @@ public sealed interface QualifiedSourceNodeId {
         /** [Function] and [Variable] identifiers are separated by `#` from the parent id. */
         public const val MEMBER_SEPARATOR: Char = '#'
 
-        public fun parseFrom(rawQualifiedId: String): QualifiedSourceNodeId {
+        @JvmStatic
+        public val QualifiedSourceNodeId<SourceEntity>.parentId:
+            QualifiedSourceNodeId<out SourceContainer>
+            get() = parent!!
+
+        @JvmStatic
+        public val QualifiedSourceNodeId<*>.sourcePath: SourcePath
+            get() = parent?.sourcePath ?: id as SourcePath
+
+        @JvmStatic
+        public fun fromPath(path: SourcePath): QualifiedSourceNodeId<SourceFile> =
+            QualifiedSourceNodeId(null, path, SOURCE_FILE)
+
+        @JvmStatic
+        public fun fromPath(path: String): QualifiedSourceNodeId<SourceFile> =
+            fromPath(SourcePath(path))
+
+        @JvmStatic
+        public fun parseFrom(rawQualifiedId: String): QualifiedSourceNodeId<*> {
             validateMemberSeparators(rawQualifiedId)
             val tokens = rawQualifiedId.split(*SEPARATORS)
             require(tokens.isNotEmpty() && tokens.all(String::isNotBlank)) {
@@ -47,7 +83,7 @@ public sealed interface QualifiedSourceNodeId {
             }
 
             // First token is always the source file path.
-            var qualifiedId: QualifiedContainerNodeId = QualifiedSourcePath.of(tokens.first())
+            var qualifiedId: QualifiedSourceNodeId<out SourceContainer> = fromPath(tokens.first())
 
             // Stop if there is just one token.
             if (tokens.size == 1) return qualifiedId
@@ -68,83 +104,66 @@ public sealed interface QualifiedSourceNodeId {
                 else -> error("Invalid separator '$separator' in '$rawQualifiedId'!")
             }
         }
+
+        @JvmStatic
+        public fun parseQualifiedSourcePathFrom(
+            rawQualifiedId: String
+        ): QualifiedSourceNodeId<SourceFile> {
+            val qualifiedId = parseFrom(rawQualifiedId)
+            require(qualifiedId.kind == SOURCE_FILE)
+            @Suppress("UNCHECKED_CAST") return qualifiedId as QualifiedSourceNodeId<SourceFile>
+        }
+
+        @JvmStatic
+        public fun parseQualifiedTypeNameFrom(rawQualifiedId: String): QualifiedSourceNodeId<Type> {
+            val qualifiedId = parseFrom(rawQualifiedId)
+            require(qualifiedId.kind == TYPE)
+            @Suppress("UNCHECKED_CAST") return qualifiedId as QualifiedSourceNodeId<Type>
+        }
+
+        @JvmStatic
+        public fun parseQualifiedSignatureFrom(
+            rawQualifiedId: String
+        ): QualifiedSourceNodeId<Function> {
+            val qualifiedId = parseFrom(rawQualifiedId)
+            require(qualifiedId.kind == FUNCTION)
+            @Suppress("UNCHECKED_CAST") return qualifiedId as QualifiedSourceNodeId<Function>
+        }
+
+        @JvmStatic
+        public fun parseQualifiedVariableNameFrom(
+            rawQualifiedId: String
+        ): QualifiedSourceNodeId<Variable> {
+            val qualifiedId = parseFrom(rawQualifiedId)
+            require(qualifiedId.kind == VARIABLE)
+            @Suppress("UNCHECKED_CAST") return qualifiedId as QualifiedSourceNodeId<Variable>
+        }
     }
 }
 
-public sealed interface QualifiedSourceEntityId : QualifiedSourceNodeId {
-    abstract override val parent: QualifiedContainerNodeId
+public fun QualifiedSourceNodeId<out SourceContainer>.type(
+    name: Identifier
+): QualifiedSourceNodeId<Type> = QualifiedSourceNodeId(this, name, TYPE)
 
-    override val sourcePath: SourcePath
-        get() = parent.sourcePath
-}
+public fun QualifiedSourceNodeId<out SourceContainer>.type(
+    name: String
+): QualifiedSourceNodeId<Type> = type(Identifier(name))
 
-public sealed interface QualifiedContainerNodeId : QualifiedSourceNodeId {
-    public fun type(name: Identifier): QualifiedTypeIdentifier = QualifiedTypeIdentifier(this, name)
+public fun QualifiedSourceNodeId<out SourceContainer>.function(
+    signature: Signature
+): QualifiedSourceNodeId<Function> = QualifiedSourceNodeId(this, signature, FUNCTION)
 
-    public fun type(name: String): QualifiedTypeIdentifier = type(Identifier(name))
+public fun QualifiedSourceNodeId<out SourceContainer>.function(
+    signature: String
+): QualifiedSourceNodeId<Function> = function(Signature(signature))
 
-    public fun function(signature: Signature): QualifiedSignature =
-        QualifiedSignature(this, signature)
+public fun QualifiedSourceNodeId<out SourceContainer>.variable(
+    name: Identifier
+): QualifiedSourceNodeId<Variable> = QualifiedSourceNodeId(this, name, VARIABLE)
 
-    public fun function(signature: String): QualifiedSignature = function(Signature(signature))
-
-    public fun variable(name: Identifier): QualifiedVariableIdentifier =
-        QualifiedVariableIdentifier(this, name)
-
-    public fun variable(name: String): QualifiedVariableIdentifier = variable(Identifier(name))
-}
-
-public data class QualifiedSourcePath(override val id: SourcePath) : QualifiedContainerNodeId {
-    override val parent: QualifiedContainerNodeId?
-        get() = null
-
-    override val kind: SourceNodeKind
-        get() = SOURCE_FILE
-
-    override val sourcePath: SourcePath
-        get() = id
-
-    override fun toString(): String = toRawQualifiedId()
-
-    public companion object {
-        @JvmStatic public fun of(path: SourcePath): QualifiedSourcePath = QualifiedSourcePath(path)
-
-        @JvmStatic public fun of(path: String): QualifiedSourcePath = of(SourcePath(path))
-    }
-}
-
-public data class QualifiedTypeIdentifier(
-    override val parent: QualifiedContainerNodeId,
-    override val id: Identifier
-) : QualifiedContainerNodeId, QualifiedSourceEntityId {
-
-    override val kind: SourceNodeKind
-        get() = TYPE
-
-    override fun toString(): String = toRawQualifiedId()
-}
-
-public data class QualifiedSignature(
-    override val parent: QualifiedContainerNodeId,
-    override val id: Signature
-) : QualifiedSourceEntityId {
-
-    override val kind: SourceNodeKind
-        get() = FUNCTION
-
-    override fun toString(): String = toRawQualifiedId()
-}
-
-public data class QualifiedVariableIdentifier(
-    override val parent: QualifiedContainerNodeId,
-    override val id: Identifier
-) : QualifiedSourceEntityId {
-
-    override val kind: SourceNodeKind
-        get() = VARIABLE
-
-    override fun toString(): String = toRawQualifiedId()
-}
+public fun QualifiedSourceNodeId<out SourceContainer>.variable(
+    name: String
+): QualifiedSourceNodeId<Variable> = variable(Identifier(name))
 
 private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
 
@@ -152,24 +171,4 @@ private fun validateMemberSeparators(rawQualifiedId: String) {
     val memberIndex = rawQualifiedId.indexOf(Companion.MEMBER_SEPARATOR)
     val nextIndex = rawQualifiedId.indexOfAny(SEPARATORS, memberIndex + 1)
     require(memberIndex == -1 || nextIndex == -1) { "Invalid qualified id '$rawQualifiedId'!" }
-}
-
-private fun QualifiedSourceNodeId.toRawQualifiedId(): String {
-    val builder = StringBuilder()
-
-    fun appendId(qualifiedId: QualifiedSourceNodeId) {
-        qualifiedId.parent?.let(::appendId)
-        val separator =
-            when (qualifiedId.kind) {
-                SOURCE_FILE -> ""
-                TYPE -> CONTAINER_SEPARATOR
-                FUNCTION,
-                VARIABLE -> MEMBER_SEPARATOR
-            }
-        builder.append(separator)
-        builder.append(qualifiedId.id)
-    }
-
-    appendId(this)
-    return builder.toString()
 }

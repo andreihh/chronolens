@@ -50,11 +50,7 @@ import org.chronolens.core.model.Function
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.ListEdit
 import org.chronolens.core.model.QualifiedId
-import org.chronolens.core.model.QualifiedSignature
 import org.chronolens.core.model.QualifiedSourceNodeId
-import org.chronolens.core.model.QualifiedSourcePath
-import org.chronolens.core.model.QualifiedTypeIdentifier
-import org.chronolens.core.model.QualifiedVariableIdentifier
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SetEdit
 import org.chronolens.core.model.Signature
@@ -135,12 +131,9 @@ public object JsonModule {
             .addDeserializer(IdentifierDeserializer)
             .addDeserializer(SignatureDeserializer)
             .addSerializer(QualifiedSourceNodeIdSerializer)
-            .addDeserializer(qualifiedSourceNodeIdDeserializer<QualifiedSourcePath>())
-            .addDeserializer(qualifiedSourceNodeIdDeserializer<QualifiedTypeIdentifier>())
-            .addDeserializer(qualifiedSourceNodeIdDeserializer<QualifiedSignature>())
-            .addDeserializer(qualifiedSourceNodeIdDeserializer<QualifiedVariableIdentifier>())
+            .addDeserializer(QualifiedSourceNodeIdDeserializer)
             .addKeySerializer(QualifiedSourceNodeIdSerializer)
-            .addKeyDeserializer<QualifiedSourceNodeId>(QualifiedSourceNodeIdKeyDeserializer)
+            .addKeyDeserializer<QualifiedSourceNodeId<*>>(QualifiedSourceNodeIdKeyDeserializer)
             .addSerializer(QualifiedIdSerializer)
             .addKeySerializer(QualifiedId::class.java, QualifiedIdSerializer)
             .addDeserializer(QualifiedIdDeserializer)
@@ -228,10 +221,10 @@ private class InvalidQualifiedSourceNodeIdException(cause: Throwable) :
     JsonProcessingException(cause)
 
 private object QualifiedSourceNodeIdSerializer :
-    StdSerializer<QualifiedSourceNodeId>(QualifiedSourceNodeId::class.java) {
+    StdSerializer<QualifiedSourceNodeId<*>>(QualifiedSourceNodeId::class.java) {
 
     override fun serialize(
-        value: QualifiedSourceNodeId,
+        value: QualifiedSourceNodeId<*>,
         gen: JsonGenerator,
         provider: SerializerProvider?
     ) {
@@ -239,19 +232,24 @@ private object QualifiedSourceNodeIdSerializer :
     }
 }
 
-private inline fun <reified T : QualifiedSourceNodeId> qualifiedSourceNodeIdDeserializer() =
-    object : StdDeserializer<T>(T::class.java) {
-        override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): T =
-            tryParseQualifiedSourceNodeId {
-                QualifiedSourceNodeId.parseFrom(p.valueAsString) as T
-            }
+private object QualifiedSourceNodeIdDeserializer :
+    StdDeserializer<QualifiedSourceNodeId<*>>(QualifiedSourceNodeId::class.java) {
+
+    override fun deserialize(
+        p: JsonParser,
+        ctxt: DeserializationContext?
+    ): QualifiedSourceNodeId<*> = tryParseQualifiedSourceNodeId {
+        QualifiedSourceNodeId.parseFrom(p.valueAsString)
     }
+}
 
 private object QualifiedSourceNodeIdKeyDeserializer : KeyDeserializer() {
-    override fun deserializeKey(key: String, ctxt: DeserializationContext?): QualifiedSourceNodeId =
-        tryParseQualifiedSourceNodeId {
-            QualifiedSourceNodeId.parseFrom(key)
-        }
+    override fun deserializeKey(
+        key: String,
+        ctxt: DeserializationContext?
+    ): QualifiedSourceNodeId<*> = tryParseQualifiedSourceNodeId {
+        QualifiedSourceNodeId.parseFrom(key)
+    }
 }
 
 private class InvalidSourceNodeIdException(cause: Throwable) : JsonProcessingException(cause)
@@ -283,7 +281,7 @@ private object SignatureDeserializer : StdDeserializer<Signature>(Signature::cla
         }
 }
 
-private fun <T : QualifiedSourceNodeId> tryParseQualifiedSourceNodeId(parseBlock: () -> T): T =
+private fun <T : QualifiedSourceNodeId<*>> tryParseQualifiedSourceNodeId(parseBlock: () -> T): T =
     try {
         parseBlock()
     } catch (e: IllegalArgumentException) {

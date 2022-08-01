@@ -41,10 +41,21 @@ private constructor(
     public operator fun get(id: String): SourceNode? = nodeMap[id]?.sourceNode
 
     /** Returns the source file with the specified [path], or `null` if no such file was found. */
-    public operator fun get(path: SourcePath): SourceFile? = get<SourceFile?>(path.toString())
+    public operator fun get(path: SourcePath): SourceFile? = getOrNull(path.toString())
 
     /** Returns whether the specified [id] exists in this source tree. */
     public operator fun contains(id: String): Boolean = get(id) != null
+
+    /**
+     * Returns the node of type [T] with the specified [id], or `null` if no such node was found.
+     *
+     * @throws IllegalStateException if the requested node is not of type [T]
+     */
+    public inline fun <reified T : SourceNode> getOrNull(id: String): T? {
+        val node = get(id) ?: return null
+        check(node is T) { "'$id' is not of type '${T::class}'!" }
+        return node
+    }
 
     /**
      * Returns the node of type [T] with the specified [id].
@@ -53,11 +64,8 @@ private constructor(
      * was found
      */
     @JvmName("getNode")
-    public inline fun <reified T : SourceNode?> get(id: String): T {
-        val node = get(id)
-        check(node is T) { "'$id' is not of type '${T::class}'!" }
-        return node
-    }
+    public inline fun <reified T : SourceNode> get(id: String): T =
+        checkNotNull(getOrNull(id)) { "Node '$id' not found!" }
 
     /** Returns all the source nodes in this source tree in top-down order. */
     public fun walk(): Iterable<SourceTreeNode<*>> = sources.flatMap(SourceFile::walkSourceTree)
