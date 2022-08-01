@@ -60,6 +60,9 @@ public sealed interface SourceNode {
 /** An abstract representation of a source entity within a [SourceFile]. */
 public sealed interface SourceEntity : SourceNode
 
+/** An abstract representation of a container of other [SourceEntity] nodes. */
+public sealed interface SourceContainer : SourceNode
+
 /**
  * The source code metadata of a source file.
  *
@@ -70,7 +73,7 @@ public sealed interface SourceEntity : SourceNode
 public data class SourceFile(
     val path: SourcePath,
     val entities: Set<SourceEntity> = emptySet(),
-) : SourceNode {
+) : SourceContainer {
 
     init {
         validateChildrenIds()
@@ -92,7 +95,7 @@ public data class Type(
     val supertypes: Set<Identifier> = emptySet(),
     val modifiers: Set<String> = emptySet(),
     val members: Set<SourceEntity> = emptySet(),
-) : SourceEntity {
+) : SourceEntity, SourceContainer {
 
     init {
         validateChildrenIds()
@@ -151,7 +154,7 @@ public enum class SourceNodeKind {
  *
  * @throws IllegalArgumentException if this node contains duplicated children ids
  */
-private fun SourceNode.validateChildrenIds() {
+private fun SourceContainer.validateChildrenIds() {
     val ids = HashSet<Pair<SourceNodeKind, SourceNodeId>>(children.size)
     for (child in children) {
         require(child.kind != SOURCE_FILE) {
