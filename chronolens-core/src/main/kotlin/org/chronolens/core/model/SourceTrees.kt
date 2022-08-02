@@ -118,6 +118,10 @@ private constructor(
  * @param sourceNode the wrapped source node
  */
 public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val sourceNode: T) {
+    /** The path of the [SourceFile] which contains this node. */
+    public val sourcePath: String
+        get() = qualifiedId.sourcePath
+
     public companion object {
         @JvmStatic
         public fun of(sourceFile: SourceFile): SourceTreeNode<SourceFile> =

@@ -174,10 +174,6 @@ public val String.sourcePath: String
         return if (where == -1) this else substring(0, where)
     }
 
-/** The path of the [SourceFile] which contains [this] node. */
-public val SourceTreeNode<*>.sourcePath: String
-    get() = qualifiedId.sourcePath
-
 /** The path of the [SourceFile] which contains the node affected by [this] edit. */
 public val SourceTreeEdit.sourcePath: SourcePath
     get() = SourcePath(id.sourcePath)

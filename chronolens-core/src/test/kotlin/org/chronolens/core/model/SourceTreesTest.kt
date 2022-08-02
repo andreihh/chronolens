@@ -28,7 +28,7 @@ import org.junit.Test
 
 class SourceTreeTest {
     @Test
-    fun `test create source tree with duplicated source paths throws`() {
+    fun createSourceTree_withDuplicatedSourcePaths_throws() {
         val source = sourceFile("src/Test.java").build {}
         assertFailsWith<IllegalArgumentException> { SourceTree.of(listOf(source, source)) }
     }
@@ -66,7 +66,7 @@ class SourceTreeTest {
     }
 
     @Test
-    fun `test contains existing node returns true`() {
+    fun contains_existingNode_returnsTrue() {
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {
@@ -85,7 +85,7 @@ class SourceTreeTest {
     }
 
     @Test
-    fun `test contains non-existing node returns false`() {
+    fun contains_nonExistingNode_returnsFalse() {
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {
@@ -102,7 +102,7 @@ class SourceTreeTest {
     }
 
     @Test
-    fun `test get node returns structurally equal node`() {
+    fun getNode_returnsStructurallyEqualNode() {
         val expectedNode =
             sourceFile("src/Test.java").type("IClass").variable("version").build { +"1" }
 
@@ -124,7 +124,7 @@ class SourceTreeTest {
     }
 
     @Test
-    fun `test get id with incorrect type throws`() {
+    fun getNode_withIncorrectType_throws() {
         val sourceTree = sourceTree { sourceFile("src/Test.java") { type("IClass") {} } }
         val nodeId = sourceFile("src/Test.java").type("IClass").id()
 
@@ -132,7 +132,7 @@ class SourceTreeTest {
     }
 
     @Test
-    fun `test get non-existing id throws`() {
+    fun getNode_nonExistingId_throws() {
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {}
@@ -145,7 +145,7 @@ class SourceTreeTest {
     }
 
     @Test
-    fun `test get non-existing id returns null`() {
+    fun get_nonExistingId_returnsNull() {
         val sourceTree = sourceTree {
             sourceFile("src/Test.java") {
                 type("IClass") {}
@@ -158,7 +158,7 @@ class SourceTreeTest {
     }
 
     @Test
-    fun `test apply chained edits`() {
+    fun apply_chainedEdits_performsAllChanges() {
         val expected = sourceTree {
             sourceFile("src/Test.java") {
                 type("Test") {
@@ -182,5 +182,24 @@ class SourceTreeTest {
         )
 
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun sourcePath_ofSourceFile_returnsPath() {
+        val path = "src/Test.java"
+        val source = SourceFile(SourcePath(path))
+        val sourceTreeNode = SourceTreeNode(path, source)
+
+        assertEquals(path, sourceTreeNode.sourcePath)
+    }
+
+    @Test
+    fun sourcePath_ofNode_returnsPathOfContainerSourceFile() {
+        val qualifiedId = "src/Test.java#getVersion(String)"
+        val path = "src/Test.java"
+        val node = sourceFile(path).function("getVersion(String)").build {}
+        val sourceTreeNode = SourceTreeNode(qualifiedId, node)
+
+        assertEquals(path, sourceTreeNode.sourcePath)
     }
 }

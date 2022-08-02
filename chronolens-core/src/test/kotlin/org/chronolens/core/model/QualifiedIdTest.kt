@@ -20,7 +20,6 @@ import java.lang.IllegalArgumentException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import org.chronolens.test.core.model.sourceFile
 
 class QualifiedIdTest {
     @Test
@@ -77,24 +76,5 @@ class QualifiedIdTest {
         for (rawQualifiedId in rawQualifiedIds) {
             assertFailsWith<IllegalArgumentException> { parseQualifiedIdFrom(rawQualifiedId) }
         }
-    }
-
-    @Test
-    fun sourcePath_ofSourceFile_returnsPath() {
-        val path = "src/Test.java"
-        val source = SourceFile(SourcePath(path))
-        val sourceTreeNode = SourceTreeNode(path, source)
-
-        assertEquals(path, sourceTreeNode.sourcePath)
-    }
-
-    @Test
-    fun sourcePath_ofNode_returnsPathOfContainerSourceFile() {
-        val qualifiedId = "src/Test.java#getVersion(String)"
-        val path = "src/Test.java"
-        val node = sourceFile(path).function("getVersion(String)").build {}
-        val sourceTreeNode = SourceTreeNode(qualifiedId, node)
-
-        assertEquals(path, sourceTreeNode.sourcePath)
     }
 }
