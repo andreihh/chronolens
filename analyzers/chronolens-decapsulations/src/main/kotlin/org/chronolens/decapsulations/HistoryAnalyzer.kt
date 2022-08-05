@@ -161,7 +161,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     data class Report(val files: List<FileReport>)
 
     data class FileReport(val file: String, val fields: List<FieldReport>) {
-        val decapsulations: Int = fields.sumBy { it.decapsulations.size }
+        val decapsulations: Int = fields.sumOf { it.decapsulations.size }
 
         val category: String = "SOLID Breakers"
         val name: String = "Encapsulation Breakers"

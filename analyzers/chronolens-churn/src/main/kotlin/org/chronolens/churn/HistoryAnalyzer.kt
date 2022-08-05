@@ -72,6 +72,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
                         .walk(id)
                         .filter { (_, node) -> node.isMember }
                         .map(SourceTreeNode<*>::qualifiedId)
+                        .toSet()
             }
             is EditFunction -> updateStats(id, revisionId, date, edit.churn)
             is EditVariable -> updateStats(id, revisionId, date, edit.churn)
@@ -145,9 +146,9 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
         val changes: Int
     ) {
 
-        val size: Int = members.sumBy(MemberReport::size)
-        val churn: Int = members.sumBy(MemberReport::churn)
-        val weightedChurn: Double = members.sumByDouble(MemberReport::weightedChurn)
+        val size: Int = members.sumOf(MemberReport::size)
+        val churn: Int = members.sumOf(MemberReport::churn)
+        val weightedChurn: Double = members.sumOf(MemberReport::weightedChurn)
 
         val category: String = "SOLID Breakers"
         val name: String = "Open-Closed Breakers"
@@ -223,8 +224,8 @@ private val EditVariable.churn: Int
 
 private fun getSize(node: SourceNode): Int =
     when (node) {
-        is SourceFile -> node.entities.sumBy(::getSize)
-        is Type -> node.members.sumBy(::getSize)
+        is SourceFile -> node.entities.sumOf(::getSize)
+        is Type -> node.members.sumOf(::getSize)
         is Function -> node.body.size
         is Variable -> node.initializer.size
     }

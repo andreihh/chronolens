@@ -21,8 +21,8 @@ import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditType
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
-import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.Type

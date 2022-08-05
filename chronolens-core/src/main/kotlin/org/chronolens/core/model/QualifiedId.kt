@@ -16,8 +16,8 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 
 /** A unique identifier of a [SourceNode] within a [SourceTree]. */
 public data class QualifiedId(
@@ -59,14 +59,6 @@ public data class QualifiedId(
 
         appendId(this)
         return builder.toString()
-    }
-
-    public companion object {
-        /** [Type] identifiers are separated by `:` from the parent id. */
-        public const val CONTAINER_SEPARATOR: Char = ':'
-
-        /** [Function] and [Variable] identifiers are separated by `#` from the parent id. */
-        public const val MEMBER_SEPARATOR: Char = '#'
     }
 }
 

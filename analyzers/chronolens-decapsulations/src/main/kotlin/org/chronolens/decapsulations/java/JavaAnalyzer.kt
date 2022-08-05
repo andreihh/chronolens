@@ -17,7 +17,7 @@
 package org.chronolens.decapsulations.java
 
 import org.chronolens.core.model.Function
-import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
@@ -33,7 +33,7 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
             .filter { signature.startsWith(it) }
             .map { signature.removePrefix(it).substringBefore('(') }
             .firstOrNull { it.firstOrNull()?.isUpperCase() == true }
-            ?.let { "${it[0].toLowerCase()}${it.substring(1)}" }
+            ?.let { "${it[0].lowercaseChar()}${it.substring(1)}" }
 
     override fun getField(sourceTree: SourceTree, nodeId: String): String? {
         val node = sourceTree[nodeId] ?: return null

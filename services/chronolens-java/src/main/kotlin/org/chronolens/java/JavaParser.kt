@@ -33,9 +33,9 @@ internal class JavaParser : Parser() {
     @Throws(SyntaxErrorException::class)
     override fun parse(path: SourcePath, rawSource: String): SourceFile {
         val options = JavaCore.getOptions()
-        JavaCore.setComplianceOptions(JavaCore.VERSION_10, options)
+        JavaCore.setComplianceOptions(JavaCore.VERSION_11, options)
         val jdtParser =
-            ASTParser.newParser(AST.JLS10).apply {
+            ASTParser.newParser(AST.JLS_Latest).apply {
                 setKind(K_COMPILATION_UNIT)
                 setCompilerOptions(options)
                 setSource(rawSource.toCharArray())

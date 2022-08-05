@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package org.chronolens.coupling
 
+import java.util.PriorityQueue
 import org.chronolens.coupling.Graph.Companion.MAX_SIZE
 import org.chronolens.coupling.Graph.Edge
 import org.chronolens.coupling.Graph.Node
 import org.chronolens.coupling.Graph.Subgraph
-import java.util.PriorityQueue
 
 internal data class Graph(
     val label: String,
@@ -73,8 +73,7 @@ internal fun Graph.mergeWith(other: Graph): Graph =
 internal inline fun Graph.filterNodes(predicate: (Node) -> Boolean): Graph {
     val newNodes = nodes.filter(predicate).toSet()
     val newLabels = newNodes.map(Node::label).toSet()
-    val newEdges =
-        edges.filter { (u, v, _, _) -> u in newLabels && v in newLabels }
+    val newEdges = edges.filter { (u, v, _, _) -> u in newLabels && v in newLabels }
     return copy(nodes = newNodes, edges = newEdges)
 }
 
@@ -88,9 +87,7 @@ internal fun List<Edge>.getEndpoints(): Set<String> =
 internal fun Graph.findBlobs(minDensity: Double): List<Subgraph> {
     require(minDensity >= 0.0) { "Invalid blob density '$minDensity'!" }
     if (nodes.size > MAX_SIZE) {
-        return nodes.map { (label, _) ->
-            Subgraph(nodes = setOf(label), density = 0.0)
-        }
+        return nodes.map { (label, _) -> Subgraph(nodes = setOf(label), density = 0.0) }
     }
     val blobs = arrayListOf<Subgraph>()
     for (component in findComponents()) {
@@ -114,9 +111,8 @@ internal fun Graph.findAntiBlob(maxCoupling: Double, minSize: Int): Subgraph? {
         }
     }
 
-    val degreeSum = edges
-        .filter { (u, v, _, _) -> u in antiBlob || v in antiBlob }
-        .sumByDouble(Edge::coupling)
+    val degreeSum =
+        edges.filter { (u, v, _, _) -> u in antiBlob || v in antiBlob }.sumOf(Edge::coupling)
     fun density() = degreeSum / antiBlob.size
 
     return if (antiBlob.size >= minSize) Subgraph(antiBlob, density()) else null
@@ -168,9 +164,10 @@ private fun findBlob(graph: Graph, minDensity: Double): Subgraph? {
         edges.getOrPut(v, ::HashSet) += edge
     }
 
-    val heap = PriorityQueue<String>(nodes.size.coerceAtLeast(1)) { u, v ->
-        compareValues(degrees[u], degrees[v])
-    }
+    val heap =
+        PriorityQueue<String>(nodes.size.coerceAtLeast(1)) { u, v ->
+            compareValues(degrees[u], degrees[v])
+        }
     heap += nodes
 
     var blob: Set<String>? = null
@@ -201,8 +198,7 @@ private fun findBlob(graph: Graph, minDensity: Double): Subgraph? {
         edges -= node
     }
 
-    return if (blob == null || blobDensity < minDensity) null
-    else Subgraph(blob, blobDensity)
+    return if (blob == null || blobDensity < minDensity) null else Subgraph(blob, blobDensity)
 }
 
 private operator fun Graph.minus(nodes: Set<String>): Graph {

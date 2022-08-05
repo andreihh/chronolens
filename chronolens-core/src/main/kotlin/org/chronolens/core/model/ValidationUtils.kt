@@ -19,8 +19,8 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.QualifiedId.Companion.MEMBER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourcePath.Companion.PATH_SEPARATOR
 
 private const val separators = "$PATH_SEPARATOR$CONTAINER_SEPARATOR$MEMBER_SEPARATOR\"\\\\"

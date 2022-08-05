@@ -16,7 +16,6 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.QualifiedId.Companion
 import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceNodeKind.FUNCTION
@@ -244,7 +243,7 @@ public fun QualifiedSourceNodeId<out SourceContainer>.variable(
 private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
 
 private fun validateMemberSeparators(rawQualifiedId: String) {
-    val memberIndex = rawQualifiedId.indexOf(Companion.MEMBER_SEPARATOR)
+    val memberIndex = rawQualifiedId.indexOf(MEMBER_SEPARATOR)
     val nextIndex = rawQualifiedId.indexOfAny(SEPARATORS, memberIndex + 1)
     require(memberIndex == -1 || nextIndex == -1) { "Invalid qualified id '$rawQualifiedId'!" }
 }

@@ -20,7 +20,7 @@ package org.chronolens.test.core.model
 
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.Identifier
-import org.chronolens.core.model.QualifiedId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
