@@ -186,9 +186,9 @@ class SourceTreeTest {
 
     @Test
     fun sourcePath_ofSourceFile_returnsPath() {
-        val path = "src/Test.java"
-        val source = SourceFile(SourcePath(path))
-        val sourceTreeNode = SourceTreeNode(path, source)
+        val path = SourcePath("src/Test.java")
+        val source = SourceFile(path)
+        val sourceTreeNode = SourceTreeNode(path.toString(), source)
 
         assertEquals(path, sourceTreeNode.sourcePath)
     }
@@ -200,6 +200,6 @@ class SourceTreeTest {
         val node = sourceFile(path).function("getVersion(String)").build {}
         val sourceTreeNode = SourceTreeNode(qualifiedId, node)
 
-        assertEquals(path, sourceTreeNode.sourcePath)
+        assertEquals(path, sourceTreeNode.sourcePath.toString())
     }
 }

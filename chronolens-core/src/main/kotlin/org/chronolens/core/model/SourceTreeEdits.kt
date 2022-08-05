@@ -26,7 +26,7 @@ public sealed class SourceTreeEdit {
 
     /** The path of the [SourceFile] which contains the edited node. */
     public val sourcePath: SourcePath
-        get() = SourcePath(id.sourcePath)
+        get() = id.sourcePath
 
     /**
      * Applies this edit to the given [sourceTree].

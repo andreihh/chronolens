@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,56 +16,73 @@
 
 package org.chronolens.coupling
 
+import java.io.File
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.repository.Transaction
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.coupling.Graph.Subgraph
-import java.io.File
 
 internal class DivergentChangeCommand : Subcommand() {
-    override val help: String get() = """
+    override val help: String
+        get() =
+            """
         Loads the persisted repository, builds the temporal coupling graphs for
         the analyzed source files, detects the Divergent Change instances,
         reports the results to the standard output and dumps the coupling graphs
         for each source file in the '.chronolens/divergent-change' directory.
     """
 
-    private val maxChangeSet by option<Int>()
-        .help("the maximum number of changed files in a revision")
-        .defaultValue(100).restrictTo(min = 1)
+    private val maxChangeSet by
+        option<Int>()
+            .help("the maximum number of changed files in a revision")
+            .defaultValue(100)
+            .restrictTo(min = 1)
 
-    private val minRevisions by option<Int>().help(
-        "the minimum number of revisions of a method or coupling relation"
-    ).defaultValue(5).restrictTo(min = 1)
+    private val minRevisions by
+        option<Int>()
+            .help("the minimum number of revisions of a method or coupling relation")
+            .defaultValue(5)
+            .restrictTo(min = 1)
 
-    private val minCoupling by option<Double>()
-        .help("the minimum temporal coupling between two methods")
-        .defaultValue(0.1).restrictTo(min = 0.0)
+    private val minCoupling by
+        option<Double>()
+            .help("the minimum temporal coupling between two methods")
+            .defaultValue(0.1)
+            .restrictTo(min = 0.0)
 
-    private val minBlobDensity by option<Double>().help(
-        "the minimum average degree (sum of coupling) of methods in a blob"
-    ).defaultValue(2.5).restrictTo(min = 0.0)
+    private val minBlobDensity by
+        option<Double>()
+            .help("the minimum average degree (sum of coupling) of methods in a blob")
+            .defaultValue(2.5)
+            .restrictTo(min = 0.0)
 
-    private val maxAntiCoupling by option<Double>().help(
-        "the maximum degree (sum of coupling) of a method in an anti-blob"
-    ).defaultValue(0.5).restrictTo(min = 0.0)
+    private val maxAntiCoupling by
+        option<Double>()
+            .help("the maximum degree (sum of coupling) of a method in an anti-blob")
+            .defaultValue(0.5)
+            .restrictTo(min = 0.0)
 
-    private val minAntiBlobSize by option<Int>()
-        .help("the minimum size of an anti-blob")
-        .defaultValue(10).restrictTo(min = 1)
+    private val minAntiBlobSize by
+        option<Int>().help("the minimum size of an anti-blob").defaultValue(10).restrictTo(min = 1)
 
-    private val minMetricValue by option<Int>().help(
-        """ignore source files that have less blobs / anti-blobs than the
+    private val minMetricValue by
+        option<Int>()
+            .help(
+                """ignore source files that have less blobs / anti-blobs than the
         specified limit"""
-    ).defaultValue(0).restrictTo(min = 0)
+            )
+            .defaultValue(0)
+            .restrictTo(min = 0)
 
     private fun TemporalContext.aggregateGraphs(): List<Graph> {
         val idsByFile = ids.groupBy(String::sourcePath)
+        // TODO: check if this could be simplified to:
+        //   return idsByFile.map { (path, ids) -> buildGraphFrom(path.toString(), ids.toSet()) }
         return idsByFile.keys.map { path ->
             val ids = idsByFile[path].orEmpty().toSet()
-            buildGraphFrom(path, ids)
+            buildGraphFrom(path.toString(), ids)
         }
     }
 
@@ -95,9 +112,7 @@ internal class DivergentChangeCommand : Subcommand() {
             val graphDirectory = File(directory, coloredGraph.graph.label)
             graphDirectory.mkdirs()
             val graphFile = File(graphDirectory, "graph.json")
-            graphFile.outputStream().use { out ->
-                JsonModule.serialize(out, coloredGraph)
-            }
+            graphFile.outputStream().use { out -> JsonModule.serialize(out, coloredGraph) }
         }
     }
 

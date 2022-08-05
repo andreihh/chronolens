@@ -160,10 +160,11 @@ private fun validateMemberSeparators(rawQualifiedId: String) {
 
 private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
 
-public val String.sourcePath: String
+public val String.sourcePath: SourcePath
     get() {
         val where = indexOfAny(SEPARATORS)
-        return if (where == -1) this else substring(0, where)
+        val rawPath = if (where == -1) this else substring(0, where)
+        return SourcePath(rawPath)
     }
 
 /**

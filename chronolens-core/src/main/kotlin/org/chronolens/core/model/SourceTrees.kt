@@ -119,7 +119,7 @@ private constructor(
  */
 public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val sourceNode: T) {
     /** The path of the [SourceFile] which contains this node. */
-    public val sourcePath: String
+    public val sourcePath: SourcePath
         get() = qualifiedId.sourcePath
 
     public companion object {

@@ -86,7 +86,7 @@ class Model : Subcommand() {
         get() = rev ?: repository.getHeadId()
 
     override fun run() {
-        val path = SourcePath(id.sourcePath)
+        val path = id.sourcePath
         val model =
             repository.getSource(path, revision)
                 ?: exit("File '$path' couldn't be interpreted or doesn't exist!")

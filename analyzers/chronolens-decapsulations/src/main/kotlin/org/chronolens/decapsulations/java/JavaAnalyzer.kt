@@ -19,6 +19,7 @@ package org.chronolens.decapsulations.java
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceNode
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
@@ -26,7 +27,8 @@ import org.chronolens.core.model.parentId
 import org.chronolens.decapsulations.DecapsulationAnalyzer
 
 internal class JavaAnalyzer : DecapsulationAnalyzer() {
-    override fun canProcess(sourcePath: String): Boolean = sourcePath.endsWith(".java")
+    override fun canProcess(sourcePath: SourcePath): Boolean =
+        sourcePath.toString().endsWith(".java")
 
     private fun getFieldName(signature: String): String? =
         listOf("is", "get", "set")
