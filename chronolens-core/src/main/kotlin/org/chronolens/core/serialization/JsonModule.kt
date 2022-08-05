@@ -49,7 +49,6 @@ import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.ListEdit
-import org.chronolens.core.model.QualifiedId
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SetEdit
@@ -61,7 +60,6 @@ import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
-import org.chronolens.core.model.parseQualifiedIdFrom
 
 /** Provides JSON serialization and deserialization of arbitrary objects. */
 public object JsonModule {
@@ -134,10 +132,6 @@ public object JsonModule {
             .addDeserializer(QualifiedSourceNodeIdDeserializer)
             .addKeySerializer(QualifiedSourceNodeIdSerializer)
             .addKeyDeserializer<QualifiedSourceNodeId<*>>(QualifiedSourceNodeIdKeyDeserializer)
-            .addSerializer(QualifiedIdSerializer)
-            .addKeySerializer(QualifiedId::class.java, QualifiedIdSerializer)
-            .addDeserializer(QualifiedIdDeserializer)
-            .addKeyDeserializer<QualifiedId>(QualifiedIdKeyDeserializer)
 
     private val objectMapper =
         jacksonObjectMapper().apply {
@@ -189,32 +183,6 @@ public object JsonModule {
     @JvmStatic
     public inline fun <reified T : Any> deserialize(src: InputStream): T =
         deserialize(src, T::class.java)
-}
-
-private class InvalidQualifiedIdException(cause: Throwable) : JsonProcessingException(cause)
-
-private object QualifiedIdSerializer : StdSerializer<QualifiedId>(QualifiedId::class.java) {
-    override fun serialize(value: QualifiedId, gen: JsonGenerator, provider: SerializerProvider?) {
-        gen.writeString(value.toString())
-    }
-}
-
-private object QualifiedIdDeserializer : StdDeserializer<QualifiedId>(QualifiedId::class.java) {
-    override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): QualifiedId =
-        try {
-            parseQualifiedIdFrom(p.valueAsString)
-        } catch (e: IllegalArgumentException) {
-            throw InvalidQualifiedIdException(e)
-        }
-}
-
-private object QualifiedIdKeyDeserializer : KeyDeserializer() {
-    override fun deserializeKey(key: String, ctxt: DeserializationContext?): QualifiedId =
-        try {
-            parseQualifiedIdFrom(key)
-        } catch (e: IllegalArgumentException) {
-            throw InvalidQualifiedIdException(e)
-        }
 }
 
 private class InvalidQualifiedSourceNodeIdException(cause: Throwable) :

@@ -247,3 +247,16 @@ private fun validateMemberSeparators(rawQualifiedId: String) {
     val nextIndex = rawQualifiedId.indexOfAny(SEPARATORS, memberIndex + 1)
     require(memberIndex == -1 || nextIndex == -1) { "Invalid qualified id '$rawQualifiedId'!" }
 }
+
+public val String.sourcePath: SourcePath
+    get() {
+        val where = indexOfAny(SEPARATORS)
+        val rawPath = if (where == -1) this else substring(0, where)
+        return SourcePath(rawPath)
+    }
+
+public val String.parentId: String?
+    get() {
+        val where = lastIndexOfAny(SEPARATORS)
+        return if (where == -1) null else substring(0, where)
+    }

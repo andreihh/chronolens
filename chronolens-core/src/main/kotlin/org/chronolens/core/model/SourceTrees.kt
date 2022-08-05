@@ -129,6 +129,9 @@ public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val so
     }
 }
 
+public val SourceTreeNode<out SourceEntity>.parentId: String
+    get() = qualifiedId.parentId ?: error("Source entity '$qualifiedId' must have a parent!")
+
 /** A hash map from ids to source tree nodes. */
 internal typealias NodeHashMap = HashMap<String, SourceTreeNode<*>>
 
