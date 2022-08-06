@@ -51,12 +51,12 @@ public class SourceFileInitializer(private val path: String) {
     public fun remove(): RemoveNode = RemoveNode(path)
 }
 
-public class TypeInitializer(private val parentId: String, private val name: String) {
+public class TypeInitializer(parentId: String, private val name: String) {
     private val id: String = "$parentId$CONTAINER_SEPARATOR$name"
 
     public fun id(): String = id
 
-    public fun build(init: Init<TypeBuilder>): Type = TypeBuilder(name).apply(init).build(parentId)
+    public fun build(init: Init<TypeBuilder>): Type = TypeBuilder(name).apply(init).build()
 
     public fun type(name: String): TypeInitializer = TypeInitializer(id, name)
 
@@ -65,24 +65,23 @@ public class TypeInitializer(private val parentId: String, private val name: Str
     public fun variable(name: String): VariableInitializer = VariableInitializer(id, name)
 
     public fun add(init: Init<TypeBuilder>): AddNode =
-        AddNode(id, TypeBuilder(name).apply(init).build(parentId))
+        AddNode(id, TypeBuilder(name).apply(init).build())
 
     public fun remove(): RemoveNode = RemoveNode(id)
 
     public fun edit(init: Init<EditTypeBuilder>): EditType = EditTypeBuilder(id).apply(init).build()
 }
 
-public class FunctionInitializer(private val parentId: String, private val signature: String) {
-
+public class FunctionInitializer(parentId: String, private val signature: String) {
     private val id: String = "$parentId$MEMBER_SEPARATOR$signature"
 
     public fun id(): String = id
 
     public fun build(init: Init<FunctionBuilder>): Function =
-        FunctionBuilder(signature).apply(init).build(parentId)
+        FunctionBuilder(signature).apply(init).build()
 
     public fun add(init: Init<FunctionBuilder>): AddNode =
-        AddNode(id, FunctionBuilder(signature).apply(init).build(parentId))
+        AddNode(id, FunctionBuilder(signature).apply(init).build())
 
     public fun remove(): RemoveNode = RemoveNode(id)
 
@@ -90,17 +89,16 @@ public class FunctionInitializer(private val parentId: String, private val signa
         EditFunctionBuilder(id).apply(init).build()
 }
 
-public class VariableInitializer(private val parentId: String, private val name: String) {
-
+public class VariableInitializer(parentId: String, private val name: String) {
     private val id: String = "$parentId$MEMBER_SEPARATOR$name"
 
     public fun id(): String = id
 
     public fun build(init: Init<VariableBuilder>): Variable =
-        VariableBuilder(name).apply(init).build(parentId)
+        VariableBuilder(name).apply(init).build()
 
     public fun add(init: Init<VariableBuilder>): AddNode =
-        AddNode(id, VariableBuilder(name).apply(init).build(parentId))
+        AddNode(id, VariableBuilder(name).apply(init).build())
 
     public fun remove(): RemoveNode = RemoveNode(id)
 

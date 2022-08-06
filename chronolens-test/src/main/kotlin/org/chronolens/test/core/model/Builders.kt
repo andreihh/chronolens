@@ -20,7 +20,6 @@ package org.chronolens.test.core.model
 
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.Identifier
-import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
@@ -30,9 +29,6 @@ import org.chronolens.core.model.Variable
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
-
-public fun sourceTree(init: Init<SourceTreeBuilder>): SourceTree =
-    SourceTreeBuilder().apply(init).build()
 
 @BuilderMarker
 public class SourceTreeBuilder {
@@ -68,7 +64,7 @@ public class SourceFileBuilder(private val path: String) {
         addEntity(name, init)
 
     public fun build(): SourceFile =
-        SourceFile(path = SourcePath(path), entities = entities.map { it.build(path) }.toSet())
+        SourceFile(SourcePath(path), entities.map(EntityBuilder<*>::build).toSet())
 }
 
 public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
@@ -105,10 +101,8 @@ public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
     public fun variable(name: String, init: Init<VariableBuilder>): TypeBuilder =
         addMember(name, init)
 
-    override fun build(parentId: String): Type {
-        val id = "$parentId$CONTAINER_SEPARATOR$name"
-        return Type(Identifier(name), supertypes, modifiers, members.map { it.build(id) }.toSet())
-    }
+    override fun build(): Type =
+        Type(Identifier(name), supertypes, modifiers, members.map(EntityBuilder<*>::build).toSet())
 }
 
 public class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
@@ -138,8 +132,7 @@ public class FunctionBuilder(private val signature: String) : EntityBuilder<Func
         body += this
     }
 
-    override fun build(parentId: String): Function =
-        Function(Signature(signature), parameters, modifiers, body)
+    override fun build(): Function = Function(Signature(signature), parameters, modifiers, body)
 }
 
 public class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
@@ -160,9 +153,11 @@ public class VariableBuilder(private val name: String) : EntityBuilder<Variable>
         initializer += this
     }
 
-    override fun build(parentId: String): Variable =
-        Variable(name = Identifier(name), modifiers = modifiers, initializer = initializer)
+    override fun build(): Variable = Variable(Identifier(name), modifiers, initializer)
 }
+
+public fun sourceTree(init: Init<SourceTreeBuilder>): SourceTree =
+    SourceTreeBuilder().apply(init).build()
 
 private inline fun <reified T> newBuilder(simpleId: String): T =
     T::class.java.getConstructor(String::class.java).newInstance(simpleId)

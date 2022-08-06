@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,5 +21,5 @@ import org.chronolens.test.core.BuilderMarker
 
 @BuilderMarker
 internal interface EntityBuilder<out T : SourceEntity> {
-    fun build(parentId: String): T
+    fun build(): T
 }
