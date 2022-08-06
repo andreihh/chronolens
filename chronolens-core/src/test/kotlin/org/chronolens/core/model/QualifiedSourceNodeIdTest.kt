@@ -60,7 +60,7 @@ class QualifiedSourceNodeIdTest {
     fun createSourceFileId_whenNonNullParent_fails() {
         assertFailsWith<IllegalArgumentException> {
             QualifiedSourceNodeId.of<SourceFile>(
-                QualifiedSourceNodeId.fromPath("src/main/kotlin"),
+                qualifiedPathOf("src/main/kotlin"),
                 SourcePath("Main.java")
             )
         }
@@ -90,7 +90,7 @@ class QualifiedSourceNodeIdTest {
     @Test
     fun sourcePath_whenNullParent_returnsId() {
         val path = SourcePath("src/main/java/Main.java")
-        val qualifiedId = QualifiedSourceNodeId.fromPath(path)
+        val qualifiedId = qualifiedPathOf(path)
 
         assertEquals(path, qualifiedId.sourcePath)
     }
@@ -98,7 +98,7 @@ class QualifiedSourceNodeIdTest {
     @Test
     fun sourcePath_whenNonNullParent_returnsParentSourcePath() {
         val path = SourcePath("src/main/java/Main.java")
-        val qualifiedId = QualifiedSourceNodeId.fromPath(path).type("Main").function("main()")
+        val qualifiedId = qualifiedPathOf(path).type("Main").function("main()")
 
         assertEquals(path, qualifiedId.sourcePath)
     }
@@ -107,15 +107,13 @@ class QualifiedSourceNodeIdTest {
     fun parseFrom_whenInputIsQualifiedIdAsString_returnsOriginalQualifiedId() {
         val qualifiedIds =
             listOf(
-                QualifiedSourceNodeId.fromPath("src/Main.java"),
-                QualifiedSourceNodeId.fromPath("src/Main.java").type("Main"),
-                QualifiedSourceNodeId.fromPath("src/Main.java").function("main(String[])"),
-                QualifiedSourceNodeId.fromPath("src/Main.java").variable("VERSION"),
-                QualifiedSourceNodeId.fromPath("src/Main.java").type("Main").type("InnerMain"),
-                QualifiedSourceNodeId.fromPath("src/Main.java")
-                    .type("Main")
-                    .function("main(String[])"),
-                QualifiedSourceNodeId.fromPath("src/Main.java").type("Main").variable("VERSION"),
+                qualifiedPathOf("src/Main.java"),
+                qualifiedPathOf("src/Main.java").type("Main"),
+                qualifiedPathOf("src/Main.java").function("main(String[])"),
+                qualifiedPathOf("src/Main.java").variable("VERSION"),
+                qualifiedPathOf("src/Main.java").type("Main").type("InnerMain"),
+                qualifiedPathOf("src/Main.java").type("Main").function("main(String[])"),
+                qualifiedPathOf("src/Main.java").type("Main").variable("VERSION"),
             )
 
         for (qualifiedId in qualifiedIds) {

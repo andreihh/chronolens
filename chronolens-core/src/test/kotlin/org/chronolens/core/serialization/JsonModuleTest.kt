@@ -25,6 +25,7 @@ import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.qualifiedPathOf
 import org.chronolens.core.repository.Transaction
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.repository.transaction
@@ -157,7 +158,7 @@ class JsonModuleTest {
 
     @Test
     fun deserializeQualifiedSourcePath_parsesString() {
-        val qualifiedPath = QualifiedSourceNodeId.fromPath("src/Main.java")
+        val qualifiedPath = qualifiedPathOf("src/Main.java")
         val src = "\"$qualifiedPath\"".byteInputStream()
 
         assertEquals(qualifiedPath, JsonModule.deserialize<QualifiedSourceNodeId<*>>(src))
