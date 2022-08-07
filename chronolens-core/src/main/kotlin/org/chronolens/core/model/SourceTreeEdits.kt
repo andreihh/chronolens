@@ -56,6 +56,35 @@ public sealed class SourceTreeEdit {
 
     public companion object {
         /**
+         * Applies the given [edit] to this source tree.
+         *
+         * @throws IllegalStateException if this source tree has an invalid state and the given
+         * [edit] couldn't be applied
+         */
+        @JvmStatic
+        public fun SourceTree.apply(edit: SourceTreeEdit) {
+            edit.applyOn(this)
+        }
+
+        /** Utility method. */
+        @JvmStatic
+        public fun SourceTree.apply(edits: List<SourceTreeEdit>) {
+            edits.forEach { apply(it) }
+        }
+
+        /** Utility method. */
+        @JvmStatic
+        public fun SourceTree.apply(edits: Sequence<SourceTreeEdit>) {
+            edits.forEach { apply(it) }
+        }
+
+        /** Utility method. */
+        @JvmStatic
+        public fun SourceTree.apply(vararg edits: SourceTreeEdit) {
+            apply(edits.asList())
+        }
+
+        /**
          * Returns the edits which must be applied to [this] source tree in order to obtain the
          * [other] source tree.
          */
@@ -100,7 +129,6 @@ public sealed class SourceTreeEdit {
  * @property node the node which should be added to the source tree
  */
 public data class AddNode(override val id: String, val node: SourceNode) : SourceTreeEdit() {
-
     val sourceTreeNode: SourceTreeNode<*>
         get() = SourceTreeNode(id, node)
 
@@ -262,24 +290,4 @@ private fun updateAncestors(nodes: NodeHashMap, qualifiedId: String, entity: Sou
         }
         else -> error("Unknown container '${parent::class}'!")
     }
-}
-
-/**
- * Applies the given [edit] to this source tree.
- *
- * @throws IllegalStateException if this source tree has an invalid state and the given [edit]
- * couldn't be applied
- */
-public fun SourceTree.apply(edit: SourceTreeEdit) {
-    edit.applyOn(this)
-}
-
-/** Utility method. */
-public fun SourceTree.apply(edits: List<SourceTreeEdit>) {
-    edits.forEach(::apply)
-}
-
-/** Utility method. */
-public fun SourceTree.apply(vararg edits: SourceTreeEdit) {
-    apply(edits.asList())
 }

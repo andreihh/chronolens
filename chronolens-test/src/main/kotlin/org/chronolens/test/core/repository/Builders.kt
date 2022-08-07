@@ -23,7 +23,7 @@ import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit
-import org.chronolens.core.model.apply
+import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.Transaction
 import org.chronolens.test.core.BuilderMarker

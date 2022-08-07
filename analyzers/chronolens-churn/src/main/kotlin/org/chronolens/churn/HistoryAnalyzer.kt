@@ -31,10 +31,10 @@ import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit
+import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.model.SourceTreeNode
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
-import org.chronolens.core.model.apply
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction

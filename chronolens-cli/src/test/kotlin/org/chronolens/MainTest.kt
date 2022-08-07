@@ -16,8 +16,11 @@
 
 package org.chronolens
 
+import java.io.BufferedReader
+import kotlin.test.assertEquals
+import kotlin.test.fail
 import org.chronolens.core.model.SourceTree
-import org.chronolens.core.model.apply
+import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.subprocess.Subprocess.execute
 import org.junit.AfterClass
@@ -29,17 +32,13 @@ import org.junit.Test
 import org.junit.contrib.java.lang.system.ExpectedSystemExit
 import org.junit.contrib.java.lang.system.SystemOutRule
 import org.junit.rules.TemporaryFolder
-import java.io.BufferedReader
-import kotlin.test.assertEquals
-import kotlin.test.fail
 
 @Ignore // TODO: figure out how to speed this up.
 class MainTest {
     companion object {
-        @ClassRule
-        @JvmField
-        val tmp = TemporaryFolder.builder().assureDeletion().build()
-        val repoDir get() = tmp.root.absolutePath
+        @ClassRule @JvmField val tmp = TemporaryFolder.builder().assureDeletion().build()
+        val repoDir
+            get() = tmp.root.absolutePath
 
         @BeforeClass
         @JvmStatic
@@ -56,15 +55,12 @@ class MainTest {
         }
     }
 
-    @get:Rule
-    val outRule = SystemOutRule().enableLog()
+    @get:Rule val outRule = SystemOutRule().enableLog()
 
-    @get:Rule
-    val exitRule = ExpectedSystemExit.none()
+    @get:Rule val exitRule = ExpectedSystemExit.none()
 
     private fun readResource(resource: String): String =
-        javaClass.getResourceAsStream(resource).bufferedReader()
-            .use(BufferedReader::readText)
+        javaClass.getResourceAsStream(resource).bufferedReader().use(BufferedReader::readText)
 
     @Test
     fun `test snapshot equals applied edits from history`() {
@@ -119,16 +115,9 @@ class MainTest {
 
     @Test
     fun `test rev list`() {
-        val expected = execute(
-            tmp.root,
-            "git",
-            "rev-list",
-            "--first-parent",
-            "--reverse",
-            "HEAD",
-            "--",
-            ""
-        ).get()
+        val expected =
+            execute(tmp.root, "git", "rev-list", "--first-parent", "--reverse", "HEAD", "--", "")
+                .get()
 
         Main.main("rev-list", "--repo-dir", repoDir)
         val actual = outRule.log

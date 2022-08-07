@@ -21,6 +21,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.test.core.model.add
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.edit

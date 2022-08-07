@@ -19,7 +19,7 @@ package org.chronolens.core.repository
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.apply
+import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.versioning.VcsProxyFactoryMock
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.function
@@ -175,7 +175,7 @@ abstract class RepositoryTest {
         }
         val transactions = repository.getHistory()
         val actual = sourceTree {}
-        transactions.map(Transaction::edits).forEach(actual::apply)
+        actual.apply(transactions.flatMap(Transaction::edits))
         assertEquals(expected, actual)
     }
 }

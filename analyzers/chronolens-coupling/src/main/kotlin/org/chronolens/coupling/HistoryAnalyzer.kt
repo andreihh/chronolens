@@ -21,8 +21,8 @@ import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.model.SourceTreeNode
-import org.chronolens.core.model.apply
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
 

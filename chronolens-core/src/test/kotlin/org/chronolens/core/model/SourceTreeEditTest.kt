@@ -16,6 +16,7 @@
 
 package org.chronolens.core.model
 
+import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.model.SourceTreeEdit.Companion.diff
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.function
