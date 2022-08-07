@@ -17,10 +17,8 @@
 package org.chronolens.core.model
 
 import java.util.Collections.unmodifiableCollection
-import org.chronolens.core.model.SourceNodeKind.FUNCTION
-import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
-import org.chronolens.core.model.SourceNodeKind.TYPE
-import org.chronolens.core.model.SourceNodeKind.VARIABLE
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 
 /**
  * A snapshot of a source tree at a specific point in time.
@@ -122,6 +120,37 @@ public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val so
     public val sourcePath: SourcePath
         get() = qualifiedId.sourcePath
 
+    /**
+     * Casts this source tree node to denote a source node of type [nodeType], or `null` if the cast
+     * fails.
+     */
+    @Suppress("UNCHECKED_CAST")
+    public fun <S : SourceNode> castOrNull(nodeType: Class<S>): SourceTreeNode<S>? =
+        if (nodeType.isAssignableFrom(sourceNode.javaClass)) this as SourceTreeNode<S> else null
+
+    /**
+     * Casts this source tree node to denote a source node of type [nodeType].
+     *
+     * @throws IllegalArgumentException if the cast fails
+     */
+    public fun <S : SourceNode> cast(nodeType: Class<S>): SourceTreeNode<S> =
+        requireNotNull(castOrNull(nodeType)) {
+            "Source tree node '$this' cast to denote node type '${nodeType}' failed!"
+        }
+
+    /**
+     * Casts this source tree node to denote a source node of type [S], or `null` if the cast fails.
+     */
+    public inline fun <reified S : SourceNode> castOrNull(): SourceTreeNode<S>? =
+        castOrNull(S::class.java)
+
+    /**
+     * Casts this source tree node to denote a source node of type [S].
+     *
+     * @throws IllegalArgumentException if the cast fails
+     */
+    public inline fun <reified S : SourceNode> cast(): SourceTreeNode<S> = cast(S::class.java)
+
     public companion object {
         /** Creates a new source tree node from the given [sourceFile]. */
         @JvmStatic
@@ -131,7 +160,19 @@ public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val so
 }
 
 public val SourceTreeNode<out SourceEntity>.parentId: String
-    get() = qualifiedId.parentId ?: error("Source entity '$qualifiedId' must have a parent!")
+    get() = qualifiedId.parentId ?: error("")
+
+public fun <T : SourceEntity> SourceTreeNode<out SourceContainer>.append(
+    sourceEntity: T
+): SourceTreeNode<T> {
+    val sourceEntityQualifiedId =
+        when (val node = sourceEntity as SourceEntity) {
+            is Type -> "$qualifiedId$CONTAINER_SEPARATOR${node.name}"
+            is Function -> "$qualifiedId$MEMBER_SEPARATOR${node.signature}"
+            is Variable -> "$qualifiedId$MEMBER_SEPARATOR${node.name}"
+        }
+    return SourceTreeNode(sourceEntityQualifiedId, sourceEntity)
+}
 
 /** A hash map from ids to source tree nodes. */
 internal typealias NodeHashMap = HashMap<String, SourceTreeNode<*>>
@@ -141,18 +182,9 @@ public fun SourceTreeNode<*>.walkSourceTree(): List<SourceTreeNode<*>> {
     val nodes = mutableListOf(this)
     var i = 0
     while (i < nodes.size) {
-        val (qualifiedId, node) = nodes[i]
-        for (child in node.children) {
-            val childId = child.simpleId
-            // TODO: simplify once migrated to QualifiedId.
-            val separator =
-                when (child.kind) {
-                    TYPE -> ':'
-                    VARIABLE,
-                    FUNCTION -> '#'
-                    SOURCE_FILE -> error("Node '$qualifiedId' cannot contain '$childId'!!")
-                }
-            nodes += SourceTreeNode("$qualifiedId$separator$childId", child)
+        val sourceTreeNode = nodes[i].castOrNull<SourceContainer>() ?: continue
+        for (child in sourceTreeNode.sourceNode.children) {
+            nodes += sourceTreeNode.append(child)
         }
         i++
     }

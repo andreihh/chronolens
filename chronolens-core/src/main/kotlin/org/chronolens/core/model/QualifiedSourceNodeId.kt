@@ -70,26 +70,34 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
         get() = parent?.sourcePath ?: id as SourcePath
 
     /**
+     * Casts this qualified id to denote a source node of type [nodeType], or `null` if the cast
+     * fails.
+     */
+    @Suppress("UNCHECKED_CAST")
+    public fun <S : SourceNode> castOrNull(nodeType: Class<S>): QualifiedSourceNodeId<S>? =
+        if (nodeType.isAssignableFrom(this.nodeType)) this as QualifiedSourceNodeId<S> else null
+
+    /**
      * Casts this qualified id to denote a source node of type [nodeType].
      *
-     * @throws IllegalArgumentException if the given [nodeType] doesn't match the node type denoted
-     * by this qualified id
+     * @throws IllegalArgumentException if the cast fails
      */
-    public fun <S : SourceNode> toTyped(nodeType: Class<S>): QualifiedSourceNodeId<S> {
-        require(nodeType.isAssignableFrom(this.nodeType)) {
-            "Failed to cast qualified id '$this' with kind '$kind' to denote node type '$nodeType'!"
+    public fun <S : SourceNode> cast(nodeType: Class<S>): QualifiedSourceNodeId<S> =
+        requireNotNull(castOrNull(nodeType)) {
+            "Qualified id '$this' with kind '$kind' cast to denote node type '${nodeType}' failed!"
         }
-        @Suppress("UNCHECKED_CAST") return this as QualifiedSourceNodeId<S>
-    }
+
+    /** Casts this qualified id to denote a source node of type [S], or `null` if the cast fails. */
+    public inline fun <reified S : SourceNode> castOrNull(): QualifiedSourceNodeId<S>? =
+        castOrNull(S::class.java)
 
     /**
      * Casts this qualified id to denote a source node of type [S].
      *
-     * @throws IllegalArgumentException if the given node type [S] doesn't match the node type
-     * denoted by this qualified id
+     * @throws IllegalArgumentException if the cast fails
      */
-    public inline fun <reified S : SourceNode> toTyped(): QualifiedSourceNodeId<S> =
-        toTyped(S::class.java)
+    public inline fun <reified S : SourceNode> cast(): QualifiedSourceNodeId<S> =
+        cast(S::class.java)
 
     public override fun toString(): String {
         val builder = StringBuilder()

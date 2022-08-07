@@ -19,6 +19,7 @@ package org.chronolens.core.model
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.chronolens.test.core.model.qualifiedPathOf
 import org.junit.Test
@@ -104,6 +105,37 @@ class QualifiedSourceNodeIdTest {
         val qualifiedId = QualifiedSourceNodeId.of(path).type("Main").function("main()")
 
         assertEquals(path, qualifiedId.sourcePath)
+    }
+
+    @Test
+    fun castOrNull_whenValidType_returnsId() {
+        val qualifiedId = QualifiedSourceNodeId.fromPath("src/Main.java")
+
+        assertEquals<QualifiedSourceNodeId<*>?>(
+            qualifiedId,
+            qualifiedId.castOrNull<SourceContainer>()
+        )
+    }
+
+    @Test
+    fun castOrNull_whenInvalidType_returnsNull() {
+        val qualifiedId = QualifiedSourceNodeId.fromPath("src/Main.java")
+
+        assertNull(qualifiedId.castOrNull<SourceEntity>())
+    }
+
+    @Test
+    fun cast_whenValidType_returnsId() {
+        val qualifiedId = QualifiedSourceNodeId.fromPath("src/Main.java")
+
+        assertEquals<QualifiedSourceNodeId<*>>(qualifiedId, qualifiedId.cast<SourceContainer>())
+    }
+
+    @Test
+    fun cast_whenInvalidType_throws() {
+        val qualifiedId = QualifiedSourceNodeId.fromPath("src/Main.java")
+
+        assertFailsWith<IllegalArgumentException> { qualifiedId.cast<SourceEntity>() }
     }
 
     @Test
