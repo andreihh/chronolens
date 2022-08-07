@@ -223,10 +223,10 @@ class SourceTreeTest {
     }
 
     @Test
-    fun castOrNull_whenInvalidType_returnsNode() {
+    fun castOrNull_whenInvalidType_returnsNull() {
         val sourceTreeNode = QualifiedSourceNodeId.fromPath("src/Test.java").build {}
 
-        assertEquals<SourceTreeNode<*>?>(sourceTreeNode, sourceTreeNode.castOrNull<SourceEntity>())
+        assertNull(sourceTreeNode.castOrNull<SourceEntity>())
     }
 
     @Test

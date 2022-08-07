@@ -182,11 +182,10 @@ public fun SourceTreeNode<*>.walkSourceTree(): List<SourceTreeNode<*>> {
     val nodes = mutableListOf(this)
     var i = 0
     while (i < nodes.size) {
-        val sourceTreeNode = nodes[i].castOrNull<SourceContainer>() ?: continue
+        val sourceTreeNode = nodes[i++].castOrNull<SourceContainer>() ?: continue
         for (child in sourceTreeNode.sourceNode.children) {
             nodes += sourceTreeNode.append(child)
         }
-        i++
     }
     return nodes
 }
