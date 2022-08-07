@@ -38,6 +38,7 @@ public data class SourcePath(private val path: String) : SourceNodeId {
         public const val PATH_SEPARATOR: Char = '/'
 
         /** Returns whether the given [path] is valid. */
+        @JvmStatic
         public fun isValid(path: String): Boolean =
             path.matches(sourcePathRegex) && "/$path/".indexOfAny(listOf("//", "/./", "/../")) == -1
     }

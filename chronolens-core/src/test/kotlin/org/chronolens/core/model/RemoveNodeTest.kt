@@ -19,6 +19,7 @@ package org.chronolens.core.model
 import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.function
+import org.chronolens.test.core.model.qualifiedPathOf
 import org.chronolens.test.core.model.remove
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree

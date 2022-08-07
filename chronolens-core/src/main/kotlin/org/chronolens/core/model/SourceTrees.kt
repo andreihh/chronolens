@@ -123,6 +123,7 @@ public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val so
         get() = qualifiedId.sourcePath
 
     public companion object {
+        /** Creates a new source tree node from the given [sourceFile]. */
         @JvmStatic
         public fun of(sourceFile: SourceFile): SourceTreeNode<SourceFile> =
             SourceTreeNode(sourceFile.path.toString(), sourceFile)

@@ -20,6 +20,7 @@ import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.function
+import org.chronolens.test.core.model.qualifiedPathOf
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
 import org.chronolens.test.core.model.type

@@ -19,6 +19,7 @@ package org.chronolens.test.core.model
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeNode
 import org.chronolens.core.model.Type
@@ -46,6 +47,14 @@ public class SourceTreeBuilder {
 
 public fun sourceTree(init: Init<SourceTreeBuilder>): SourceTree =
     SourceTreeBuilder().apply(init).build()
+
+/**
+ * Creates a qualified source path from the given [path].
+ *
+ * @throws IllegalArgumentException if the given [path] is not a valid [SourcePath]
+ */
+public fun qualifiedPathOf(path: String): QualifiedSourceNodeId<SourceFile> =
+    QualifiedSourceNodeId.fromPath(path)
 
 @JvmName("buildSourceFile")
 public fun QualifiedSourceNodeId<SourceFile>.build(

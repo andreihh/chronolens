@@ -18,6 +18,7 @@ package org.chronolens.core.model
 
 import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.build
+import org.chronolens.test.core.model.qualifiedPathOf
 import org.junit.Test
 
 class DiffUtilsTest {

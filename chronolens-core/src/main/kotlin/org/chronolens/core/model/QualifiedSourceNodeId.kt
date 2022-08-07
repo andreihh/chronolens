@@ -130,6 +130,18 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
             id: SourceNodeId
         ): QualifiedSourceNodeId<T> = QualifiedSourceNodeId(parent, id, T::class.java)
 
+        /** Creates a qualified source path from the given [path]. */
+        @JvmStatic
+        public fun of(path: SourcePath): QualifiedSourceNodeId<SourceFile> = of(null, path)
+
+        /**
+         * Creates a qualified source path from the given [path].
+         *
+         * @throws IllegalArgumentException if the given [path] is not a valid [SourcePath]
+         */
+        @JvmStatic
+        public fun fromPath(path: String): QualifiedSourceNodeId<SourceFile> = of(SourcePath(path))
+
         /**
          * Parses the given [rawQualifiedId].
          *
@@ -144,8 +156,7 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
             }
 
             // First token is always the source file path.
-            var qualifiedId: QualifiedSourceNodeId<out SourceContainer> =
-                qualifiedPathOf(tokens.first())
+            var qualifiedId: QualifiedSourceNodeId<out SourceContainer> = fromPath(tokens.first())
 
             // Stop if there is just one token.
             if (tokens.size == 1) return qualifiedId
@@ -183,18 +194,6 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
             get() = checkNotNull(parent)
     }
 }
-
-/** Creates a qualified source path from the given [path]. */
-public fun qualifiedPathOf(path: SourcePath): QualifiedSourceNodeId<SourceFile> =
-    QualifiedSourceNodeId.of(null, path)
-
-/**
- * Creates a qualified source path from the given [path].
- *
- * @throws IllegalArgumentException if the given [path] is not a valid [SourcePath]
- */
-public fun qualifiedPathOf(path: String): QualifiedSourceNodeId<SourceFile> =
-    qualifiedPathOf(SourcePath(path))
 
 /** Creates a new qualified id by appending the given [Type] [name] to this qualified id. */
 public fun QualifiedSourceNodeId<out SourceContainer>.type(

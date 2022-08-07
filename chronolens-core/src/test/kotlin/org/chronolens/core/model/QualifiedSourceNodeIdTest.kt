@@ -18,6 +18,7 @@ package org.chronolens.core.model
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import org.chronolens.test.core.model.qualifiedPathOf
 import org.junit.Test
 
 class QualifiedSourceNodeIdTest {
@@ -60,7 +61,7 @@ class QualifiedSourceNodeIdTest {
     fun createSourceFileId_whenNonNullParent_fails() {
         assertFailsWith<IllegalArgumentException> {
             QualifiedSourceNodeId.of<SourceFile>(
-                qualifiedPathOf("src/main/kotlin"),
+                QualifiedSourceNodeId.fromPath("src/main/kotlin"),
                 SourcePath("Main.java")
             )
         }
@@ -90,7 +91,7 @@ class QualifiedSourceNodeIdTest {
     @Test
     fun sourcePath_whenNullParent_returnsId() {
         val path = SourcePath("src/main/java/Main.java")
-        val qualifiedId = qualifiedPathOf(path)
+        val qualifiedId = QualifiedSourceNodeId.of(path)
 
         assertEquals(path, qualifiedId.sourcePath)
     }
@@ -98,7 +99,7 @@ class QualifiedSourceNodeIdTest {
     @Test
     fun sourcePath_whenNonNullParent_returnsParentSourcePath() {
         val path = SourcePath("src/main/java/Main.java")
-        val qualifiedId = qualifiedPathOf(path).type("Main").function("main()")
+        val qualifiedId = QualifiedSourceNodeId.of(path).type("Main").function("main()")
 
         assertEquals(path, qualifiedId.sourcePath)
     }
