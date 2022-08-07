@@ -102,13 +102,13 @@ public sealed class SourceTreeEdit {
                 other[path]?.let(nodesAfter::putSourceTree)
             }
 
-            fun parentExists(id: QualifiedSourceNodeId<*>): Boolean {
-                val parentId = id.parentId ?: return true
+            fun isSourceFileOrParentExists(id: QualifiedSourceNodeId<*>): Boolean {
+                val parentId = id.castOrNull<SourceEntity>()?.parentId ?: return true
                 return parentId in nodesBefore && parentId in nodesAfter
             }
 
             val nodeIds = nodesBefore.keys + nodesAfter.keys
-            return nodeIds.filter(::parentExists).mapNotNull { id ->
+            return nodeIds.filter(::isSourceFileOrParentExists).mapNotNull { id ->
                 val before = nodesBefore[id]
                 val after = nodesAfter[id]
                 val edit =

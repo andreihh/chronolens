@@ -26,7 +26,7 @@ import org.eclipse.jdt.core.dom.ASTParser
 import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.CompilationUnit
 
-/** Java 8 language parser. */
+/** Java 11 language parser. */
 internal class JavaParser : Parser() {
     override fun canParse(path: SourcePath): Boolean = path.toString().endsWith(".java")
 
@@ -41,6 +41,6 @@ internal class JavaParser : Parser() {
                 setSource(rawSource.toCharArray())
             }
         val compilationUnit = jdtParser.createAST(null) as CompilationUnit
-        return ParserContext(path = path, source = rawSource, parentId = "").visit(compilationUnit)
+        return ParserContext(path, rawSource).visit(compilationUnit)
     }
 }

@@ -18,7 +18,6 @@ package org.chronolens.java
 
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.Identifier
-import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceFile
@@ -36,12 +35,7 @@ import org.eclipse.jdt.core.dom.Initializer
 import org.eclipse.jdt.core.dom.MethodDeclaration
 import org.eclipse.jdt.core.dom.VariableDeclaration
 
-internal data class ParserContext(
-    private val path: SourcePath,
-    private val source: String,
-    private val parentId: String
-) {
-
+internal data class ParserContext(private val path: SourcePath, private val source: String) {
     private fun ASTNode.toSource(): String = source.substring(startPosition, startPosition + length)
 
     private fun ASTNode.modifierSet(): Set<String> {
@@ -65,8 +59,6 @@ internal data class ParserContext(
     private fun AnnotationTypeMemberDeclaration.defaultValue(): List<String> =
         default?.toSource().toBlock()
 
-    private fun getTypeId(name: String): String = "$parentId$CONTAINER_SEPARATOR$name"
-
     private fun visitMember(node: Any?): SourceEntity? =
         when (node) {
             is AbstractTypeDeclaration -> visit(node)
@@ -82,15 +74,13 @@ internal data class ParserContext(
         requireNotMalformed(node)
         requireValidIdentifier(node.name())
         node.supertypes().forEach(::requireValidIdentifier)
-        val id = getTypeId(node.name())
-        val childContext = copy(parentId = id)
-        val members = node.members().mapNotNull(childContext::visitMember)
+        val members = node.members().mapNotNull(::visitMember)
         members.map(SourceEntity::simpleId).requireDistinct()
         return Type(
-            name = Identifier(node.name()),
-            supertypes = node.supertypes().map(::Identifier).toSet(),
-            modifiers = node.modifierSet(),
-            members = members.toSet()
+            Identifier(node.name()),
+            node.supertypes().map(::Identifier).toSet(),
+            node.modifierSet(),
+            members.toSet()
         )
     }
 
@@ -117,18 +107,16 @@ internal data class ParserContext(
         requireValidSignature(node.signature())
         node.parameterList().onEach(::requireValidIdentifier).requireDistinct()
         return Function(
-            signature = Signature(node.signature()),
-            parameters = node.parameterList().map(::Identifier),
-            modifiers = node.modifierSet(),
-            body = node.body()
+            Signature(node.signature()),
+            node.parameterList().map(::Identifier),
+            node.modifierSet(),
+            node.body()
         )
     }
 
     fun visit(node: CompilationUnit): SourceFile {
         requireNotMalformed(node)
-        val childContext = copy(parentId = path.toString())
-        val entities =
-            node.types().requireIsInstance<AbstractTypeDeclaration>().map(childContext::visit)
+        val entities = node.types().requireIsInstance<AbstractTypeDeclaration>().map(::visit)
         entities.map(Type::name).requireDistinct()
         return SourceFile(path, entities.toSet())
     }
