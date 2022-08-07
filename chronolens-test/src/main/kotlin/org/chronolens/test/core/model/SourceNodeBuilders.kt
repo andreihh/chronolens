@@ -34,6 +34,11 @@ import org.chronolens.test.core.apply
 public class SourceFileBuilder(private val path: String) {
     private val entities = mutableSetOf<SourceEntity>()
 
+    public fun sourceEntity(sourceEntity: SourceEntity): SourceFileBuilder {
+        +sourceEntity
+        return this
+    }
+
     public operator fun SourceEntity.unaryPlus() {
         require(this !in entities) { "Duplicate entity '$this'!" }
         entities += this
@@ -57,6 +62,11 @@ public class TypeBuilder(private val name: String) {
 
     public fun modifiers(vararg modifiers: String): TypeBuilder {
         this.modifiers = modifiers.requireDistinct()
+        return this
+    }
+
+    public fun member(member: SourceEntity): TypeBuilder {
+        +member
         return this
     }
 

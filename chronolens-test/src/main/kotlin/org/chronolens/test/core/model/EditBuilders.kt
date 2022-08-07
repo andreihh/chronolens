@@ -37,7 +37,7 @@ public class SetEditsBuilder<T> {
     private val setEdits = mutableListOf<SetEdit<T>>()
 
     public fun add(value: T): SetEditsBuilder<T> {
-        setEdits += SetEdit.Add(value)
+        +value
         return this
     }
 
@@ -46,7 +46,7 @@ public class SetEditsBuilder<T> {
     }
 
     public fun remove(value: T): SetEditsBuilder<T> {
-        setEdits += SetEdit.Remove(value)
+        -value
         return this
     }
 

@@ -31,6 +31,11 @@ import org.chronolens.test.core.apply
 public class SourceTreeBuilder {
     private val sources = mutableSetOf<SourceFile>()
 
+    public fun sourceFile(sourceFile: SourceFile): SourceTreeBuilder {
+        +sourceFile
+        return this
+    }
+
     public operator fun SourceFile.unaryPlus() {
         require(this !in sources) { "Duplicate source file '$this'!" }
         sources += this
