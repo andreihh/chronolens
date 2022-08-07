@@ -61,7 +61,6 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
     }
 
     private fun visit(revisionId: String, date: Instant, edit: SourceTreeEdit) {
-        val id = edit.id
         when (edit) {
             is AddNode<*> -> {
                 stats +=
@@ -73,13 +72,13 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
             is RemoveNode -> {
                 stats -=
                     sourceTree
-                        .walk(id)
+                        .walk(edit.qualifiedId)
                         .filter { (_, node) -> node.isMember }
                         .map(SourceTreeNode<*>::qualifiedId)
                         .toSet()
             }
-            is EditFunction -> updateStats(id, revisionId, date, edit.churn)
-            is EditVariable -> updateStats(id, revisionId, date, edit.churn)
+            is EditFunction -> updateStats(edit.qualifiedId, revisionId, date, edit.churn)
+            is EditVariable -> updateStats(edit.qualifiedId, revisionId, date, edit.churn)
             else -> {}
         }
         sourceTree.apply(edit)

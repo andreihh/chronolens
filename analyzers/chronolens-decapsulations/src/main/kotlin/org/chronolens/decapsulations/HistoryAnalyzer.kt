@@ -71,7 +71,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
 
     private fun visit(edit: RemoveNode): Set<QualifiedSourceNodeId<*>> {
         val removedIds = hashSetOf<QualifiedSourceNodeId<*>>()
-        for (node in sourceTree.walk(edit.id)) {
+        for (node in sourceTree.walk(edit.qualifiedId)) {
             if (node.kind == VARIABLE) {
                 decapsulationsByField -= node.qualifiedId.cast()
             }
@@ -86,8 +86,8 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
             when (edit) {
                 is AddNode<*> -> editedIds += visit(edit)
                 is RemoveNode -> editedIds -= visit(edit)
-                is EditFunction -> editedIds += edit.id
-                is EditVariable -> editedIds += edit.id
+                is EditFunction -> editedIds += edit.qualifiedId
+                is EditVariable -> editedIds += edit.qualifiedId
                 else -> {}
             }
         }

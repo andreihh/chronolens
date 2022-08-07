@@ -4,8 +4,8 @@
   "author" : "unknown",
   "edits" : [ {
     "@class" : "AddNode",
-    "id": "res",
-    "node" : {
+    "qualifiedId": "res",
+    "sourceNode" : {
       "@class" : "SourceFile",
       "path" : "res",
       "entities" : [ {
@@ -39,10 +39,10 @@
     }
   }, {
     "@class" : "RemoveNode",
-    "id" : "res#createIClass()"
+    "qualifiedId" : "res#createIClass()"
   }, {
     "@class" : "EditVariable",
-    "id" : "res#DEBUG",
+    "qualifiedId" : "res#DEBUG",
     "initializerEdits" : [ {
       "@class" : "List.Remove",
       "index" : 0
@@ -53,10 +53,10 @@
     } ]
   }, {
     "@class" : "RemoveNode",
-    "id" : "res#RELEASE"
+    "qualifiedId" : "res#RELEASE"
   }, {
     "@class" : "EditType",
-    "id" : "res:IClass",
+    "qualifiedId" : "res:IClass",
     "supertypeEdits" : [ {
       "@class" : "Set.Remove",
       "value" : "Interface"

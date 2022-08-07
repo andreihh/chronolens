@@ -23,11 +23,11 @@ import org.chronolens.core.model.SetEdit.Companion.apply
 /** An atomic change which should be applied to a [SourceTree]. */
 public sealed class SourceTreeEdit {
     /** The qualified id of the edited node. */
-    public abstract val id: QualifiedSourceNodeId<*>
+    public abstract val qualifiedId: QualifiedSourceNodeId<*>
 
     /** The path of the [SourceFile] which contains the edited node. */
     public val sourcePath: SourcePath
-        get() = id.sourcePath
+        get() = qualifiedId.sourcePath
 
     /**
      * Applies this edit to the given [sourceTree].
@@ -128,28 +128,28 @@ public sealed class SourceTreeEdit {
  * Indicates that a [SourceNode] should be added to a source tree.
  *
  * @param T the type of the added source node
- * @property node the node which should be added to the source tree
+ * @property sourceNode the node which should be added to the source tree
+ * @throws IllegalArgumentException if the [qualifiedId] and [sourceNode] kinds do not match
  */
-// TODO: require id.kind == node.kind
 public data class AddNode<out T : SourceNode>(
-    override val id: QualifiedSourceNodeId<T>,
-    val node: T
+    override val qualifiedId: QualifiedSourceNodeId<T>,
+    val sourceNode: T
 ) : SourceTreeEdit() {
 
-    val sourceTreeNode: SourceTreeNode<T>
-        get() = SourceTreeNode(id, node)
+    val sourceTreeNode: SourceTreeNode<T> = SourceTreeNode(qualifiedId, sourceNode)
 
     override fun applyOn(nodes: NodeHashMap) {
-        check(id !in nodes) { "Node '$id' already exists!" }
+        check(qualifiedId !in nodes) { "Node '$qualifiedId' already exists!" }
         nodes.putSourceTree(sourceTreeNode)
         sourceTreeNode.castOrNull<SourceEntity>()?.let(nodes::updateAncestorsOf)
     }
 }
 
 /** Indicates that a [SourceNode] should be removed from a source tree. */
-public data class RemoveNode(override val id: QualifiedSourceNodeId<*>) : SourceTreeEdit() {
+public data class RemoveNode(override val qualifiedId: QualifiedSourceNodeId<*>) :
+    SourceTreeEdit() {
     override fun applyOn(nodes: NodeHashMap) {
-        val node = nodes[id] ?: error("Node '$id' doesn't exist!")
+        val node = nodes[qualifiedId] ?: error("Node '$qualifiedId' doesn't exist!")
         nodes.removeSourceTree(node)
         node.castOrNull<SourceEntity>()?.let(nodes::updateAncestorsOf)
     }
@@ -159,25 +159,26 @@ public data class RemoveNode(override val id: QualifiedSourceNodeId<*>) : Source
  * Indicates that the properties of a [Type] within a [SourceTree] should be edited.
  *
  * @property supertypeEdits the edits which should be applied to the [Type.supertypes] of the type
- * with the given [id]
+ * with the given [qualifiedId]
  * @property modifierEdits the edits which should be applied to the [Type.modifiers] of the type
- * with the given [id]
+ * with the given [qualifiedId]
  */
 public data class EditType(
-    override val id: QualifiedSourceNodeId<Type>,
+    override val qualifiedId: QualifiedSourceNodeId<Type>,
     val supertypeEdits: List<SetEdit<Identifier>> = emptyList(),
     val modifierEdits: List<SetEdit<String>> = emptyList()
 ) : SourceTreeEdit() {
 
     override fun applyOn(nodes: NodeHashMap) {
-        val type = nodes[id]?.sourceNode as? Type? ?: error("Type '$id' doesn't exist!")
+        val type =
+            nodes[qualifiedId]?.sourceNode as? Type? ?: error("Type '$qualifiedId' doesn't exist!")
         val newType =
             type.copy(
                 supertypes = type.supertypes.apply(supertypeEdits),
                 modifiers = type.modifiers.apply(modifierEdits)
             )
-        val node = SourceTreeNode(id, newType)
-        nodes[id] = node
+        val node = SourceTreeNode(qualifiedId, newType)
+        nodes[qualifiedId] = node
         nodes.updateAncestorsOf(node)
     }
 }
@@ -186,29 +187,31 @@ public data class EditType(
  * Indicates that the properties of a [Function] within a [SourceTree] should be edited.
  *
  * @property parameterEdits the edits which should be applied to the [Function.parameters] of the
- * function with the given [id]
+ * function with the given [qualifiedId]
  * @property modifierEdits the edits which should be applied to the [Function.modifiers] of the
- * function with the given [id]
+ * function with the given [qualifiedId]
  * @property bodyEdits the edits which should be applied to the [Function.body] of the function with
- * the given [id]
+ * the given [qualifiedId]
  */
 public data class EditFunction(
-    override val id: QualifiedSourceNodeId<Function>,
+    override val qualifiedId: QualifiedSourceNodeId<Function>,
     val parameterEdits: List<ListEdit<Identifier>> = emptyList(),
     val modifierEdits: List<SetEdit<String>> = emptyList(),
     val bodyEdits: List<ListEdit<String>> = emptyList()
 ) : SourceTreeEdit() {
 
     override fun applyOn(nodes: NodeHashMap) {
-        val function = nodes[id]?.sourceNode as Function? ?: error("Function '$id' doesn't exist!")
+        val function =
+            nodes[qualifiedId]?.sourceNode as? Function?
+                ?: error("Function '$qualifiedId' doesn't exist!")
         val newFunction =
             function.copy(
                 parameters = function.parameters.apply(parameterEdits),
                 modifiers = function.modifiers.apply(modifierEdits),
                 body = function.body.apply(bodyEdits)
             )
-        val node = SourceTreeNode(id, newFunction)
-        nodes[id] = node
+        val node = SourceTreeNode(qualifiedId, newFunction)
+        nodes[qualifiedId] = node
         nodes.updateAncestorsOf(node)
     }
 }
@@ -217,25 +220,27 @@ public data class EditFunction(
  * Indicates that the properties of a [Variable] within a [SourceTree] should be edited.
  *
  * @property modifierEdits the edits which should be applied to the [Variable.modifiers] of the
- * variable with the given [id]
+ * variable with the given [qualifiedId]
  * @property initializerEdits the edits which should be applied to the [Variable.initializer] of the
- * variable with the given [id]
+ * variable with the given [qualifiedId]
  */
 public data class EditVariable(
-    override val id: QualifiedSourceNodeId<Variable>,
+    override val qualifiedId: QualifiedSourceNodeId<Variable>,
     val modifierEdits: List<SetEdit<String>> = emptyList(),
     val initializerEdits: List<ListEdit<String>> = emptyList()
 ) : SourceTreeEdit() {
 
     override fun applyOn(nodes: NodeHashMap) {
-        val variable = nodes[id]?.sourceNode as? Variable? ?: error("Variable '$id' doesn't exist!")
+        val variable =
+            nodes[qualifiedId]?.sourceNode as? Variable?
+                ?: error("Variable '$qualifiedId' doesn't exist!")
         val newVariable =
             variable.copy(
                 modifiers = variable.modifiers.apply(modifierEdits),
                 initializer = variable.initializer.apply(initializerEdits)
             )
-        val node = SourceTreeNode(id, newVariable)
-        nodes[id] = node
+        val node = SourceTreeNode(qualifiedId, newVariable)
+        nodes[qualifiedId] = node
         nodes.updateAncestorsOf(node)
     }
 }

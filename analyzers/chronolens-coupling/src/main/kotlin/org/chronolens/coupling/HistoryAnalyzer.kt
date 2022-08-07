@@ -51,17 +51,17 @@ internal class HistoryAnalyzer(
     private fun visit(edit: RemoveNode): Set<QualifiedSourceNodeId<*>> {
         val removedIds =
             sourceTree
-                .walk(edit.id)
+                .walk(edit.qualifiedId)
                 .filter { (_, node) -> node is Function }
                 .map(SourceTreeNode<*>::qualifiedId)
                 .toSet()
 
         changes -= removedIds
-        for (id in removedIds) {
-            for (otherId in jointChanges[id].orEmpty().keys) {
-                jointChanges[otherId]?.remove(id)
+        for (qualifiedId in removedIds) {
+            for (otherId in jointChanges[qualifiedId].orEmpty().keys) {
+                jointChanges[otherId]?.remove(qualifiedId)
             }
-            jointChanges -= id
+            jointChanges -= qualifiedId
         }
 
         return removedIds
@@ -73,7 +73,7 @@ internal class HistoryAnalyzer(
             when (edit) {
                 is AddNode<*> -> editedIds += visit(edit)
                 is RemoveNode -> editedIds -= visit(edit)
-                is EditFunction -> editedIds += edit.id
+                is EditFunction -> editedIds += edit.qualifiedId
                 else -> {}
             }
             sourceTree.apply(edit)
