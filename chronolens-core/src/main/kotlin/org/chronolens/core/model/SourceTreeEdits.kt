@@ -139,7 +139,7 @@ public data class AddNode<out T : SourceNode>(override val id: String, val node:
     override fun applyOn(nodes: NodeHashMap) {
         check(id !in nodes) { "Node '$id' already exists!" }
         nodes.putSourceTree(sourceTreeNode)
-        sourceTreeNode.castOrNull<SourceEntity>()?.let(nodes::updateAncestors)
+        sourceTreeNode.castOrNull<SourceEntity>()?.let(nodes::updateAncestorsOf)
     }
 }
 
@@ -156,7 +156,7 @@ public data class RemoveNode(override val id: String) : SourceTreeEdit() {
     override fun applyOn(nodes: NodeHashMap) {
         val node = nodes[id] ?: error("Node '$id' doesn't exist!")
         nodes.removeSourceTree(node)
-        node.castOrNull<SourceEntity>()?.let(nodes::updateAncestors)
+        node.castOrNull<SourceEntity>()?.let(nodes::updateAncestorsOf)
     }
 }
 
@@ -188,7 +188,7 @@ public data class EditType(
             )
         val node = SourceTreeNode(id, newType)
         nodes[id] = node
-        nodes.updateAncestors(node)
+        nodes.updateAncestorsOf(node)
     }
 }
 
@@ -224,7 +224,7 @@ public data class EditFunction(
             )
         val node = SourceTreeNode(id, newFunction)
         nodes[id] = node
-        nodes.updateAncestors(node)
+        nodes.updateAncestorsOf(node)
     }
 }
 
@@ -256,7 +256,7 @@ public data class EditVariable(
             )
         val node = SourceTreeNode(id, newVariable)
         nodes[id] = node
-        nodes.updateAncestors(node)
+        nodes.updateAncestorsOf(node)
     }
 }
 
@@ -266,13 +266,13 @@ public data class EditVariable(
  * @throws IllegalStateException if this node map has an invalid state and the ancestors couldn't be
  * updated
  */
-private fun <T : SourceEntity> NodeHashMap.updateAncestors(sourceTreeNode: SourceTreeNode<T>) {
+private fun <T : SourceEntity> NodeHashMap.updateAncestorsOf(sourceTreeNode: SourceTreeNode<T>) {
     val (qualifiedId, entity) = sourceTreeNode
 
     fun Set<SourceEntity>.updatedWithEntity(): Set<SourceEntity> {
         val newEntities = LinkedHashSet<SourceEntity>(size)
         this.filterTo(newEntities) { it.kind != entity.kind || it.simpleId != entity.simpleId }
-        if (qualifiedId in this@updateAncestors) {
+        if (qualifiedId in this@updateAncestorsOf) {
             newEntities += entity
         }
         return newEntities
@@ -289,7 +289,7 @@ private fun <T : SourceEntity> NodeHashMap.updateAncestors(sourceTreeNode: Sourc
         is Type -> {
             val newParent = SourceTreeNode(parentId, parent.updated())
             this[parentId] = newParent
-            updateAncestors(newParent)
+            updateAncestorsOf(newParent)
         }
         else -> error("Unknown container '${parent::kind}' with id '$parentId'!")
     }
