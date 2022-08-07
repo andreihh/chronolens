@@ -85,10 +85,6 @@ public interface Repository {
     public fun getHistoryStream(): Stream<Transaction> = getHistory().asStream()
 
     public companion object {
-        /** Returns whether the given source file [path] is valid. */
-        public fun isValidPath(path: String): Boolean =
-            "/$path/".indexOfAny(listOf("//", "/./", "/../")) == -1
-
         /** Returns whether the given revision [id] is valid. */
         public fun isValidRevisionId(id: String): Boolean =
             id.isNotEmpty() && id.all(Character::isLetterOrDigit)

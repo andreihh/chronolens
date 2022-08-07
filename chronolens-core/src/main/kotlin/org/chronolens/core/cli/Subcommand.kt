@@ -17,10 +17,10 @@
 package org.chronolens.core.cli
 
 import java.io.File
+import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
-import org.chronolens.core.repository.Repository.Companion.isValidPath
 import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
 
 /**
@@ -62,7 +62,7 @@ public abstract class Subcommand : Command() {
         PersistentRepository.load(File(repositoryDirectory)) ?: exit("Repository not found!")
 
     protected fun RequiredOption<String>.validateId(): RequiredOption<String> = validate { id ->
-        require(isValidPath(id)) { "Invalid id '$id'!" }
+        require(QualifiedSourceNodeId.isValid(id)) { "Invalid id '$id'!" }
     }
 
     protected fun NullableOption<String>.validateRevision(

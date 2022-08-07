@@ -18,6 +18,8 @@ package org.chronolens.core.model
 
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.chronolens.test.core.model.qualifiedPathOf
 import org.junit.Test
 
@@ -105,6 +107,55 @@ class QualifiedSourceNodeIdTest {
     }
 
     @Test
+    fun isValid_whenValidId_returnsTrue() {
+        val rawQualifiedIds =
+            listOf(
+                "src/.dotfile",
+                "src/Main.java",
+                "src/Main.java:Main",
+                "src/Main.java:Main#main(String[])",
+                "src/Main.java:Main#VERSION",
+                "src/Main.java:Main:InnerMain",
+                "src/Main.java:Main:InnerMain#main(String[])",
+                "src/Main.java:Main:InnerMain#VERSION",
+            )
+
+        for (rawQualifiedId in rawQualifiedIds) {
+            assertTrue(
+                QualifiedSourceNodeId.isValid(rawQualifiedId),
+                "Id '$rawQualifiedId' should be valid!"
+            )
+        }
+    }
+
+    @Test
+    fun isValid_whenInvalidId_returnsFalse() {
+        val rawQualifiedIds =
+            listOf(
+                "",
+                "src//Main",
+                "src/./Main",
+                "src/../Main",
+                "/src/Main",
+                "src/Main/",
+                "src/Main::Main",
+                "src/Main:#Main",
+                "src/Main.java:Main#VERSION/file",
+                "src/Main.java:Main#main()/file",
+                "src/Main.java:Main:InnerMain/file",
+                "src/Main.java:Main#main():VERSION",
+                "src/Main.java:Main#main()#main(String[])",
+            )
+
+        for (rawQualifiedId in rawQualifiedIds) {
+            assertFalse(
+                QualifiedSourceNodeId.isValid(rawQualifiedId),
+                "Id '$rawQualifiedId' should be invalid!"
+            )
+        }
+    }
+
+    @Test
     fun parseFrom_whenInputIsQualifiedIdAsString_returnsOriginalQualifiedId() {
         val qualifiedIds =
             listOf(
@@ -134,7 +185,7 @@ class QualifiedSourceNodeIdTest {
             )
 
         for (rawQualifiedId in rawQualifiedIds) {
-            assertFailsWith<IllegalArgumentException> {
+            assertFailsWith<IllegalArgumentException>("Parsing id '$rawQualifiedId' should fail!") {
                 QualifiedSourceNodeId.parseFrom(rawQualifiedId)
             }
         }

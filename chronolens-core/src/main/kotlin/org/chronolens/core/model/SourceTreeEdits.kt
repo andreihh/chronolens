@@ -148,7 +148,7 @@ public data class AddNode(override val id: String, val node: SourceNode) : Sourc
  */
 public data class RemoveNode(override val id: String) : SourceTreeEdit() {
     init {
-        validateNodeId(id)
+        require(QualifiedSourceNodeId.isValid(id)) { "Invalid qualified id '$id'!" }
     }
 
     override fun applyOn(nodes: NodeHashMap) {

@@ -142,6 +142,37 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
         @JvmStatic
         public fun fromPath(path: String): QualifiedSourceNodeId<SourceFile> = of(SourcePath(path))
 
+        /** Returns whether the given [rawQualifiedId] id valid. */
+        @JvmStatic
+        public fun isValid(rawQualifiedId: String): Boolean {
+            // There must be at most one member separator, and it must be the last one.
+            val memberSeparatorIndex = rawQualifiedId.indexOf(MEMBER_SEPARATOR)
+            val nextSeparatorIndex = rawQualifiedId.indexOfAny(SEPARATORS, memberSeparatorIndex + 1)
+            if (memberSeparatorIndex != -1 && nextSeparatorIndex != -1) return false
+
+            val tokens = rawQualifiedId.split(*SEPARATORS)
+            if (tokens.isEmpty() || tokens.any(String::isBlank)) return false
+
+            // The first token always denotes a source file.
+            if (!SourcePath.isValid(tokens.first())) return false
+
+            // Middle tokens always denote types.
+            for (token in tokens.drop(1).dropLast(1)) {
+                if (!Identifier.isValid(token)) return false
+            }
+
+            // If there's only one token, it denotes a file for which we already validated the path.
+            if (tokens.size == 1) return true
+
+            // If there are no members, the last token denotes a type.
+            if (memberSeparatorIndex == -1) {
+                return Identifier.isValid(tokens.last())
+            }
+
+            // The last token denotes a member (variable or function).
+            return Identifier.isValid(tokens.last()) || Signature.isValid(tokens.last())
+        }
+
         /**
          * Parses the given [rawQualifiedId].
          *
@@ -149,25 +180,23 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
          */
         @JvmStatic
         public fun parseFrom(rawQualifiedId: String): QualifiedSourceNodeId<*> {
-            validateMemberSeparators(rawQualifiedId)
-            val tokens = rawQualifiedId.split(*SEPARATORS)
-            require(tokens.isNotEmpty() && tokens.all(String::isNotBlank)) {
-                "Invalid qualified id '$rawQualifiedId'!"
-            }
+            require(isValid(rawQualifiedId)) { "Invalid qualified id '$rawQualifiedId'!" }
 
-            // First token is always the source file path.
+            val tokens = rawQualifiedId.split(*SEPARATORS)
+
+            // The first token always denotes a source file.
             var qualifiedId: QualifiedSourceNodeId<out SourceContainer> = fromPath(tokens.first())
 
             // Stop if there is just one token.
             if (tokens.size == 1) return qualifiedId
 
-            // Middle tokens are always type names.
-            for (token in tokens.subList(1, tokens.size - 1)) {
+            // Middle tokens always denote types.
+            for (token in tokens.drop(1).dropLast(1)) {
                 qualifiedId = qualifiedId.type(token)
             }
 
             // There are at least two tokens, so the separator exists.
-            val separator = rawQualifiedId[rawQualifiedId.lastIndexOfAny(SEPARATORS)]
+            val separator = rawQualifiedId.last { it in SEPARATORS }
             val lastId = tokens.last()
             val isSignature = '(' in lastId && lastId.endsWith(')')
             return when {
@@ -240,12 +269,6 @@ public fun QualifiedSourceNodeId<out SourceContainer>.variable(
 ): QualifiedSourceNodeId<Variable> = variable(Identifier(name))
 
 private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
-
-private fun validateMemberSeparators(rawQualifiedId: String) {
-    val memberIndex = rawQualifiedId.indexOf(MEMBER_SEPARATOR)
-    val nextIndex = rawQualifiedId.indexOfAny(SEPARATORS, memberIndex + 1)
-    require(memberIndex == -1 || nextIndex == -1) { "Invalid qualified id '$rawQualifiedId'!" }
-}
 
 public val String.sourcePath: SourcePath
     get() {

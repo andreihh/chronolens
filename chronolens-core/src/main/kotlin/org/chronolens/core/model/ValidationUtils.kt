@@ -40,15 +40,6 @@ private val node = Regex("$file|$entity")
 internal val sourcePathRegex = file
 
 /**
- * Validates the given [SourceNode] [id].
- *
- * @throws IllegalArgumentException if the given [id] is not a valid source node id
- */
-internal fun validateNodeId(id: String) {
-    require(id.matches(node)) { "Invalid node id '$id'!" }
-}
-
-/**
  * Validates the given [SourceEntity] [id].
  *
  * @throws IllegalArgumentException if the given [id] is not a valid source entity id
