@@ -29,6 +29,10 @@ import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATO
  */
 // TODO: require(qualifiedId.kind == sourceNode.kind)
 public data class SourceTreeNode<out T : SourceNode>(val qualifiedId: String, val sourceNode: T) {
+    /** The kind of this source tree node. */
+    val kind: SourceNodeKind
+        get() = sourceNode.kind
+
     /** The path of the [SourceFile] which contains this node. */
     public val sourcePath: SourcePath
         get() = qualifiedId.sourcePath
