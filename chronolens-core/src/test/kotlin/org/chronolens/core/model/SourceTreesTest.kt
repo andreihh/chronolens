@@ -24,7 +24,6 @@ import kotlin.test.assertTrue
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.test.core.model.add
 import org.chronolens.test.core.model.assertEquals
-import org.chronolens.test.core.model.build
 import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.qualifiedPathOf
@@ -43,7 +42,7 @@ class SourceTreeTest {
     }
 
     @Test
-    fun `test source tree returns structurally equal nodes`() {
+    fun walk_returnsStructurallyEqualNodes() {
         val classVersion = variable("version") { +"1" }
         val classFunction = function("getVersion()") {}
         val classType =
@@ -193,53 +192,5 @@ class SourceTreeTest {
         )
 
         assertEquals(expected, actual)
-    }
-
-    @Test
-    fun sourcePath_ofSourceFile_returnsPath() {
-        val path = SourcePath("src/Test.java")
-        val sourceTreeNode = SourceTreeNode.of(SourceFile(path))
-
-        assertEquals(path, sourceTreeNode.sourcePath)
-    }
-
-    @Test
-    fun sourcePath_ofNode_returnsPathOfContainerSourceFile() {
-        val path = "src/Test.java"
-        val sourceTreeNode =
-            QualifiedSourceNodeId.fromPath(path).build { +function("getVersion(String)") {} }
-
-        assertEquals(path, sourceTreeNode.sourcePath.toString())
-    }
-
-    @Test
-    fun castOrNull_whenValidType_returnsNode() {
-        val sourceTreeNode = QualifiedSourceNodeId.fromPath("src/Test.java").build {}
-
-        assertEquals<SourceTreeNode<*>?>(
-            sourceTreeNode,
-            sourceTreeNode.castOrNull<SourceContainer>()
-        )
-    }
-
-    @Test
-    fun castOrNull_whenInvalidType_returnsNull() {
-        val sourceTreeNode = QualifiedSourceNodeId.fromPath("src/Test.java").build {}
-
-        assertNull(sourceTreeNode.castOrNull<SourceEntity>())
-    }
-
-    @Test
-    fun cast_whenValidType_returnsNode() {
-        val sourceTreeNode = QualifiedSourceNodeId.fromPath("src/Test.java").build {}
-
-        assertEquals<SourceTreeNode<*>>(sourceTreeNode, sourceTreeNode.cast<SourceContainer>())
-    }
-
-    @Test
-    fun cast_whenInvalidType_throws() {
-        val sourceTreeNode = QualifiedSourceNodeId.fromPath("src/Test.java").build {}
-
-        assertFailsWith<IllegalArgumentException> { sourceTreeNode.cast<SourceEntity>() }
     }
 }
