@@ -21,7 +21,7 @@ import java.util.Collections.unmodifiableCollection
 /**
  * A snapshot of a source tree at a specific point in time.
  *
- * It indexes all contained source nodes to allow fast access by id.
+ * It indexes all contained source nodes to allow fast access by qualified id.
  */
 public class SourceTree
 private constructor(
@@ -97,7 +97,8 @@ private constructor(
                 }
                 sourceMap[source.path] = source
             }
-            val nodeMap = buildVisit(sources)
+            val nodeMap = NodeHashMap()
+            sources.forEach(nodeMap::putSourceTree)
             return SourceTree(sourceMap, nodeMap)
         }
 
@@ -106,7 +107,7 @@ private constructor(
     }
 }
 
-/** A hash map from ids to source tree nodes. */
+/** A hash map from qualified ids to source tree nodes. */
 internal typealias NodeHashMap = HashMap<QualifiedSourceNodeId<*>, SourceTreeNode<*>>
 
 internal fun NodeHashMap.putSourceTree(root: SourceTreeNode<*>) {
@@ -117,10 +118,4 @@ internal fun NodeHashMap.putSourceTree(root: SourceFile) = putSourceTree(SourceT
 
 internal fun NodeHashMap.removeSourceTree(root: SourceTreeNode<*>) {
     this -= root.walkSourceTree().map(SourceTreeNode<*>::qualifiedId).toSet()
-}
-
-private fun buildVisit(sources: Iterable<SourceFile>): NodeHashMap {
-    val nodes = NodeHashMap()
-    sources.forEach(nodes::putSourceTree)
-    return nodes
 }

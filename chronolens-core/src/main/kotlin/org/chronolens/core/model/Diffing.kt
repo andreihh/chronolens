@@ -19,14 +19,32 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.ListEdit.Companion.diff
-import org.chronolens.core.model.SetEdit.Companion.diff
+/** Returns the edits which should be applied on [this] list to obtain the [other] list. */
+internal fun <T> List<T>.diff(other: List<T>): List<ListEdit<T>> {
+    val objectToValue = hashMapOf<T, Int>()
+    val valueToObject = arrayListOf<T>()
+    for (it in (this + other)) {
+        if (it !in objectToValue) {
+            objectToValue[it] = valueToObject.size
+            valueToObject += it
+        }
+    }
+    val a = map(objectToValue::getValue).toIntArray()
+    val b = other.map(objectToValue::getValue).toIntArray()
+    val arrayEdits = diff(a, b)
+    return arrayEdits.map { edit ->
+        when (edit) {
+            is ListEdit.Add -> ListEdit.Add(edit.index, valueToObject[edit.value])
+            is ListEdit.Remove -> ListEdit.Remove(edit.index)
+        }
+    }
+}
 
 /**
  * Returns the smallest edit distance between the two given arrays using the Wagner-Fischer
  * algorithm.
  */
-internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
+private fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
     val dp = Array(size = a.size + 1) { IntArray(size = b.size + 1) { a.size + b.size } }
     dp[0] = IntArray(size = b.size + 1) { it }
     for (i in 1..a.size) {
@@ -53,6 +71,13 @@ internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
         }
     }
     return edits
+}
+
+/** Returns the edits which should be applied on [this] set to obtain the [other] set. */
+internal fun <T> Set<T>.diff(other: Set<T>): List<SetEdit<T>> {
+    val added = (other - this).map { SetEdit.Add(it) }
+    val removed = (this - other).map { SetEdit.Remove(it) }
+    return added + removed
 }
 
 /**

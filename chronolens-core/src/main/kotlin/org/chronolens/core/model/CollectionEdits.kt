@@ -49,28 +49,6 @@ public sealed class ListEdit<T> {
         /** Utility method. */
         @JvmStatic
         public fun <T> List<T>.apply(vararg edits: ListEdit<T>): List<T> = apply(edits.asList())
-
-        /** Returns the edits which should be applied on [this] list to obtain the [other] list. */
-        @JvmStatic
-        public fun <T> List<T>.diff(other: List<T>): List<ListEdit<T>> {
-            val objectToValue = hashMapOf<T, Int>()
-            val valueToObject = arrayListOf<T>()
-            for (it in (this + other)) {
-                if (it !in objectToValue) {
-                    objectToValue[it] = valueToObject.size
-                    valueToObject += it
-                }
-            }
-            val a = map(objectToValue::getValue).toIntArray()
-            val b = other.map(objectToValue::getValue).toIntArray()
-            val arrayEdits = diff(a, b)
-            return arrayEdits.map { edit ->
-                when (edit) {
-                    is Add -> Add(edit.index, valueToObject[edit.value])
-                    is Remove -> Remove(edit.index)
-                }
-            }
-        }
     }
 
     /**
@@ -144,14 +122,6 @@ public sealed class SetEdit<T> {
         /** Utility method. */
         @JvmStatic
         public fun <T> Set<T>.apply(vararg edits: SetEdit<T>): Set<T> = apply(edits.asList())
-
-        /** Returns the edits which should be applied on [this] set to obtain the [other] set. */
-        @JvmStatic
-        public fun <T> Set<T>.diff(other: Set<T>): List<SetEdit<T>> {
-            val added = (other - this).map(::Add)
-            val removed = (this - other).map(::Remove)
-            return added + removed
-        }
     }
 
     /**
