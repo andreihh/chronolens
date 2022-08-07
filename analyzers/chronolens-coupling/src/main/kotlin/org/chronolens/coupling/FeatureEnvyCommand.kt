@@ -21,7 +21,6 @@ import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.sourcePath
 import org.chronolens.core.repository.Transaction
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.coupling.FeatureEnvyCommand.FeatureEnvy
@@ -191,7 +190,8 @@ private fun Graph.colorNodes(
             .map(FeatureEnvy::function)
             .map(QualifiedSourceNodeId<*>::toString)
             .toSet()
-    val fileGroups = nodes.map(Node::label).groupBy(String::sourcePath).values
+    val fileGroups =
+        nodes.map(Node::label).groupBy { QualifiedSourceNodeId.parseFrom(it).sourcePath }.values
     val groups = fileGroups + instances.map(::listOf)
     return colorNodes(groups)
 }

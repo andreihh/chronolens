@@ -20,6 +20,7 @@ import java.util.ServiceLoader
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.Variable
 
 internal abstract class DecapsulationAnalyzer {
     protected abstract fun canProcess(sourcePath: SourcePath): Boolean
@@ -27,7 +28,7 @@ internal abstract class DecapsulationAnalyzer {
     protected abstract fun getField(
         sourceTree: SourceTree,
         nodeId: QualifiedSourceNodeId<*>
-    ): QualifiedSourceNodeId<*>?
+    ): QualifiedSourceNodeId<Variable>?
 
     protected abstract fun getVisibility(
         sourceTree: SourceTree,
@@ -54,7 +55,7 @@ internal abstract class DecapsulationAnalyzer {
         fun getField(
             sourceTree: SourceTree,
             nodeId: QualifiedSourceNodeId<*>
-        ): QualifiedSourceNodeId<*>? =
+        ): QualifiedSourceNodeId<Variable>? =
             findAnalyzer(sourceTree, nodeId)?.getField(sourceTree, nodeId)
 
         fun getVisibility(sourceTree: SourceTree, nodeId: QualifiedSourceNodeId<*>): Int? =

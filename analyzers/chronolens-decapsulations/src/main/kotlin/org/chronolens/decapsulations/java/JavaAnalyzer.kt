@@ -20,8 +20,12 @@ import org.chronolens.core.model.Function
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.QualifiedSourceNodeId.Companion.parentId
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.signature
 import org.chronolens.core.model.Signature
+import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceNode
+import org.chronolens.core.model.SourceNodeKind.FUNCTION
+import org.chronolens.core.model.SourceNodeKind.VARIABLE
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
@@ -46,19 +50,17 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
     override fun getField(
         sourceTree: SourceTree,
         nodeId: QualifiedSourceNodeId<*>
-    ): QualifiedSourceNodeId<*>? {
-        val node = sourceTree[nodeId] ?: return null
-        return when (node) {
-            is Variable -> nodeId
-            is Function -> {
-                val fieldName = getFieldName(node.signature) ?: return null
-                val fieldId = nodeId.parentId?.variable(fieldName) ?: return null
-                // TODO: figure out if should check only for non-nullable type.
-                if (sourceTree[fieldId] is Variable?) fieldId else null
+    ): QualifiedSourceNodeId<Variable>? =
+        when (nodeId.kind) {
+            VARIABLE -> if (nodeId in sourceTree) nodeId.cast() else null
+            FUNCTION -> {
+                val functionId = nodeId.cast<Function>()
+                val fieldName = getFieldName(functionId.signature)
+                val fieldId = fieldName?.let(functionId.parentId::variable)
+                fieldId?.takeIf(sourceTree::contains)
             }
             else -> null
         }
-    }
 
     private fun getVisibility(modifiers: Set<String>): Int =
         when {
@@ -71,28 +73,26 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
     private val SourceNode?.isInterface: Boolean
         get() = this is Type && INTERFACE_MODIFIER in modifiers
 
-    private fun SourceTree.parentNodeIsInterface(nodeId: QualifiedSourceNodeId<*>): Boolean {
-        val parentId = nodeId.parentId ?: return false
-        return get(parentId)?.isInterface ?: false
-    }
+    private fun SourceTree.parentNodeIsInterface(
+        nodeId: QualifiedSourceNodeId<SourceEntity>
+    ): Boolean = get(nodeId.parentId)?.isInterface ?: false
 
-    override fun getVisibility(sourceTree: SourceTree, nodeId: QualifiedSourceNodeId<*>): Int {
-        val node = sourceTree[nodeId]
-        return when (node) {
+    override fun getVisibility(sourceTree: SourceTree, nodeId: QualifiedSourceNodeId<*>): Int =
+        when (val node = sourceTree[nodeId]) {
             is Type -> getVisibility(node.modifiers)
             is Function ->
-                if (sourceTree.parentNodeIsInterface(nodeId)) PUBLIC_LEVEL
+                if (sourceTree.parentNodeIsInterface(nodeId.cast<Function>())) PUBLIC_LEVEL
                 else getVisibility(node.modifiers)
             is Variable -> getVisibility(node.modifiers)
             else -> throw AssertionError("'$nodeId' has no visibility!")
         }
-    }
 
     override fun isConstant(sourceTree: SourceTree, nodeId: QualifiedSourceNodeId<*>): Boolean {
-        val node = sourceTree[nodeId] as? Variable? ?: return false
-        val modifiers = node.modifiers
+        val variableId = nodeId.castOrNull<Variable>() ?: return false
+        val variable = sourceTree.getOrNull(variableId) ?: return false
+        val modifiers = variable.modifiers
         return (STATIC_MODIFIER in modifiers && FINAL_MODIFIER in modifiers) ||
-            sourceTree.parentNodeIsInterface(nodeId)
+            sourceTree.parentNodeIsInterface(variableId)
     }
 
     companion object {

@@ -23,6 +23,8 @@ import org.chronolens.core.model.Function
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourceNodeKind.FUNCTION
+import org.chronolens.core.model.SourceNodeKind.VARIABLE
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
@@ -31,9 +33,10 @@ import org.chronolens.core.repository.Transaction
 
 internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private val sourceTree = SourceTree.empty()
-    private val decapsulationsByField = hashMapOf<QualifiedSourceNodeId<*>, List<Decapsulation>>()
+    private val decapsulationsByField =
+        hashMapOf<QualifiedSourceNodeId<Variable>, List<Decapsulation>>()
 
-    private fun getField(nodeId: QualifiedSourceNodeId<*>): QualifiedSourceNodeId<*>? =
+    private fun getField(nodeId: QualifiedSourceNodeId<*>): QualifiedSourceNodeId<Variable>? =
         DecapsulationAnalyzer.getField(sourceTree, nodeId)
 
     private fun getVisibility(nodeId: QualifiedSourceNodeId<*>): Int? =
@@ -43,7 +46,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         DecapsulationAnalyzer.isConstant(sourceTree, nodeId)
 
     private fun addDecapsulation(
-        fieldId: QualifiedSourceNodeId<*>,
+        fieldId: QualifiedSourceNodeId<Variable>,
         nodeId: QualifiedSourceNodeId<*>,
         revisionId: String,
         message: String
@@ -56,10 +59,10 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private fun visit(edit: AddNode<*>): Set<QualifiedSourceNodeId<*>> {
         val editedIds = hashSetOf<QualifiedSourceNodeId<*>>()
         for ((id, node) in edit.sourceTreeNode.walkSourceTree()) {
-            if (node is Variable) {
-                decapsulationsByField[id] = emptyList()
-                editedIds += id
-            } else if (node is Function) {
+            if (node.kind == VARIABLE) {
+                decapsulationsByField[id.cast()] = emptyList()
+            }
+            if (node.kind == VARIABLE || node.kind == FUNCTION) {
                 editedIds += id
             }
         }
@@ -69,7 +72,9 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private fun visit(edit: RemoveNode): Set<QualifiedSourceNodeId<*>> {
         val removedIds = hashSetOf<QualifiedSourceNodeId<*>>()
         for (node in sourceTree.walk(edit.id)) {
-            decapsulationsByField -= node.qualifiedId
+            if (node.kind == VARIABLE) {
+                decapsulationsByField -= node.qualifiedId.cast()
+            }
             removedIds += node.qualifiedId
         }
         return removedIds
@@ -137,7 +142,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         }
     }
 
-    private fun getDecapsulations(fieldId: QualifiedSourceNodeId<*>): List<Decapsulation> =
+    private fun getDecapsulations(fieldId: QualifiedSourceNodeId<Variable>): List<Decapsulation> =
         if (ignoreConstants && isConstant(fieldId)) emptyList()
         else decapsulationsByField[fieldId].orEmpty()
 
@@ -170,7 +175,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     }
 
     data class FieldReport(
-        val id: QualifiedSourceNodeId<*>,
+        val id: QualifiedSourceNodeId<Variable>,
         val decapsulations: List<Decapsulation>
     )
 }

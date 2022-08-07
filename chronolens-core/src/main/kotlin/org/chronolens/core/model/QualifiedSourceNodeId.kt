@@ -215,20 +215,29 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
             }
         }
 
-        /**
-         * Returns the qualified id of the parent of the node denoted by this qualified id, or
-         * `null` if this id denotes a [SourceFile].
-         */
-        @JvmStatic
-        @get:JvmName("getParentIdOrNull")
-        public val QualifiedSourceNodeId<*>.parentId: QualifiedSourceNodeId<SourceContainer>?
-            get() = parent
-
         /** Returns the qualified id of the parent of the node denoted by this qualified id. */
         @JvmStatic
         public val QualifiedSourceNodeId<SourceEntity>.parentId:
             QualifiedSourceNodeId<SourceContainer>
             get() = checkNotNull(parent)
+
+        /** Returns the name of this qualified type id. */
+        @JvmStatic
+        @get:JvmName("getTypeName")
+        public val QualifiedSourceNodeId<Type>.name: Identifier
+            get() = id as Identifier
+
+        /** Returns the signature of this qualified function id. */
+        @JvmStatic
+        @get:JvmName("getFunctionSignature")
+        public val QualifiedSourceNodeId<Function>.signature: Signature
+            get() = id as Signature
+
+        /** Returns the name of this qualified variable id. */
+        @JvmStatic
+        @get:JvmName("getVariableName")
+        public val QualifiedSourceNodeId<Variable>.name: Identifier
+            get() = id as Identifier
     }
 }
 
@@ -276,16 +285,3 @@ public fun QualifiedSourceNodeId<SourceContainer>.variable(
 ): QualifiedSourceNodeId<Variable> = variable(Identifier(name))
 
 private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
-
-public val String.sourcePath: SourcePath
-    get() {
-        val where = indexOfAny(SEPARATORS)
-        val rawPath = if (where == -1) this else substring(0, where)
-        return SourcePath(rawPath)
-    }
-
-public val String.parentId: String?
-    get() {
-        val where = lastIndexOfAny(SEPARATORS)
-        return if (where == -1) null else substring(0, where)
-    }
