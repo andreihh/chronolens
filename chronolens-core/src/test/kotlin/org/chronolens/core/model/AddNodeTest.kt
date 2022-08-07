@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,84 +16,66 @@
 
 package org.chronolens.core.model
 
+import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.assertEquals
+import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
+import org.chronolens.test.core.model.type
 import org.junit.Test
-import kotlin.test.assertFailsWith
 
 class AddNodeTest {
-    @Test fun `test add source file`() {
+    @Test
+    fun apply_withNewSourceFile_addsSourceNode() {
         val expected = sourceTree {
-            sourceFile("src/Main.java") {}
-            sourceFile("src/Test.java") {}
+            +sourceFile("src/Main.java") {}
+            +sourceFile("src/Test.java") {}
         }
         val edit = sourceFile("src/Test.java").add {}
 
-        val actual = sourceTree {
-            sourceFile("src/Main.java") {}
-        }
+        val actual = sourceTree { +sourceFile("src/Main.java") {} }
         actual.apply(edit)
 
         assertEquals(expected, actual)
     }
 
-    @Test fun `test add function to type`() {
+    @Test
+    fun apply_withNewFunctionInTypeInSourceFile_addsSourceNode() {
         val expected = sourceTree {
-            sourceFile("src/Test.java") {
-                type("Test") {
-                    function("getVersion()") {}
-                }
-            }
+            +sourceFile("src/Test.java") { +type("Test") { +function("getVersion()") {} } }
         }
-        val edit = sourceFile("src/Test.java").type("Test")
-            .function("getVersion()").add {}
+        val edit = sourceFile("src/Test.java").type("Test").function("getVersion()").add {}
 
-        val actual = sourceTree {
-            sourceFile("src/Test.java") {
-                type("Test") {}
-            }
-        }
+        val actual = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
         actual.apply(edit)
 
         assertEquals(expected, actual)
     }
 
-    @Test fun `test add type with function with parameter`() {
+    @Test
+    fun apply_withNewTypeWithFunctionWithParameterInSourceFile_addsSourceNode() {
         val expected = sourceTree {
-            sourceFile("src/Test.java") {
-                type("Test") {
-                    function("getV(String)") {
-                        parameters("name")
-                    }
-                }
+            +sourceFile("src/Test.java") {
+                +type("Test") { +function("getV(String)") { parameters("name") } }
             }
         }
-        val edit = sourceFile("src/Test.java").type("Test").add {
-            function("getV(String)") {
-                parameters("name")
+        val edit =
+            sourceFile("src/Test.java").type("Test").add {
+                +function("getV(String)") { parameters("name") }
             }
-        }
 
-        val actual = sourceTree {
-            sourceFile("src/Test.java") {}
-        }
+        val actual = sourceTree { +sourceFile("src/Test.java") {} }
         actual.apply(edit)
 
         assertEquals(expected, actual)
     }
 
-    @Test fun `test add existing node throws`() {
-        val sourceTree = sourceTree {
-            sourceFile("src/Test.java") {
-                type("Test") {}
-            }
-        }
+    @Test
+    fun apply_withExistingId_throws() {
+        val sourceTree = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
         val edit = sourceFile("src/Test.java").type("Test").add {}
 
-        assertFailsWith<IllegalStateException> {
-            sourceTree.apply(edit)
-        }
+        assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
 
     /*@Test fun `test add entity to variable throws`() {
@@ -111,15 +93,11 @@ class AddNodeTest {
         }
     }*/
 
-    @Test fun `test add node to non-existing parent throws`() {
-        val sourceTree = sourceTree {
-            sourceFile("src/Main.java") {}
-        }
-        val edit = sourceFile("src/Main.java").type("Main")
-            .function("getVersion()").add {}
+    @Test
+    fun apply_withNonExistingParent_throws() {
+        val sourceTree = sourceTree { +sourceFile("src/Main.java") {} }
+        val edit = sourceFile("src/Main.java").type("Main").function("getVersion()").add {}
 
-        assertFailsWith<IllegalStateException> {
-            sourceTree.apply(edit)
-        }
+        assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
 }

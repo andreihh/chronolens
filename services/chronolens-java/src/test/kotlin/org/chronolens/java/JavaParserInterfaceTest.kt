@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,40 +16,42 @@
 
 package org.chronolens.java
 
+import kotlin.test.assertEquals
 import org.chronolens.core.model.returnTypeModifierOf
 import org.chronolens.core.model.typeModifierOf
+import org.chronolens.test.core.model.function
+import org.chronolens.test.core.model.type
+import org.chronolens.test.core.model.variable
 import org.junit.Test
-import kotlin.test.assertEquals
 
 class JavaParserInterfaceTest : JavaParserTest() {
-    @Test fun `test interface`() {
+    @Test
+    fun `test interface`() {
         val source = """
         interface IInterface {
         }
         """.trimIndent()
-        val expected = sourceFile {
-            type("IInterface") {
-                modifiers("interface")
-            }
-        }
+        val expected = sourceFile { +type("IInterface") { modifiers("interface") } }
         assertEquals(expected, parse(source))
     }
 
-    @Test fun `test interface with fields`() {
-        val source = """
+    @Test
+    fun `test interface with fields`() {
+        val source =
+            """
         interface IInterface {
             String name = null;
             int version = 1;
         }
         """.trimIndent()
         val expected = sourceFile {
-            type("IInterface") {
+            +type("IInterface") {
                 modifiers("interface")
-                variable("name") {
+                +variable("name") {
                     modifiers(typeModifierOf("String"))
                     +"null"
                 }
-                variable("version") {
+                +variable("version") {
                     modifiers(typeModifierOf("int"))
                     +"1"
                 }
@@ -58,29 +60,29 @@ class JavaParserInterfaceTest : JavaParserTest() {
         assertEquals(expected, parse(source))
     }
 
-    @Test fun `test interface with methods`() {
-        val source = """
+    @Test
+    fun `test interface with methods`() {
+        val source =
+            """
         interface IInterface {
             String getName();
             int getVersion();
         }
         """.trimIndent()
         val expected = sourceFile {
-            type("IInterface") {
+            +type("IInterface") {
                 modifiers("interface")
-                function("getName()") {
-                    modifiers(returnTypeModifierOf("String"))
-                }
-                function("getVersion()") {
-                    modifiers(returnTypeModifierOf("int"))
-                }
+                +function("getName()") { modifiers(returnTypeModifierOf("String")) }
+                +function("getVersion()") { modifiers(returnTypeModifierOf("int")) }
             }
         }
         assertEquals(expected, parse(source))
     }
 
-    @Test fun `test interface with default methods`() {
-        val source = """
+    @Test
+    fun `test interface with default methods`() {
+        val source =
+            """
         interface IInterface {
             String getName();
             default int getVersion() {
@@ -89,12 +91,10 @@ class JavaParserInterfaceTest : JavaParserTest() {
         }
         """.trimIndent()
         val expected = sourceFile {
-            type("IInterface") {
+            +type("IInterface") {
                 modifiers("interface")
-                function("getName()") {
-                    modifiers(returnTypeModifierOf("String"))
-                }
-                function("getVersion()") {
+                +function("getName()") { modifiers(returnTypeModifierOf("String")) }
+                +function("getVersion()") {
                     modifiers("default", returnTypeModifierOf("int"))
 
                     +"{"
@@ -106,13 +106,15 @@ class JavaParserInterfaceTest : JavaParserTest() {
         assertEquals(expected, parse(source))
     }
 
-    @Test fun `test interface with supertypes`() {
-        val source = """
+    @Test
+    fun `test interface with supertypes`() {
+        val source =
+            """
         interface IInterface extends Comparable<IInterface> {
         }
         """.trimIndent()
         val expected = sourceFile {
-            type("IInterface") {
+            +type("IInterface") {
                 modifiers("interface")
                 supertypes("Comparable<IInterface>")
             }

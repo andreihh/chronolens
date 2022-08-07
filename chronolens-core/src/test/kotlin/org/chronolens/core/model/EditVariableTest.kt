@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,64 +16,46 @@
 
 package org.chronolens.core.model
 
+import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
+import org.chronolens.test.core.model.type
+import org.chronolens.test.core.model.variable
 import org.junit.Test
-import kotlin.test.assertFailsWith
 
 class EditVariableTest {
-    @Test fun `test edit invalid variable id throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            EditVariable("src/Test.java#version()")
-        }
+    @Test
+    fun newVariableEdit_withInvalidId_throws() {
+        assertFailsWith<IllegalArgumentException> { EditVariable("src/Test.java#version()") }
     }
 
-    @Test fun `test add modifier to variable`() {
+    @Test
+    fun apply_withNewModifier_addsModifierToSourceNode() {
         val expected = sourceTree {
-            sourceFile("src/Test.java") {
-                variable("name") {
-                    modifiers("@NotNull")
-                }
-            }
+            +sourceFile("src/Test.java") { +variable("name") { modifiers("@NotNull") } }
         }
-        val edit = sourceFile("src/Test.java").variable("name").edit {
-            modifiers { +"@NotNull" }
-        }
+        val edit = sourceFile("src/Test.java").variable("name").edit { modifiers { +"@NotNull" } }
 
-        val actual = sourceTree {
-            sourceFile("src/Test.java") {
-                variable("name") {}
-            }
-        }
+        val actual = sourceTree { +sourceFile("src/Test.java") { +variable("name") {} } }
         actual.apply(edit)
 
         assertEquals(expected, actual)
     }
 
-    @Test fun `test edit non-existing variable throws`() {
-        val sourceTree = sourceTree {
-            sourceFile("src/Test.java") {
-                variable("DEBUG") {}
-            }
-        }
+    @Test
+    fun apply_withNonExistingId_throws() {
+        val sourceTree = sourceTree { +sourceFile("src/Test.java") { +variable("DEBUG") {} } }
         val edit = sourceFile("src/Test.java").variable("RELEASE").edit {}
 
-        assertFailsWith<IllegalStateException> {
-            sourceTree.apply(edit)
-        }
+        assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
 
-    @Test fun `test edit type throws`() {
-        val sourceTree = sourceTree {
-            sourceFile("src/Test.java") {
-                type("Test") {}
-            }
-        }
+    @Test
+    fun apply_withTypeId_throws() {
+        val sourceTree = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
         val edit = sourceFile("src/Test.java").variable("Test").edit {}
 
-        assertFailsWith<IllegalStateException> {
-            sourceTree.apply(edit)
-        }
+        assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
 }

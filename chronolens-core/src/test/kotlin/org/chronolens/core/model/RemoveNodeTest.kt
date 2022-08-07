@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,58 +16,49 @@
 
 package org.chronolens.core.model
 
+import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.assertEquals
+import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
+import org.chronolens.test.core.model.type
+import org.chronolens.test.core.model.variable
 import org.junit.Test
-import kotlin.test.assertFailsWith
 
 class RemoveNodeTest {
-    @Test fun `test remove invalid id throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            RemoveNode("src/Test.java:/")
-        }
+    @Test
+    fun newRemoveNode_withInvalidId_throws() {
+        assertFailsWith<IllegalArgumentException> { RemoveNode("src/Test.java:/") }
     }
 
-    @Test fun `test remove source file`() {
-        val expected = sourceTree {
-            sourceFile("src/Test.java") {}
-        }
+    @Test
+    fun apply_withRemovedSourceFile_removesSourceNode() {
+        val expected = sourceTree { +sourceFile("src/Test.java") {} }
         val edit = sourceFile("src/Main.java").remove()
 
         val actual = sourceTree {
-            sourceFile("src/Main.java") {
-                type("Main") {
-                    function("getVersion(String)") {
-                        parameters("name")
-                    }
-                }
+            +sourceFile("src/Main.java") {
+                +type("Main") { +function("getVersion(String)") { parameters("name") } }
             }
-            sourceFile("src/Test.java") {}
+            +sourceFile("src/Test.java") {}
         }
         actual.apply(edit)
 
         assertEquals(expected, actual)
     }
 
-    @Test fun `test remove function from type`() {
+    @Test
+    fun apply_withRemovedFunctionFromTypeInSourceFile_removesSourceNode() {
         val expected = sourceTree {
-            sourceFile("src/Main.java") {
-                type("Main") {
-                    variable("version") {}
-                }
-            }
+            +sourceFile("src/Main.java") { +type("Main") { +variable("version") {} } }
         }
-        val edit = sourceFile("src/Main.java").type("Main")
-            .function("getVersion(String)").remove()
+        val edit = sourceFile("src/Main.java").type("Main").function("getVersion(String)").remove()
 
         val actual = sourceTree {
-            sourceFile("src/Main.java") {
-                type("Main") {
-                    variable("version") {}
-                    function("getVersion(String)") {
-                        parameters("name")
-                    }
+            +sourceFile("src/Main.java") {
+                +type("Main") {
+                    +variable("version") {}
+                    +function("getVersion(String)") { parameters("name") }
                 }
             }
         }
@@ -76,16 +67,13 @@ class RemoveNodeTest {
         assertEquals(expected, actual)
     }
 
-    @Test fun `test remove non-existing node throws`() {
+    @Test
+    fun apply_withNonExistingId_throws() {
         val sourceTree = sourceTree {
-            sourceFile("src/Test.java") {
-                function("getVersion()") {}
-            }
+            +sourceFile("src/Test.java") { +function("getVersion()") {} }
         }
         val edit = sourceFile("src/Test.java").variable("version").remove()
 
-        assertFailsWith<IllegalStateException> {
-            sourceTree.apply(edit)
-        }
+        assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
 }

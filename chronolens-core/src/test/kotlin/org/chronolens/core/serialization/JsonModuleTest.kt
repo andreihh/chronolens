@@ -27,7 +27,10 @@ import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.qualifiedPathOf
 import org.chronolens.core.repository.Transaction
+import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.sourceFile
+import org.chronolens.test.core.model.type
+import org.chronolens.test.core.model.variable
 import org.chronolens.test.core.repository.transaction
 import org.junit.Test
 
@@ -37,14 +40,14 @@ class JsonModuleTest {
             date = Instant.ofEpochMilli(1824733L)
             author = "unknown"
             +sourceFile("res").add {
-                variable("DEBUG") { +"true" }
-                variable("RELEASE") { +"false" }
-                function("createIClass()") {}
-                type("IClass") {
+                +variable("DEBUG") { +"true" }
+                +variable("RELEASE") { +"false" }
+                +function("createIClass()") {}
+                +type("IClass") {
                     supertypes("Interface", "Object")
-                    type("InnerClass") {}
-                    variable("version") { +"1" }
-                    function("getVersion()") { +"1" }
+                    +type("InnerClass") {}
+                    +variable("version") { +"1" }
+                    +function("getVersion()") { +"1" }
                 }
             }
             +sourceFile("res").function("createIClass()").remove()

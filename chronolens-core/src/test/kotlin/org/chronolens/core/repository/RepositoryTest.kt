@@ -22,8 +22,10 @@ import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.apply
 import org.chronolens.core.versioning.VcsProxyFactoryMock
 import org.chronolens.test.core.model.assertEquals
+import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
+import org.chronolens.test.core.model.type
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -120,7 +122,7 @@ abstract class RepositoryTest {
 
     @Test
     fun `test get source`() {
-        val expected = sourceFile("src/Main.mock").build { type("Main") {} }
+        val expected = sourceFile("src/Main.mock") { +type("Main") {} }
         val actual = repository.getSource(SourcePath("src/Main.mock"))
         assertEquals(expected, actual)
     }
@@ -139,14 +141,14 @@ abstract class RepositoryTest {
 
     @Test
     fun `test get invalid source returns latest valid version`() {
-        val expected = sourceFile("src/Worksheet.mock").build { function("println()") {} }
+        val expected = sourceFile("src/Worksheet.mock") { +function("println()") {} }
         val actual = repository.getSource(SourcePath("src/Worksheet.mock"))
         assertEquals(expected, actual)
     }
 
     @Test
     fun `test get invalid source with no history returns empty`() {
-        val expected = sourceFile("src/Error.mock").build {}
+        val expected = sourceFile("src/Error.mock") {}
         val actual = repository.getSource(SourcePath("src/Error.mock"))
         assertEquals(expected, actual)
     }
@@ -154,10 +156,10 @@ abstract class RepositoryTest {
     @Test
     fun `test get snapshot`() {
         val expected = sourceTree {
-            sourceFile("src/Main.mock") { type("Main") {} }
-            sourceFile("src/BuildVersion.mock") {}
-            sourceFile("src/Worksheet.mock") { function("println()") {} }
-            sourceFile("src/Error.mock") {}
+            +sourceFile("src/Main.mock") { +type("Main") {} }
+            +sourceFile("src/BuildVersion.mock") {}
+            +sourceFile("src/Worksheet.mock") { +function("println()") {} }
+            +sourceFile("src/Error.mock") {}
         }
         val actual = repository.getSnapshot()
         assertEquals(expected, actual)
@@ -166,10 +168,10 @@ abstract class RepositoryTest {
     @Test
     fun `test get history`() {
         val expected = sourceTree {
-            sourceFile("src/Main.mock") { type("Main") {} }
-            sourceFile("src/BuildVersion.mock") {}
-            sourceFile("src/Worksheet.mock") { function("println()") {} }
-            sourceFile("src/Error.mock") {}
+            +sourceFile("src/Main.mock") { +type("Main") {} }
+            +sourceFile("src/BuildVersion.mock") {}
+            +sourceFile("src/Worksheet.mock") { +function("println()") {} }
+            +sourceFile("src/Error.mock") {}
         }
         val transactions = repository.getHistory()
         val actual = sourceTree {}

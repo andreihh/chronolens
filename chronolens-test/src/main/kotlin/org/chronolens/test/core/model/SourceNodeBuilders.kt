@@ -21,6 +21,7 @@ package org.chronolens.test.core.model
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.Signature
+import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
@@ -32,53 +33,37 @@ import org.chronolens.test.core.apply
 
 @BuilderMarker
 public class SourceTreeBuilder {
-    private val sources = mutableListOf<SourceFileBuilder>()
+    private val sources = mutableSetOf<SourceFile>()
 
-    public fun sourceFile(path: String, init: Init<SourceFileBuilder>): SourceTreeBuilder {
-        sources += SourceFileBuilder(path).apply(init)
-        return this
+    public operator fun SourceFile.unaryPlus() {
+        require(this !in sources) { "Duplicate source file '$this'!" }
+        sources += this
     }
 
-    public fun build(): SourceTree = SourceTree.of(sources.map(SourceFileBuilder::build))
+    public fun build(): SourceTree = SourceTree.of(sources)
+}
+
+@BuilderMarker
+public interface EntityBuilder<out T : SourceEntity> {
+    public fun build(): T
 }
 
 @BuilderMarker
 public class SourceFileBuilder(private val path: String) {
-    private val entities = mutableListOf<EntityBuilder<*>>()
+    private val entities = mutableSetOf<SourceEntity>()
 
-    private inline fun <reified T : EntityBuilder<*>> addEntity(
-        simpleId: String,
-        init: Init<T>
-    ): SourceFileBuilder {
-        entities += newBuilder<T>(simpleId).apply(init)
-        return this
+    public operator fun SourceEntity.unaryPlus() {
+        require(this !in entities) { "Duplicate entity '$this'!" }
+        entities += this
     }
 
-    public fun type(name: String, init: Init<TypeBuilder>): SourceFileBuilder =
-        addEntity(name, init)
-
-    public fun function(signature: String, init: Init<FunctionBuilder>): SourceFileBuilder =
-        addEntity(signature, init)
-
-    public fun variable(name: String, init: Init<VariableBuilder>): SourceFileBuilder =
-        addEntity(name, init)
-
-    public fun build(): SourceFile =
-        SourceFile(SourcePath(path), entities.map(EntityBuilder<*>::build).toSet())
+    public fun build(): SourceFile = SourceFile(SourcePath(path), entities)
 }
 
 public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
     private var supertypes = emptySet<Identifier>()
     private var modifiers = emptySet<String>()
-    private val members = mutableListOf<EntityBuilder<*>>()
-
-    private inline fun <reified T : EntityBuilder<*>> addMember(
-        simpleId: String,
-        init: Init<T>
-    ): TypeBuilder {
-        members += newBuilder<T>(simpleId).apply(init)
-        return this
-    }
+    private val members = mutableSetOf<SourceEntity>()
 
     public fun supertypes(vararg supertypes: Identifier): TypeBuilder {
         this.supertypes = supertypes.requireDistinct()
@@ -93,16 +78,12 @@ public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
         return this
     }
 
-    public fun type(name: String, init: Init<TypeBuilder>): TypeBuilder = addMember(name, init)
+    public operator fun SourceEntity.unaryPlus() {
+        require(this !in members) { "Duplicate member '$this'!" }
+        members += this
+    }
 
-    public fun function(signature: String, init: Init<FunctionBuilder>): TypeBuilder =
-        addMember(signature, init)
-
-    public fun variable(name: String, init: Init<VariableBuilder>): TypeBuilder =
-        addMember(name, init)
-
-    override fun build(): Type =
-        Type(Identifier(name), supertypes, modifiers, members.map(EntityBuilder<*>::build).toSet())
+    override fun build(): Type = Type(Identifier(name), supertypes, modifiers, members)
 }
 
 public class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
@@ -159,8 +140,16 @@ public class VariableBuilder(private val name: String) : EntityBuilder<Variable>
 public fun sourceTree(init: Init<SourceTreeBuilder>): SourceTree =
     SourceTreeBuilder().apply(init).build()
 
-private inline fun <reified T> newBuilder(simpleId: String): T =
-    T::class.java.getConstructor(String::class.java).newInstance(simpleId)
+public fun sourceFile(path: String, init: Init<SourceFileBuilder>): SourceFile =
+    SourceFileBuilder(path).apply(init).build()
+
+public fun type(name: String, init: Init<TypeBuilder>): Type = TypeBuilder(name).apply(init).build()
+
+public fun function(signature: String, init: Init<FunctionBuilder>): Function =
+    FunctionBuilder(signature).apply(init).build()
+
+public fun variable(name: String, init: Init<VariableBuilder>): Variable =
+    VariableBuilder(name).apply(init).build()
 
 private fun <T> Array<T>.requireDistinct(): Set<T> {
     val set = LinkedHashSet<T>(size)
