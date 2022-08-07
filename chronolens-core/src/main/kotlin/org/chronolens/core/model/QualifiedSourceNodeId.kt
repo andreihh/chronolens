@@ -16,8 +16,6 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceNodeKind.FUNCTION
 import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
 import org.chronolens.core.model.SourceNodeKind.TYPE
@@ -120,11 +118,13 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
     }
 
     public companion object {
-        /** [Type] identifiers are separated by `:` from the parent id. */
+        /** [Type] identifiers are separated from the parent id by `:`. */
         public const val CONTAINER_SEPARATOR: Char = ':'
 
-        /** [Function] and [Variable] identifiers are separated by `#` from the parent id. */
+        /** [Function] and [Variable] identifiers are separated from the parent id by `#`. */
         public const val MEMBER_SEPARATOR: Char = '#'
+
+        private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
 
         /**
          * Creates a [QualifiedSourceNodeId] denoting a source node of type [T] with the given
@@ -283,5 +283,3 @@ public fun QualifiedSourceNodeId<SourceContainer>.variable(
 public fun QualifiedSourceNodeId<SourceContainer>.variable(
     name: String
 ): QualifiedSourceNodeId<Variable> = variable(Identifier(name))
-
-private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
