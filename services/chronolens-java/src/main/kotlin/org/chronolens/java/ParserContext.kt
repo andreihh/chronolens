@@ -75,7 +75,7 @@ internal data class ParserContext(private val path: SourcePath, private val sour
         requireValidIdentifier(node.name())
         node.supertypes().forEach(::requireValidIdentifier)
         val members = node.members().mapNotNull(::visitMember)
-        members.map(SourceEntity::simpleId).requireDistinct()
+        members.map(SourceEntity::id).requireDistinct()
         return Type(
             Identifier(node.name()),
             node.supertypes().map(::Identifier).toSet(),

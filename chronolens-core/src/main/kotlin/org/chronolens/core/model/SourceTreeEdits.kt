@@ -251,7 +251,7 @@ private fun <T : SourceEntity> NodeHashMap.updateAncestorsOf(sourceTreeNode: Sou
 
     fun Set<SourceEntity>.updatedWithEntity(): Set<SourceEntity> {
         val newEntities = LinkedHashSet<SourceEntity>(size)
-        this.filterTo(newEntities) { it.kind != entity.kind || it.simpleId != entity.simpleId }
+        this.filterTo(newEntities) { it.kind != entity.kind || it.id != entity.id }
         if (qualifiedId in this@updateAncestorsOf) {
             newEntities += entity
         }

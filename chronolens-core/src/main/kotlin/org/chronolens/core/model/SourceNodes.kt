@@ -28,7 +28,7 @@ import org.chronolens.core.model.SourceNodeKind.VARIABLE
  */
 public sealed interface SourceNode {
     /** Returns the simple, unqualified id of this source node. */
-    public val simpleId: SourceNodeId
+    public val id: SourceNodeId
         get() =
             when (this) {
                 is SourceFile -> path
@@ -158,12 +158,12 @@ private fun SourceContainer.validateChildrenIds() {
     val ids = HashSet<Pair<SourceNodeKind, SourceNodeId>>(children.size)
     for (child in children) {
         require(child.kind != SOURCE_FILE) {
-            "Node '$simpleId' cannot contain source file '${child.simpleId}'!"
+            "Node '$id' cannot contain source file '${child.id}'!"
         }
-        require(child.kind to child.simpleId !in ids) {
-            "Node '$simpleId' contains duplicated child ('${child.kind}', '${child.simpleId}')!"
+        require(child.kind to child.id !in ids) {
+            "Node '$id' contains duplicate child '${child.id}' of kind '${child.kind}'!"
         }
-        ids += child.kind to child.simpleId
+        ids += child.kind to child.id
     }
 }
 
