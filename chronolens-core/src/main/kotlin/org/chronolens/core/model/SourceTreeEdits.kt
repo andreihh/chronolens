@@ -126,10 +126,13 @@ public sealed class SourceTreeEdit {
 /**
  * Indicates that a [SourceNode] should be added to a source tree.
  *
- * @param T the concrete type of the added source node
+ * @param T the type of the added source node
  * @property node the node which should be added to the source tree
  */
-public data class AddNode<T : SourceNode>(override val id: String, val node: T) : SourceTreeEdit() {
+// TODO: require id.kind == node.kind
+public data class AddNode<out T : SourceNode>(override val id: String, val node: T) :
+    SourceTreeEdit() {
+
     val sourceTreeNode: SourceTreeNode<T>
         get() = SourceTreeNode(id, node)
 

@@ -35,8 +35,8 @@ import org.chronolens.core.model.SourceNodeKind.VARIABLE
  * null, or if this qualified id denotes a source entity but [parent] is `null`, or if [T] denotes
  * an abstract type, or if the simple [id] is not valid for the denoted node type [T]
  */
-public data class QualifiedSourceNodeId<T : SourceNode>(
-    private val parent: QualifiedSourceNodeId<out SourceContainer>?,
+public data class QualifiedSourceNodeId<out T : SourceNode>(
+    private val parent: QualifiedSourceNodeId<SourceContainer>?,
     public val id: SourceNodeId,
     private val nodeType: Class<T>
 ) {
@@ -134,7 +134,7 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
          */
         @JvmStatic
         public inline fun <reified T : SourceNode> of(
-            parent: QualifiedSourceNodeId<out SourceContainer>?,
+            parent: QualifiedSourceNodeId<SourceContainer>?,
             id: SourceNodeId
         ): QualifiedSourceNodeId<T> = QualifiedSourceNodeId(parent, id, T::class.java)
 
@@ -193,7 +193,7 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
             val tokens = rawQualifiedId.split(*SEPARATORS)
 
             // The first token always denotes a source file.
-            var qualifiedId: QualifiedSourceNodeId<out SourceContainer> = fromPath(tokens.first())
+            var qualifiedId: QualifiedSourceNodeId<SourceContainer> = fromPath(tokens.first())
 
             // Stop if there is just one token.
             if (tokens.size == 1) return qualifiedId
@@ -221,19 +221,19 @@ public data class QualifiedSourceNodeId<T : SourceNode>(
          */
         @JvmStatic
         @get:JvmName("getParentIdOrNull")
-        public val QualifiedSourceNodeId<*>.parentId: QualifiedSourceNodeId<out SourceContainer>?
+        public val QualifiedSourceNodeId<*>.parentId: QualifiedSourceNodeId<SourceContainer>?
             get() = parent
 
         /** Returns the qualified id of the parent of the node denoted by this qualified id. */
         @JvmStatic
-        public val QualifiedSourceNodeId<out SourceEntity>.parentId:
-            QualifiedSourceNodeId<out SourceContainer>
+        public val QualifiedSourceNodeId<SourceEntity>.parentId:
+            QualifiedSourceNodeId<SourceContainer>
             get() = checkNotNull(parent)
     }
 }
 
 /** Creates a new qualified id by appending the given [Type] [name] to this qualified id. */
-public fun QualifiedSourceNodeId<out SourceContainer>.type(
+public fun QualifiedSourceNodeId<SourceContainer>.type(
     name: Identifier
 ): QualifiedSourceNodeId<Type> = QualifiedSourceNodeId.of(this, name)
 
@@ -242,14 +242,13 @@ public fun QualifiedSourceNodeId<out SourceContainer>.type(
  *
  * @throws IllegalArgumentException if the given [name] is not a valid [Identifier]
  */
-public fun QualifiedSourceNodeId<out SourceContainer>.type(
-    name: String
-): QualifiedSourceNodeId<Type> = type(Identifier(name))
+public fun QualifiedSourceNodeId<SourceContainer>.type(name: String): QualifiedSourceNodeId<Type> =
+    type(Identifier(name))
 
 /**
  * Creates a new qualified id by appending the given [Function] [signature] to this qualified id.
  */
-public fun QualifiedSourceNodeId<out SourceContainer>.function(
+public fun QualifiedSourceNodeId<SourceContainer>.function(
     signature: Signature
 ): QualifiedSourceNodeId<Function> = QualifiedSourceNodeId.of(this, signature)
 
@@ -258,12 +257,12 @@ public fun QualifiedSourceNodeId<out SourceContainer>.function(
  *
  * @throws IllegalArgumentException if the given [signature] is not a valid [Signature]
  */
-public fun QualifiedSourceNodeId<out SourceContainer>.function(
+public fun QualifiedSourceNodeId<SourceContainer>.function(
     signature: String
 ): QualifiedSourceNodeId<Function> = function(Signature(signature))
 
 /** Creates a new qualified id by appending the given [Variable] [name] to this qualified id. */
-public fun QualifiedSourceNodeId<out SourceContainer>.variable(
+public fun QualifiedSourceNodeId<SourceContainer>.variable(
     name: Identifier
 ): QualifiedSourceNodeId<Variable> = QualifiedSourceNodeId.of(this, name)
 
@@ -272,7 +271,7 @@ public fun QualifiedSourceNodeId<out SourceContainer>.variable(
  *
  * @throws IllegalArgumentException if the given [name] is not a valid [Identifier]
  */
-public fun QualifiedSourceNodeId<out SourceContainer>.variable(
+public fun QualifiedSourceNodeId<SourceContainer>.variable(
     name: String
 ): QualifiedSourceNodeId<Variable> = variable(Identifier(name))
 

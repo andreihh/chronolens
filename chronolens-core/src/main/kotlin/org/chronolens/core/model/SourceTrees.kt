@@ -115,7 +115,8 @@ private constructor(
  * the source tree
  * @param sourceNode the wrapped source node
  */
-public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val sourceNode: T) {
+// TODO: require(qualifiedId.kind == sourceNode.kind)
+public data class SourceTreeNode<out T : SourceNode>(val qualifiedId: String, val sourceNode: T) {
     /** The path of the [SourceFile] which contains this node. */
     public val sourcePath: SourcePath
         get() = qualifiedId.sourcePath
@@ -159,10 +160,10 @@ public data class SourceTreeNode<T : SourceNode>(val qualifiedId: String, val so
     }
 }
 
-public val SourceTreeNode<out SourceEntity>.parentId: String
+public val SourceTreeNode<SourceEntity>.parentId: String
     get() = qualifiedId.parentId ?: error("")
 
-public fun <T : SourceEntity> SourceTreeNode<out SourceContainer>.append(
+public fun <T : SourceEntity> SourceTreeNode<SourceContainer>.append(
     sourceEntity: T
 ): SourceTreeNode<T> {
     val sourceEntityQualifiedId =
