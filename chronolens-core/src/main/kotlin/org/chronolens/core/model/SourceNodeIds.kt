@@ -16,9 +16,17 @@
 
 package org.chronolens.core.model
 
+import org.chronolens.core.model.SourceNodeId.Companion.SEPARATORS
+import org.chronolens.core.model.SourcePath.Companion.PATH_SEPARATOR
+
 /** The simple id of a [SourceNode]. */
 public sealed interface SourceNodeId {
     abstract override fun toString(): String
+
+    public companion object {
+        /** Special characters that cannot occur in source node ids. */
+        public const val SEPARATORS: String = "/:#\"\\\\"
+    }
 }
 
 /**
@@ -81,3 +89,8 @@ public data class Signature(private val signature: String) : SourceNodeId {
         public fun isValid(signature: String): Boolean = signature.matches(signatureRegex)
     }
 }
+
+private val fileComponent = Regex("(?>[^$SEPARATORS]++)")
+private val sourcePathRegex = Regex("$fileComponent($PATH_SEPARATOR$fileComponent)*+")
+private val identifierRegex = Regex("(?>[^$SEPARATORS()]++)")
+private val signatureRegex = Regex("(?>$identifierRegex\\([^$SEPARATORS]*\\))")

@@ -142,6 +142,8 @@ class QualifiedSourceNodeIdTest {
     fun isValid_whenValidId_returnsTrue() {
         val rawQualifiedIds =
             listOf(
+                ".dotfile",
+                "Main.java",
                 "src/.dotfile",
                 "src/Main.java",
                 "src/Main.java:Main",

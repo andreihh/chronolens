@@ -56,6 +56,16 @@ class SourceNodeIdsTest {
     }
 
     @Test
+    fun containerSeparatorInSourcePath_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { SourcePath("src/Main.mock:Main") }
+    }
+
+    @Test
+    fun memberSeparatorInSourcePath_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { SourcePath("src/Main.mock#Main") }
+    }
+
+    @Test
     fun validSourcePath_isCreatedSuccessfully() {
         SourcePath("src/Main.java")
     }
@@ -80,6 +90,16 @@ class SourceNodeIdsTest {
         assertFailsWith<IllegalArgumentException> { Identifier("version(") }
         assertFailsWith<IllegalArgumentException> { Identifier("version)") }
         assertFailsWith<IllegalArgumentException> { Identifier("version()") }
+    }
+
+    @Test
+    fun containerSeparatorInIdentifier_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Identifier("Main:InnerMain") }
+    }
+
+    @Test
+    fun memberSeparatorInIdentifier_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Identifier("Main#version") }
     }
 
     @Test
@@ -110,7 +130,47 @@ class SourceNodeIdsTest {
     }
 
     @Test
+    fun containerSeparatorInSignature_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Signature("get:version()") }
+    }
+
+    @Test
+    fun memberSeparatorInSignature_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Signature("get#version") }
+    }
+
+    @Test
+    fun slashInSignatureParameter_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Signature("getVersion(Str/ing)") }
+    }
+
+    @Test
+    fun backslashInSignatureParameter_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Signature("getVersion(Str\\ing)") }
+    }
+
+    @Test
+    fun containerSeparatorInSignatureParameter_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Signature("getVersion(Str:ing)") }
+    }
+
+    @Test
+    fun memberSeparatorInSignatureParameter_isInvalid() {
+        assertFailsWith<IllegalArgumentException> { Signature("getVersion(Str:ing)") }
+    }
+
+    @Test
     fun validSignature_isCreatedSuccessfully() {
         Signature("getMinorVer(String app, Set<T> majorVer)")
+    }
+
+    @Test
+    fun validSignatureWithLambdaParameter_isCreatedSuccessfully() {
+        Signature("getVersion((T) -> Unit)")
+    }
+
+    @Test
+    fun validSignatureWithVarargParameter_isCreatedSuccessfully() {
+        Signature("getVersion(String...)")
     }
 }
