@@ -21,8 +21,11 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.chronolens.test.core.model.add
 import org.chronolens.test.core.model.assertEquals
+import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.function
+import org.chronolens.test.core.model.remove
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
 import org.chronolens.test.core.model.type
@@ -122,7 +125,7 @@ class SourceTreeTest {
                 +variable("version") { +"2" }
             }
         }
-        val nodeId = sourceFile("src/Test.java").type("IClass").variable("version").id()
+        val nodeId = qualifiedPathOf("src/Test.java").type("IClass").variable("version").toString()
         val actualNode = sourceTree.get<Variable>(nodeId)
 
         assertEquals(expectedNode, actualNode)
@@ -131,7 +134,7 @@ class SourceTreeTest {
     @Test
     fun getNode_withIncorrectType_throws() {
         val sourceTree = sourceTree { +sourceFile("src/Test.java") { +type("IClass") {} } }
-        val nodeId = sourceFile("src/Test.java").type("IClass").id()
+        val nodeId = qualifiedPathOf("src/Test.java").type("IClass").toString()
 
         assertFailsWith<IllegalStateException> { sourceTree.get<Variable>(nodeId) }
     }
@@ -144,7 +147,7 @@ class SourceTreeTest {
                 +variable("version") { +"1" }
             }
         }
-        val nodeId = sourceFile("src/Test.java").function("getVersion()").id()
+        val nodeId = qualifiedPathOf("src/Test.java").function("getVersion()").toString()
 
         assertFailsWith<IllegalStateException> { sourceTree.get<Function>(nodeId) }
     }
@@ -157,7 +160,7 @@ class SourceTreeTest {
                 +variable("version") { +"1" }
             }
         }
-        val nodeId = sourceFile("src/Test.java").function("getVersion()").id()
+        val nodeId = qualifiedPathOf("src/Test.java").function("getVersion()").toString()
 
         assertNull(sourceTree[nodeId])
     }
@@ -176,11 +179,11 @@ class SourceTreeTest {
 
         val actual = sourceTree { +sourceFile("src/Main.java") {} }
         actual.apply(
-            sourceFile("src/Main.java").remove(),
-            sourceFile("src/Test.java").add {},
-            sourceFile("src/Test.java").type("Test").add {},
-            sourceFile("src/Test.java").type("Test").function("getVersion()").add {},
-            sourceFile("src/Test.java").type("Test").edit {
+            qualifiedPathOf("src/Main.java").remove(),
+            qualifiedPathOf("src/Test.java").add {},
+            qualifiedPathOf("src/Test.java").type("Test").add {},
+            qualifiedPathOf("src/Test.java").type("Test").function("getVersion()").add {},
+            qualifiedPathOf("src/Test.java").type("Test").edit {
                 modifiers { +"abstract" }
                 supertypes { +"Object" }
             }

@@ -19,6 +19,7 @@ package org.chronolens.core.model
 import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.function
+import org.chronolens.test.core.model.remove
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
 import org.chronolens.test.core.model.type
@@ -34,7 +35,7 @@ class RemoveNodeTest {
     @Test
     fun apply_withRemovedSourceFile_removesSourceNode() {
         val expected = sourceTree { +sourceFile("src/Test.java") {} }
-        val edit = sourceFile("src/Main.java").remove()
+        val edit = qualifiedPathOf("src/Main.java").remove()
 
         val actual = sourceTree {
             +sourceFile("src/Main.java") {
@@ -52,7 +53,8 @@ class RemoveNodeTest {
         val expected = sourceTree {
             +sourceFile("src/Main.java") { +type("Main") { +variable("version") {} } }
         }
-        val edit = sourceFile("src/Main.java").type("Main").function("getVersion(String)").remove()
+        val edit =
+            qualifiedPathOf("src/Main.java").type("Main").function("getVersion(String)").remove()
 
         val actual = sourceTree {
             +sourceFile("src/Main.java") {
@@ -72,7 +74,7 @@ class RemoveNodeTest {
         val sourceTree = sourceTree {
             +sourceFile("src/Test.java") { +function("getVersion()") {} }
         }
-        val edit = sourceFile("src/Test.java").variable("version").remove()
+        val edit = qualifiedPathOf("src/Test.java").variable("version").remove()
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }

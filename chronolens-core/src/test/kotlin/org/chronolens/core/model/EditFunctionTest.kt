@@ -18,6 +18,7 @@ package org.chronolens.core.model
 
 import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.assertEquals
+import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
@@ -38,7 +39,7 @@ class EditFunctionTest {
             }
         }
         val edit =
-            sourceFile("src/Test.java").type("Test").function("getVersion()").edit {
+            qualifiedPathOf("src/Test.java").type("Test").function("getVersion()").edit {
                 modifiers { +"@Override" }
             }
 
@@ -58,7 +59,7 @@ class EditFunctionTest {
             }
         }
         val edit =
-            sourceFile("src/Test.java").function("getValue(int, int)").edit {
+            qualifiedPathOf("src/Test.java").function("getValue(int, int)").edit {
                 parameters {
                     remove(0)
                     add(index = 1, value = "y")
@@ -80,7 +81,7 @@ class EditFunctionTest {
         val sourceTree = sourceTree {
             +sourceFile("src/Test.java") { +function("get_version()") {} }
         }
-        val edit = sourceFile("src/Test.java").function("getVersion()").edit {}
+        val edit = qualifiedPathOf("src/Test.java").function("getVersion()").edit {}
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
@@ -93,7 +94,7 @@ class EditFunctionTest {
             }
         }
         val edit =
-            sourceFile("src/Test.java").function("getValue(int, int)").edit {
+            qualifiedPathOf("src/Test.java").function("getValue(int, int)").edit {
                 parameters { remove(2) }
             }
 

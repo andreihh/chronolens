@@ -25,10 +25,15 @@ import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.function
 import org.chronolens.core.model.qualifiedPathOf
+import org.chronolens.core.model.type
+import org.chronolens.core.model.variable
 import org.chronolens.core.repository.Transaction
+import org.chronolens.test.core.model.add
+import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.function
-import org.chronolens.test.core.model.sourceFile
+import org.chronolens.test.core.model.remove
 import org.chronolens.test.core.model.type
 import org.chronolens.test.core.model.variable
 import org.chronolens.test.core.repository.transaction
@@ -39,7 +44,7 @@ class JsonModuleTest {
         transaction("HEAD") {
             date = Instant.ofEpochMilli(1824733L)
             author = "unknown"
-            +sourceFile("res").add {
+            +qualifiedPathOf("res").add {
                 +variable("DEBUG") { +"true" }
                 +variable("RELEASE") { +"false" }
                 +function("createIClass()") {}
@@ -50,15 +55,15 @@ class JsonModuleTest {
                     +function("getVersion()") { +"1" }
                 }
             }
-            +sourceFile("res").function("createIClass()").remove()
-            +sourceFile("res").variable("DEBUG").edit {
+            +qualifiedPathOf("res").function("createIClass()").remove()
+            +qualifiedPathOf("res").variable("DEBUG").edit {
                 initializer {
                     remove(0)
                     add(index = 0, value = "false")
                 }
             }
-            +sourceFile("res").variable("RELEASE").remove()
-            +sourceFile("res").type("IClass").edit { supertypes { -"Interface" } }
+            +qualifiedPathOf("res").variable("RELEASE").remove()
+            +qualifiedPathOf("res").type("IClass").edit { supertypes { -"Interface" } }
         }
 
     // TODO: figure out why this doesn't pass anymore.

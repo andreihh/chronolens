@@ -18,6 +18,7 @@ package org.chronolens.core.model
 
 import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.assertEquals
+import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
 import org.chronolens.test.core.model.type
@@ -35,7 +36,7 @@ class EditTypeTest {
         val expected = sourceTree {
             +sourceFile("src/Test.java") { +type("Test") { supertypes("Object") } }
         }
-        val edit = sourceFile("src/Test.java").type("Test").edit { supertypes { +"Object" } }
+        val edit = qualifiedPathOf("src/Test.java").type("Test").edit { supertypes { +"Object" } }
 
         val actual = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
         actual.apply(edit)
@@ -46,7 +47,7 @@ class EditTypeTest {
     @Test
     fun apply_withNonExistingId_throws() {
         val sourceTree = sourceTree { +sourceFile("src/Test.java") {} }
-        val edit = sourceFile("src/Test.java").type("Test").edit {}
+        val edit = qualifiedPathOf("src/Test.java").type("Test").edit {}
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
@@ -54,7 +55,7 @@ class EditTypeTest {
     @Test
     fun apply_withVariableId_throws() {
         val sourceTree = sourceTree { +sourceFile("src/Test.java") { +variable("test") {} } }
-        val edit = sourceFile("src/Test.java").type("test").edit {}
+        val edit = qualifiedPathOf("src/Test.java").type("test").edit {}
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }

@@ -16,12 +16,19 @@
 
 package org.chronolens.test.core.model
 
+import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditType
 import org.chronolens.core.model.EditVariable
+import org.chronolens.core.model.Function
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.ListEdit
+import org.chronolens.core.model.QualifiedSourceNodeId
+import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SetEdit
+import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.Type
+import org.chronolens.core.model.Variable
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
@@ -138,3 +145,30 @@ public class EditVariableBuilder(private val id: String) {
 
     public fun build(): EditVariable = EditVariable(id, modifierEdits, initializerEdits)
 }
+
+@JvmName("addSourceFile")
+public fun QualifiedSourceNodeId<SourceFile>.add(init: Init<SourceFileBuilder>): AddNode =
+    AddNode(this.toString(), SourceFileBuilder(this.id.toString()).apply(init).build())
+
+@JvmName("addType")
+public fun QualifiedSourceNodeId<Type>.add(init: Init<TypeBuilder>): AddNode =
+    AddNode(this.toString(), TypeBuilder(this.id.toString()).apply(init).build())
+
+@JvmName("addFunction")
+public fun QualifiedSourceNodeId<Function>.add(init: Init<FunctionBuilder>): AddNode =
+    AddNode(this.toString(), FunctionBuilder(this.id.toString()).apply(init).build())
+
+@JvmName("addVariable")
+public fun QualifiedSourceNodeId<Variable>.add(init: Init<VariableBuilder>): AddNode =
+    AddNode(this.toString(), VariableBuilder(this.id.toString()).apply(init).build())
+
+public fun QualifiedSourceNodeId<*>.remove(): RemoveNode = RemoveNode(this.toString())
+
+public fun QualifiedSourceNodeId<Type>.edit(init: Init<EditTypeBuilder>): EditType =
+    EditTypeBuilder(this.toString()).apply(init).build()
+
+public fun QualifiedSourceNodeId<Function>.edit(init: Init<EditFunctionBuilder>): EditFunction =
+    EditFunctionBuilder(this.toString()).apply(init).build()
+
+public fun QualifiedSourceNodeId<Variable>.edit(init: Init<EditVariableBuilder>): EditVariable =
+    EditVariableBuilder(this.toString()).apply(init).build()

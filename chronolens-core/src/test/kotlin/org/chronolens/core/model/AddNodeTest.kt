@@ -17,6 +17,7 @@
 package org.chronolens.core.model
 
 import kotlin.test.assertFailsWith
+import org.chronolens.test.core.model.add
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.sourceFile
@@ -31,7 +32,7 @@ class AddNodeTest {
             +sourceFile("src/Main.java") {}
             +sourceFile("src/Test.java") {}
         }
-        val edit = sourceFile("src/Test.java").add {}
+        val edit = qualifiedPathOf("src/Test.java").add {}
 
         val actual = sourceTree { +sourceFile("src/Main.java") {} }
         actual.apply(edit)
@@ -44,7 +45,7 @@ class AddNodeTest {
         val expected = sourceTree {
             +sourceFile("src/Test.java") { +type("Test") { +function("getVersion()") {} } }
         }
-        val edit = sourceFile("src/Test.java").type("Test").function("getVersion()").add {}
+        val edit = qualifiedPathOf("src/Test.java").type("Test").function("getVersion()").add {}
 
         val actual = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
         actual.apply(edit)
@@ -60,7 +61,7 @@ class AddNodeTest {
             }
         }
         val edit =
-            sourceFile("src/Test.java").type("Test").add {
+            qualifiedPathOf("src/Test.java").type("Test").add {
                 +function("getV(String)") { parameters("name") }
             }
 
@@ -73,7 +74,7 @@ class AddNodeTest {
     @Test
     fun apply_withExistingId_throws() {
         val sourceTree = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
-        val edit = sourceFile("src/Test.java").type("Test").add {}
+        val edit = qualifiedPathOf("src/Test.java").type("Test").add {}
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
@@ -96,7 +97,7 @@ class AddNodeTest {
     @Test
     fun apply_withNonExistingParent_throws() {
         val sourceTree = sourceTree { +sourceFile("src/Main.java") {} }
-        val edit = sourceFile("src/Main.java").type("Main").function("getVersion()").add {}
+        val edit = qualifiedPathOf("src/Main.java").type("Main").function("getVersion()").add {}
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }

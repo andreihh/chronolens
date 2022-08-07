@@ -18,6 +18,7 @@ package org.chronolens.core.model
 
 import kotlin.test.assertFailsWith
 import org.chronolens.test.core.model.assertEquals
+import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
 import org.chronolens.test.core.model.type
@@ -35,7 +36,8 @@ class EditVariableTest {
         val expected = sourceTree {
             +sourceFile("src/Test.java") { +variable("name") { modifiers("@NotNull") } }
         }
-        val edit = sourceFile("src/Test.java").variable("name").edit { modifiers { +"@NotNull" } }
+        val edit =
+            qualifiedPathOf("src/Test.java").variable("name").edit { modifiers { +"@NotNull" } }
 
         val actual = sourceTree { +sourceFile("src/Test.java") { +variable("name") {} } }
         actual.apply(edit)
@@ -46,7 +48,7 @@ class EditVariableTest {
     @Test
     fun apply_withNonExistingId_throws() {
         val sourceTree = sourceTree { +sourceFile("src/Test.java") { +variable("DEBUG") {} } }
-        val edit = sourceFile("src/Test.java").variable("RELEASE").edit {}
+        val edit = qualifiedPathOf("src/Test.java").variable("RELEASE").edit {}
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
@@ -54,7 +56,7 @@ class EditVariableTest {
     @Test
     fun apply_withTypeId_throws() {
         val sourceTree = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
-        val edit = sourceFile("src/Test.java").variable("Test").edit {}
+        val edit = qualifiedPathOf("src/Test.java").variable("Test").edit {}
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
