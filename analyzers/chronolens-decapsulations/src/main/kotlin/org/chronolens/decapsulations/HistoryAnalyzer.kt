@@ -54,7 +54,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         decapsulationsByField[fieldId] = current + new
     }
 
-    private fun visit(edit: AddNode): Set<String> {
+    private fun visit(edit: AddNode<*>): Set<String> {
         val editedIds = hashSetOf<String>()
         for ((id, node) in edit.sourceTreeNode.walkSourceTree()) {
             if (node is Variable) {
@@ -80,7 +80,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         val editedIds = hashSetOf<String>()
         for (edit in transaction.edits) {
             when (edit) {
-                is AddNode -> editedIds += visit(edit)
+                is AddNode<*> -> editedIds += visit(edit)
                 is RemoveNode -> editedIds -= visit(edit)
                 is EditFunction -> editedIds += edit.id
                 is EditVariable -> editedIds += edit.id

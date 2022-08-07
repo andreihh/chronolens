@@ -106,19 +106,21 @@ public class EditVariableBuilder(private val id: String) {
 }
 
 @JvmName("addSourceFile")
-public fun QualifiedSourceNodeId<SourceFile>.add(init: Init<SourceFileBuilder>): AddNode =
+public fun QualifiedSourceNodeId<SourceFile>.add(
+    init: Init<SourceFileBuilder>
+): AddNode<SourceFile> =
     AddNode(this.toString(), SourceFileBuilder(this.id.toString()).apply(init).build())
 
 @JvmName("addType")
-public fun QualifiedSourceNodeId<Type>.add(init: Init<TypeBuilder>): AddNode =
+public fun QualifiedSourceNodeId<Type>.add(init: Init<TypeBuilder>): AddNode<Type> =
     AddNode(this.toString(), TypeBuilder(this.id.toString()).apply(init).build())
 
 @JvmName("addFunction")
-public fun QualifiedSourceNodeId<Function>.add(init: Init<FunctionBuilder>): AddNode =
+public fun QualifiedSourceNodeId<Function>.add(init: Init<FunctionBuilder>): AddNode<Function> =
     AddNode(this.toString(), FunctionBuilder(this.id.toString()).apply(init).build())
 
 @JvmName("addVariable")
-public fun QualifiedSourceNodeId<Variable>.add(init: Init<VariableBuilder>): AddNode =
+public fun QualifiedSourceNodeId<Variable>.add(init: Init<VariableBuilder>): AddNode<Variable> =
     AddNode(this.toString(), VariableBuilder(this.id.toString()).apply(init).build())
 
 public fun QualifiedSourceNodeId<*>.remove(): RemoveNode = RemoveNode(this.toString())

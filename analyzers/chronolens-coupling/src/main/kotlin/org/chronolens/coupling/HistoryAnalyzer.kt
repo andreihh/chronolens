@@ -42,7 +42,7 @@ internal class HistoryAnalyzer(
     private val jointChanges = emptySparseHashMatrix<String, Int>()
     private val temporalCoupling = emptySparseHashMatrix<String, Double>()
 
-    private fun visit(edit: AddNode): Set<String> {
+    private fun visit(edit: AddNode<*>): Set<String> {
         val addedNodes = edit.sourceTreeNode.walkSourceTree()
         val addedFunctions = addedNodes.filter { (_, node) -> node is Function }
         return addedFunctions.map(SourceTreeNode<*>::qualifiedId).toSet()
@@ -71,7 +71,7 @@ internal class HistoryAnalyzer(
         val editedIds = hashSetOf<String>()
         for (edit in transaction.edits) {
             when (edit) {
-                is AddNode -> editedIds += visit(edit)
+                is AddNode<*> -> editedIds += visit(edit)
                 is RemoveNode -> editedIds -= visit(edit)
                 is EditFunction -> editedIds += edit.id
                 else -> {}

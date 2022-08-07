@@ -59,7 +59,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
     private fun visit(revisionId: String, date: Instant, edit: SourceTreeEdit) {
         val id = edit.id
         when (edit) {
-            is AddNode -> {
+            is AddNode<*> -> {
                 stats +=
                     edit.sourceTreeNode
                         .walkSourceTree()
