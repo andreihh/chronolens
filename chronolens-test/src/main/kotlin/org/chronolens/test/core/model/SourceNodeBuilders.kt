@@ -24,29 +24,11 @@ import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
-
-@BuilderMarker
-public class SourceTreeBuilder {
-    private val sources = mutableSetOf<SourceFile>()
-
-    public operator fun SourceFile.unaryPlus() {
-        require(this !in sources) { "Duplicate source file '$this'!" }
-        sources += this
-    }
-
-    public fun build(): SourceTree = SourceTree.of(sources)
-}
-
-@BuilderMarker
-public interface EntityBuilder<out T : SourceEntity> {
-    public fun build(): T
-}
 
 @BuilderMarker
 public class SourceFileBuilder(private val path: String) {
@@ -60,7 +42,7 @@ public class SourceFileBuilder(private val path: String) {
     public fun build(): SourceFile = SourceFile(SourcePath(path), entities)
 }
 
-public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
+public class TypeBuilder(private val name: String) {
     private var supertypes = emptySet<Identifier>()
     private var modifiers = emptySet<String>()
     private val members = mutableSetOf<SourceEntity>()
@@ -83,10 +65,10 @@ public class TypeBuilder(private val name: String) : EntityBuilder<Type> {
         members += this
     }
 
-    override fun build(): Type = Type(Identifier(name), supertypes, modifiers, members)
+    public fun build(): Type = Type(Identifier(name), supertypes, modifiers, members)
 }
 
-public class FunctionBuilder(private val signature: String) : EntityBuilder<Function> {
+public class FunctionBuilder(private val signature: String) {
     private var modifiers = emptySet<String>()
     private var parameters = emptyList<Identifier>()
     private val body = mutableListOf<String>()
@@ -113,10 +95,10 @@ public class FunctionBuilder(private val signature: String) : EntityBuilder<Func
         body += this
     }
 
-    override fun build(): Function = Function(Signature(signature), parameters, modifiers, body)
+    public fun build(): Function = Function(Signature(signature), parameters, modifiers, body)
 }
 
-public class VariableBuilder(private val name: String) : EntityBuilder<Variable> {
+public class VariableBuilder(private val name: String) {
     private var modifiers = emptySet<String>()
     private val initializer = mutableListOf<String>()
 
@@ -134,11 +116,8 @@ public class VariableBuilder(private val name: String) : EntityBuilder<Variable>
         initializer += this
     }
 
-    override fun build(): Variable = Variable(Identifier(name), modifiers, initializer)
+    public fun build(): Variable = Variable(Identifier(name), modifiers, initializer)
 }
-
-public fun sourceTree(init: Init<SourceTreeBuilder>): SourceTree =
-    SourceTreeBuilder().apply(init).build()
 
 public fun sourceFile(path: String, init: Init<SourceFileBuilder>): SourceFile =
     SourceFileBuilder(path).apply(init).build()

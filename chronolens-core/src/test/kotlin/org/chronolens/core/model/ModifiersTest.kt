@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2021-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,41 +16,37 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.test.core.model.sourceFile
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.chronolens.test.core.model.function
+import org.chronolens.test.core.model.variable
+import org.junit.Test
 
 class ModifiersTest {
     @Test
     fun `test return type`() {
         val returnType = "int"
-        val function = sourceFile("src/Test.java")
-            .function("getVersion()").build {
-                modifiers("public", returnTypeModifierOf(returnType))
-            }
+        val function =
+            function("getVersion()") { modifiers("public", returnTypeModifierOf(returnType)) }
         assertEquals(returnType, function.returnType)
     }
 
     @Test
     fun `test null return type`() {
-        val function = sourceFile("src/Test.java")
-            .function("getVersion()").build {}
+        val function = function("getVersion()") {}
         assertNull(function.returnType)
     }
 
     @Test
     fun `test variable type`() {
         val variableType = "String"
-        val variable = sourceFile("src/Test.java").variable("VERSION").build {
-            modifiers("public", typeModifierOf(variableType))
-        }
+        val variable = variable("VERSION") { modifiers("public", typeModifierOf(variableType)) }
         assertEquals(variableType, variable.type)
     }
 
     @Test
     fun `test null variable type`() {
-        val variable = sourceFile("src/Test.java").variable("VERSION").build {}
+        val variable = variable("VERSION") {}
         assertNull(variable.type)
     }
 }

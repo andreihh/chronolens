@@ -28,7 +28,7 @@ abstract class JavaParserTest {
     private val defaultPath = "Test.java"
 
     protected fun sourceFile(init: SourceFileBuilder.() -> Unit): SourceFile =
-        sourceFile(defaultPath).build(init)
+        sourceFile(defaultPath, init)
 
     protected fun parse(source: String, path: String = defaultPath): SourceFile =
         when (val result = Parser.parse(SourcePath(path), source)) {

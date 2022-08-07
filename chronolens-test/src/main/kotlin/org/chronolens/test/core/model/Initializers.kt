@@ -20,13 +20,9 @@ import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditType
 import org.chronolens.core.model.EditVariable
-import org.chronolens.core.model.Function
 import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
 import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.RemoveNode
-import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.Type
-import org.chronolens.core.model.Variable
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
 
@@ -34,9 +30,6 @@ public fun sourceFile(path: String): SourceFileInitializer = SourceFileInitializ
 
 public class SourceFileInitializer(private val path: String) {
     public fun id(): String = path
-
-    public fun build(init: Init<SourceFileBuilder>): SourceFile =
-        SourceFileBuilder(path).apply(init).build()
 
     public fun type(name: String): TypeInitializer = TypeInitializer(path, name)
 
@@ -56,10 +49,6 @@ public class TypeInitializer(parentId: String, private val name: String) {
 
     public fun id(): String = id
 
-    public fun build(init: Init<TypeBuilder>): Type = TypeBuilder(name).apply(init).build()
-
-    public fun type(name: String): TypeInitializer = TypeInitializer(id, name)
-
     public fun function(signature: String): FunctionInitializer = FunctionInitializer(id, signature)
 
     public fun variable(name: String): VariableInitializer = VariableInitializer(id, name)
@@ -77,9 +66,6 @@ public class FunctionInitializer(parentId: String, private val signature: String
 
     public fun id(): String = id
 
-    public fun build(init: Init<FunctionBuilder>): Function =
-        FunctionBuilder(signature).apply(init).build()
-
     public fun add(init: Init<FunctionBuilder>): AddNode =
         AddNode(id, FunctionBuilder(signature).apply(init).build())
 
@@ -93,9 +79,6 @@ public class VariableInitializer(parentId: String, private val name: String) {
     private val id: String = "$parentId$MEMBER_SEPARATOR$name"
 
     public fun id(): String = id
-
-    public fun build(init: Init<VariableBuilder>): Variable =
-        VariableBuilder(name).apply(init).build()
 
     public fun add(init: Init<VariableBuilder>): AddNode =
         AddNode(id, VariableBuilder(name).apply(init).build())

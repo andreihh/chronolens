@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.chronolens.test.core
 
 public typealias Init<T> = T.() -> Any?
 
-internal inline fun <T> T.apply(init: Init<T>): T {
+public inline fun <T> T.apply(init: Init<T>): T {
     init(this)
     return this
 }
