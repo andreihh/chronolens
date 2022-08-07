@@ -34,20 +34,21 @@ private constructor(
         get() = unmodifiableCollection(sourceMap.values)
 
     /** Returns the node with the specified [id], or `null` if no such node was found. */
-    public operator fun get(id: String): SourceNode? = nodeMap[id]?.sourceNode
+    public operator fun get(id: QualifiedSourceNodeId<*>): SourceNode? = nodeMap[id]?.sourceNode
 
     /** Returns the source file with the specified [path], or `null` if no such file was found. */
-    public operator fun get(path: SourcePath): SourceFile? = getOrNull(path.toString())
+    public operator fun get(path: SourcePath): SourceFile? =
+        getOrNull(QualifiedSourceNodeId.of(path))
 
     /** Returns whether the specified [id] exists in this source tree. */
-    public operator fun contains(id: String): Boolean = get(id) != null
+    public operator fun contains(id: QualifiedSourceNodeId<*>): Boolean = get(id) != null
 
     /**
      * Returns the node of type [T] with the specified [id], or `null` if no such node was found.
      *
      * @throws IllegalStateException if the requested node is not of type [T]
      */
-    public inline fun <reified T : SourceNode> getOrNull(id: String): T? {
+    public inline fun <reified T : SourceNode> getOrNull(id: QualifiedSourceNodeId<T>): T? {
         val node = get(id) ?: return null
         check(node is T) { "'$id' is not of type '${T::class}'!" }
         return node
@@ -60,7 +61,7 @@ private constructor(
      * was found
      */
     @JvmName("getNode")
-    public inline fun <reified T : SourceNode> get(id: String): T =
+    public inline fun <reified T : SourceNode> get(id: QualifiedSourceNodeId<T>): T =
         checkNotNull(getOrNull(id)) { "Node '$id' not found!" }
 
     /** Returns all the source nodes in this source tree in top-down order. */
@@ -71,7 +72,7 @@ private constructor(
      *
      * @throws IllegalStateException if a node with the given [id] doesn't exist
      */
-    public fun walk(id: String): Iterable<SourceTreeNode<*>> =
+    public fun walk(id: QualifiedSourceNodeId<*>): Iterable<SourceTreeNode<*>> =
         nodeMap[id]?.walkSourceTree()
             ?: error("Source node '$id' doesn't exist in the source tree!")
 
@@ -106,7 +107,7 @@ private constructor(
 }
 
 /** A hash map from ids to source tree nodes. */
-internal typealias NodeHashMap = HashMap<String, SourceTreeNode<*>>
+internal typealias NodeHashMap = HashMap<QualifiedSourceNodeId<*>, SourceTreeNode<*>>
 
 internal fun NodeHashMap.putSourceTree(root: SourceTreeNode<*>) {
     this += root.walkSourceTree().associateBy(SourceTreeNode<*>::qualifiedId)

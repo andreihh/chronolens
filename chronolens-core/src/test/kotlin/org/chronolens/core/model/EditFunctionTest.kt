@@ -29,11 +29,6 @@ import org.junit.Test
 
 class EditFunctionTest {
     @Test
-    fun newFunctionEdit_withInvalidId_throws() {
-        assertFailsWith<IllegalArgumentException> { EditFunction("src/Test.java#getVersion)") }
-    }
-
-    @Test
     fun apply_withNewModifier_addsModifierToSourceNode() {
         val expected = sourceTree {
             +sourceFile("src/Test.java") {

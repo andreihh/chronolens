@@ -17,6 +17,7 @@
 package org.chronolens.coupling
 
 import java.util.PriorityQueue
+import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.coupling.Graph.Companion.MAX_SIZE
 import org.chronolens.coupling.Graph.Edge
 import org.chronolens.coupling.Graph.Node
@@ -48,20 +49,21 @@ internal data class Graph(
 
 internal fun TemporalContext.buildGraphFrom(
     label: String,
-    nodeIds: Set<String>,
+    nodeIds: Set<QualifiedSourceNodeId<*>>,
 ): Graph {
     val nodes = hashSetOf<Node>()
     for (id in nodeIds) {
         val revisions = revisionsOrNull(id) ?: continue
-        nodes += Node(id, revisions)
+        nodes += Node(id.toString(), revisions)
     }
     val edges = arrayListOf<Edge>()
     for (id1 in nodeIds) {
         for (id2 in nodeIds) {
-            if (id1 >= id2) continue
+            // TODO: test if 'if (id1 >= id2) continue' is the same.
+            if (id1 == id2) break
             val revisions = revisionsOrNull(id1, id2) ?: continue
             val coupling = couplingOrNull(id1, id2) ?: continue
-            edges += Edge(id1, id2, revisions, coupling)
+            edges += Edge(id1.toString(), id2.toString(), revisions, coupling)
         }
     }
     return Graph(label, nodes, edges)

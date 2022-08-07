@@ -19,12 +19,12 @@ package org.chronolens.core.repository
 import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import org.chronolens.core.model.AddNode
-import org.chronolens.core.model.EditType
-import org.chronolens.core.model.Identifier
-import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.Type
+import org.chronolens.core.model.type
+import org.chronolens.test.core.model.add
+import org.chronolens.test.core.model.edit
+import org.chronolens.test.core.model.qualifiedPathOf
+import org.chronolens.test.core.model.remove
 import org.junit.Test
 
 class TransactionTest {
@@ -53,12 +53,9 @@ class TransactionTest {
                     author = "",
                     edits =
                         listOf(
-                            AddNode(
-                                id = "Main.java:Main:MainType",
-                                node = Type(Identifier("MainType"))
-                            ),
-                            RemoveNode("Test.java:Test:TestType"),
-                            EditType("MainTest.java:MainTest")
+                            qualifiedPathOf("Main.java").type("Main").type("MainType").add {},
+                            qualifiedPathOf("Test.java").type("Test").type("TestType").remove(),
+                            qualifiedPathOf("MainTest.java").type("MainTest").edit {}
                         )
                 )
                 .changeSet

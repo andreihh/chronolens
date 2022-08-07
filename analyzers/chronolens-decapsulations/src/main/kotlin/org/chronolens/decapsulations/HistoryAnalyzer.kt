@@ -20,32 +20,31 @@ import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
+import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.model.Variable
-import org.chronolens.core.model.sourcePath
-import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
 
 internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private val sourceTree = SourceTree.empty()
-    private val decapsulationsByField = hashMapOf<String, List<Decapsulation>>()
+    private val decapsulationsByField = hashMapOf<QualifiedSourceNodeId<*>, List<Decapsulation>>()
 
-    private fun getField(nodeId: String): String? =
+    private fun getField(nodeId: QualifiedSourceNodeId<*>): QualifiedSourceNodeId<*>? =
         DecapsulationAnalyzer.getField(sourceTree, nodeId)
 
-    private fun getVisibility(nodeId: String): Int? =
+    private fun getVisibility(nodeId: QualifiedSourceNodeId<*>): Int? =
         DecapsulationAnalyzer.getVisibility(sourceTree, nodeId)
 
-    private fun isConstant(nodeId: String): Boolean =
+    private fun isConstant(nodeId: QualifiedSourceNodeId<*>): Boolean =
         DecapsulationAnalyzer.isConstant(sourceTree, nodeId)
 
     private fun addDecapsulation(
-        fieldId: String,
-        nodeId: String,
+        fieldId: QualifiedSourceNodeId<*>,
+        nodeId: QualifiedSourceNodeId<*>,
         revisionId: String,
         message: String
     ) {
@@ -54,8 +53,8 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         decapsulationsByField[fieldId] = current + new
     }
 
-    private fun visit(edit: AddNode<*>): Set<String> {
-        val editedIds = hashSetOf<String>()
+    private fun visit(edit: AddNode<*>): Set<QualifiedSourceNodeId<*>> {
+        val editedIds = hashSetOf<QualifiedSourceNodeId<*>>()
         for ((id, node) in edit.sourceTreeNode.walkSourceTree()) {
             if (node is Variable) {
                 decapsulationsByField[id] = emptyList()
@@ -67,8 +66,8 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         return editedIds
     }
 
-    private fun visit(edit: RemoveNode): Set<String> {
-        val removedIds = hashSetOf<String>()
+    private fun visit(edit: RemoveNode): Set<QualifiedSourceNodeId<*>> {
+        val removedIds = hashSetOf<QualifiedSourceNodeId<*>>()
         for (node in sourceTree.walk(edit.id)) {
             decapsulationsByField -= node.qualifiedId
             removedIds += node.qualifiedId
@@ -76,8 +75,8 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         return removedIds
     }
 
-    private fun visit(transaction: Transaction): Set<String> {
-        val editedIds = hashSetOf<String>()
+    private fun visit(transaction: Transaction): Set<QualifiedSourceNodeId<*>> {
+        val editedIds = hashSetOf<QualifiedSourceNodeId<*>>()
         for (edit in transaction.edits) {
             when (edit) {
                 is AddNode<*> -> editedIds += visit(edit)
@@ -90,8 +89,10 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         return editedIds
     }
 
-    private fun getVisibility(ids: Set<String>): Map<String, Int> {
-        val visibility = hashMapOf<String, Int>()
+    private fun getVisibility(
+        ids: Set<QualifiedSourceNodeId<*>>
+    ): Map<QualifiedSourceNodeId<*>, Int> {
+        val visibility = hashMapOf<QualifiedSourceNodeId<*>, Int>()
         for (id in ids) {
             visibility[id] = getVisibility(id) ?: continue
             val fieldId = getField(id) ?: continue
@@ -106,7 +107,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         sourceTree.apply(transaction.edits)
         val newVisibility = getVisibility(editedIds)
 
-        fun analyze(qualifiedId: String) {
+        fun analyze(qualifiedId: QualifiedSourceNodeId<*>) {
             val fieldId = getField(qualifiedId) ?: return
             val fieldOld = oldVisibility[fieldId] ?: return
             val old = oldVisibility[qualifiedId]
@@ -136,13 +137,13 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         }
     }
 
-    private fun getDecapsulations(fieldId: String): List<Decapsulation> =
+    private fun getDecapsulations(fieldId: QualifiedSourceNodeId<*>): List<Decapsulation> =
         if (ignoreConstants && isConstant(fieldId)) emptyList()
         else decapsulationsByField[fieldId].orEmpty()
 
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::analyze)
-        val fieldsByFile = decapsulationsByField.keys.groupBy(String::sourcePath)
+        val fieldsByFile = decapsulationsByField.keys.groupBy(QualifiedSourceNodeId<*>::sourcePath)
         val sourcePaths = sourceTree.sources.map(SourceFile::path)
         val fileReports =
             sourcePaths
@@ -168,5 +169,8 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         val value: Int = decapsulations
     }
 
-    data class FieldReport(val id: String, val decapsulations: List<Decapsulation>)
+    data class FieldReport(
+        val id: QualifiedSourceNodeId<*>,
+        val decapsulations: List<Decapsulation>
+    )
 }

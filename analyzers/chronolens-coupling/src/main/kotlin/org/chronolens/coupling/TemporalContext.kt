@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2021-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,18 @@
 
 package org.chronolens.coupling
 
-internal class TemporalContext(
-    private val changes: Map<String, Int>,
-    private val jointChanges: SparseMatrix<String, Int>,
-    private val temporalCoupling: SparseMatrix<String, Double>,
-) {
-    val ids: Set<String> get() = changes.keys
+import org.chronolens.core.model.QualifiedSourceNodeId
 
-    val cells: Collection<Pair<String, String>> by lazy {
-        val c = arrayListOf<Pair<String, String>>()
+internal class TemporalContext(
+    private val changes: Map<QualifiedSourceNodeId<*>, Int>,
+    private val jointChanges: SparseMatrix<QualifiedSourceNodeId<*>, Int>,
+    private val temporalCoupling: SparseMatrix<QualifiedSourceNodeId<*>, Double>,
+) {
+    val ids: Set<QualifiedSourceNodeId<*>>
+        get() = changes.keys
+
+    val cells: Collection<Pair<QualifiedSourceNodeId<*>, QualifiedSourceNodeId<*>>> by lazy {
+        val c = arrayListOf<Pair<QualifiedSourceNodeId<*>, QualifiedSourceNodeId<*>>>()
         for ((x, row) in jointChanges.entries) {
             for (y in row.keys) {
                 c += x to y
@@ -33,25 +36,26 @@ internal class TemporalContext(
         c
     }
 
-    fun revisions(id: String): Int = changes[id] ?: 0
+    fun revisions(id: QualifiedSourceNodeId<*>): Int = changes[id] ?: 0
 
-    fun revisionsOrNull(id: String): Int? = changes[id]
+    fun revisionsOrNull(id: QualifiedSourceNodeId<*>): Int? = changes[id]
 
-    fun revisions(id1: String, id2: String): Int = jointChanges[id1, id2] ?: 0
+    fun revisions(id1: QualifiedSourceNodeId<*>, id2: QualifiedSourceNodeId<*>): Int =
+        jointChanges[id1, id2] ?: 0
 
-    fun revisionsOrNull(id1: String, id2: String): Int? = jointChanges[id1, id2]
+    fun revisionsOrNull(id1: QualifiedSourceNodeId<*>, id2: QualifiedSourceNodeId<*>): Int? =
+        jointChanges[id1, id2]
 
-    fun coupling(id1: String, id2: String): Double =
+    fun coupling(id1: QualifiedSourceNodeId<*>, id2: QualifiedSourceNodeId<*>): Double =
         temporalCoupling[id1, id2] ?: 0.0
 
-    fun couplingOrNull(id1: String, id2: String): Double? =
+    fun couplingOrNull(id1: QualifiedSourceNodeId<*>, id2: QualifiedSourceNodeId<*>): Double? =
         temporalCoupling[id1, id2]
 
     fun filter(minRevisions: Int, minCoupling: Double): TemporalContext {
-        val filteredChanges =
-            changes.filter { (_, revisions) -> revisions >= minRevisions }
-        val filteredJointChanges = emptySparseHashMatrix<String, Int>()
-        val filteredTemporalCoupling = emptySparseHashMatrix<String, Double>()
+        val filteredChanges = changes.filter { (_, revisions) -> revisions >= minRevisions }
+        val filteredJointChanges = emptySparseHashMatrix<QualifiedSourceNodeId<*>, Int>()
+        val filteredTemporalCoupling = emptySparseHashMatrix<QualifiedSourceNodeId<*>, Double>()
         for ((x, y) in cells) {
             val revisions = revisionsOrNull(x, y) ?: continue
             val coupling = temporalCoupling[x, y] ?: continue
@@ -69,13 +73,12 @@ internal class TemporalContext(
 }
 
 internal typealias SparseMatrix<K, V> = Map<K, Map<K, V>>
+
 internal typealias SparseHashMatrix<K, V> = HashMap<K, HashMap<K, V>>
 
-internal fun <K, V : Any> emptySparseHashMatrix(): SparseHashMatrix<K, V> =
-    hashMapOf()
+internal fun <K, V : Any> emptySparseHashMatrix(): SparseHashMatrix<K, V> = hashMapOf()
 
-internal operator fun <K, V : Any> SparseMatrix<K, V>.get(x: K, y: K): V? =
-    this[x].orEmpty()[y]
+internal operator fun <K, V : Any> SparseMatrix<K, V>.get(x: K, y: K): V? = this[x].orEmpty()[y]
 
 internal operator fun <K, V : Any> SparseHashMatrix<K, V>.set(
     x: K,

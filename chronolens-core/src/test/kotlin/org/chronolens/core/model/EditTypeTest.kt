@@ -29,11 +29,6 @@ import org.junit.Test
 
 class EditTypeTest {
     @Test
-    fun newEditType_withInvalidId_throws() {
-        assertFailsWith<IllegalArgumentException> { EditType("src/Test.java") }
-    }
-
-    @Test
     fun apply_withNewSupertype_addsSupertypeToSourceNode() {
         val expected = sourceTree {
             +sourceFile("src/Test.java") { +type("Test") { supertypes("Object") } }

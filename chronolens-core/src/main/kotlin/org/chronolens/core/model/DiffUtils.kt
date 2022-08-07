@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,11 @@ import org.chronolens.core.model.ListEdit.Companion.diff
 import org.chronolens.core.model.SetEdit.Companion.diff
 
 /**
- * Returns the smallest edit distance between the two given arrays using the
- * Wagner-Fischer algorithm.
+ * Returns the smallest edit distance between the two given arrays using the Wagner-Fischer
+ * algorithm.
  */
 internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
-    val dp = Array(size = a.size + 1) {
-        IntArray(size = b.size + 1) { a.size + b.size }
-    }
+    val dp = Array(size = a.size + 1) { IntArray(size = b.size + 1) { a.size + b.size } }
     dp[0] = IntArray(size = b.size + 1) { it }
     for (i in 1..a.size) {
         dp[i][0] = i
@@ -58,60 +56,52 @@ internal fun diff(a: IntArray, b: IntArray): List<ListEdit<Int>> {
 }
 
 /**
- * Returns the edit which must be applied on this source node in order to obtain
- * the [other] source node, or `null` if the two nodes are equal (child nodes
- * are not taken into account).
+ * Returns the edit which must be applied on this source node in order to obtain the [other] source
+ * node, or `null` if the two nodes are equal (child nodes are not taken into account).
  *
- * @throws IllegalArgumentException if the two source nodes have different ids
- * or types
+ * @throws IllegalArgumentException if the two source nodes have different ids or types
  */
-internal fun SourceTreeNode<*>.diff(other: SourceTreeNode<*>)
-    : SourceTreeEdit? {
-    val sameQualifiedId = qualifiedId == other.qualifiedId
-    val sameKind = sourceNode.kind == other.sourceNode.kind
-    require(sameQualifiedId && sameKind) {
+internal fun SourceTreeNode<*>.diff(other: SourceTreeNode<*>): SourceTreeEdit? {
+    require(qualifiedId == other.qualifiedId) {
         "Can't compute diff between '$qualifiedId' and '${other.qualifiedId}'!"
     }
-    val editBuilder = when (sourceNode) {
-        is SourceFile -> { _ -> null }
-        is Type -> sourceNode.diff(other.sourceNode as Type)
-        is Function -> sourceNode.diff(other.sourceNode as Function)
-        is Variable -> sourceNode.diff(other.sourceNode as Variable)
-    }
-    return editBuilder.invoke(qualifiedId)
+    val editBuilder =
+        when (sourceNode) {
+            is SourceFile -> { _ -> null }
+            is Type -> sourceNode.diff(other.sourceNode as Type)
+            is Function -> sourceNode.diff(other.sourceNode as Function)
+            is Variable -> sourceNode.diff(other.sourceNode as Variable)
+        }
+    return editBuilder.invoke(qualifiedId.cast())
 }
 
-private typealias SourceTreeEditBuilder = (String) -> SourceTreeEdit?
+private typealias SourceTreeEditBuilder<T> = (QualifiedSourceNodeId<T>) -> SourceTreeEdit?
 
-private fun Type.diff(other: Type): SourceTreeEditBuilder {
+private fun Type.diff(other: Type): SourceTreeEditBuilder<Type> {
     val supertypeEdits = supertypes.diff(other.supertypes)
     val modifierEdits = modifiers.diff(other.modifiers)
     val changed = supertypeEdits.isNotEmpty() || modifierEdits.isNotEmpty()
     return { qualifiedId ->
-        if (!changed) null
-        else EditType(qualifiedId, supertypeEdits, modifierEdits)
+        if (!changed) null else EditType(qualifiedId, supertypeEdits, modifierEdits)
     }
 }
 
-private fun Function.diff(other: Function): SourceTreeEditBuilder {
+private fun Function.diff(other: Function): SourceTreeEditBuilder<Function> {
     val parameterEdits = parameters.diff(other.parameters)
     val modifierEdits = modifiers.diff(other.modifiers)
     val bodyEdits = body.diff(other.body)
-    val changed = parameterEdits.isNotEmpty() ||
-        modifierEdits.isNotEmpty() ||
-        bodyEdits.isNotEmpty()
+    val changed =
+        parameterEdits.isNotEmpty() || modifierEdits.isNotEmpty() || bodyEdits.isNotEmpty()
     return { qualifiedId ->
-        if (!changed) null
-        else EditFunction(qualifiedId, parameterEdits, modifierEdits, bodyEdits)
+        if (!changed) null else EditFunction(qualifiedId, parameterEdits, modifierEdits, bodyEdits)
     }
 }
 
-private fun Variable.diff(other: Variable): SourceTreeEditBuilder {
+private fun Variable.diff(other: Variable): SourceTreeEditBuilder<Variable> {
     val modifierEdits = modifiers.diff(other.modifiers)
     val initializerEdits = initializer.diff(other.initializer)
     val changed = modifierEdits.isNotEmpty() || initializerEdits.isNotEmpty()
     return { qualifiedId ->
-        if (!changed) null
-        else EditVariable(qualifiedId, modifierEdits, initializerEdits)
+        if (!changed) null else EditVariable(qualifiedId, modifierEdits, initializerEdits)
     }
 }

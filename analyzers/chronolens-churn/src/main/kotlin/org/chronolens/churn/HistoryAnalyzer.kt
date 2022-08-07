@@ -25,6 +25,7 @@ import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.ListEdit
+import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
@@ -35,8 +36,6 @@ import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.model.SourceTreeNode
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
-import org.chronolens.core.model.sourcePath
-import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
 
 internal class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
@@ -46,9 +45,14 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
     }
 
     private val sourceTree = SourceTree.empty()
-    private val stats = hashMapOf<String, Stats>()
+    private val stats = hashMapOf<QualifiedSourceNodeId<*>, Stats>()
 
-    private fun updateStats(id: String, revisionId: String, date: Instant, churn: Int) {
+    private fun updateStats(
+        id: QualifiedSourceNodeId<*>,
+        revisionId: String,
+        date: Instant,
+        churn: Int
+    ) {
         val nodeStats = stats.getValue(id)
         val day = nodeStats.creationDate.until(date, DAYS)
         stats[id] =
@@ -87,7 +91,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
         }
     }
 
-    private fun getMemberReport(id: String): MemberReport {
+    private fun getMemberReport(id: QualifiedSourceNodeId<*>): MemberReport {
         val size = getSize(sourceTree.get<SourceNode>(id))
         val (_, revisions, changes, churn, weightedChurn) = stats.getValue(id)
         return MemberReport(
@@ -111,7 +115,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
 
     fun analyze(history: Sequence<Transaction>): Report {
         history.forEach(::visit)
-        val membersByFile = stats.keys.groupBy(String::sourcePath)
+        val membersByFile = stats.keys.groupBy(QualifiedSourceNodeId<*>::sourcePath)
         val sourcePaths = sourceTree.sources.map(SourceFile::path)
         val fileReports =
             sourcePaths
@@ -163,7 +167,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
     }
 
     data class MemberReport(
-        val id: String,
+        val id: QualifiedSourceNodeId<*>,
         val size: Int,
         val revisions: Int,
         val changes: Int,

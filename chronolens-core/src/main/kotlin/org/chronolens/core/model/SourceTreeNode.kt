@@ -16,8 +16,7 @@
 
 package org.chronolens.core.model
 
-import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
-import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.parentId
 
 /**
  * A fully qualified [SourceNode] within a source tree.
@@ -26,9 +25,19 @@ import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATO
  * @param qualifiedId the fully qualified id of the source node that uniquely identifies it within
  * the source tree
  * @param sourceNode the wrapped source node
+ * @throws IllegalArgumentException if the [qualifiedId] and [sourceNode] kinds do not match
  */
-// TODO: require(qualifiedId.kind == sourceNode.kind)
-public data class SourceTreeNode<out T : SourceNode>(val qualifiedId: String, val sourceNode: T) {
+public data class SourceTreeNode<out T : SourceNode>(
+    val qualifiedId: QualifiedSourceNodeId<T>,
+    val sourceNode: T
+) {
+
+    init {
+        require(qualifiedId.kind == sourceNode.kind) {
+            "Qualified id kind '${qualifiedId.kind}' must match source node '${sourceNode.kind}'!"
+        }
+    }
+
     /** The kind of this source tree node. */
     val kind: SourceNodeKind
         get() = sourceNode.kind
@@ -85,26 +94,22 @@ public data class SourceTreeNode<out T : SourceNode>(val qualifiedId: String, va
         /** Creates a new source tree node from the given [sourceFile]. */
         @JvmStatic
         public fun of(sourceFile: SourceFile): SourceTreeNode<SourceFile> =
-            SourceTreeNode(sourceFile.path.toString(), sourceFile)
+            SourceTreeNode(QualifiedSourceNodeId.of(sourceFile.path), sourceFile)
     }
 }
 
-public val SourceTreeNode<SourceEntity>.parentId: String
-    get() = qualifiedId.parentId ?: error("")
+public val SourceTreeNode<SourceEntity>.parentId: QualifiedSourceNodeId<SourceContainer>
+    get() = qualifiedId.parentId
 
-/**
- * Returns a source tree node that wraps the given [sourceEntity] and has [this] node as a parent.
- */
-public fun <T : SourceEntity> SourceTreeNode<SourceContainer>.append(
-    sourceEntity: T
-): SourceTreeNode<T> {
-    val sourceEntityQualifiedId =
-        when (val node = sourceEntity as SourceEntity) {
-            is Type -> "$qualifiedId$CONTAINER_SEPARATOR${node.name}"
-            is Function -> "$qualifiedId$MEMBER_SEPARATOR${node.signature}"
-            is Variable -> "$qualifiedId$MEMBER_SEPARATOR${node.name}"
+/** Returns a source tree node that wraps the given [child] node and has [this] node as a parent. */
+public fun <T : SourceEntity> SourceTreeNode<SourceContainer>.append(child: T): SourceTreeNode<T> {
+    val childQualifiedId =
+        when (val node = child as SourceEntity) {
+            is Type -> qualifiedId.type(node.name)
+            is Function -> qualifiedId.function(node.signature)
+            is Variable -> qualifiedId.variable(node.name)
         }
-    return SourceTreeNode(sourceEntityQualifiedId, sourceEntity)
+    return SourceTreeNode(childQualifiedId.cast(child.javaClass), child)
 }
 
 /** Returns all the source tree nodes contained in [this] source file in top-down order. */

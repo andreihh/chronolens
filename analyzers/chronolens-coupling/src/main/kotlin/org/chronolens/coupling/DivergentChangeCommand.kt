@@ -19,7 +19,7 @@ package org.chronolens.coupling
 import java.io.File
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
-import org.chronolens.core.model.sourcePath
+import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.repository.Transaction
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.coupling.Graph.Subgraph
@@ -77,7 +77,7 @@ internal class DivergentChangeCommand : Subcommand() {
             .restrictTo(min = 0)
 
     private fun TemporalContext.aggregateGraphs(): List<Graph> {
-        val idsByFile = ids.groupBy(String::sourcePath)
+        val idsByFile = ids.groupBy(QualifiedSourceNodeId<*>::sourcePath)
         // TODO: check if this could be simplified to:
         //   return idsByFile.map { (path, ids) -> buildGraphFrom(path.toString(), ids.toSet()) }
         return idsByFile.keys.map { path ->

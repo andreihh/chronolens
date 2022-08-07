@@ -30,11 +30,6 @@ import org.junit.Test
 
 class RemoveNodeTest {
     @Test
-    fun newRemoveNode_withInvalidId_throws() {
-        assertFailsWith<IllegalArgumentException> { RemoveNode("src/Test.java:/") }
-    }
-
-    @Test
     fun apply_withRemovedSourceFile_removesSourceNode() {
         val expected = sourceTree { +sourceFile("src/Test.java") {} }
         val edit = qualifiedPathOf("src/Main.java").remove()

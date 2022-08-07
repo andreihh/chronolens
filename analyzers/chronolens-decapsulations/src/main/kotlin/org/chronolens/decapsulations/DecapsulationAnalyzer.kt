@@ -17,38 +17,50 @@
 package org.chronolens.decapsulations
 
 import java.util.ServiceLoader
+import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
-import org.chronolens.core.model.sourcePath
 
 internal abstract class DecapsulationAnalyzer {
     protected abstract fun canProcess(sourcePath: SourcePath): Boolean
 
-    protected abstract fun getField(sourceTree: SourceTree, nodeId: String): String?
+    protected abstract fun getField(
+        sourceTree: SourceTree,
+        nodeId: QualifiedSourceNodeId<*>
+    ): QualifiedSourceNodeId<*>?
 
-    protected abstract fun getVisibility(sourceTree: SourceTree, nodeId: String): Int
+    protected abstract fun getVisibility(
+        sourceTree: SourceTree,
+        nodeId: QualifiedSourceNodeId<*>
+    ): Int
 
-    protected abstract fun isConstant(sourceTree: SourceTree, nodeId: String): Boolean
+    protected abstract fun isConstant(
+        sourceTree: SourceTree,
+        nodeId: QualifiedSourceNodeId<*>
+    ): Boolean
 
     companion object {
         private val analyzers = ServiceLoader.load(DecapsulationAnalyzer::class.java)
 
         private fun findAnalyzer(
             sourceTree: SourceTree,
-            id: String,
+            id: QualifiedSourceNodeId<*>,
         ): DecapsulationAnalyzer? {
             if (id !in sourceTree) return null
             val sourcePath = id.sourcePath
             return analyzers.find { it.canProcess(sourcePath) }
         }
 
-        fun getField(sourceTree: SourceTree, nodeId: String): String? =
+        fun getField(
+            sourceTree: SourceTree,
+            nodeId: QualifiedSourceNodeId<*>
+        ): QualifiedSourceNodeId<*>? =
             findAnalyzer(sourceTree, nodeId)?.getField(sourceTree, nodeId)
 
-        fun getVisibility(sourceTree: SourceTree, nodeId: String): Int? =
+        fun getVisibility(sourceTree: SourceTree, nodeId: QualifiedSourceNodeId<*>): Int? =
             findAnalyzer(sourceTree, nodeId)?.getVisibility(sourceTree, nodeId)
 
-        fun isConstant(sourceTree: SourceTree, nodeId: String): Boolean =
+        fun isConstant(sourceTree: SourceTree, nodeId: QualifiedSourceNodeId<*>): Boolean =
             findAnalyzer(sourceTree, nodeId)?.isConstant(sourceTree, nodeId) == true
     }
 }

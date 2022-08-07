@@ -21,7 +21,6 @@ import java.util.Collections.unmodifiableSet
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit
-import org.chronolens.core.model.sourcePath
 
 /**
  * A transaction consisting of multiple changes applied to a [SourceTree].

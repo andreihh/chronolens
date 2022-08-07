@@ -29,11 +29,6 @@ import org.junit.Test
 
 class EditVariableTest {
     @Test
-    fun newVariableEdit_withInvalidId_throws() {
-        assertFailsWith<IllegalArgumentException> { EditVariable("src/Test.java#version()") }
-    }
-
-    @Test
     fun apply_withNewModifier_addsModifierToSourceNode() {
         val expected = sourceTree {
             +sourceFile("src/Test.java") { +variable("name") { modifiers("@NotNull") } }

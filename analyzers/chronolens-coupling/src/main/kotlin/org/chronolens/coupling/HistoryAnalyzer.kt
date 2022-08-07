@@ -19,11 +19,11 @@ package org.chronolens.coupling
 import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.Function
+import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.model.SourceTreeNode
-import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Transaction
 
 internal class HistoryAnalyzer(
@@ -38,17 +38,17 @@ internal class HistoryAnalyzer(
     }
 
     private val sourceTree = SourceTree.empty()
-    private val changes = hashMapOf<String, Int>()
-    private val jointChanges = emptySparseHashMatrix<String, Int>()
-    private val temporalCoupling = emptySparseHashMatrix<String, Double>()
+    private val changes = hashMapOf<QualifiedSourceNodeId<*>, Int>()
+    private val jointChanges = emptySparseHashMatrix<QualifiedSourceNodeId<*>, Int>()
+    private val temporalCoupling = emptySparseHashMatrix<QualifiedSourceNodeId<*>, Double>()
 
-    private fun visit(edit: AddNode<*>): Set<String> {
+    private fun visit(edit: AddNode<*>): Set<QualifiedSourceNodeId<*>> {
         val addedNodes = edit.sourceTreeNode.walkSourceTree()
         val addedFunctions = addedNodes.filter { (_, node) -> node is Function }
         return addedFunctions.map(SourceTreeNode<*>::qualifiedId).toSet()
     }
 
-    private fun visit(edit: RemoveNode): Set<String> {
+    private fun visit(edit: RemoveNode): Set<QualifiedSourceNodeId<*>> {
         val removedIds =
             sourceTree
                 .walk(edit.id)
@@ -67,8 +67,8 @@ internal class HistoryAnalyzer(
         return removedIds
     }
 
-    private fun visit(transaction: Transaction): Set<String> {
-        val editedIds = hashSetOf<String>()
+    private fun visit(transaction: Transaction): Set<QualifiedSourceNodeId<*>> {
+        val editedIds = hashSetOf<QualifiedSourceNodeId<*>>()
         for (edit in transaction.edits) {
             when (edit) {
                 is AddNode<*> -> editedIds += visit(edit)
@@ -95,7 +95,10 @@ internal class HistoryAnalyzer(
         }
     }
 
-    private fun computeTemporalCoupling(id1: String, id2: String): Double {
+    private fun computeTemporalCoupling(
+        id1: QualifiedSourceNodeId<*>,
+        id2: QualifiedSourceNodeId<*>
+    ): Double {
         val countId1 = changes[id1] ?: return 0.0
         val countId2 = changes[id2] ?: return 0.0
         val countId1AndId2 = jointChanges[id1, id2] ?: return 0.0

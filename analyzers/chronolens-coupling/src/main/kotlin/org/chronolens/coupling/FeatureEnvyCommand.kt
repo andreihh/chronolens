@@ -19,6 +19,7 @@ package org.chronolens.coupling
 import java.io.File
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
+import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.sourcePath
 import org.chronolens.core.repository.Transaction
@@ -80,7 +81,7 @@ internal class FeatureEnvyCommand : Subcommand() {
     private fun TemporalContext.buildColoredGraphs(
         featureEnvyInstancesByFile: Map<SourcePath, List<FeatureEnvy>>,
     ): List<ColoredGraph> {
-        val idsByFile = ids.groupBy(String::sourcePath)
+        val idsByFile = ids.groupBy(QualifiedSourceNodeId<*>::sourcePath)
         val graphs =
             featureEnvyInstancesByFile.map { (path, instances) ->
                 val enviedFiles = instances.map(FeatureEnvy::enviedFile).toSet()
@@ -90,11 +91,12 @@ internal class FeatureEnvyCommand : Subcommand() {
         return graphs.map { graph -> graph.colorNodes(featureEnvyInstancesByFile) }
     }
 
-    private fun TemporalContext.computeFunctionToFileCouplings(): SparseMatrix<String, Double> {
-        val functionToFileCoupling = emptySparseHashMatrix<String, Double>()
+    private fun TemporalContext.computeFunctionToFileCouplings():
+        SparseMatrix<QualifiedSourceNodeId<*>, Double> {
+        val functionToFileCoupling = emptySparseHashMatrix<QualifiedSourceNodeId<*>, Double>()
         for ((id1, id2) in cells) {
             val function = id1
-            val file = id2.sourcePath.toString()
+            val file = QualifiedSourceNodeId.of(id2.sourcePath)
             val coupling = coupling(id1, id2)
             functionToFileCoupling[function, file] =
                 (functionToFileCoupling[function, file] ?: 0.0) + coupling
@@ -103,13 +105,13 @@ internal class FeatureEnvyCommand : Subcommand() {
     }
 
     private fun findFeatureEnvyInstances(
-        functionToFileCoupling: SparseMatrix<String, Double>,
+        functionToFileCoupling: SparseMatrix<QualifiedSourceNodeId<*>, Double>,
     ): List<FeatureEnvy> {
         val featureEnvyInstances = arrayListOf<FeatureEnvy>()
         for ((function, fileCouplings) in functionToFileCoupling) {
-            fun couplingWithFile(f: String): Double = fileCouplings[f] ?: 0.0
+            fun couplingWithFile(f: QualifiedSourceNodeId<*>): Double = fileCouplings[f] ?: 0.0
 
-            val file = function.sourcePath.toString()
+            val file = QualifiedSourceNodeId.of(function.sourcePath)
             val selfCoupling = couplingWithFile(file)
             val couplingThreshold = selfCoupling * minEnvyRatio
             val enviedFiles =
@@ -118,7 +120,7 @@ internal class FeatureEnvyCommand : Subcommand() {
                 }
             featureEnvyInstances +=
                 enviedFiles.take(maxEnviedFiles).map { f ->
-                    FeatureEnvy(function, selfCoupling, SourcePath(f), couplingWithFile(f))
+                    FeatureEnvy(function, selfCoupling, f.sourcePath, couplingWithFile(f))
                 }
         }
         return featureEnvyInstances.sortedByDescending(FeatureEnvy::enviedCoupling)
@@ -170,7 +172,7 @@ internal class FeatureEnvyCommand : Subcommand() {
     }
 
     data class FeatureEnvy(
-        val function: String,
+        val function: QualifiedSourceNodeId<*>,
         val coupling: Double,
         val enviedFile: SourcePath,
         val enviedCoupling: Double,
@@ -184,7 +186,11 @@ private fun Graph.colorNodes(
     featureEnvyInstancesByFile: Map<SourcePath, List<FeatureEnvy>>,
 ): ColoredGraph {
     val instances =
-        featureEnvyInstancesByFile.getValue(SourcePath(label)).map(FeatureEnvy::function).toSet()
+        featureEnvyInstancesByFile
+            .getValue(SourcePath(label))
+            .map(FeatureEnvy::function)
+            .map(QualifiedSourceNodeId<*>::toString)
+            .toSet()
     val fileGroups = nodes.map(Node::label).groupBy(String::sourcePath).values
     val groups = fileGroups + instances.map(::listOf)
     return colorNodes(groups)

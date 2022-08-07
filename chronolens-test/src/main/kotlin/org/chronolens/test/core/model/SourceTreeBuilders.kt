@@ -64,16 +64,16 @@ public fun QualifiedSourceNodeId<SourceFile>.build(
 
 @JvmName("buildType")
 public fun QualifiedSourceNodeId<Type>.build(init: Init<TypeBuilder>): SourceTreeNode<Type> =
-    SourceTreeNode(this.toString(), TypeBuilder(this.id.toString()).apply(init).build())
+    SourceTreeNode(this, TypeBuilder(this.id.toString()).apply(init).build())
 
 @JvmName("buildFunction")
 public fun QualifiedSourceNodeId<Function>.build(
     init: Init<FunctionBuilder>
 ): SourceTreeNode<Function> =
-    SourceTreeNode(this.toString(), FunctionBuilder(this.id.toString()).apply(init).build())
+    SourceTreeNode(this, FunctionBuilder(this.id.toString()).apply(init).build())
 
 @JvmName("buildVariable")
 public fun QualifiedSourceNodeId<Variable>.build(
     init: Init<VariableBuilder>
 ): SourceTreeNode<Variable> =
-    SourceTreeNode(this.toString(), VariableBuilder(this.id.toString()).apply(init).build())
+    SourceTreeNode(this, VariableBuilder(this.id.toString()).apply(init).build())

@@ -54,7 +54,8 @@ public class EditTypeBuilder(private val id: String) {
         return this
     }
 
-    public fun build(): EditType = EditType(id, supertypeEdits, modifierEdits)
+    public fun build(): EditType =
+        EditType(QualifiedSourceNodeId.parseFrom(id).cast(), supertypeEdits, modifierEdits)
 }
 
 @BuilderMarker
@@ -84,7 +85,13 @@ public class EditFunctionBuilder(private val id: String) {
         return this
     }
 
-    public fun build(): EditFunction = EditFunction(id, parameterEdits, modifierEdits, bodyEdits)
+    public fun build(): EditFunction =
+        EditFunction(
+            QualifiedSourceNodeId.parseFrom(id).cast(),
+            parameterEdits,
+            modifierEdits,
+            bodyEdits
+        )
 }
 
 @BuilderMarker
@@ -102,28 +109,28 @@ public class EditVariableBuilder(private val id: String) {
         return this
     }
 
-    public fun build(): EditVariable = EditVariable(id, modifierEdits, initializerEdits)
+    public fun build(): EditVariable =
+        EditVariable(QualifiedSourceNodeId.parseFrom(id).cast(), modifierEdits, initializerEdits)
 }
 
 @JvmName("addSourceFile")
 public fun QualifiedSourceNodeId<SourceFile>.add(
     init: Init<SourceFileBuilder>
-): AddNode<SourceFile> =
-    AddNode(this.toString(), SourceFileBuilder(this.id.toString()).apply(init).build())
+): AddNode<SourceFile> = AddNode(this, SourceFileBuilder(this.id.toString()).apply(init).build())
 
 @JvmName("addType")
 public fun QualifiedSourceNodeId<Type>.add(init: Init<TypeBuilder>): AddNode<Type> =
-    AddNode(this.toString(), TypeBuilder(this.id.toString()).apply(init).build())
+    AddNode(this, TypeBuilder(this.id.toString()).apply(init).build())
 
 @JvmName("addFunction")
 public fun QualifiedSourceNodeId<Function>.add(init: Init<FunctionBuilder>): AddNode<Function> =
-    AddNode(this.toString(), FunctionBuilder(this.id.toString()).apply(init).build())
+    AddNode(this, FunctionBuilder(this.id.toString()).apply(init).build())
 
 @JvmName("addVariable")
 public fun QualifiedSourceNodeId<Variable>.add(init: Init<VariableBuilder>): AddNode<Variable> =
-    AddNode(this.toString(), VariableBuilder(this.id.toString()).apply(init).build())
+    AddNode(this, VariableBuilder(this.id.toString()).apply(init).build())
 
-public fun QualifiedSourceNodeId<*>.remove(): RemoveNode = RemoveNode(this.toString())
+public fun QualifiedSourceNodeId<*>.remove(): RemoveNode = RemoveNode(this)
 
 public fun QualifiedSourceNodeId<Type>.edit(init: Init<EditTypeBuilder>): EditType =
     EditTypeBuilder(this.toString()).apply(init).build()

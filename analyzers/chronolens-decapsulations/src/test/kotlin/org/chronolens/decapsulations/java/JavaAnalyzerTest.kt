@@ -18,6 +18,8 @@ package org.chronolens.decapsulations.java
 
 import kotlin.test.assertEquals
 import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.function
+import org.chronolens.core.model.type
 import org.chronolens.decapsulations.DecapsulationAnalyzer
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PACKAGE_LEVEL
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PRIVATE_LEVEL
@@ -27,6 +29,7 @@ import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PROTECTED_MODIF
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PUBLIC_LEVEL
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PUBLIC_MODIFIER
 import org.chronolens.test.core.model.function
+import org.chronolens.test.core.model.qualifiedPathOf
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
 import org.chronolens.test.core.model.type
@@ -61,7 +64,7 @@ class JavaAnalyzerTest {
     fun `test private visibility`() {
         val name = "Main"
         val sourceTree = getSourceTreeWithType(name, PRIVATE_MODIFIER)
-        val id = "$name.java:$name"
+        val id = qualifiedPathOf("$name.java").type(name)
         val expectedLevel = PRIVATE_LEVEL
         val actualLevel = DecapsulationAnalyzer.getVisibility(sourceTree, id)
         assertEquals(expectedLevel, actualLevel)
@@ -71,7 +74,7 @@ class JavaAnalyzerTest {
     fun `test package visibility`() {
         val name = "Main"
         val sourceTree = getSourceTreeWithType(name)
-        val id = "$name.java:$name"
+        val id = qualifiedPathOf("$name.java").type(name)
         val expectedLevel = PACKAGE_LEVEL
         val actualLevel = DecapsulationAnalyzer.getVisibility(sourceTree, id)
         assertEquals(expectedLevel, actualLevel)
@@ -81,7 +84,7 @@ class JavaAnalyzerTest {
     fun `test protected visibility`() {
         val name = "Main"
         val sourceTree = getSourceTreeWithType(name, PROTECTED_MODIFIER)
-        val id = "$name.java:$name"
+        val id = qualifiedPathOf("$name.java").type(name)
         val expectedLevel = PROTECTED_LEVEL
         val actualLevel = DecapsulationAnalyzer.getVisibility(sourceTree, id)
         assertEquals(expectedLevel, actualLevel)
@@ -91,7 +94,7 @@ class JavaAnalyzerTest {
     fun `test public visibility`() {
         val name = "Main"
         val sourceTree = getSourceTreeWithType(name, PUBLIC_MODIFIER)
-        val id = "$name.java:$name"
+        val id = qualifiedPathOf("$name.java").type(name)
         val expectedLevel = PUBLIC_LEVEL
         val actualLevel = DecapsulationAnalyzer.getVisibility(sourceTree, id)
         assertEquals(expectedLevel, actualLevel)
@@ -101,7 +104,7 @@ class JavaAnalyzerTest {
     fun `test interface method is public`() {
         val name = "Main"
         val sourceTree = getSourceTreeWithInterface(name)
-        val id = "$name.java:$name:get()"
+        val id = qualifiedPathOf("$name.java").type(name).function("get()")
         val expectedLevel = PUBLIC_LEVEL
         val actualLevel = DecapsulationAnalyzer.getVisibility(sourceTree, id)
         assertEquals(expectedLevel, actualLevel)

@@ -17,12 +17,13 @@
 package org.chronolens.core.model
 
 import org.chronolens.core.model.ListEdit.Companion.apply
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.parentId
 import org.chronolens.core.model.SetEdit.Companion.apply
 
 /** An atomic change which should be applied to a [SourceTree]. */
 public sealed class SourceTreeEdit {
     /** The qualified id of the edited node. */
-    public abstract val id: String
+    public abstract val id: QualifiedSourceNodeId<*>
 
     /** The path of the [SourceFile] which contains the edited node. */
     public val sourcePath: SourcePath
@@ -101,7 +102,7 @@ public sealed class SourceTreeEdit {
                 other[path]?.let(nodesAfter::putSourceTree)
             }
 
-            fun parentExists(id: String): Boolean {
+            fun parentExists(id: QualifiedSourceNodeId<*>): Boolean {
                 val parentId = id.parentId ?: return true
                 return parentId in nodesBefore && parentId in nodesAfter
             }
@@ -130,8 +131,10 @@ public sealed class SourceTreeEdit {
  * @property node the node which should be added to the source tree
  */
 // TODO: require id.kind == node.kind
-public data class AddNode<out T : SourceNode>(override val id: String, val node: T) :
-    SourceTreeEdit() {
+public data class AddNode<out T : SourceNode>(
+    override val id: QualifiedSourceNodeId<T>,
+    val node: T
+) : SourceTreeEdit() {
 
     val sourceTreeNode: SourceTreeNode<T>
         get() = SourceTreeNode(id, node)
@@ -143,16 +146,8 @@ public data class AddNode<out T : SourceNode>(override val id: String, val node:
     }
 }
 
-/**
- * Indicates that a [SourceNode] should be removed from a source tree.
- *
- * @throws IllegalArgumentException if the `id` is not a valid node id
- */
-public data class RemoveNode(override val id: String) : SourceTreeEdit() {
-    init {
-        require(QualifiedSourceNodeId.isValid(id)) { "Invalid qualified id '$id'!" }
-    }
-
+/** Indicates that a [SourceNode] should be removed from a source tree. */
+public data class RemoveNode(override val id: QualifiedSourceNodeId<*>) : SourceTreeEdit() {
     override fun applyOn(nodes: NodeHashMap) {
         val node = nodes[id] ?: error("Node '$id' doesn't exist!")
         nodes.removeSourceTree(node)
@@ -167,17 +162,12 @@ public data class RemoveNode(override val id: String) : SourceTreeEdit() {
  * with the given [id]
  * @property modifierEdits the edits which should be applied to the [Type.modifiers] of the type
  * with the given [id]
- * @throws IllegalArgumentException if the [id] is not a valid type id
  */
 public data class EditType(
-    override val id: String,
+    override val id: QualifiedSourceNodeId<Type>,
     val supertypeEdits: List<SetEdit<Identifier>> = emptyList(),
     val modifierEdits: List<SetEdit<String>> = emptyList()
 ) : SourceTreeEdit() {
-
-    init {
-        validateTypeId(id)
-    }
 
     override fun applyOn(nodes: NodeHashMap) {
         val type = nodes[id]?.sourceNode as? Type? ?: error("Type '$id' doesn't exist!")
@@ -201,18 +191,13 @@ public data class EditType(
  * function with the given [id]
  * @property bodyEdits the edits which should be applied to the [Function.body] of the function with
  * the given [id]
- * @throws IllegalArgumentException if the [id] is not a valid function id
  */
 public data class EditFunction(
-    override val id: String,
+    override val id: QualifiedSourceNodeId<Function>,
     val parameterEdits: List<ListEdit<Identifier>> = emptyList(),
     val modifierEdits: List<SetEdit<String>> = emptyList(),
     val bodyEdits: List<ListEdit<String>> = emptyList()
 ) : SourceTreeEdit() {
-
-    init {
-        validateFunctionId(id)
-    }
 
     override fun applyOn(nodes: NodeHashMap) {
         val function = nodes[id]?.sourceNode as Function? ?: error("Function '$id' doesn't exist!")
@@ -235,17 +220,12 @@ public data class EditFunction(
  * variable with the given [id]
  * @property initializerEdits the edits which should be applied to the [Variable.initializer] of the
  * variable with the given [id]
- * @throws IllegalArgumentException if the [id] is not a valid variable id
  */
 public data class EditVariable(
-    override val id: String,
+    override val id: QualifiedSourceNodeId<Variable>,
     val modifierEdits: List<SetEdit<String>> = emptyList(),
     val initializerEdits: List<ListEdit<String>> = emptyList()
 ) : SourceTreeEdit() {
-
-    init {
-        validateVariableId(id)
-    }
 
     override fun applyOn(nodes: NodeHashMap) {
         val variable = nodes[id]?.sourceNode as? Variable? ?: error("Variable '$id' doesn't exist!")
@@ -287,7 +267,7 @@ private fun <T : SourceEntity> NodeHashMap.updateAncestorsOf(sourceTreeNode: Sou
             this[parentId] = SourceTreeNode(parentId, parent.updated())
         }
         is Type -> {
-            val newParent = SourceTreeNode(parentId, parent.updated())
+            val newParent = SourceTreeNode(parentId.cast(), parent.updated())
             this[parentId] = newParent
             updateAncestorsOf(newParent)
         }

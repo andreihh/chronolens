@@ -17,13 +17,16 @@
 package org.chronolens.decapsulations.java
 
 import org.chronolens.core.model.Function
-import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
+import org.chronolens.core.model.Identifier
+import org.chronolens.core.model.QualifiedSourceNodeId
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.parentId
+import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
-import org.chronolens.core.model.parentId
+import org.chronolens.core.model.variable
 import org.chronolens.decapsulations.DecapsulationAnalyzer
 
 internal class JavaAnalyzer : DecapsulationAnalyzer() {
@@ -37,13 +40,19 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
             .firstOrNull { it.firstOrNull()?.isUpperCase() == true }
             ?.let { "${it[0].lowercaseChar()}${it.substring(1)}" }
 
-    override fun getField(sourceTree: SourceTree, nodeId: String): String? {
+    private fun getFieldName(signature: Signature): Identifier? =
+        getFieldName(signature.toString())?.let(::Identifier)
+
+    override fun getField(
+        sourceTree: SourceTree,
+        nodeId: QualifiedSourceNodeId<*>
+    ): QualifiedSourceNodeId<*>? {
         val node = sourceTree[nodeId] ?: return null
         return when (node) {
             is Variable -> nodeId
             is Function -> {
-                val fieldName = getFieldName(node.signature.toString()) ?: return null
-                val fieldId = "${nodeId.parentId}$MEMBER_SEPARATOR$fieldName"
+                val fieldName = getFieldName(node.signature) ?: return null
+                val fieldId = nodeId.parentId?.variable(fieldName) ?: return null
                 // TODO: figure out if should check only for non-nullable type.
                 if (sourceTree[fieldId] is Variable?) fieldId else null
             }
@@ -62,12 +71,12 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
     private val SourceNode?.isInterface: Boolean
         get() = this is Type && INTERFACE_MODIFIER in modifiers
 
-    private fun SourceTree.parentNodeIsInterface(nodeId: String): Boolean {
+    private fun SourceTree.parentNodeIsInterface(nodeId: QualifiedSourceNodeId<*>): Boolean {
         val parentId = nodeId.parentId ?: return false
         return get(parentId)?.isInterface ?: false
     }
 
-    override fun getVisibility(sourceTree: SourceTree, nodeId: String): Int {
+    override fun getVisibility(sourceTree: SourceTree, nodeId: QualifiedSourceNodeId<*>): Int {
         val node = sourceTree[nodeId]
         return when (node) {
             is Type -> getVisibility(node.modifiers)
@@ -79,7 +88,7 @@ internal class JavaAnalyzer : DecapsulationAnalyzer() {
         }
     }
 
-    override fun isConstant(sourceTree: SourceTree, nodeId: String): Boolean {
+    override fun isConstant(sourceTree: SourceTree, nodeId: QualifiedSourceNodeId<*>): Boolean {
         val node = sourceTree[nodeId] as? Variable? ?: return false
         val modifiers = node.modifiers
         return (STATIC_MODIFIER in modifiers && FINAL_MODIFIER in modifiers) ||
