@@ -26,13 +26,13 @@ import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.function
+import org.chronolens.core.model.qualifiedPathOf
 import org.chronolens.core.model.type
 import org.chronolens.core.model.variable
 import org.chronolens.core.repository.Transaction
 import org.chronolens.test.core.model.add
 import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.function
-import org.chronolens.test.core.model.qualifiedPathOf
 import org.chronolens.test.core.model.remove
 import org.chronolens.test.core.model.type
 import org.chronolens.test.core.model.variable

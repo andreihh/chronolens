@@ -37,8 +37,7 @@ private constructor(
     public operator fun get(id: QualifiedSourceNodeId<*>): SourceNode? = nodeMap[id]?.sourceNode
 
     /** Returns the source file with the specified [path], or `null` if no such file was found. */
-    public operator fun get(path: SourcePath): SourceFile? =
-        getOrNull(QualifiedSourceNodeId.of(path))
+    public operator fun get(path: SourcePath): SourceFile? = getOrNull(qualifiedPathOf(path))
 
     /** Returns whether the specified [id] exists in this source tree. */
     public operator fun contains(id: QualifiedSourceNodeId<*>): Boolean = get(id) != null

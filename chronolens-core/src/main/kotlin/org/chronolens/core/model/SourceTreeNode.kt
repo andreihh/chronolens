@@ -94,7 +94,7 @@ public data class SourceTreeNode<out T : SourceNode>(
         /** Creates a new source tree node from the given [sourceFile]. */
         @JvmStatic
         public fun of(sourceFile: SourceFile): SourceTreeNode<SourceFile> =
-            SourceTreeNode(QualifiedSourceNodeId.of(sourceFile.path), sourceFile)
+            SourceTreeNode(qualifiedPathOf(sourceFile.path), sourceFile)
     }
 }
 

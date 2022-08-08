@@ -26,7 +26,6 @@ import org.chronolens.test.core.model.add
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.function
-import org.chronolens.test.core.model.qualifiedPathOf
 import org.chronolens.test.core.model.remove
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree

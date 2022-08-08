@@ -21,6 +21,7 @@ import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.qualifiedPathOf
 import org.chronolens.core.repository.Transaction
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.coupling.FeatureEnvyCommand.FeatureEnvy
@@ -95,7 +96,7 @@ internal class FeatureEnvyCommand : Subcommand() {
         val functionToFileCoupling = emptySparseHashMatrix<QualifiedSourceNodeId<*>, Double>()
         for ((id1, id2) in cells) {
             val function = id1
-            val file = QualifiedSourceNodeId.of(id2.sourcePath)
+            val file = qualifiedPathOf(id2.sourcePath)
             val coupling = coupling(id1, id2)
             functionToFileCoupling[function, file] =
                 (functionToFileCoupling[function, file] ?: 0.0) + coupling
@@ -110,7 +111,7 @@ internal class FeatureEnvyCommand : Subcommand() {
         for ((function, fileCouplings) in functionToFileCoupling) {
             fun couplingWithFile(f: QualifiedSourceNodeId<*>): Double = fileCouplings[f] ?: 0.0
 
-            val file = QualifiedSourceNodeId.of(function.sourcePath)
+            val file = qualifiedPathOf(function.sourcePath)
             val selfCoupling = couplingWithFile(file)
             val couplingThreshold = selfCoupling * minEnvyRatio
             val enviedFiles =

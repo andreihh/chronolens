@@ -21,7 +21,6 @@ import kotlin.test.assertFailsWith
 import org.chronolens.core.model.ListEdit.Companion.apply
 import org.chronolens.core.model.SetEdit.Companion.apply
 import org.chronolens.test.core.model.build
-import org.chronolens.test.core.model.qualifiedPathOf
 import org.junit.Test
 
 class DiffingTest {

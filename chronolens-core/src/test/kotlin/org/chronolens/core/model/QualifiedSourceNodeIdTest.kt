@@ -21,7 +21,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.chronolens.test.core.model.qualifiedPathOf
 import org.junit.Test
 
 class QualifiedSourceNodeIdTest {
@@ -64,7 +63,7 @@ class QualifiedSourceNodeIdTest {
     fun createSourceFileId_whenNonNullParent_fails() {
         assertFailsWith<IllegalArgumentException> {
             QualifiedSourceNodeId.of<SourceFile>(
-                QualifiedSourceNodeId.fromPath("src/main/kotlin"),
+                qualifiedPathOf("src/main/kotlin"),
                 SourcePath("Main.java")
             )
         }
@@ -94,7 +93,7 @@ class QualifiedSourceNodeIdTest {
     @Test
     fun sourcePath_whenNullParent_returnsId() {
         val path = SourcePath("src/main/java/Main.java")
-        val qualifiedId = QualifiedSourceNodeId.of(path)
+        val qualifiedId = qualifiedPathOf(path)
 
         assertEquals(path, qualifiedId.sourcePath)
     }
@@ -102,14 +101,14 @@ class QualifiedSourceNodeIdTest {
     @Test
     fun sourcePath_whenNonNullParent_returnsParentSourcePath() {
         val path = SourcePath("src/main/java/Main.java")
-        val qualifiedId = QualifiedSourceNodeId.of(path).type("Main").function("main()")
+        val qualifiedId = qualifiedPathOf(path).type("Main").function("main()")
 
         assertEquals(path, qualifiedId.sourcePath)
     }
 
     @Test
     fun castOrNull_whenValidType_returnsId() {
-        val qualifiedId = QualifiedSourceNodeId.fromPath("src/Main.java")
+        val qualifiedId = qualifiedPathOf("src/Main.java")
 
         assertEquals<QualifiedSourceNodeId<*>?>(
             qualifiedId,
@@ -119,21 +118,21 @@ class QualifiedSourceNodeIdTest {
 
     @Test
     fun castOrNull_whenInvalidType_returnsNull() {
-        val qualifiedId = QualifiedSourceNodeId.fromPath("src/Main.java")
+        val qualifiedId = qualifiedPathOf("src/Main.java")
 
         assertNull(qualifiedId.castOrNull<SourceEntity>())
     }
 
     @Test
     fun cast_whenValidType_returnsId() {
-        val qualifiedId = QualifiedSourceNodeId.fromPath("src/Main.java")
+        val qualifiedId = qualifiedPathOf("src/Main.java")
 
         assertEquals<QualifiedSourceNodeId<*>>(qualifiedId, qualifiedId.cast<SourceContainer>())
     }
 
     @Test
     fun cast_whenInvalidType_throws() {
-        val qualifiedId = QualifiedSourceNodeId.fromPath("src/Main.java")
+        val qualifiedId = qualifiedPathOf("src/Main.java")
 
         assertFailsWith<IllegalArgumentException> { qualifiedId.cast<SourceEntity>() }
     }

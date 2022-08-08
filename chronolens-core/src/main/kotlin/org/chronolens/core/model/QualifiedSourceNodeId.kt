@@ -138,18 +138,6 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
             id: SourceNodeId
         ): QualifiedSourceNodeId<T> = QualifiedSourceNodeId(parent, id, T::class.java)
 
-        /** Creates a qualified source path from the given [path]. */
-        @JvmStatic
-        public fun of(path: SourcePath): QualifiedSourceNodeId<SourceFile> = of(null, path)
-
-        /**
-         * Creates a qualified source path from the given [path].
-         *
-         * @throws IllegalArgumentException if the given [path] is not a valid [SourcePath]
-         */
-        @JvmStatic
-        public fun fromPath(path: String): QualifiedSourceNodeId<SourceFile> = of(SourcePath(path))
-
         /** Returns whether the given [rawQualifiedId] id valid. */
         @JvmStatic
         public fun isValid(rawQualifiedId: String): Boolean {
@@ -193,7 +181,8 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
             val tokens = rawQualifiedId.split(*SEPARATORS)
 
             // The first token always denotes a source file.
-            var qualifiedId: QualifiedSourceNodeId<SourceContainer> = fromPath(tokens.first())
+            var qualifiedId: QualifiedSourceNodeId<SourceContainer> =
+                qualifiedPathOf(tokens.first())
 
             // Stop if there is just one token.
             if (tokens.size == 1) return qualifiedId
@@ -222,6 +211,18 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
             get() = checkNotNull(parent)
     }
 }
+
+/** Creates a qualified source path from the given [path]. */
+public fun qualifiedPathOf(path: SourcePath): QualifiedSourceNodeId<SourceFile> =
+    QualifiedSourceNodeId.of(null, path)
+
+/**
+ * Creates a qualified source path from the given [path].
+ *
+ * @throws IllegalArgumentException if the given [path] is not a valid [SourcePath]
+ */
+public fun qualifiedPathOf(path: String): QualifiedSourceNodeId<SourceFile> =
+    qualifiedPathOf(SourcePath(path))
 
 /** Returns the name of this qualified type id. */
 @get:JvmName("getTypeName")

@@ -19,6 +19,7 @@ package org.chronolens.decapsulations.java
 import kotlin.test.assertEquals
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.function
+import org.chronolens.core.model.qualifiedPathOf
 import org.chronolens.core.model.type
 import org.chronolens.decapsulations.DecapsulationAnalyzer
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PACKAGE_LEVEL
@@ -29,7 +30,6 @@ import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PROTECTED_MODIF
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PUBLIC_LEVEL
 import org.chronolens.decapsulations.java.JavaAnalyzer.Companion.PUBLIC_MODIFIER
 import org.chronolens.test.core.model.function
-import org.chronolens.test.core.model.qualifiedPathOf
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
 import org.chronolens.test.core.model.type

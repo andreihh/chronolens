@@ -20,10 +20,10 @@ import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.qualifiedPathOf
 import org.chronolens.core.model.type
 import org.chronolens.test.core.model.add
 import org.chronolens.test.core.model.edit
-import org.chronolens.test.core.model.qualifiedPathOf
 import org.chronolens.test.core.model.remove
 import org.junit.Test
 
