@@ -189,7 +189,7 @@ class QualifiedSourceNodeIdTest {
     }
 
     @Test
-    fun parseFrom_whenInputIsQualifiedIdAsString_returnsOriginalQualifiedId() {
+    fun parseQualifiedSourceNodeIdFrom_whenInputIsQualifiedIdAsString_returnsOriginalQualifiedId() {
         val qualifiedIds =
             listOf(
                 qualifiedSourcePathOf("src/Main.java"),
@@ -207,7 +207,7 @@ class QualifiedSourceNodeIdTest {
     }
 
     @Test
-    fun parseFrom_whenInvalidId_throws() {
+    fun parseQualifiedSourceNodeIdFrom_whenInvalidId_throws() {
         val rawQualifiedIds =
             listOf(
                 "",
