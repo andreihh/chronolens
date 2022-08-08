@@ -33,7 +33,7 @@ class AddNodeTest {
             +sourceFile("src/Main.java") {}
             +sourceFile("src/Test.java") {}
         }
-        val edit = qualifiedPathOf("src/Test.java").add {}
+        val edit = qualifiedSourcePathOf("src/Test.java").add {}
 
         val actual = sourceTree { +sourceFile("src/Main.java") {} }
         actual.apply(edit)
@@ -46,7 +46,8 @@ class AddNodeTest {
         val expected = sourceTree {
             +sourceFile("src/Test.java") { +type("Test") { +function("getVersion()") {} } }
         }
-        val edit = qualifiedPathOf("src/Test.java").type("Test").function("getVersion()").add {}
+        val edit =
+            qualifiedSourcePathOf("src/Test.java").type("Test").function("getVersion()").add {}
 
         val actual = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
         actual.apply(edit)
@@ -62,7 +63,7 @@ class AddNodeTest {
             }
         }
         val edit =
-            qualifiedPathOf("src/Test.java").type("Test").add {
+            qualifiedSourcePathOf("src/Test.java").type("Test").add {
                 +function("getV(String)") { parameters("name") }
             }
 
@@ -75,7 +76,7 @@ class AddNodeTest {
     @Test
     fun apply_withExistingId_throws() {
         val sourceTree = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
-        val edit = qualifiedPathOf("src/Test.java").type("Test").add {}
+        val edit = qualifiedSourcePathOf("src/Test.java").type("Test").add {}
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
@@ -98,7 +99,8 @@ class AddNodeTest {
     @Test
     fun apply_withNonExistingParent_throws() {
         val sourceTree = sourceTree { +sourceFile("src/Main.java") {} }
-        val edit = qualifiedPathOf("src/Main.java").type("Main").function("getVersion()").add {}
+        val edit =
+            qualifiedSourcePathOf("src/Main.java").type("Main").function("getVersion()").add {}
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }

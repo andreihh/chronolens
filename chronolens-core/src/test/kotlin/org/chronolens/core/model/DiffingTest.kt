@@ -60,8 +60,8 @@ class DiffingTest {
 
     @Test
     fun diff_nodesWithDifferentIds_throws() {
-        val before = qualifiedPathOf("src/Test.java").build {}
-        val after = qualifiedPathOf("src/Main.java").build {}
+        val before = qualifiedSourcePathOf("src/Test.java").build {}
+        val after = qualifiedSourcePathOf("src/Main.java").build {}
 
         assertFailsWith<IllegalArgumentException> { before.diff(after) }
     }

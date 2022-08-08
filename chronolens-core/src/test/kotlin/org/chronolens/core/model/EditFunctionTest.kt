@@ -35,7 +35,7 @@ class EditFunctionTest {
             }
         }
         val edit =
-            qualifiedPathOf("src/Test.java").type("Test").function("getVersion()").edit {
+            qualifiedSourcePathOf("src/Test.java").type("Test").function("getVersion()").edit {
                 modifiers { +"@Override" }
             }
 
@@ -55,7 +55,7 @@ class EditFunctionTest {
             }
         }
         val edit =
-            qualifiedPathOf("src/Test.java").function("getValue(int, int)").edit {
+            qualifiedSourcePathOf("src/Test.java").function("getValue(int, int)").edit {
                 parameters {
                     remove(0)
                     add(index = 1, value = "y")
@@ -77,7 +77,7 @@ class EditFunctionTest {
         val sourceTree = sourceTree {
             +sourceFile("src/Test.java") { +function("get_version()") {} }
         }
-        val edit = qualifiedPathOf("src/Test.java").function("getVersion()").edit {}
+        val edit = qualifiedSourcePathOf("src/Test.java").function("getVersion()").edit {}
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }
@@ -90,7 +90,7 @@ class EditFunctionTest {
             }
         }
         val edit =
-            qualifiedPathOf("src/Test.java").function("getValue(int, int)").edit {
+            qualifiedSourcePathOf("src/Test.java").function("getValue(int, int)").edit {
                 parameters { remove(2) }
             }
 

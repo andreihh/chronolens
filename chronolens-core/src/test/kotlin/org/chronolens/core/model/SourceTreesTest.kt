@@ -107,7 +107,7 @@ class SourceTreeTest {
                 +variable("version") { +"2" }
             }
         }
-        val qualifiedId = qualifiedPathOf("src/Test.java").type("IClass").variable("VERSION")
+        val qualifiedId = qualifiedSourcePathOf("src/Test.java").type("IClass").variable("VERSION")
 
         assertFalse(qualifiedId in sourceTree)
     }
@@ -127,7 +127,7 @@ class SourceTreeTest {
                 +variable("version") { +"2" }
             }
         }
-        val nodeId = qualifiedPathOf("src/Test.java").type("IClass").variable("version")
+        val nodeId = qualifiedSourcePathOf("src/Test.java").type("IClass").variable("version")
         val actualNode = sourceTree.get<Variable>(nodeId)
 
         assertEquals(expectedNode, actualNode)
@@ -150,7 +150,7 @@ class SourceTreeTest {
                 +variable("version") { +"1" }
             }
         }
-        val nodeId = qualifiedPathOf("src/Test.java").function("getVersion()")
+        val nodeId = qualifiedSourcePathOf("src/Test.java").function("getVersion()")
 
         assertFailsWith<IllegalStateException> { sourceTree.get<Function>(nodeId) }
     }
@@ -163,7 +163,7 @@ class SourceTreeTest {
                 +variable("version") { +"1" }
             }
         }
-        val nodeId = qualifiedPathOf("src/Test.java").function("getVersion()")
+        val nodeId = qualifiedSourcePathOf("src/Test.java").function("getVersion()")
 
         assertNull(sourceTree[nodeId])
     }
@@ -182,11 +182,11 @@ class SourceTreeTest {
 
         val actual = sourceTree { +sourceFile("src/Main.java") {} }
         actual.apply(
-            qualifiedPathOf("src/Main.java").remove(),
-            qualifiedPathOf("src/Test.java").add {},
-            qualifiedPathOf("src/Test.java").type("Test").add {},
-            qualifiedPathOf("src/Test.java").type("Test").function("getVersion()").add {},
-            qualifiedPathOf("src/Test.java").type("Test").edit {
+            qualifiedSourcePathOf("src/Main.java").remove(),
+            qualifiedSourcePathOf("src/Test.java").add {},
+            qualifiedSourcePathOf("src/Test.java").type("Test").add {},
+            qualifiedSourcePathOf("src/Test.java").type("Test").function("getVersion()").add {},
+            qualifiedSourcePathOf("src/Test.java").type("Test").edit {
                 modifiers { +"abstract" }
                 supertypes { +"Object" }
             }

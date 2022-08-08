@@ -26,7 +26,7 @@ import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.function
-import org.chronolens.core.model.qualifiedPathOf
+import org.chronolens.core.model.qualifiedSourcePathOf
 import org.chronolens.core.model.type
 import org.chronolens.core.model.variable
 import org.chronolens.core.repository.Transaction
@@ -44,7 +44,7 @@ class JsonModuleTest {
         transaction("HEAD") {
             date = Instant.ofEpochMilli(1824733L)
             author = "unknown"
-            +qualifiedPathOf("res").add {
+            +qualifiedSourcePathOf("res").add {
                 +variable("DEBUG") { +"true" }
                 +variable("RELEASE") { +"false" }
                 +function("createIClass()") {}
@@ -55,15 +55,15 @@ class JsonModuleTest {
                     +function("getVersion()") { +"1" }
                 }
             }
-            +qualifiedPathOf("res").function("createIClass()").remove()
-            +qualifiedPathOf("res").variable("DEBUG").edit {
+            +qualifiedSourcePathOf("res").function("createIClass()").remove()
+            +qualifiedSourcePathOf("res").variable("DEBUG").edit {
                 initializer {
                     remove(0)
                     add(index = 0, value = "false")
                 }
             }
-            +qualifiedPathOf("res").variable("RELEASE").remove()
-            +qualifiedPathOf("res").type("IClass").edit { supertypes { -"Interface" } }
+            +qualifiedSourcePathOf("res").variable("RELEASE").remove()
+            +qualifiedSourcePathOf("res").type("IClass").edit { supertypes { -"Interface" } }
         }
 
     // TODO: figure out why this doesn't pass anymore.
@@ -166,7 +166,7 @@ class JsonModuleTest {
 
     @Test
     fun deserializeQualifiedSourcePath_parsesString() {
-        val qualifiedPath = qualifiedPathOf("src/Main.java")
+        val qualifiedPath = qualifiedSourcePathOf("src/Main.java")
         val src = "\"$qualifiedPath\"".byteInputStream()
 
         assertEquals(qualifiedPath, JsonModule.deserialize<QualifiedSourceNodeId<*>>(src))

@@ -182,7 +182,7 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
 
             // The first token always denotes a source file.
             var qualifiedId: QualifiedSourceNodeId<SourceContainer> =
-                qualifiedPathOf(tokens.first())
+                qualifiedSourcePathOf(tokens.first())
 
             // Stop if there is just one token.
             if (tokens.size == 1) return qualifiedId
@@ -213,7 +213,7 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
 }
 
 /** Creates a qualified source path from the given [path]. */
-public fun qualifiedPathOf(path: SourcePath): QualifiedSourceNodeId<SourceFile> =
+public fun qualifiedSourcePathOf(path: SourcePath): QualifiedSourceNodeId<SourceFile> =
     QualifiedSourceNodeId.of(null, path)
 
 /**
@@ -221,8 +221,8 @@ public fun qualifiedPathOf(path: SourcePath): QualifiedSourceNodeId<SourceFile> 
  *
  * @throws IllegalArgumentException if the given [path] is not a valid [SourcePath]
  */
-public fun qualifiedPathOf(path: String): QualifiedSourceNodeId<SourceFile> =
-    qualifiedPathOf(SourcePath(path))
+public fun qualifiedSourcePathOf(path: String): QualifiedSourceNodeId<SourceFile> =
+    qualifiedSourcePathOf(SourcePath(path))
 
 /** Returns the name of this qualified type id. */
 @get:JvmName("getTypeName")

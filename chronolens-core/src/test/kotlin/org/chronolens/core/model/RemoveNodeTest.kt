@@ -31,7 +31,7 @@ class RemoveNodeTest {
     @Test
     fun apply_withRemovedSourceFile_removesSourceNode() {
         val expected = sourceTree { +sourceFile("src/Test.java") {} }
-        val edit = qualifiedPathOf("src/Main.java").remove()
+        val edit = qualifiedSourcePathOf("src/Main.java").remove()
 
         val actual = sourceTree {
             +sourceFile("src/Main.java") {
@@ -50,7 +50,10 @@ class RemoveNodeTest {
             +sourceFile("src/Main.java") { +type("Main") { +variable("version") {} } }
         }
         val edit =
-            qualifiedPathOf("src/Main.java").type("Main").function("getVersion(String)").remove()
+            qualifiedSourcePathOf("src/Main.java")
+                .type("Main")
+                .function("getVersion(String)")
+                .remove()
 
         val actual = sourceTree {
             +sourceFile("src/Main.java") {
@@ -70,7 +73,7 @@ class RemoveNodeTest {
         val sourceTree = sourceTree {
             +sourceFile("src/Test.java") { +function("getVersion()") {} }
         }
-        val edit = qualifiedPathOf("src/Test.java").variable("version").remove()
+        val edit = qualifiedSourcePathOf("src/Test.java").variable("version").remove()
 
         assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
     }

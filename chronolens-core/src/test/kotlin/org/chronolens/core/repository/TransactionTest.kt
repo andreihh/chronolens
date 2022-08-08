@@ -20,7 +20,7 @@ import java.time.Instant
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.qualifiedPathOf
+import org.chronolens.core.model.qualifiedSourcePathOf
 import org.chronolens.core.model.type
 import org.chronolens.test.core.model.add
 import org.chronolens.test.core.model.edit
@@ -53,9 +53,12 @@ class TransactionTest {
                     author = "",
                     edits =
                         listOf(
-                            qualifiedPathOf("Main.java").type("Main").type("MainType").add {},
-                            qualifiedPathOf("Test.java").type("Test").type("TestType").remove(),
-                            qualifiedPathOf("MainTest.java").type("MainTest").edit {}
+                            qualifiedSourcePathOf("Main.java").type("Main").type("MainType").add {},
+                            qualifiedSourcePathOf("Test.java")
+                                .type("Test")
+                                .type("TestType")
+                                .remove(),
+                            qualifiedSourcePathOf("MainTest.java").type("MainTest").edit {}
                         )
                 )
                 .changeSet

@@ -35,14 +35,15 @@ class SourceTreeNodeTest {
     @Test
     fun sourcePath_ofNode_returnsPathOfContainerSourceFile() {
         val path = "src/Test.java"
-        val sourceTreeNode = qualifiedPathOf(path).build { +function("getVersion(String)") {} }
+        val sourceTreeNode =
+            qualifiedSourcePathOf(path).build { +function("getVersion(String)") {} }
 
         assertEquals(path, sourceTreeNode.sourcePath.toString())
     }
 
     @Test
     fun castOrNull_whenValidType_returnsNode() {
-        val sourceTreeNode = qualifiedPathOf("src/Test.java").build {}
+        val sourceTreeNode = qualifiedSourcePathOf("src/Test.java").build {}
 
         assertEquals<SourceTreeNode<*>?>(
             sourceTreeNode,
@@ -52,21 +53,21 @@ class SourceTreeNodeTest {
 
     @Test
     fun castOrNull_whenInvalidType_returnsNull() {
-        val sourceTreeNode = qualifiedPathOf("src/Test.java").build {}
+        val sourceTreeNode = qualifiedSourcePathOf("src/Test.java").build {}
 
         assertNull(sourceTreeNode.castOrNull<SourceEntity>())
     }
 
     @Test
     fun cast_whenValidType_returnsNode() {
-        val sourceTreeNode = qualifiedPathOf("src/Test.java").build {}
+        val sourceTreeNode = qualifiedSourcePathOf("src/Test.java").build {}
 
         assertEquals<SourceTreeNode<*>>(sourceTreeNode, sourceTreeNode.cast<SourceContainer>())
     }
 
     @Test
     fun cast_whenInvalidType_throws() {
-        val sourceTreeNode = qualifiedPathOf("src/Test.java").build {}
+        val sourceTreeNode = qualifiedSourcePathOf("src/Test.java").build {}
 
         assertFailsWith<IllegalArgumentException> { sourceTreeNode.cast<SourceEntity>() }
     }
