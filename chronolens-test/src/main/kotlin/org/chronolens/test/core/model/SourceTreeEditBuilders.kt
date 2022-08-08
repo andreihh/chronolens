@@ -29,6 +29,7 @@ import org.chronolens.core.model.SetEdit
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
+import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
@@ -55,7 +56,7 @@ public class EditTypeBuilder(private val id: String) {
     }
 
     public fun build(): EditType =
-        EditType(QualifiedSourceNodeId.parseFrom(id).cast(), supertypeEdits, modifierEdits)
+        EditType(parseQualifiedSourceNodeIdFrom(id).cast(), supertypeEdits, modifierEdits)
 }
 
 @BuilderMarker
@@ -87,7 +88,7 @@ public class EditFunctionBuilder(private val id: String) {
 
     public fun build(): EditFunction =
         EditFunction(
-            QualifiedSourceNodeId.parseFrom(id).cast(),
+            parseQualifiedSourceNodeIdFrom(id).cast(),
             parameterEdits,
             modifierEdits,
             bodyEdits
@@ -110,7 +111,7 @@ public class EditVariableBuilder(private val id: String) {
     }
 
     public fun build(): EditVariable =
-        EditVariable(QualifiedSourceNodeId.parseFrom(id).cast(), modifierEdits, initializerEdits)
+        EditVariable(parseQualifiedSourceNodeIdFrom(id).cast(), modifierEdits, initializerEdits)
 }
 
 @JvmName("addSourceFile")

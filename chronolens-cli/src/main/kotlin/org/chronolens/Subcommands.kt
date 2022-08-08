@@ -19,8 +19,8 @@ package org.chronolens
 import java.io.File
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.exit
-import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.PersistentRepository.Companion.persist
@@ -86,7 +86,7 @@ class Model : Subcommand() {
         get() = rev ?: repository.getHeadId()
 
     override fun run() {
-        val path = QualifiedSourceNodeId.parseFrom(id).sourcePath
+        val path = parseQualifiedSourceNodeIdFrom(id).sourcePath
         val model =
             repository.getSource(path, revision)
                 ?: exit("File '$path' couldn't be interpreted or doesn't exist!")

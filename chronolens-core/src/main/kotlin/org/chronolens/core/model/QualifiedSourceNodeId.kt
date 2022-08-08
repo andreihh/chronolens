@@ -16,6 +16,8 @@
 
 package org.chronolens.core.model
 
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 import org.chronolens.core.model.SourceNodeKind.FUNCTION
 import org.chronolens.core.model.SourceNodeKind.SOURCE_FILE
 import org.chronolens.core.model.SourceNodeKind.TYPE
@@ -124,8 +126,6 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
         /** [Function] and [Variable] identifiers are separated from the parent id by `#`. */
         public const val MEMBER_SEPARATOR: Char = '#'
 
-        private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
-
         /**
          * Creates a [QualifiedSourceNodeId] denoting a source node of type [T] with the given
          * [parent] id and simple [id].
@@ -169,41 +169,6 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
             return Identifier.isValid(tokens.last()) || Signature.isValid(tokens.last())
         }
 
-        /**
-         * Parses the given [rawQualifiedId].
-         *
-         * @throws IllegalArgumentException if the given [rawQualifiedId] is invalid
-         */
-        @JvmStatic
-        public fun parseFrom(rawQualifiedId: String): QualifiedSourceNodeId<*> {
-            require(isValid(rawQualifiedId)) { "Invalid qualified id '$rawQualifiedId'!" }
-
-            val tokens = rawQualifiedId.split(*SEPARATORS)
-
-            // The first token always denotes a source file.
-            var qualifiedId: QualifiedSourceNodeId<SourceContainer> =
-                qualifiedSourcePathOf(tokens.first())
-
-            // Stop if there is just one token.
-            if (tokens.size == 1) return qualifiedId
-
-            // Middle tokens always denote types.
-            for (token in tokens.drop(1).dropLast(1)) {
-                qualifiedId = qualifiedId.type(token)
-            }
-
-            // There are at least two tokens, so the separator exists.
-            val separator = rawQualifiedId.last { it in SEPARATORS }
-            val lastId = tokens.last()
-            val isSignature = '(' in lastId && lastId.endsWith(')')
-            return when {
-                separator == CONTAINER_SEPARATOR -> qualifiedId.type(lastId)
-                separator == MEMBER_SEPARATOR && isSignature -> qualifiedId.function(lastId)
-                separator == MEMBER_SEPARATOR && !isSignature -> qualifiedId.variable(lastId)
-                else -> error("Invalid separator '$separator' in '$rawQualifiedId'!")
-            }
-        }
-
         /** Returns the qualified id of the parent of the node denoted by this qualified id. */
         @JvmStatic
         public val QualifiedSourceNodeId<SourceEntity>.parentId:
@@ -211,6 +176,8 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
             get() = checkNotNull(parent)
     }
 }
+
+private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
 
 /** Creates a qualified source path from the given [path]. */
 public fun qualifiedSourcePathOf(path: SourcePath): QualifiedSourceNodeId<SourceFile> =
@@ -223,6 +190,41 @@ public fun qualifiedSourcePathOf(path: SourcePath): QualifiedSourceNodeId<Source
  */
 public fun qualifiedSourcePathOf(path: String): QualifiedSourceNodeId<SourceFile> =
     qualifiedSourcePathOf(SourcePath(path))
+
+/**
+ * Parses the given [rawQualifiedId].
+ *
+ * @throws IllegalArgumentException if the given [rawQualifiedId] is invalid
+ */
+public fun parseQualifiedSourceNodeIdFrom(rawQualifiedId: String): QualifiedSourceNodeId<*> {
+    require(QualifiedSourceNodeId.isValid(rawQualifiedId)) {
+        "Invalid qualified id '$rawQualifiedId'!"
+    }
+
+    val tokens = rawQualifiedId.split(*SEPARATORS)
+
+    // The first token always denotes a source file.
+    var qualifiedId: QualifiedSourceNodeId<SourceContainer> = qualifiedSourcePathOf(tokens.first())
+
+    // Stop if there is just one token.
+    if (tokens.size == 1) return qualifiedId
+
+    // Middle tokens always denote types.
+    for (token in tokens.drop(1).dropLast(1)) {
+        qualifiedId = qualifiedId.type(token)
+    }
+
+    // There are at least two tokens, so the separator exists.
+    val separator = rawQualifiedId.last { it in SEPARATORS }
+    val lastId = tokens.last()
+    val isSignature = '(' in lastId && lastId.endsWith(')')
+    return when {
+        separator == CONTAINER_SEPARATOR -> qualifiedId.type(lastId)
+        separator == MEMBER_SEPARATOR && isSignature -> qualifiedId.function(lastId)
+        separator == MEMBER_SEPARATOR && !isSignature -> qualifiedId.variable(lastId)
+        else -> error("Invalid separator '$separator' in '$rawQualifiedId'!")
+    }
+}
 
 /** Returns the name of this qualified type id. */
 @get:JvmName("getTypeName")

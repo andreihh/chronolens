@@ -202,7 +202,7 @@ class QualifiedSourceNodeIdTest {
             )
 
         for (qualifiedId in qualifiedIds) {
-            assertEquals(qualifiedId, QualifiedSourceNodeId.parseFrom(qualifiedId.toString()))
+            assertEquals(qualifiedId, parseQualifiedSourceNodeIdFrom(qualifiedId.toString()))
         }
     }
 
@@ -219,7 +219,7 @@ class QualifiedSourceNodeIdTest {
 
         for (rawQualifiedId in rawQualifiedIds) {
             assertFailsWith<IllegalArgumentException>("Parsing id '$rawQualifiedId' should fail!") {
-                QualifiedSourceNodeId.parseFrom(rawQualifiedId)
+                parseQualifiedSourceNodeIdFrom(rawQualifiedId)
             }
         }
     }

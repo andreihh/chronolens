@@ -60,6 +60,7 @@ import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
+import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 
 /** Provides JSON serialization and deserialization of arbitrary objects. */
 public object JsonModule {
@@ -241,7 +242,7 @@ private object SignatureDeserializer : StdDeserializer<Signature>(Signature::cla
 
 private fun tryParseQualifiedSourceNodeId(rawQualifiedId: String): QualifiedSourceNodeId<*> =
     try {
-        QualifiedSourceNodeId.parseFrom(rawQualifiedId)
+        parseQualifiedSourceNodeIdFrom(rawQualifiedId)
     } catch (e: IllegalArgumentException) {
         throw InvalidQualifiedSourceNodeIdException(e)
     }
