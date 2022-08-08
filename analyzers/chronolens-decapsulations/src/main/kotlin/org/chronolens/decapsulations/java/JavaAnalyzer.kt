@@ -20,7 +20,6 @@ import org.chronolens.core.model.Function
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.QualifiedSourceNodeId.Companion.parentId
-import org.chronolens.core.model.QualifiedSourceNodeId.Companion.signature
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceEntity
 import org.chronolens.core.model.SourceNode
@@ -30,6 +29,7 @@ import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
+import org.chronolens.core.model.signature
 import org.chronolens.core.model.variable
 import org.chronolens.decapsulations.DecapsulationAnalyzer
 

@@ -17,7 +17,6 @@
 package org.chronolens.core.model
 
 import org.chronolens.core.model.ListEdit.Companion.apply
-import org.chronolens.core.model.QualifiedSourceNodeId.Companion.parentId
 import org.chronolens.core.model.SetEdit.Companion.apply
 
 /** An atomic change which should be applied to a [SourceTree]. */
@@ -53,7 +52,7 @@ public sealed class SourceTreeEdit {
      * @throws IllegalStateException if the [nodes] have an invalid state and this edit couldn't be
      * applied
      */
-    internal abstract fun applyOn(nodes: NodeHashMap)
+    protected abstract fun applyOn(nodes: NodeHashMap)
 
     public companion object {
         /**
@@ -83,43 +82,6 @@ public sealed class SourceTreeEdit {
         @JvmStatic
         public fun SourceTree.apply(vararg edits: SourceTreeEdit) {
             apply(edits.asList())
-        }
-
-        /**
-         * Returns the edits which must be applied to [this] source tree in order to obtain the
-         * [other] source tree.
-         */
-        @JvmStatic
-        public fun SourceTree.diff(other: SourceTree): List<SourceTreeEdit> {
-            val thisSources = this.sources.map(SourceFile::path)
-            val otherSources = other.sources.map(SourceFile::path)
-            val allSources = thisSources.union(otherSources)
-
-            val nodesBefore = NodeHashMap()
-            val nodesAfter = NodeHashMap()
-            for (path in allSources) {
-                this[path]?.let(nodesBefore::putSourceTree)
-                other[path]?.let(nodesAfter::putSourceTree)
-            }
-
-            fun isSourceFileOrParentExists(id: QualifiedSourceNodeId<*>): Boolean {
-                val parentId = id.castOrNull<SourceEntity>()?.parentId ?: return true
-                return parentId in nodesBefore && parentId in nodesAfter
-            }
-
-            val nodeIds = nodesBefore.keys + nodesAfter.keys
-            return nodeIds.filter(::isSourceFileOrParentExists).mapNotNull { id ->
-                val before = nodesBefore[id]
-                val after = nodesAfter[id]
-                val edit =
-                    when {
-                        before == null && after != null -> AddNode(id, after.sourceNode)
-                        before != null && after == null -> RemoveNode(id)
-                        before != null && after != null -> before.diff(after)
-                        else -> throw AssertionError("Node '$id' doesn't exist!")
-                    }
-                edit
-            }
         }
     }
 }

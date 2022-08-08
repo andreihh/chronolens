@@ -14,10 +14,45 @@
  * limitations under the License.
  */
 
-@file:JvmName("Utils")
-@file:JvmMultifileClass
-
 package org.chronolens.core.model
+
+import org.chronolens.core.model.QualifiedSourceNodeId.Companion.parentId
+
+/**
+ * Returns the edits which must be applied to [this] source tree in order to obtain the [other]
+ * source tree.
+ */
+internal fun SourceTree.diff(other: SourceTree): List<SourceTreeEdit> {
+    val thisSources = this.sources.map(SourceFile::path)
+    val otherSources = other.sources.map(SourceFile::path)
+    val allSources = thisSources.union(otherSources)
+
+    val nodesBefore = NodeHashMap()
+    val nodesAfter = NodeHashMap()
+    for (path in allSources) {
+        this[path]?.let(nodesBefore::putSourceTree)
+        other[path]?.let(nodesAfter::putSourceTree)
+    }
+
+    fun isSourceFileOrParentExists(id: QualifiedSourceNodeId<*>): Boolean {
+        val parentId = id.castOrNull<SourceEntity>()?.parentId ?: return true
+        return parentId in nodesBefore && parentId in nodesAfter
+    }
+
+    val nodeIds = nodesBefore.keys + nodesAfter.keys
+    return nodeIds.filter(::isSourceFileOrParentExists).mapNotNull { id ->
+        val before = nodesBefore[id]
+        val after = nodesAfter[id]
+        val edit =
+            when {
+                before == null && after != null -> AddNode(id, after.sourceNode)
+                before != null && after == null -> RemoveNode(id)
+                before != null && after != null -> before.diff(after)
+                else -> throw AssertionError("Node '$id' doesn't exist!")
+            }
+        edit
+    }
+}
 
 /** Returns the edits which should be applied on [this] list to obtain the [other] list. */
 internal fun <T> List<T>.diff(other: List<T>): List<ListEdit<T>> {

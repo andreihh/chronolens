@@ -23,7 +23,7 @@ import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
-import org.chronolens.core.model.SourceTreeEdit.Companion.diff
+import org.chronolens.core.model.diff
 import org.chronolens.core.parsing.Parser
 import org.chronolens.core.parsing.Parser.Companion.canParse
 import org.chronolens.core.parsing.Result

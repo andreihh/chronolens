@@ -220,26 +220,23 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
         public val QualifiedSourceNodeId<SourceEntity>.parentId:
             QualifiedSourceNodeId<SourceContainer>
             get() = checkNotNull(parent)
-
-        /** Returns the name of this qualified type id. */
-        @JvmStatic
-        @get:JvmName("getTypeName")
-        public val QualifiedSourceNodeId<Type>.name: Identifier
-            get() = id as Identifier
-
-        /** Returns the signature of this qualified function id. */
-        @JvmStatic
-        @get:JvmName("getFunctionSignature")
-        public val QualifiedSourceNodeId<Function>.signature: Signature
-            get() = id as Signature
-
-        /** Returns the name of this qualified variable id. */
-        @JvmStatic
-        @get:JvmName("getVariableName")
-        public val QualifiedSourceNodeId<Variable>.name: Identifier
-            get() = id as Identifier
     }
 }
+
+/** Returns the name of this qualified type id. */
+@get:JvmName("getTypeName")
+public val QualifiedSourceNodeId<Type>.name: Identifier
+    get() = id as Identifier
+
+/** Returns the signature of this qualified function id. */
+@get:JvmName("getFunctionSignature")
+public val QualifiedSourceNodeId<Function>.signature: Signature
+    get() = id as Signature
+
+/** Returns the name of this qualified variable id. */
+@get:JvmName("getVariableName")
+public val QualifiedSourceNodeId<Variable>.name: Identifier
+    get() = id as Identifier
 
 /** Creates a new qualified id by appending the given [Type] [name] to this qualified id. */
 public fun QualifiedSourceNodeId<SourceContainer>.type(
