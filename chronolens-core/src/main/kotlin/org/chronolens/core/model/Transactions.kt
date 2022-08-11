@@ -42,6 +42,8 @@ public data class Transaction(
  * The unique identifier of a committed transaction in a repository (usually denotes a revision
  * tracked by a version control system).
  *
+ * Compatible with Git, Mercurial, SVN, CVS, and Perforce.
+ *
  * @throws IllegalArgumentException if the given [id] is invalid
  */
 public data class TransactionId(private val id: String) {
