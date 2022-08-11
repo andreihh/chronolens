@@ -90,7 +90,7 @@ public data class Signature(private val signature: String) : SourceNodeId {
     }
 }
 
-private val fileComponent = Regex("(?>[^$SEPARATORS]++)")
-private val sourcePathRegex = Regex("$fileComponent($PATH_SEPARATOR$fileComponent)*+")
+private val fileComponentRegex = Regex("(?>[^$SEPARATORS]++)")
+private val sourcePathRegex = Regex("$fileComponentRegex($PATH_SEPARATOR$fileComponentRegex)*+")
 private val identifierRegex = Regex("(?>[^$SEPARATORS()]++)")
 private val signatureRegex = Regex("(?>$identifierRegex\\([^$SEPARATORS]*\\))")
