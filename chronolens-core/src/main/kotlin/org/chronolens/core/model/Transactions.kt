@@ -55,7 +55,7 @@ public data class TransactionId(private val id: String) {
 
     public companion object {
         /**
-         * Returns whether the given [id] is valid (non-empty consistng of alphanumeric characters
+         * Returns whether the given [id] is valid (non-empty consisting of alphanumeric characters
          * and dashes).
          */
         @JvmStatic public fun isValid(id: String): Boolean = id.matches(transactionIdRegex)
