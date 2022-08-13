@@ -28,8 +28,9 @@ import org.chronolens.core.model.SourceNodeKind.VARIABLE
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
+import org.chronolens.core.model.Transaction
+import org.chronolens.core.model.TransactionId
 import org.chronolens.core.model.Variable
-import org.chronolens.core.repository.Transaction
 
 internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private val sourceTree = SourceTree.empty()
@@ -48,7 +49,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private fun addDecapsulation(
         fieldId: QualifiedSourceNodeId<Variable>,
         nodeId: QualifiedSourceNodeId<*>,
-        revisionId: String,
+        revisionId: TransactionId,
         message: String
     ) {
         val new = Decapsulation(fieldId, nodeId, revisionId, message)
@@ -121,14 +122,14 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
                 addDecapsulation(
                     fieldId = fieldId,
                     nodeId = qualifiedId,
-                    revisionId = transaction.revisionId,
+                    revisionId = transaction.id,
                     message = "Added accessor with more relaxed visibility!"
                 )
             } else if (old != null && new > old) {
                 addDecapsulation(
                     fieldId = fieldId,
                     nodeId = qualifiedId,
-                    revisionId = transaction.revisionId,
+                    revisionId = transaction.id,
                     message = "Relaxed accessor visibility!"
                 )
             }

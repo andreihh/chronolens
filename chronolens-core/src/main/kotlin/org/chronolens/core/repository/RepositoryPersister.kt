@@ -18,6 +18,7 @@ package org.chronolens.core.repository
 
 import java.io.IOException
 import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.Transaction
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
 import org.chronolens.core.serialization.JsonModule
 
@@ -62,7 +63,7 @@ internal class RepositoryPersister(
     }
 
     private fun persistTransaction(transaction: Transaction) {
-        val file = schema.getTransactionFile(transaction.revisionId)
+        val file = schema.getTransactionFile(transaction.id)
         file.outputStream().use { out -> JsonModule.serialize(out, transaction) }
     }
 
@@ -71,9 +72,9 @@ internal class RepositoryPersister(
         mkdirs(schema.transactionsDirectory)
         schema.historyFile.printWriter().use { out ->
             for (transaction in repository.getHistory()) {
-                out.println(transaction.revisionId)
+                out.println(transaction.id)
                 persistTransaction(transaction)
-                listener?.onTransactionPersisted(transaction.revisionId)
+                listener?.onTransactionPersisted(transaction.id)
             }
         }
         listener?.onHistoryEnd()

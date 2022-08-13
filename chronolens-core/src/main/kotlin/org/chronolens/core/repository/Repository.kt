@@ -21,6 +21,8 @@ import kotlin.streams.asStream
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.Transaction
+import org.chronolens.core.model.TransactionId
 
 /**
  * A wrapper which connects to a repository and allows querying source code metadata and the source
@@ -32,7 +34,7 @@ public interface Repository {
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun getHeadId(): String
+    public fun getHeadId(): TransactionId
 
     /**
      * Returns the interpretable source files from the `head` revision.
@@ -42,11 +44,11 @@ public interface Repository {
     public fun listSources(): Set<SourcePath>
 
     /**
-     * Returns the list of all revisions in chronological order.
+     * Returns the list of all revision ids in chronological order.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun listRevisions(): List<String>
+    public fun listRevisions(): List<TransactionId>
 
     /**
      * Returns the source file found at the given [path] in the `head` revision, or `null` if the
@@ -64,7 +66,7 @@ public interface Repository {
      * Returns the snapshot of the repository at the `head` revision.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
-     * @see getSource for details about how the latest sources are retrieved
+     * @see getSource for details on how the latest sources are retrieved
      */
     public fun getSnapshot(): SourceTree {
         val sources = listSources().map(::getSource).checkNoNulls()
@@ -72,7 +74,7 @@ public interface Repository {
     }
 
     /**
-     * Returns a lazy view of the transactions applied to the repository in chronological order.
+     * Returns a lazy view of all revisions in chronological order.
      *
      * Iterating over the sequence may throw an [java.io.UncheckedIOException] if any I/O errors
      * occur, or a [CorruptedRepositoryException] if the repository is corrupted.
@@ -83,10 +85,4 @@ public interface Repository {
 
     /** Delegates to [getHistory]. */
     public fun getHistoryStream(): Stream<Transaction> = getHistory().asStream()
-
-    public companion object {
-        /** Returns whether the given revision [id] is valid. */
-        public fun isValidRevisionId(id: String): Boolean =
-            id.isNotEmpty() && id.all(Character::isLetterOrDigit)
-    }
 }

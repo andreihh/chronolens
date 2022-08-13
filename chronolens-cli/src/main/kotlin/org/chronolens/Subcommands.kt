@@ -20,6 +20,7 @@ import java.io.File
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.exit
 import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.TransactionId
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.PersistentRepository
@@ -40,8 +41,8 @@ class LsTree : Subcommand() {
             .validateRevision(::repository)
 
     private val repository by lazy(::connect)
-    private val revision: String
-        get() = rev ?: repository.getHeadId()
+    private val revision: TransactionId
+        get() = rev?.let(::TransactionId) ?: repository.getHeadId()
 
     override fun run() {
         repository.listSources(revision).forEach(::println)
@@ -82,8 +83,8 @@ class Model : Subcommand() {
             .validateRevision(::repository)
 
     private val repository by lazy(::connect)
-    private val revision: String
-        get() = rev ?: repository.getHeadId()
+    private val revision: TransactionId
+        get() = rev?.let(::TransactionId) ?: repository.getHeadId()
 
     override fun run() {
         val path = parseQualifiedSourceNodeIdFrom(id).sourcePath
@@ -117,7 +118,7 @@ class Persist : Subcommand() {
                 private var transactions = 0
                 private var i = 0
 
-                override fun onSnapshotStart(headId: String, sourceCount: Int) {
+                override fun onSnapshotStart(headId: TransactionId, sourceCount: Int) {
                     println("Persisting snapshot '$headId'...")
                     sources = sourceCount
                     i = 0
@@ -139,7 +140,7 @@ class Persist : Subcommand() {
                     i = 0
                 }
 
-                override fun onTransactionPersisted(id: String) {
+                override fun onTransactionPersisted(id: TransactionId) {
                     i++
                     print("Persisted $i / $transactions transactions...\r")
                 }

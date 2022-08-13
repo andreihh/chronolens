@@ -18,10 +18,10 @@ package org.chronolens.core.cli
 
 import java.io.File
 import org.chronolens.core.model.QualifiedSourceNodeId
+import org.chronolens.core.model.TransactionId
 import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
-import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
 
 /**
  * An abstract subcommand of a main command-line interface executable. Implementations must have the
@@ -68,8 +68,8 @@ public abstract class Subcommand : Command() {
     protected fun NullableOption<String>.validateRevision(
         repository: () -> Repository
     ): NullableOption<String> = validate { revision ->
-        require(isValidRevisionId(revision)) { "Invalid revision '$revision'!" }
-        val revisionExists = revision in repository().listRevisions()
+        require(TransactionId.isValid(revision)) { "Invalid revision '$revision'!" }
+        val revisionExists = TransactionId(revision) in repository().listRevisions()
         require(revisionExists) { "Revision '$revision' doesn't exist!" }
     }
 }

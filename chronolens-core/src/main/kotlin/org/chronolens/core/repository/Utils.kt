@@ -19,19 +19,10 @@ package org.chronolens.core.repository
 import java.io.File
 import java.io.IOException
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.repository.Repository.Companion.isValidRevisionId
+import org.chronolens.core.model.TransactionId
 import org.chronolens.core.serialization.JsonException
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.core.versioning.Revision
-
-/**
- * Validates the given revision [id].
- *
- * @throws IllegalArgumentException if the given [id] is invalid
- */
-internal fun validateRevisionId(id: String) {
-    require(isValidRevisionId(id)) { "Invalid revision id '$id'!" }
-}
 
 /**
  * Checks that the given [condition] is true.
@@ -47,9 +38,9 @@ internal fun checkState(condition: Boolean, lazyMessage: () -> String) {
  *
  * @throws CorruptedRepositoryException if the given [id] is invalid
  */
-internal fun checkValidRevisionId(id: String): String {
-    checkState(isValidRevisionId(id)) { "Invalid revision id '$id'!" }
-    return id
+internal fun checkValidRevisionId(id: String): TransactionId {
+    checkState(TransactionId.isValid(id)) { "Invalid revision id '$id'!" }
+    return TransactionId(id)
 }
 
 /**
@@ -82,14 +73,14 @@ internal fun checkValidSources(sources: Collection<String>): Set<SourcePath> {
  *
  * @throws CorruptedRepositoryException if the given [history] is invalid
  */
-internal fun checkValidHistory(history: List<String>): List<String> {
+internal fun checkValidHistory(history: List<String>): List<TransactionId> {
     val revisionIds = HashSet<String>(history.size)
     for (id in history) {
         checkState(id !in revisionIds) { "Duplicated revision id '$id'!" }
         checkValidRevisionId(id)
         revisionIds += id
     }
-    return history
+    return history.map(::TransactionId)
 }
 
 /**

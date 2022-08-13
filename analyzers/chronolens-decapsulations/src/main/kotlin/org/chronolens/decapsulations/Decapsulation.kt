@@ -17,11 +17,12 @@
 package org.chronolens.decapsulations
 
 import org.chronolens.core.model.QualifiedSourceNodeId
+import org.chronolens.core.model.TransactionId
 import org.chronolens.core.model.Variable
 
 internal data class Decapsulation(
     val fieldId: QualifiedSourceNodeId<Variable>,
     val sourceNodeId: QualifiedSourceNodeId<*>,
-    val revisionId: String,
+    val revisionId: TransactionId,
     val message: String,
 )

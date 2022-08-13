@@ -58,6 +58,7 @@ import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourceNodeId
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTreeEdit
+import org.chronolens.core.model.TransactionId
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
@@ -129,6 +130,8 @@ public object JsonModule {
             .addDeserializer(SourcePathDeserializer)
             .addDeserializer(IdentifierDeserializer)
             .addDeserializer(SignatureDeserializer)
+            .addSerializer(TransactionIdSerializer)
+            .addDeserializer(TransactionIdDeserializer)
             .addSerializer(QualifiedSourceNodeIdSerializer)
             .addDeserializer(QualifiedSourceNodeIdDeserializer)
             .addKeySerializer(QualifiedSourceNodeIdSerializer)
@@ -227,17 +230,33 @@ private object SourceNodeIdSerializer : StdSerializer<SourceNodeId>(SourceNodeId
 
 private object SourcePathDeserializer : StdDeserializer<SourcePath>(SourcePath::class.java) {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): SourcePath =
-        tryParseSourceNodeId(p.valueAsString, ::SourcePath)
+        tryParseId(p.valueAsString, ::SourcePath)
 }
 
 private object IdentifierDeserializer : StdDeserializer<Identifier>(Identifier::class.java) {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): Identifier =
-        tryParseSourceNodeId(p.valueAsString, ::Identifier)
+        tryParseId(p.valueAsString, ::Identifier)
 }
 
 private object SignatureDeserializer : StdDeserializer<Signature>(Signature::class.java) {
     override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): Signature =
-        tryParseSourceNodeId(p.valueAsString, ::Signature)
+        tryParseId(p.valueAsString, ::Signature)
+}
+
+private object TransactionIdSerializer : StdSerializer<TransactionId>(TransactionId::class.java) {
+    override fun serialize(
+        value: TransactionId,
+        gen: JsonGenerator,
+        provider: SerializerProvider?
+    ) {
+        gen.writeString(value.toString())
+    }
+}
+
+private object TransactionIdDeserializer :
+    StdDeserializer<TransactionId>(TransactionId::class.java) {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): TransactionId =
+        tryParseId(p.valueAsString, ::TransactionId)
 }
 
 private fun tryParseQualifiedSourceNodeId(rawQualifiedId: String): QualifiedSourceNodeId<*> =
@@ -247,12 +266,9 @@ private fun tryParseQualifiedSourceNodeId(rawQualifiedId: String): QualifiedSour
         throw InvalidQualifiedSourceNodeIdException(e)
     }
 
-private fun <T : SourceNodeId> tryParseSourceNodeId(
-    rawSimpleId: String,
-    builder: (String) -> T
-): T =
+private fun <T> tryParseId(rawId: String, builder: (String) -> T): T =
     try {
-        builder(rawSimpleId)
+        builder(rawId)
     } catch (e: IllegalArgumentException) {
         throw InvalidSourceNodeIdException(e)
     }

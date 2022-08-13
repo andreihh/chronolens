@@ -34,9 +34,10 @@ import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.model.SourceTreeNode
+import org.chronolens.core.model.Transaction
+import org.chronolens.core.model.TransactionId
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
-import org.chronolens.core.repository.Transaction
 
 internal class HistoryAnalyzer(private val metric: Metric, private val skipDays: Int) {
 
@@ -49,7 +50,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
 
     private fun updateStats(
         id: QualifiedSourceNodeId<*>,
-        revisionId: String,
+        revisionId: TransactionId,
         date: Instant,
         churn: Int
     ) {
@@ -60,7 +61,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
             else nodeStats.updated(revisionId, churn)
     }
 
-    private fun visit(revisionId: String, date: Instant, edit: SourceTreeEdit) {
+    private fun visit(revisionId: TransactionId, date: Instant, edit: SourceTreeEdit) {
         when (edit) {
             is AddNode<*> -> {
                 stats +=
@@ -86,7 +87,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
 
     private fun visit(transaction: Transaction) {
         for (edit in transaction.edits) {
-            visit(transaction.revisionId, transaction.date, edit)
+            visit(transaction.id, transaction.date, edit)
         }
     }
 
@@ -123,8 +124,8 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
                     val memberStats = members.map(stats::getValue)
                     val memberReports =
                         members.map(::getMemberReport).sortedByDescending(::getMemberValue)
-                    val revisions = memberStats.map(Stats::revisions).union().size
-                    val changes = memberStats.map(Stats::changes).union().size
+                    val revisions = memberStats.flatMap(Stats::revisions).distinct().size
+                    val changes = memberStats.flatMap(Stats::changes).distinct().size
                     FileReport(path, metric, memberReports, revisions, changes)
                 }
                 .sortedByDescending(FileReport::value)
@@ -177,8 +178,8 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
 
 private data class Stats(
     val creationDate: Instant,
-    val revisions: Set<String>,
-    val changes: Set<String>,
+    val revisions: Set<TransactionId>,
+    val changes: Set<TransactionId>,
     val churn: Int,
     val weightedChurn: Double
 ) {
@@ -191,9 +192,9 @@ private data class Stats(
         require(weightedChurn >= 0.0) { "Weighted churn can't be negative '$weightedChurn'!" }
     }
 
-    fun updated(revisionId: String): Stats = copy(revisions = revisions + revisionId)
+    fun updated(revisionId: TransactionId): Stats = copy(revisions = revisions + revisionId)
 
-    fun updated(revisionId: String, addedChurn: Int): Stats =
+    fun updated(revisionId: TransactionId, addedChurn: Int): Stats =
         copy(
             revisions = revisions + revisionId,
             changes = changes + revisionId,
@@ -203,7 +204,7 @@ private data class Stats(
 
     companion object {
         @JvmStatic
-        fun create(revisionId: String, date: Instant): Stats =
+        fun create(revisionId: TransactionId, date: Instant): Stats =
             Stats(
                 creationDate = date,
                 revisions = setOf(revisionId),

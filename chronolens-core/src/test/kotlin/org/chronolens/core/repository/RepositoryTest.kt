@@ -20,6 +20,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
+import org.chronolens.core.model.Transaction
+import org.chronolens.core.model.TransactionId
 import org.chronolens.core.versioning.VcsProxyFactoryMock
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.function
@@ -95,7 +97,7 @@ abstract class RepositoryTest {
 
     @Test
     fun `test get head id`() {
-        val expected = "1"
+        val expected = TransactionId("1")
         val actual = repository.getHeadId()
         assertEquals(expected, actual)
     }
@@ -115,7 +117,7 @@ abstract class RepositoryTest {
 
     @Test
     fun `test list revisions`() {
-        val expected = listOf("0", "1")
+        val expected = listOf(TransactionId("0"), TransactionId("1"))
         val actual = repository.listRevisions()
         assertEquals(expected, actual)
     }

@@ -21,9 +21,9 @@ import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.Transaction
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.core.model.qualifiedSourcePathOf
-import org.chronolens.core.repository.Transaction
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.coupling.FeatureEnvyCommand.FeatureEnvy
 import org.chronolens.coupling.Graph.Node

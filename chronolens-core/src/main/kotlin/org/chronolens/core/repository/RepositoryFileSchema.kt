@@ -18,6 +18,7 @@ package org.chronolens.core.repository
 
 import java.io.File
 import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.TransactionId
 
 internal data class RepositoryFileSchema(val repositoryDirectory: File) {
     val rootDirectory: File = File(repositoryDirectory, ".chronolens")
@@ -31,5 +32,5 @@ internal data class RepositoryFileSchema(val repositoryDirectory: File) {
 
     fun getSourceFile(path: SourcePath): File = File(getSourceDirectory(path), "model.json")
 
-    fun getTransactionFile(id: String): File = File(transactionsDirectory, "$id.json")
+    fun getTransactionFile(id: TransactionId): File = File(transactionsDirectory, "$id.json")
 }

@@ -18,62 +18,28 @@
 
 package org.chronolens.test.core.repository
 
-import java.time.Instant
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
-import org.chronolens.core.model.SourceTreeEdit
-import org.chronolens.core.model.SourceTreeEdit.Companion.apply
+import org.chronolens.core.model.Transaction
+import org.chronolens.core.model.TransactionId
 import org.chronolens.core.repository.Repository
-import org.chronolens.core.repository.Transaction
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
-
-public fun transaction(revisionId: String, init: Init<TransactionBuilder>): Transaction =
-    TransactionBuilder(revisionId).apply(init).build()
-
-public fun repository(init: Init<RepositoryBuilder>): Repository =
-    RepositoryBuilder().apply(init).build()
-
-@BuilderMarker
-public class TransactionBuilder(private val revisionId: String) {
-    public var date: Instant = Instant.now()
-    public var author: String = "<unknown-author>"
-    private val edits = mutableListOf<SourceTreeEdit>()
-
-    public fun date(value: Instant): TransactionBuilder {
-        date = value
-        return this
-    }
-
-    public fun author(value: String): TransactionBuilder {
-        author = value
-        return this
-    }
-
-    public fun edit(edit: SourceTreeEdit): TransactionBuilder {
-        edits += edit
-        return this
-    }
-
-    public operator fun SourceTreeEdit.unaryPlus() {
-        edits += this
-    }
-
-    public fun build(): Transaction = Transaction(revisionId, date, author, edits)
-}
 
 @BuilderMarker
 public class RepositoryBuilder {
     private val history = mutableListOf<Transaction>()
     private val snapshot = SourceTree.empty()
 
-    public fun transaction(revisionId: String, init: Init<TransactionBuilder>): RepositoryBuilder {
-        val transaction = TransactionBuilder(revisionId).apply(init).build()
-        history += transaction
-        snapshot.apply(transaction.edits)
+    public fun transaction(transaction: Transaction): RepositoryBuilder {
+        +transaction
         return this
+    }
+
+    public operator fun Transaction.unaryPlus() {
+        history += this
     }
 
     public fun build(): Repository =
@@ -82,15 +48,18 @@ public class RepositoryBuilder {
                 check(history.isNotEmpty())
             }
 
-            override fun getHeadId(): String = history.last().revisionId
+            override fun getHeadId(): TransactionId = history.last().id
 
             override fun listSources(): Set<SourcePath> =
                 snapshot.sources.map(SourceFile::path).toSet()
 
-            override fun listRevisions(): List<String> = history.map(Transaction::revisionId)
+            override fun listRevisions(): List<TransactionId> = history.map(Transaction::id)
 
             override fun getSource(path: SourcePath): SourceFile? = snapshot[path]
 
             override fun getHistory(): Sequence<Transaction> = history.asSequence()
         }
 }
+
+public fun repository(init: Init<RepositoryBuilder>): Repository =
+    RepositoryBuilder().apply(init).build()

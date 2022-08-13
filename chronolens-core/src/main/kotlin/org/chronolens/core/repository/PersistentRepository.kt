@@ -23,6 +23,8 @@ import java.util.Collections.unmodifiableList
 import java.util.Collections.unmodifiableSet
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.Transaction
+import org.chronolens.core.model.TransactionId
 import org.chronolens.core.serialization.JsonModule
 
 /**
@@ -52,11 +54,11 @@ public class PersistentRepository private constructor(private val schema: Reposi
         checkValidHistory(rawHistory)
     }
 
-    override fun getHeadId(): String = head
+    override fun getHeadId(): TransactionId = head
 
     override fun listSources(): Set<SourcePath> = unmodifiableSet(sources)
 
-    override fun listRevisions(): List<String> = unmodifiableList(history)
+    override fun listRevisions(): List<TransactionId> = unmodifiableList(history)
 
     override fun getSource(path: SourcePath): SourceFile? {
         val file = schema.getSourceFile(path)
@@ -127,11 +129,11 @@ public class PersistentRepository private constructor(private val schema: Reposi
 
     /** A listener notified on the progress of persisting a repository. */
     public interface ProgressListener {
-        public fun onSnapshotStart(headId: String, sourceCount: Int)
+        public fun onSnapshotStart(headId: TransactionId, sourceCount: Int)
         public fun onSourcePersisted(path: SourcePath)
         public fun onSnapshotEnd()
         public fun onHistoryStart(revisionCount: Int)
-        public fun onTransactionPersisted(id: String)
+        public fun onTransactionPersisted(id: TransactionId)
         public fun onHistoryEnd()
     }
 }
