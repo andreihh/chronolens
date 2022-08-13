@@ -20,7 +20,7 @@ import java.io.File
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.model.QualifiedSourceNodeId
-import org.chronolens.core.model.Transaction
+import org.chronolens.core.model.Revision
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.coupling.Graph.Subgraph
 
@@ -86,7 +86,7 @@ internal class DivergentChangeCommand : Subcommand() {
         }
     }
 
-    private fun analyze(history: Sequence<Transaction>): Report {
+    private fun analyze(history: Sequence<Revision>): Report {
         val analyzer = HistoryAnalyzer(maxChangeSet, minRevisions, minCoupling)
         val temporalContext = analyzer.analyze(history)
         val graphs = temporalContext.aggregateGraphs()

@@ -27,6 +27,8 @@ import org.chronolens.core.model.Function
 import org.chronolens.core.model.ListEdit
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RemoveNode
+import org.chronolens.core.model.Revision
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourcePath
@@ -34,8 +36,6 @@ import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.model.SourceTreeNode
-import org.chronolens.core.model.Transaction
-import org.chronolens.core.model.TransactionId
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 
@@ -50,7 +50,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
 
     private fun updateStats(
         id: QualifiedSourceNodeId<*>,
-        revisionId: TransactionId,
+        revisionId: RevisionId,
         date: Instant,
         churn: Int
     ) {
@@ -61,7 +61,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
             else nodeStats.updated(revisionId, churn)
     }
 
-    private fun visit(revisionId: TransactionId, date: Instant, edit: SourceTreeEdit) {
+    private fun visit(revisionId: RevisionId, date: Instant, edit: SourceTreeEdit) {
         when (edit) {
             is AddNode<*> -> {
                 stats +=
@@ -85,9 +85,9 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
         sourceTree.apply(edit)
     }
 
-    private fun visit(transaction: Transaction) {
-        for (edit in transaction.edits) {
-            visit(transaction.id, transaction.date, edit)
+    private fun visit(revision: Revision) {
+        for (edit in revision.edits) {
+            visit(revision.id, revision.date, edit)
         }
     }
 
@@ -113,7 +113,7 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
             Metric.WEIGHTED_CHURN -> member.weightedChurn.roundToInt()
         }
 
-    fun analyze(history: Sequence<Transaction>): Report {
+    fun analyze(history: Sequence<Revision>): Report {
         history.forEach(::visit)
         val membersByFile = stats.keys.groupBy(QualifiedSourceNodeId<*>::sourcePath)
         val sourcePaths = sourceTree.sources.map(SourceFile::path)
@@ -178,8 +178,8 @@ internal class HistoryAnalyzer(private val metric: Metric, private val skipDays:
 
 private data class Stats(
     val creationDate: Instant,
-    val revisions: Set<TransactionId>,
-    val changes: Set<TransactionId>,
+    val revisions: Set<RevisionId>,
+    val changes: Set<RevisionId>,
     val churn: Int,
     val weightedChurn: Double
 ) {
@@ -192,9 +192,9 @@ private data class Stats(
         require(weightedChurn >= 0.0) { "Weighted churn can't be negative '$weightedChurn'!" }
     }
 
-    fun updated(revisionId: TransactionId): Stats = copy(revisions = revisions + revisionId)
+    fun updated(revisionId: RevisionId): Stats = copy(revisions = revisions + revisionId)
 
-    fun updated(revisionId: TransactionId, addedChurn: Int): Stats =
+    fun updated(revisionId: RevisionId, addedChurn: Int): Stats =
         copy(
             revisions = revisions + revisionId,
             changes = changes + revisionId,
@@ -204,7 +204,7 @@ private data class Stats(
 
     companion object {
         @JvmStatic
-        fun create(revisionId: TransactionId, date: Instant): Stats =
+        fun create(revisionId: RevisionId, date: Instant): Stats =
             Stats(
                 creationDate = date,
                 revisions = setOf(revisionId),

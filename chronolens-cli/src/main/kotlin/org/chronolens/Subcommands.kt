@@ -19,8 +19,8 @@ package org.chronolens
 import java.io.File
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.exit
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.TransactionId
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.PersistentRepository
@@ -41,8 +41,8 @@ class LsTree : Subcommand() {
             .validateRevision(::repository)
 
     private val repository by lazy(::connect)
-    private val revision: TransactionId
-        get() = rev?.let(::TransactionId) ?: repository.getHeadId()
+    private val revision: RevisionId
+        get() = rev?.let(::RevisionId) ?: repository.getHeadId()
 
     override fun run() {
         repository.listSources(revision).forEach(::println)
@@ -83,8 +83,8 @@ class Model : Subcommand() {
             .validateRevision(::repository)
 
     private val repository by lazy(::connect)
-    private val revision: TransactionId
-        get() = rev?.let(::TransactionId) ?: repository.getHeadId()
+    private val revision: RevisionId
+        get() = rev?.let(::RevisionId) ?: repository.getHeadId()
 
     override fun run() {
         val path = parseQualifiedSourceNodeIdFrom(id).sourcePath
@@ -115,10 +115,10 @@ class Persist : Subcommand() {
             File(repositoryDirectory),
             object : ProgressListener {
                 private var sources = 0
-                private var transactions = 0
+                private var revisions = 0
                 private var i = 0
 
-                override fun onSnapshotStart(headId: TransactionId, sourceCount: Int) {
+                override fun onSnapshotStart(headId: RevisionId, sourceCount: Int) {
                     println("Persisting snapshot '$headId'...")
                     sources = sourceCount
                     i = 0
@@ -135,14 +135,14 @@ class Persist : Subcommand() {
                 }
 
                 override fun onHistoryStart(revisionCount: Int) {
-                    println("Persisting transactions...")
-                    transactions = revisionCount
+                    println("Persisting revisions...")
+                    revisions = revisionCount
                     i = 0
                 }
 
-                override fun onTransactionPersisted(id: TransactionId) {
+                override fun onRevisionPersisted(revisionId: RevisionId) {
                     i++
-                    print("Persisted $i / $transactions transactions...\r")
+                    print("Persisted $i / $revisions revisions...\r")
                 }
 
                 override fun onHistoryEnd() {

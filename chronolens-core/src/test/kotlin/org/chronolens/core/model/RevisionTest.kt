@@ -20,16 +20,16 @@ import kotlin.test.assertEquals
 import org.chronolens.test.core.model.add
 import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.remove
-import org.chronolens.test.core.model.transaction
+import org.chronolens.test.core.model.revision
 import org.junit.Test
 
-class TransactionTest {
+class RevisionTest {
     @Test
     fun changeSet_returnsTouchedFiles() {
         val expected = setOf("Main.java", "Test.java", "MainTest.java").map(::SourcePath).toSet()
 
         val actual =
-            transaction("123") {
+            revision("123") {
                     +qualifiedSourcePathOf("Main.java").type("Main").type("MainType").add {}
                     +qualifiedSourcePathOf("Main.java").type("Main").type("MainType").edit {}
                     +qualifiedSourcePathOf("Test.java").type("Test").type("TestType").remove()

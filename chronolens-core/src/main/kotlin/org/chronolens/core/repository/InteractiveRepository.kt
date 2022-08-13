@@ -18,12 +18,12 @@ package org.chronolens.core.repository
 
 import java.io.File
 import java.util.Collections.unmodifiableSet
+import org.chronolens.core.model.Revision
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
-import org.chronolens.core.model.Transaction
-import org.chronolens.core.model.TransactionId
 import org.chronolens.core.model.diff
 import org.chronolens.core.parsing.Parser
 import org.chronolens.core.parsing.Parser.Companion.canParse
@@ -42,12 +42,11 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
     private val headSources by lazy { listSources(head) }
     private val history by lazy { vcs.getHistory().let(::checkValidHistory) }
 
-    override fun getHeadId(): TransactionId = head
+    override fun getHeadId(): RevisionId = head
 
     override fun listSources(): Set<SourcePath> = unmodifiableSet(headSources)
 
-    override fun listRevisions(): List<TransactionId> =
-        history.map(VcsRevision::id).map(::TransactionId)
+    override fun listRevisions(): List<RevisionId> = history.map(VcsRevision::id).map(::RevisionId)
 
     /**
      * Returns the interpretable source units from the revision with the specified [revisionId].
@@ -55,23 +54,23 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
      * @throws IllegalArgumentException if [revisionId] doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun listSources(revisionId: TransactionId): Set<SourcePath> {
+    public fun listSources(revisionId: RevisionId): Set<SourcePath> {
         val allSources = checkValidSources(vcs.listFiles(revisionId.toString()))
         return allSources.filter(::canParse).toSet()
     }
 
-    private fun parseSource(revisionId: TransactionId, path: SourcePath): Result? {
+    private fun parseSource(revisionId: RevisionId, path: SourcePath): Result? {
         val rawSource = vcs.getFile(revisionId.toString(), path.toString()) ?: return null
         return Parser.parse(path, rawSource)
     }
 
-    private fun getLatestValidSource(revisionId: TransactionId, path: SourcePath): SourceFile {
+    private fun getLatestValidSource(revisionId: RevisionId, path: SourcePath): SourceFile {
         val revisions =
             vcs.getHistory(path.toString()).asReversed().dropWhile {
                 it.id != revisionId.toString()
             }
         for ((id, _, _) in revisions) {
-            val result = parseSource(TransactionId(id), path)
+            val result = parseSource(RevisionId(id), path)
             if (result is Result.Success) {
                 return result.source
             }
@@ -93,7 +92,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
      * @throws IllegalArgumentException if [revisionId] is invalid or doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun getSource(path: SourcePath, revisionId: TransactionId): SourceFile? {
+    public fun getSource(path: SourcePath, revisionId: RevisionId): SourceFile? {
         return when (val result = parseSource(revisionId, path)) {
             is Result.Success -> result.source
             Result.SyntaxError -> getLatestValidSource(revisionId, path)
@@ -103,7 +102,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
 
     override fun getSource(path: SourcePath): SourceFile? = getSource(path, head)
 
-    override fun getHistory(): Sequence<Transaction> {
+    override fun getHistory(): Sequence<Revision> {
         val sourceTree = SourceTree.empty()
         return history.asSequence().map { (revisionId, date, author) ->
             val changeSet = vcs.getChangeSet(revisionId).map(::checkValidPath)
@@ -113,7 +112,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
                 val oldSource = sourceTree[path]
                 before += listOfNotNull(oldSource)
                 val newSource =
-                    when (val result = parseSource(TransactionId(revisionId), path)) {
+                    when (val result = parseSource(RevisionId(revisionId), path)) {
                         is Result.Success -> result.source
                         Result.SyntaxError -> oldSource ?: SourceFile(path)
                         null -> null
@@ -122,7 +121,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
             }
             val edits = SourceTree.of(before).diff(SourceTree.of(after))
             sourceTree.apply(edits)
-            Transaction(TransactionId(revisionId), date, author, edits)
+            Revision(RevisionId(revisionId), date, author, edits)
         }
     }
 

@@ -20,10 +20,10 @@ import org.chronolens.core.model.ListEdit
 import org.chronolens.core.model.SetEdit
 import org.chronolens.test.core.BuilderMarker
 
-public class SetEditsBuilder<T> {
+public class SetEditBuilder<T> {
     private val setEdits = mutableListOf<SetEdit<T>>()
 
-    public fun add(value: T): SetEditsBuilder<T> {
+    public fun add(value: T): SetEditBuilder<T> {
         +value
         return this
     }
@@ -32,7 +32,7 @@ public class SetEditsBuilder<T> {
         setEdits += SetEdit.Add(this)
     }
 
-    public fun remove(value: T): SetEditsBuilder<T> {
+    public fun remove(value: T): SetEditBuilder<T> {
         -value
         return this
     }
@@ -45,15 +45,15 @@ public class SetEditsBuilder<T> {
 }
 
 @BuilderMarker
-public class ListEditsBuilder<T> {
+public class ListEditBuilder<T> {
     private val listEdits = mutableListOf<ListEdit<T>>()
 
-    public fun add(index: Int, value: T): ListEditsBuilder<T> {
+    public fun add(index: Int, value: T): ListEditBuilder<T> {
         listEdits += ListEdit.Add(index, value)
         return this
     }
 
-    public fun remove(index: Int): ListEditsBuilder<T> {
+    public fun remove(index: Int): ListEditBuilder<T> {
         listEdits += ListEdit.Remove(index)
         return this
     }

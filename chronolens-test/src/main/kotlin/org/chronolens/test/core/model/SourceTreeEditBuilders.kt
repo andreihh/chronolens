@@ -39,9 +39,9 @@ public class EditTypeBuilder(private val id: String) {
     private val supertypeEdits = mutableListOf<SetEdit<Identifier>>()
     private val modifierEdits = mutableListOf<SetEdit<String>>()
 
-    public fun supertypes(init: Init<SetEditsBuilder<String>>): EditTypeBuilder {
+    public fun supertypes(init: Init<SetEditBuilder<String>>): EditTypeBuilder {
         supertypeEdits +=
-            SetEditsBuilder<String>().apply(init).build().map { edit ->
+            SetEditBuilder<String>().apply(init).build().map { edit ->
                 when (edit) {
                     is SetEdit.Add -> SetEdit.Add(Identifier(edit.value))
                     is SetEdit.Remove -> SetEdit.Remove(Identifier(edit.value))
@@ -50,8 +50,8 @@ public class EditTypeBuilder(private val id: String) {
         return this
     }
 
-    public fun modifiers(init: Init<SetEditsBuilder<String>>): EditTypeBuilder {
-        modifierEdits += SetEditsBuilder<String>().apply(init).build()
+    public fun modifiers(init: Init<SetEditBuilder<String>>): EditTypeBuilder {
+        modifierEdits += SetEditBuilder<String>().apply(init).build()
         return this
     }
 
@@ -65,9 +65,9 @@ public class EditFunctionBuilder(private val id: String) {
     private val parameterEdits = mutableListOf<ListEdit<Identifier>>()
     private val bodyEdits = mutableListOf<ListEdit<String>>()
 
-    public fun parameters(init: Init<ListEditsBuilder<String>>): EditFunctionBuilder {
+    public fun parameters(init: Init<ListEditBuilder<String>>): EditFunctionBuilder {
         parameterEdits +=
-            ListEditsBuilder<String>().apply(init).build().map { edit ->
+            ListEditBuilder<String>().apply(init).build().map { edit ->
                 when (edit) {
                     is ListEdit.Add -> ListEdit.Add(edit.index, Identifier(edit.value))
                     is ListEdit.Remove -> ListEdit.Remove(edit.index)
@@ -76,13 +76,13 @@ public class EditFunctionBuilder(private val id: String) {
         return this
     }
 
-    public fun modifiers(init: Init<SetEditsBuilder<String>>): EditFunctionBuilder {
-        modifierEdits += SetEditsBuilder<String>().apply(init).build()
+    public fun modifiers(init: Init<SetEditBuilder<String>>): EditFunctionBuilder {
+        modifierEdits += SetEditBuilder<String>().apply(init).build()
         return this
     }
 
-    public fun body(init: Init<ListEditsBuilder<String>>): EditFunctionBuilder {
-        bodyEdits += ListEditsBuilder<String>().apply(init).build()
+    public fun body(init: Init<ListEditBuilder<String>>): EditFunctionBuilder {
+        bodyEdits += ListEditBuilder<String>().apply(init).build()
         return this
     }
 
@@ -100,13 +100,13 @@ public class EditVariableBuilder(private val id: String) {
     private val modifierEdits = mutableListOf<SetEdit<String>>()
     private val initializerEdits = mutableListOf<ListEdit<String>>()
 
-    public fun modifiers(init: Init<SetEditsBuilder<String>>): EditVariableBuilder {
-        modifierEdits += SetEditsBuilder<String>().apply(init).build()
+    public fun modifiers(init: Init<SetEditBuilder<String>>): EditVariableBuilder {
+        modifierEdits += SetEditBuilder<String>().apply(init).build()
         return this
     }
 
-    public fun initializer(init: Init<ListEditsBuilder<String>>): EditVariableBuilder {
-        initializerEdits += ListEditsBuilder<String>().apply(init).build()
+    public fun initializer(init: Init<ListEditBuilder<String>>): EditVariableBuilder {
+        initializerEdits += ListEditBuilder<String>().apply(init).build()
         return this
     }
 

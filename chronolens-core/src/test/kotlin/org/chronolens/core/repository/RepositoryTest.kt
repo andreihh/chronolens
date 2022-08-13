@@ -18,10 +18,10 @@ package org.chronolens.core.repository
 
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import org.chronolens.core.model.Revision
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
-import org.chronolens.core.model.Transaction
-import org.chronolens.core.model.TransactionId
 import org.chronolens.core.versioning.VcsProxyFactoryMock
 import org.chronolens.test.core.model.assertEquals
 import org.chronolens.test.core.model.function
@@ -97,7 +97,7 @@ abstract class RepositoryTest {
 
     @Test
     fun `test get head id`() {
-        val expected = TransactionId("1")
+        val expected = RevisionId("1")
         val actual = repository.getHeadId()
         assertEquals(expected, actual)
     }
@@ -117,7 +117,7 @@ abstract class RepositoryTest {
 
     @Test
     fun `test list revisions`() {
-        val expected = listOf(TransactionId("0"), TransactionId("1"))
+        val expected = listOf(RevisionId("0"), RevisionId("1"))
         val actual = repository.listRevisions()
         assertEquals(expected, actual)
     }
@@ -175,9 +175,9 @@ abstract class RepositoryTest {
             +sourceFile("src/Worksheet.mock") { +function("println()") {} }
             +sourceFile("src/Error.mock") {}
         }
-        val transactions = repository.getHistory()
+        val revisions = repository.getHistory()
         val actual = sourceTree {}
-        actual.apply(transactions.flatMap(Transaction::edits))
+        actual.apply(revisions.flatMap(Revision::edits))
         assertEquals(expected, actual)
     }
 }

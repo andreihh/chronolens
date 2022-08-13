@@ -20,20 +20,20 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.junit.Test
 
-class TransactionIdTest {
+class RevisionIdTest {
     @Test
-    fun newTransactionId_whenValid_isCreatedSuccessfully() {
-        TransactionId("abcDEF123_-")
+    fun newRevisionId_whenValid_isCreatedSuccessfully() {
+        RevisionId("abcDEF123_-")
     }
 
     @Test
-    fun newTransactionId_whenInvalid_throws() {
-        assertFailsWith<IllegalArgumentException> { TransactionId("abcDEF123_-:") }
+    fun newRevisionId_whenInvalid_throws() {
+        assertFailsWith<IllegalArgumentException> { RevisionId("abcDEF123_-:") }
     }
 
     @Test
     fun toString_returnsRawId() {
         val rawId = "abcDEF123_-"
-        assertEquals(TransactionId(rawId).toString(), rawId)
+        assertEquals(RevisionId(rawId).toString(), rawId)
     }
 }

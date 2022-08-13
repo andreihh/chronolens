@@ -19,47 +19,48 @@ package org.chronolens.core.model
 import java.time.Instant
 
 /**
- * A transaction consisting of multiple changes applied to a [SourceTree].
+ * A revision consisting of multiple changes applied to a [SourceTree].
  *
- * @property id the unique identifier of this transaction within a repository
- * @property date the date when this transaction was committed
- * @property author the author of this transaction
- * @property edits the ordered edits applied in this transaction
+ * @property id the unique identifier of this revision within a repository
+ * @property date the date when this revision was committed
+ * @property author the author of this revision
+ * @property edits the ordered edits applied in this revision
  */
-public data class Transaction(
-    val id: TransactionId,
+public data class Revision(
+    val id: RevisionId,
     val date: Instant,
     val author: String,
     val edits: List<SourceTreeEdit> = emptyList()
 ) {
 
-    /** The set of source files modified in this transaction. */
+    /** The set of source files modified in this revision. */
     public val changeSet: Set<SourcePath>
         get() = edits.map(SourceTreeEdit::sourcePath).toSet()
 }
 
 /**
- * The unique identifier of a committed transaction in a repository (usually denotes a revision
- * tracked by a version control system).
+ * The unique identifier of a committed revision in a repository (usually tracked by a version
+ * control system).
  *
  * Compatible with Git, Mercurial, SVN, CVS, and Perforce.
  *
  * @throws IllegalArgumentException if the given [id] is invalid
  */
-public data class TransactionId(private val id: String) {
+public data class RevisionId(private val id: String) {
     init {
-        require(isValid(id)) { "Invalid transaction id '$id'!" }
+        require(isValid(id)) { "Invalid revision id '$id'!" }
     }
 
     override fun toString(): String = id
 
     public companion object {
         /**
-         * Returns whether the given [id] is valid (non-empty consisting of alphanumeric characters
-         * and dashes).
+         * Returns whether the given [revisionId] is valid (non-empty, consisting of alphanumeric
+         * characters and dashes).
          */
-        @JvmStatic public fun isValid(id: String): Boolean = id.matches(transactionIdRegex)
+        @JvmStatic
+        public fun isValid(revisionId: String): Boolean = revisionId.matches(revisionIdRegex)
     }
 }
 
-private val transactionIdRegex = Regex("[-\\w]+")
+private val revisionIdRegex = Regex("[-\\w]+")

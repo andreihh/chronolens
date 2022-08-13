@@ -51,6 +51,7 @@ import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.ListEdit
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RemoveNode
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SetEdit
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourceFile
@@ -58,7 +59,6 @@ import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourceNodeId
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTreeEdit
-import org.chronolens.core.model.TransactionId
 import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
@@ -130,8 +130,8 @@ public object JsonModule {
             .addDeserializer(SourcePathDeserializer)
             .addDeserializer(IdentifierDeserializer)
             .addDeserializer(SignatureDeserializer)
-            .addSerializer(TransactionIdSerializer)
-            .addDeserializer(TransactionIdDeserializer)
+            .addSerializer(RevisionIdSerializer)
+            .addDeserializer(RevisionIdDeserializer)
             .addSerializer(QualifiedSourceNodeIdSerializer)
             .addDeserializer(QualifiedSourceNodeIdDeserializer)
             .addKeySerializer(QualifiedSourceNodeIdSerializer)
@@ -243,20 +243,15 @@ private object SignatureDeserializer : StdDeserializer<Signature>(Signature::cla
         tryParseId(p.valueAsString, ::Signature)
 }
 
-private object TransactionIdSerializer : StdSerializer<TransactionId>(TransactionId::class.java) {
-    override fun serialize(
-        value: TransactionId,
-        gen: JsonGenerator,
-        provider: SerializerProvider?
-    ) {
+private object RevisionIdSerializer : StdSerializer<RevisionId>(RevisionId::class.java) {
+    override fun serialize(value: RevisionId, gen: JsonGenerator, provider: SerializerProvider?) {
         gen.writeString(value.toString())
     }
 }
 
-private object TransactionIdDeserializer :
-    StdDeserializer<TransactionId>(TransactionId::class.java) {
-    override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): TransactionId =
-        tryParseId(p.valueAsString, ::TransactionId)
+private object RevisionIdDeserializer : StdDeserializer<RevisionId>(RevisionId::class.java) {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): RevisionId =
+        tryParseId(p.valueAsString, ::RevisionId)
 }
 
 private fun tryParseQualifiedSourceNodeId(rawQualifiedId: String): QualifiedSourceNodeId<*> =

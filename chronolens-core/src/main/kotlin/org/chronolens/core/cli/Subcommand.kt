@@ -18,7 +18,7 @@ package org.chronolens.core.cli
 
 import java.io.File
 import org.chronolens.core.model.QualifiedSourceNodeId
-import org.chronolens.core.model.TransactionId
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
@@ -68,8 +68,8 @@ public abstract class Subcommand : Command() {
     protected fun NullableOption<String>.validateRevision(
         repository: () -> Repository
     ): NullableOption<String> = validate { revision ->
-        require(TransactionId.isValid(revision)) { "Invalid revision '$revision'!" }
-        val revisionExists = TransactionId(revision) in repository().listRevisions()
+        require(RevisionId.isValid(revision)) { "Invalid revision '$revision'!" }
+        val revisionExists = RevisionId(revision) in repository().listRevisions()
         require(revisionExists) { "Revision '$revision' doesn't exist!" }
     }
 }

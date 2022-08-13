@@ -20,8 +20,8 @@ import java.io.File
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.restrictTo
 import org.chronolens.core.model.QualifiedSourceNodeId
+import org.chronolens.core.model.Revision
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.Transaction
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.core.model.qualifiedSourcePathOf
 import org.chronolens.core.serialization.JsonModule
@@ -127,7 +127,7 @@ internal class FeatureEnvyCommand : Subcommand() {
         return featureEnvyInstances.sortedByDescending(FeatureEnvy::enviedCoupling)
     }
 
-    private fun analyze(history: Sequence<Transaction>): Report {
+    private fun analyze(history: Sequence<Revision>): Report {
         val analyzer = HistoryAnalyzer(maxChangeSet, minRevisions, minCoupling)
         val temporalContext = analyzer.analyze(history)
         val functionToFileCoupling = temporalContext.computeFunctionToFileCouplings()

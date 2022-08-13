@@ -21,10 +21,10 @@ import java.io.IOException
 import java.io.UncheckedIOException
 import java.util.Collections.unmodifiableList
 import java.util.Collections.unmodifiableSet
+import org.chronolens.core.model.Revision
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.Transaction
-import org.chronolens.core.model.TransactionId
 import org.chronolens.core.serialization.JsonModule
 
 /**
@@ -54,20 +54,20 @@ public class PersistentRepository private constructor(private val schema: Reposi
         checkValidHistory(rawHistory)
     }
 
-    override fun getHeadId(): TransactionId = head
+    override fun getHeadId(): RevisionId = head
 
     override fun listSources(): Set<SourcePath> = unmodifiableSet(sources)
 
-    override fun listRevisions(): List<TransactionId> = unmodifiableList(history)
+    override fun listRevisions(): List<RevisionId> = unmodifiableList(history)
 
     override fun getSource(path: SourcePath): SourceFile? {
         val file = schema.getSourceFile(path)
         return if (path in sources) JsonModule.deserialize(file) else null
     }
 
-    override fun getHistory(): Sequence<Transaction> =
-        history.asSequence().map { transactionId ->
-            val file = schema.getTransactionFile(transactionId)
+    override fun getHistory(): Sequence<Revision> =
+        history.asSequence().map { revisionId ->
+            val file = schema.getRevisionsFile(revisionId)
             try {
                 JsonModule.deserialize(file)
             } catch (e: IOException) {
@@ -129,11 +129,11 @@ public class PersistentRepository private constructor(private val schema: Reposi
 
     /** A listener notified on the progress of persisting a repository. */
     public interface ProgressListener {
-        public fun onSnapshotStart(headId: TransactionId, sourceCount: Int)
+        public fun onSnapshotStart(headId: RevisionId, sourceCount: Int)
         public fun onSourcePersisted(path: SourcePath)
         public fun onSnapshotEnd()
         public fun onHistoryStart(revisionCount: Int)
-        public fun onTransactionPersisted(id: TransactionId)
+        public fun onRevisionPersisted(revisionId: RevisionId)
         public fun onHistoryEnd()
     }
 }

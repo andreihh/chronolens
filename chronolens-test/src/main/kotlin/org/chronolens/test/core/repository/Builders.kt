@@ -18,11 +18,11 @@
 
 package org.chronolens.test.core.repository
 
+import org.chronolens.core.model.Revision
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
-import org.chronolens.core.model.Transaction
-import org.chronolens.core.model.TransactionId
 import org.chronolens.core.repository.Repository
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
@@ -30,15 +30,15 @@ import org.chronolens.test.core.apply
 
 @BuilderMarker
 public class RepositoryBuilder {
-    private val history = mutableListOf<Transaction>()
+    private val history = mutableListOf<Revision>()
     private val snapshot = SourceTree.empty()
 
-    public fun transaction(transaction: Transaction): RepositoryBuilder {
-        +transaction
+    public fun revision(revision: Revision): RepositoryBuilder {
+        +revision
         return this
     }
 
-    public operator fun Transaction.unaryPlus() {
+    public operator fun Revision.unaryPlus() {
         history += this
     }
 
@@ -48,16 +48,16 @@ public class RepositoryBuilder {
                 check(history.isNotEmpty())
             }
 
-            override fun getHeadId(): TransactionId = history.last().id
+            override fun getHeadId(): RevisionId = history.last().id
 
             override fun listSources(): Set<SourcePath> =
                 snapshot.sources.map(SourceFile::path).toSet()
 
-            override fun listRevisions(): List<TransactionId> = history.map(Transaction::id)
+            override fun listRevisions(): List<RevisionId> = history.map(Revision::id)
 
             override fun getSource(path: SourcePath): SourceFile? = snapshot[path]
 
-            override fun getHistory(): Sequence<Transaction> = history.asSequence()
+            override fun getHistory(): Sequence<Revision> = history.asSequence()
         }
 }
 

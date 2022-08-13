@@ -20,8 +20,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.TransactionId
 import org.chronolens.core.repository.PersistentRepository.Companion.persist
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
 import org.chronolens.test.core.repository.assertEquals
@@ -73,9 +73,9 @@ class PersistentRepositoryTest : RepositoryTest() {
                     private set
 
                 private val sources = mutableSetOf<SourcePath>()
-                private val revisions = mutableListOf<TransactionId>()
+                private val revisions = mutableListOf<RevisionId>()
 
-                override fun onSnapshotStart(headId: TransactionId, sourceCount: Int) {
+                override fun onSnapshotStart(headId: RevisionId, sourceCount: Int) {
                     sources += repository.listSources()
                     assertEquals(ProgressListenerState.IDLE, state)
                     assertEquals(repository.getHeadId(), headId)
@@ -103,9 +103,9 @@ class PersistentRepositoryTest : RepositoryTest() {
                     state = ProgressListenerState.HISTORY
                 }
 
-                override fun onTransactionPersisted(id: TransactionId) {
+                override fun onRevisionPersisted(revisionId: RevisionId) {
                     assertEquals(ProgressListenerState.HISTORY, state)
-                    assertEquals(revisions.last(), id)
+                    assertEquals(revisions.last(), revisionId)
                     revisions.removeAt(revisions.size - 1)
                 }
 

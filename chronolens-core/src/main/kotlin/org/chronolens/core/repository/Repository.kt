@@ -18,11 +18,11 @@ package org.chronolens.core.repository
 
 import java.util.stream.Stream
 import kotlin.streams.asStream
+import org.chronolens.core.model.Revision
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
-import org.chronolens.core.model.Transaction
-import org.chronolens.core.model.TransactionId
 
 /**
  * A wrapper which connects to a repository and allows querying source code metadata and the source
@@ -34,7 +34,7 @@ public interface Repository {
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun getHeadId(): TransactionId
+    public fun getHeadId(): RevisionId
 
     /**
      * Returns the interpretable source files from the `head` revision.
@@ -48,7 +48,7 @@ public interface Repository {
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun listRevisions(): List<TransactionId>
+    public fun listRevisions(): List<RevisionId>
 
     /**
      * Returns the source file found at the given [path] in the `head` revision, or `null` if the
@@ -81,8 +81,8 @@ public interface Repository {
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun getHistory(): Sequence<Transaction>
+    public fun getHistory(): Sequence<Revision>
 
     /** Delegates to [getHistory]. */
-    public fun getHistoryStream(): Stream<Transaction> = getHistory().asStream()
+    public fun getHistoryStream(): Stream<Revision> = getHistory().asStream()
 }

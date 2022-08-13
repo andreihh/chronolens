@@ -21,10 +21,10 @@ import org.chronolens.core.model.EditFunction
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RemoveNode
+import org.chronolens.core.model.Revision
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.model.SourceTreeNode
-import org.chronolens.core.model.Transaction
 
 internal class HistoryAnalyzer(
     private val maxChangeSet: Int,
@@ -67,9 +67,9 @@ internal class HistoryAnalyzer(
         return removedIds
     }
 
-    private fun visit(transaction: Transaction): Set<QualifiedSourceNodeId<*>> {
+    private fun visit(revision: Revision): Set<QualifiedSourceNodeId<*>> {
         val editedIds = hashSetOf<QualifiedSourceNodeId<*>>()
-        for (edit in transaction.edits) {
+        for (edit in revision.edits) {
             when (edit) {
                 is AddNode<*> -> editedIds += visit(edit)
                 is RemoveNode -> editedIds -= visit(edit)
@@ -81,12 +81,12 @@ internal class HistoryAnalyzer(
         return editedIds
     }
 
-    private fun analyze(transaction: Transaction) {
-        val editedIds = visit(transaction)
+    private fun analyze(revision: Revision) {
+        val editedIds = visit(revision)
         for (id in editedIds) {
             changes[id] = (changes[id] ?: 0) + 1
         }
-        if (transaction.changeSet.size > maxChangeSet) return
+        if (revision.changeSet.size > maxChangeSet) return
         for (id1 in editedIds) {
             for (id2 in editedIds) {
                 if (id1 == id2) continue
@@ -114,7 +114,7 @@ internal class HistoryAnalyzer(
         }
     }
 
-    fun analyze(history: Sequence<Transaction>): TemporalContext {
+    fun analyze(history: Sequence<Revision>): TemporalContext {
         history.forEach(::analyze)
         computeTemporalCoupling()
         return TemporalContext(changes, jointChanges, temporalCoupling)

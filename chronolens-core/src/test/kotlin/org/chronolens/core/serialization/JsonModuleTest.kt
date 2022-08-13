@@ -23,9 +23,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.chronolens.core.model.Identifier
 import org.chronolens.core.model.QualifiedSourceNodeId
+import org.chronolens.core.model.Revision
 import org.chronolens.core.model.Signature
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.Transaction
 import org.chronolens.core.model.function
 import org.chronolens.core.model.qualifiedSourcePathOf
 import org.chronolens.core.model.type
@@ -34,14 +34,14 @@ import org.chronolens.test.core.model.add
 import org.chronolens.test.core.model.edit
 import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.remove
-import org.chronolens.test.core.model.transaction
+import org.chronolens.test.core.model.revision
 import org.chronolens.test.core.model.type
 import org.chronolens.test.core.model.variable
 import org.junit.Test
 
 class JsonModuleTest {
     private val data =
-        transaction("HEAD") {
+        revision("HEAD") {
             date = Instant.ofEpochMilli(1824733L)
             author = "unknown"
             +qualifiedSourcePathOf("res").add {
@@ -75,18 +75,18 @@ class JsonModuleTest {
     }
 
     @Test
-    fun `test deserialize transaction`() {
+    fun `test deserialize revision`() {
         val src = javaClass.getResourceAsStream("data.json")
-        val actualData = JsonModule.deserialize<Transaction>(src)
+        val actualData = JsonModule.deserialize<Revision>(src)
         assertEquals(data, actualData)
     }
 
     @Test
-    fun `test serialize and deserialize transaction`() {
+    fun `test serialize and deserialize revision`() {
         val out = ByteArrayOutputStream()
         JsonModule.serialize(out, data)
         val src = out.toByteArray().inputStream()
-        val actualData = JsonModule.deserialize<Transaction>(src)
+        val actualData = JsonModule.deserialize<Revision>(src)
         assertEquals(data, actualData)
     }
 
@@ -96,14 +96,14 @@ class JsonModuleTest {
         val out = ByteArrayOutputStream()
         JsonModule.serialize(out, history)
         val src = out.toByteArray().inputStream()
-        val actualHistory = JsonModule.deserialize<Array<Transaction>>(src)
+        val actualHistory = JsonModule.deserialize<Array<Revision>>(src)
         assertEquals(history, actualHistory.asList())
     }
 
     @Test
     fun `test deserialize history from invalid json throws`() {
         val src = "{}".byteInputStream()
-        assertFailsWith<JsonException> { JsonModule.deserialize<Array<Transaction>>(src) }
+        assertFailsWith<JsonException> { JsonModule.deserialize<Array<Revision>>(src) }
     }
 
     @Test

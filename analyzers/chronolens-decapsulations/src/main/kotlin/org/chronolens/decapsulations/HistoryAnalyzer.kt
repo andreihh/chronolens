@@ -22,14 +22,14 @@ import org.chronolens.core.model.EditVariable
 import org.chronolens.core.model.Function
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RemoveNode
+import org.chronolens.core.model.Revision
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourceNodeKind.FUNCTION
 import org.chronolens.core.model.SourceNodeKind.VARIABLE
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
-import org.chronolens.core.model.Transaction
-import org.chronolens.core.model.TransactionId
 import org.chronolens.core.model.Variable
 
 internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
@@ -49,7 +49,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
     private fun addDecapsulation(
         fieldId: QualifiedSourceNodeId<Variable>,
         nodeId: QualifiedSourceNodeId<*>,
-        revisionId: TransactionId,
+        revisionId: RevisionId,
         message: String
     ) {
         val new = Decapsulation(fieldId, nodeId, revisionId, message)
@@ -81,9 +81,9 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         return removedIds
     }
 
-    private fun visit(transaction: Transaction): Set<QualifiedSourceNodeId<*>> {
+    private fun visit(revision: Revision): Set<QualifiedSourceNodeId<*>> {
         val editedIds = hashSetOf<QualifiedSourceNodeId<*>>()
-        for (edit in transaction.edits) {
+        for (edit in revision.edits) {
             when (edit) {
                 is AddNode<*> -> editedIds += visit(edit)
                 is RemoveNode -> editedIds -= visit(edit)
@@ -107,10 +107,10 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         return visibility
     }
 
-    private fun analyze(transaction: Transaction) {
-        val editedIds = visit(transaction)
+    private fun analyze(revision: Revision) {
+        val editedIds = visit(revision)
         val oldVisibility = getVisibility(editedIds)
-        sourceTree.apply(transaction.edits)
+        sourceTree.apply(revision.edits)
         val newVisibility = getVisibility(editedIds)
 
         fun analyze(qualifiedId: QualifiedSourceNodeId<*>) {
@@ -122,14 +122,14 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
                 addDecapsulation(
                     fieldId = fieldId,
                     nodeId = qualifiedId,
-                    revisionId = transaction.id,
+                    revisionId = revision.id,
                     message = "Added accessor with more relaxed visibility!"
                 )
             } else if (old != null && new > old) {
                 addDecapsulation(
                     fieldId = fieldId,
                     nodeId = qualifiedId,
-                    revisionId = transaction.id,
+                    revisionId = revision.id,
                     message = "Relaxed accessor visibility!"
                 )
             }
@@ -147,7 +147,7 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         if (ignoreConstants && isConstant(fieldId)) emptyList()
         else decapsulationsByField[fieldId].orEmpty()
 
-    fun analyze(history: Sequence<Transaction>): Report {
+    fun analyze(history: Sequence<Revision>): Report {
         history.forEach(::analyze)
         val fieldsByFile = decapsulationsByField.keys.groupBy(QualifiedSourceNodeId<*>::sourcePath)
         val sourcePaths = sourceTree.sources.map(SourceFile::path)

@@ -17,30 +17,30 @@
 package org.chronolens.test.core.model
 
 import java.time.Instant
+import org.chronolens.core.model.Revision
+import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceTreeEdit
-import org.chronolens.core.model.Transaction
-import org.chronolens.core.model.TransactionId
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
 
 @BuilderMarker
-public class TransactionBuilder(private val id: String) {
+public class RevisionBuilder(private val id: String) {
     public var date: Instant = Instant.now()
     public var author: String = "<unknown-author>"
     private val edits = mutableListOf<SourceTreeEdit>()
 
-    public fun date(value: Instant): TransactionBuilder {
+    public fun date(value: Instant): RevisionBuilder {
         date = value
         return this
     }
 
-    public fun author(value: String): TransactionBuilder {
+    public fun author(value: String): RevisionBuilder {
         author = value
         return this
     }
 
-    public fun edit(edit: SourceTreeEdit): TransactionBuilder {
+    public fun edit(edit: SourceTreeEdit): RevisionBuilder {
         +edit
         return this
     }
@@ -49,8 +49,8 @@ public class TransactionBuilder(private val id: String) {
         edits += this
     }
 
-    public fun build(): Transaction = Transaction(TransactionId(id), date, author, edits)
+    public fun build(): Revision = Revision(RevisionId(id), date, author, edits)
 }
 
-public fun transaction(id: String, init: Init<TransactionBuilder>): Transaction =
-    TransactionBuilder(id).apply(init).build()
+public fun revision(id: String, init: Init<RevisionBuilder>): Revision =
+    RevisionBuilder(id).apply(init).build()
