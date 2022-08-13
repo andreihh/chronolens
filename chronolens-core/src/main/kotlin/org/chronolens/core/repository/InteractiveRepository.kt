@@ -28,9 +28,9 @@ import org.chronolens.core.model.diff
 import org.chronolens.core.parsing.Parser
 import org.chronolens.core.parsing.Parser.Companion.canParse
 import org.chronolens.core.parsing.Result
-import org.chronolens.core.versioning.Revision
 import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsProxyFactory
+import org.chronolens.core.versioning.VcsRevision
 
 /**
  * A wrapper around a repository persisted in a version control system (VCS).
@@ -47,7 +47,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
     override fun listSources(): Set<SourcePath> = unmodifiableSet(headSources)
 
     override fun listRevisions(): List<TransactionId> =
-        history.map(Revision::id).map(::TransactionId)
+        history.map(VcsRevision::id).map(::TransactionId)
 
     /**
      * Returns the interpretable source units from the revision with the specified [revisionId].

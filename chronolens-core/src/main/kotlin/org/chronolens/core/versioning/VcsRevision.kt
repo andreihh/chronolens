@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.time.Instant
  * @property date the date at which this revision was committed
  * @property author the author of this revision
  */
-public data class Revision(
+public data class VcsRevision(
     val id: String,
     val date: Instant,
     val author: String,

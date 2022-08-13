@@ -22,7 +22,7 @@ import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.TransactionId
 import org.chronolens.core.serialization.JsonException
 import org.chronolens.core.serialization.JsonModule
-import org.chronolens.core.versioning.Revision
+import org.chronolens.core.versioning.VcsRevision
 
 /**
  * Checks that the given [condition] is true.
@@ -90,8 +90,8 @@ internal fun checkValidHistory(history: List<String>): List<TransactionId> {
  * revision ids
  */
 @JvmName("checkValidRevisionHistory")
-internal fun checkValidHistory(history: List<Revision>): List<Revision> {
-    checkValidHistory(history.map(Revision::id))
+internal fun checkValidHistory(history: List<VcsRevision>): List<VcsRevision> {
+    checkValidHistory(history.map(VcsRevision::id))
     return history
 }
 

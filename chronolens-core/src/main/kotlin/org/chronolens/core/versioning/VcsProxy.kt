@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,55 +17,51 @@
 package org.chronolens.core.versioning
 
 /**
- * A version control system (VCS) proxy which interacts with the repository
- * detected in the current working directory.
+ * A version control system (VCS) proxy which interacts with the repository detected in the current
+ * working directory.
  *
- * The associated VCS must be supported in the current environment and the
- * detected repository must be in a valid state.
+ * The associated VCS must be supported in the current environment and the detected repository must
+ * be in a valid state.
  */
 public interface VcsProxy {
     /** Returns the `head` revision. */
-    public fun getHead(): Revision
+    public fun getHead(): VcsRevision
+
+    /** Returns the revision with the given [revisionId], or `null` if no such revision exists. */
+    public fun getRevision(revisionId: String): VcsRevision?
 
     /**
-     * Returns the revision with the given [revisionId], or `null` if no such
-     * revision exists.
-     */
-    public fun getRevision(revisionId: String): Revision?
-
-    /**
-     * Returns the files inside the current working directory which were
-     * modified in the revision with the given [revisionId].
+     * Returns the files inside the current working directory which were modified in the revision
+     * with the given [revisionId].
      *
      * @throws IllegalArgumentException if [revisionId] doesn't exist
      */
     public fun getChangeSet(revisionId: String): Set<String>
 
     /**
-     * Returns the set of existing files in the current working directory in the
-     * revision with the given [revisionId].
+     * Returns the set of existing files in the current working directory in the revision with the
+     * given [revisionId].
      *
      * @throws IllegalArgumentException if [revisionId] doesn't exist
      */
     public fun listFiles(revisionId: String): Set<String>
 
     /**
-     * Returns the content of the file located at the given relative [path] as
-     * it is found in the revision with the given [revisionId], or `null` if it
-     * doesn't exist in the specified revision.
+     * Returns the content of the file located at the given relative [path] as it is found in the
+     * revision with the given [revisionId], or `null` if it doesn't exist in the specified
+     * revision.
      *
      * @throws IllegalArgumentException if [revisionId] doesn't exist
      */
     public fun getFile(revisionId: String, path: String): String?
 
     /**
-     * Returns the chronological list of revisions which modified the file or
-     * directory at the given [path] up to the `head` revision, or the empty
-     * list if [path] never existed in the `head` revision or any of its
-     * ancestors.
+     * Returns the chronological list of revisions which modified the file or directory at the given
+     * [path] up to the `head` revision, or the empty list if [path] never existed in the `head`
+     * revision or any of its ancestors.
      *
-     * A directory is modified if any file in its subtree is modified. The empty
-     * string is a path that represents the current working directory.
+     * A directory is modified if any file in its subtree is modified. The empty string is a path
+     * that represents the current working directory.
      */
-    public fun getHistory(path: String = ""): List<Revision>
+    public fun getHistory(path: String = ""): List<VcsRevision>
 }
