@@ -17,8 +17,8 @@
 package org.chronolens.core.versioning
 
 /**
- * A version control system (VCS) proxy which interacts with the repository detected in the current
- * working directory.
+ * A version control system (VCS) proxy which interacts with the repository detected in a specified
+ * directory (repository root).
  *
  * The associated VCS must be supported in the current environment and the detected repository must
  * be in a valid state.
@@ -61,7 +61,7 @@ public interface VcsProxy {
      * revision or any of its ancestors.
      *
      * A directory is modified if any file in its subtree is modified. The empty string is a path
-     * that represents the current working directory.
+     * that represents the repository root.
      */
     public fun getHistory(path: String = ""): List<VcsRevision>
 }
