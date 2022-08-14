@@ -8,6 +8,7 @@ application {
 
 dependencies {
     implementation(project(":chronolens-core"))
+    implementation(libs.kotlinx.cli)
     runtimeOnly(project(":services:chronolens-git"))
     runtimeOnly(project(":services:chronolens-java"))
     runtimeOnly(project(":analyzers:chronolens-churn"))

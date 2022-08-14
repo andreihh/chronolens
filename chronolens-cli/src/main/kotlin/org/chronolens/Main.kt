@@ -16,13 +16,16 @@
 
 package org.chronolens
 
+import kotlinx.cli.ArgParser
+import kotlinx.cli.ExperimentalCli
 import org.chronolens.core.cli.MainCommand
 import org.chronolens.core.cli.run
 
 class Main : MainCommand() {
     override val name: String get() = "chronolens"
     override val version: String get() = "0.2"
-    override val help: String get() = """
+    override val help: String
+        get() = """
         ChronoLens is a software evolution analysis tool that inspects the
         repository detected in the current working directory.
     """
@@ -37,4 +40,14 @@ class Main : MainCommand() {
             run(command, *args)
         }
     }
+}
+
+// TODO: make the default main function once tested.
+@OptIn(ExperimentalCli::class)
+fun main(args: Array<String>) {
+    val parser = ArgParser("chronolens")
+    val optionsProvider = CommandLineOptionsProvider(parser)
+    parser.strictSubcommandOptionsOrder = true
+    parser.subcommands(*optionsProvider.assembleAnalyzerSubcommands().toTypedArray())
+    parser.parse(args)
 }
