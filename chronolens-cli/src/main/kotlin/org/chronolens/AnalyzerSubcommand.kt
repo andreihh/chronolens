@@ -18,6 +18,7 @@
 
 package org.chronolens
 
+import java.io.File
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.core.analysis.AnalyzerSpec
@@ -27,7 +28,6 @@ import org.chronolens.core.analysis.Option
 import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.PersistentRepository
-import java.io.File
 
 /**
  * A command line subcommand that runs an [org.chronolens.core.analysis.Analyzer].
@@ -35,10 +35,8 @@ import java.io.File
  * @param analyzerSpec the [AnalyzerSpec] used to create the analyzer
  * @param repositoryRootOption the repository root directory option
  */
-class AnalyzerSubcommand(
-    analyzerSpec: AnalyzerSpec,
-    repositoryRootOption: Option<File>
-) : Subcommand(analyzerSpec.name, analyzerSpec.description) {
+class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec, repositoryRootOption: Option<File>) :
+    Subcommand(analyzerSpec.name, analyzerSpec.description) {
 
     private val analyzer = analyzerSpec.create(CommandLineOptionsProvider(this))
     private val repositoryRoot by repositoryRootOption
@@ -47,7 +45,7 @@ class AnalyzerSubcommand(
         val repository =
             InteractiveRepository.connect(repositoryRoot)
                 ?: PersistentRepository.load(repositoryRoot)
-                ?: error("No repository detected in directory '$repositoryRoot'!")
+                    ?: error("No repository detected in directory '$repositoryRoot'!")
         try {
             val report = analyzer.analyze(repository)
             if (report is ErrorReport) {
