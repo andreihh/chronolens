@@ -42,9 +42,9 @@ class Main : MainCommand() {
     }
 }
 
-// TODO: make the default main function once tested.
 @OptIn(ExperimentalCli::class)
 fun main(args: Array<String>) {
+    // TODO: make the default main function once tested.
     val parser = ArgParser("chronolens")
     val optionsProvider = CommandLineOptionsProvider(parser)
     parser.strictSubcommandOptionsOrder = true
