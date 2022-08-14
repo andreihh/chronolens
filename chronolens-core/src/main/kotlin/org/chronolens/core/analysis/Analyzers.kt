@@ -27,7 +27,9 @@ import java.util.ServiceLoader
  *
  * @param optionsProvider the provider of this analyzer's options
  */
-public abstract class Analyzer(protected val optionsProvider: OptionsProvider) {
+public abstract class Analyzer(optionsProvider: OptionsProvider)
+    : OptionsProvider by optionsProvider {
+
     /**
      * Performs the analysis on the given [repository].
      *

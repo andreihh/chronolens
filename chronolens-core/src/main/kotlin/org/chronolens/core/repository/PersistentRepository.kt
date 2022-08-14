@@ -36,6 +36,9 @@ import org.chronolens.core.serialization.JsonModule
 public class PersistentRepository private constructor(private val schema: RepositoryFileSchema) :
     Repository {
 
+    override val rootDirectory: File
+        get() = schema.rootDirectory
+
     private val head by lazy {
         val rawHeadId = schema.headFile.readFileLines()
         checkState(rawHeadId.size == 1) {

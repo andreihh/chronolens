@@ -21,7 +21,7 @@ import kotlin.reflect.KProperty
 /**
  * A provider that supplies values for a set of registered [Option]s.
  */
-public abstract class OptionsProvider {
+public interface OptionsProvider {
     /**
      * Returns a fluent [OptionBuilder] that will register the created option to this provider.
      *
@@ -29,16 +29,8 @@ public abstract class OptionsProvider {
      */
     public fun <T : Any> untypedOption(): OptionBuilder<T> = OptionBuilder(this)
 
-    /**
-     * Returns a fluent [OptionBuilder] that will register the created option to this provider.
-     *
-     * The returned builder will already have the [OptionBuilder.type] set to [T].
-     */
-    public inline fun <reified T : Any> option(): OptionBuilder<T> =
-        untypedOption<T>().type(T::class.java)
-
     /** Registers a nullable [Option] with the given parameters. */
-    public abstract fun <T : Any> option(
+    public fun <T : Any> option(
         name: String,
         alias: String? = null,
         description: String,
@@ -46,7 +38,7 @@ public abstract class OptionsProvider {
     ): Option<T?>
 
     /** Registers a required [Option] with the given parameters. */
-    public abstract fun <T : Any> requiredOption(
+    public fun <T : Any> requiredOption(
         name: String,
         alias: String? = null,
         description: String,
@@ -55,13 +47,21 @@ public abstract class OptionsProvider {
     ): Option<T>
 
     /** Registers a repeated [Option] with the given parameters. */
-    public abstract fun <T : Any> repeatedOption(
+    public fun <T : Any> repeatedOption(
         name: String,
         alias: String? = null,
         description: String,
         elementType: Class<T>
     ): Option<List<T>>
 }
+
+/**
+ * Returns a fluent [OptionBuilder] that will register the created option to this provider.
+ *
+ * The returned builder will already have the [OptionBuilder.type] set to [T].
+ */
+public inline fun <reified T : Any> OptionsProvider.option(): OptionBuilder<T> =
+    untypedOption<T>().type(T::class.java)
 
 /**
  * A delegate that provides an option value.
@@ -76,10 +76,12 @@ public interface Option<T> {
     /**
      * Wraps this option delegate and executes the given [validator] on the first option access.
      *
-     * The option value will be memoized. The validator must throw [InvalidOptionException] if the
-     * option value is not valid.
+     * The option value will be memoized. If the given [validator] throws an
+     * [IllegalArgumentException], it will be wrapped into an [InvalidOptionException]. If the
+     * option value is `null`, the [validator] will not be invoked (if only non-null values should
+     * be allowed, use required options instead).
      */
-    public fun validate(validator: (value: T) -> Unit): Option<T> =
+    public fun validate(validator: (value: T & Any) -> Unit): Option<T> =
         object : Option<T> {
             private lateinit var validatedOption: Lazy<T>
 
@@ -87,7 +89,11 @@ public interface Option<T> {
                 if (!validatedOption.isInitialized()) {
                     validatedOption = lazy {
                         val value = this@Option.getValue(thisRef, property)
-                        validator(value)
+                        try {
+                            value?.let { validator(it) }
+                        } catch (e: IllegalArgumentException) {
+                            throw InvalidOptionException(e)
+                        }
                         value
                     }
                 }
@@ -98,21 +104,34 @@ public interface Option<T> {
     /**
      * Wraps this option delegate and executes the given [transform] on the first option access.
      *
-     * The option value will be memoized.
+     * The option value will be memoized. If the given [transformer] throws an
+     * [IllegalArgumentException], it will be wrapped into an [InvalidOptionException].
      */
-    public fun <V> transform(transform: (value: T) -> V): Option<V> =
+    public fun <V> transform(transformer: (value: T) -> V): Option<V> =
         object : Option<V> {
             private lateinit var transformedOption: Lazy<V>
 
             override fun getValue(thisRef: Any?, property: KProperty<*>): V {
                 if (!transformedOption.isInitialized()) {
                     transformedOption = lazy {
-                        transform(this@Option.getValue(thisRef, property))
+                        val value = this@Option.getValue(thisRef, property)
+                        try {
+                            transformer(value)
+                        } catch (e: IllegalArgumentException) {
+                            throw InvalidOptionException(e)
+                        }
                     }
                 }
                 return transformedOption.getValue(thisRef, property)
             }
         }
+
+    /**
+     * Delegates to [transform], but will not invoke the [transformer] if the option value is `null`
+     * and will propagate the `null` value instead.
+     */
+    public fun <V> transformIfNotNull(transformer: (value: T & Any) -> V): Option<V?> =
+        transform { it?.let(transformer) }
 }
 
 /**
@@ -166,11 +185,19 @@ public class OptionBuilder<T : Any>(private val optionsProvider: OptionsProvider
 }
 
 /** Signals that an invalid option value has been encountered. */
-public class InvalidOptionException(message: String) : IllegalArgumentException(message)
+public class InvalidOptionException : IllegalArgumentException {
+    public constructor(cause: Throwable) : super(cause)
+    public constructor(message: String) : super(message)
+}
 
 /** Throws an [InvalidOptionException] with the given [lazyMessage] if [condition] is `false`. */
 public fun requireOption(condition: Boolean, lazyMessage: () -> String) {
     if (!condition) {
         throw InvalidOptionException(lazyMessage())
     }
+}
+
+/** Throws an [InvalidOptionException] with the given [message]. */
+public fun optionError(message: String): Nothing {
+    throw InvalidOptionException(message)
 }

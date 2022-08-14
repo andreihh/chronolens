@@ -23,12 +23,16 @@ import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
+import java.io.File
 
 /**
  * A wrapper which connects to a repository and allows querying source code metadata and the source
  * tree history.
  */
 public interface Repository {
+    /** The root directory of this repository. */
+    public val rootDirectory: File
+
     /**
      * Returns the id of the `head` revision.
      *
