@@ -184,7 +184,7 @@ public class OptionBuilder<T : Any>(private val optionsProvider: OptionsProvider
         optionsProvider.repeatedOption(name, alias, description, type)
 }
 
-/** Signals that an invalid option value has been encountered. */
+/** Signals that an invalid option has been encountered. */
 public class InvalidOptionException : IllegalArgumentException {
     public constructor(cause: Throwable) : super(cause)
     public constructor(message: String) : super(message)
