@@ -22,7 +22,9 @@ import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.ErrorReport
+import org.chronolens.core.analysis.InvalidOptionException
 import org.chronolens.core.analysis.Option
+import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.PersistentRepository
 import java.io.File
@@ -46,12 +48,19 @@ class AnalyzerSubcommand(
             InteractiveRepository.connect(repositoryRoot)
                 ?: PersistentRepository.load(repositoryRoot)
                 ?: error("No repository detected in directory '$repositoryRoot'!")
-        val report = analyzer.analyze(repository)
-        if (report is ErrorReport) {
-            println(report)
-        } else {
-            // TODO: serialize the report.
-            println(report)
+        try {
+            val report = analyzer.analyze(repository)
+            if (report is ErrorReport) {
+                System.err.println(report)
+            } else {
+                println(report)
+            }
+        } catch (e: InvalidOptionException) {
+            System.err.println("An invalid option has been provided!")
+            e.printStackTrace()
+        } catch (e: CorruptedRepositoryException) {
+            System.err.println("The repository is corrupted!")
+            e.printStackTrace()
         }
     }
 }
@@ -65,10 +74,7 @@ fun CommandLineOptionsProvider.assembleAnalyzerSubcommands(): List<Subcommand> {
         option<String>().name("repository-root").default(".").transform(::File)
     val subcommands = mutableListOf<Subcommand>()
     for (analyzerSpec in AnalyzerSpec.loadAnalyzerSpecs()) {
-        subcommands += analyzerSpec.toSubcommand(repositoryRootOption)
+        subcommands += AnalyzerSubcommand(analyzerSpec, repositoryRootOption)
     }
     return subcommands
 }
-
-private fun AnalyzerSpec.toSubcommand(repositoryRootOption: Option<File>): Subcommand =
-    AnalyzerSubcommand(this, repositoryRootOption)

@@ -16,10 +16,10 @@
 
 package org.chronolens.core.analysis
 
-/** The result of an analysis. Must be serializable. */
-public interface Report
-
-/** The result of an analysis that produced an expected error. */
-public interface ErrorReport : Report {
+/** The result of a repository analysis. Must be stringifiable. */
+public interface Report {
     override fun toString(): String
 }
+
+/** The result of an analysis that produced an expected error. */
+public interface ErrorReport : Report
