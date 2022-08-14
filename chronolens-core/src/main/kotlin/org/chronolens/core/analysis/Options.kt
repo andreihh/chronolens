@@ -32,7 +32,7 @@ public interface OptionsProvider {
     /** Registers a nullable [Option] with the given parameters. */
     public fun <T : Any> option(
         name: String,
-        alias: String? = null,
+        alias: String?,
         description: String,
         type: Class<T>
     ): Option<T?>
@@ -40,7 +40,7 @@ public interface OptionsProvider {
     /** Registers a required [Option] with the given parameters. */
     public fun <T : Any> requiredOption(
         name: String,
-        alias: String? = null,
+        alias: String?,
         description: String,
         type: Class<T>,
         default: T? = null
@@ -49,7 +49,7 @@ public interface OptionsProvider {
     /** Registers a repeated [Option] with the given parameters. */
     public fun <T : Any> repeatedOption(
         name: String,
-        alias: String? = null,
+        alias: String?,
         description: String,
         elementType: Class<T>
     ): Option<List<T>>
@@ -86,7 +86,7 @@ public interface Option<T> {
             private lateinit var validatedOption: Lazy<T>
 
             override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-                if (!validatedOption.isInitialized()) {
+                if (!this::validatedOption.isInitialized) {
                     validatedOption = lazy {
                         val value = this@Option.getValue(thisRef, property)
                         try {
@@ -112,7 +112,7 @@ public interface Option<T> {
             private lateinit var transformedOption: Lazy<V>
 
             override fun getValue(thisRef: Any?, property: KProperty<*>): V {
-                if (!transformedOption.isInitialized()) {
+                if (!this::transformedOption.isInitialized) {
                     transformedOption = lazy {
                         val value = this@Option.getValue(thisRef, property)
                         try {

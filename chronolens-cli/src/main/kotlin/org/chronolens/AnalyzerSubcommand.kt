@@ -25,6 +25,7 @@ import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.ErrorReport
 import org.chronolens.core.analysis.InvalidOptionException
 import org.chronolens.core.analysis.Option
+import org.chronolens.core.analysis.option
 import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.PersistentRepository
@@ -45,7 +46,7 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec, repositoryRootOption: Optio
         val repository =
             InteractiveRepository.connect(repositoryRoot)
                 ?: PersistentRepository.load(repositoryRoot)
-                    ?: error("No repository detected in directory '$repositoryRoot'!")
+                ?: error("No repository detected in directory '$repositoryRoot'!")
         try {
             val report = analyzer.analyze(repository)
             if (report is ErrorReport) {

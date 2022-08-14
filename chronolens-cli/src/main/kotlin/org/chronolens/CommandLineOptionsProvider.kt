@@ -29,7 +29,7 @@ import org.chronolens.core.analysis.OptionsProvider
 import kotlin.reflect.KProperty
 
 /** An option provider that parses the options from command line arguments. */
-class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvider() {
+class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvider {
     override fun <T : Any> option(
         name: String,
         alias: String?,

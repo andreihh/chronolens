@@ -27,11 +27,18 @@ import org.chronolens.core.repository.Repository
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
+import java.io.File
 
 @BuilderMarker
 public class RepositoryBuilder {
+    private var rootDirectory = File(".")
     private val history = mutableListOf<Revision>()
     private val snapshot = SourceTree.empty()
+
+    public fun rootDirectory(directory: File): RepositoryBuilder {
+        rootDirectory = directory
+        return this
+    }
 
     public fun revision(revision: Revision): RepositoryBuilder {
         +revision
@@ -47,6 +54,9 @@ public class RepositoryBuilder {
             init {
                 check(history.isNotEmpty())
             }
+
+            override val rootDirectory: File
+                get() = this@RepositoryBuilder.rootDirectory
 
             override fun getHeadId(): RevisionId = history.last().id
 

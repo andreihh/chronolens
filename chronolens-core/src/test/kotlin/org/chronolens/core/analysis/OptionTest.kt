@@ -16,23 +16,13 @@
 
 package org.chronolens.core.analysis
 
+import org.chronolens.test.core.analysis.OptionHolder
 import org.junit.Test
-import kotlin.reflect.KProperty
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class OptionTest {
-    private data class OptionHolder<T>(val value: T) : Option<T> {
-        var timesRetrieved: Int = 0
-            private set
-
-        override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-            timesRetrieved++
-            return value
-        }
-    }
-
     @Test
     fun validate_memoizesValidatedValue() {
         val option = OptionHolder(5)
@@ -128,7 +118,7 @@ class OptionTest {
     @Test
     fun requireOption_whenConditionIsFalse_throwsInvalidOptionException() {
         assertFailsWith<InvalidOptionException> {
-            requireOption(true) { "fail" }
+            requireOption(false) { "fail" }
         }
     }
 
