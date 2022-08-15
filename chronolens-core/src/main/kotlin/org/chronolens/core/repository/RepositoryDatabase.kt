@@ -1,5 +1,5 @@
 /*
- * Copyright 2021-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package org.chronolens.core.repository
 
-import java.io.File
-import org.chronolens.core.model.RevisionId
+import org.chronolens.core.model.Revision
+import java.io.IOException
 
-internal data class RepositoryFileSchema(val repositoryDirectory: File) {
-    val rootDirectory: File = File(repositoryDirectory, ".chronolens")
-    val historyFile: File = File(rootDirectory, "HISTORY")
-    val revisionsDirectory: File = File(rootDirectory, "revisions")
+public interface RepositoryDatabase {
+    @Throws(IOException::class)
+    public fun readHistory(): Sequence<Revision>
 
-    fun getRevisionsFile(id: RevisionId): File = File(revisionsDirectory, "$id.json")
+    @Throws(IOException::class)
+    public fun writeHistory(revisions: Sequence<Revision>)
 }
+

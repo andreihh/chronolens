@@ -21,6 +21,8 @@ import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTOR
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 import org.chronolens.core.versioning.VcsProxyFactory
 import java.io.File
+import java.io.IOException
+import java.io.UncheckedIOException
 
 public object RepositoryConnector {
     /** Specifies the mode in which the [Repository] is accessed. */
@@ -40,6 +42,7 @@ public object RepositoryConnector {
      * [accessMode], or `null` if no supported repository could be unambiguously detected.
      *
      * @throws CorruptedRepositoryException if the detected repository is corrupted
+     * @throws UncheckedIOException if any I/O errors occur
      */
     @JvmStatic
     public fun tryConnect(accessMode: AccessMode, rootDirectory: File): Repository? =
@@ -55,6 +58,7 @@ public object RepositoryConnector {
      *
      * @throws CorruptedRepositoryException if the detected repository is corrupted or if no
      * supported repository could be unambiguously detected
+     * @throws UncheckedIOException if any I/O errors occur
      */
     @JvmStatic
     public fun connect(accessMode: AccessMode, rootDirectory: File): Repository =
@@ -64,8 +68,10 @@ public object RepositoryConnector {
     private fun tryConnectInteractive(rootDirectory: File): Repository? =
         VcsProxyFactory.detect(rootDirectory)?.let(::InteractiveRepository)
 
-    private fun tryLoadPersistent(rootDirectory: File): Repository? {
-        val schema = RepositoryFileSchema(rootDirectory)
-        return if (!schema.rootDirectory.isDirectory) null else PersistentRepository(schema)
-    }
+    private fun tryLoadPersistent(rootDirectory: File): Repository? =
+        try {
+            RepositoryDatabaseFactory.detect(rootDirectory)?.let(::PersistentRepository)
+        } catch (e: IOException) {
+            throw UncheckedIOException(e)
+        }
 }

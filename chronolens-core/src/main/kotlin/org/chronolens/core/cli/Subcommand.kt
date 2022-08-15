@@ -19,8 +19,6 @@ package org.chronolens.core.cli
 import java.io.File
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RevisionId
-import org.chronolens.core.repository.InteractiveRepository
-import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.RepositoryConnector
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY

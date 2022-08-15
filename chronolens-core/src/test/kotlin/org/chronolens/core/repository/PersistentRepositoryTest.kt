@@ -16,14 +16,15 @@
 
 package org.chronolens.core.repository
 
+import org.chronolens.core.model.Revision
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.chronolens.core.model.RevisionId
-import org.chronolens.core.repository.PersistentRepository.Companion.persist
-import org.chronolens.core.repository.PersistentRepository.ProgressListener
+import org.chronolens.core.repository.Repository.HistoryProgressListener
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
+import org.chronolens.core.repository.RepositoryDatabaseFactory.persist
 import org.chronolens.test.core.repository.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -32,12 +33,12 @@ import org.junit.rules.TemporaryFolder
 class PersistentRepositoryTest : RepositoryTest() {
     @get:Rule val tmp: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
-    override fun createRepository(): PersistentRepository =
-        RepositoryConnector.connect(RANDOM_ACCESS, tmp.root).persist(tmp.root)
+    override fun createRepository(): Repository =
+        PersistentRepository(RepositoryConnector.connect(RANDOM_ACCESS, tmp.root).persist(tmp.root))
 
     @Test
     fun `test load after clean returns null`() {
-        PersistentRepository.clean(tmp.root)
+        RepositoryDatabaseFactory.clean(tmp.root)
         assertNull(RepositoryConnector.tryConnect(FAST_HISTORY, tmp.root))
     }
 
@@ -64,13 +65,13 @@ class PersistentRepositoryTest : RepositoryTest() {
     @Test
     fun `test progress listener`() {
         val listener =
-            object : ProgressListener {
+            object : HistoryProgressListener {
                 var state = ProgressListenerState.IDLE
                     private set
 
                 private val revisions = mutableListOf<RevisionId>()
 
-                override fun onHistoryStart(revisionCount: Int) {
+                override fun onStart(revisionCount: Int) {
                     revisions += repository.listRevisions()
                     revisions.reverse()
                     assertEquals(ProgressListenerState.IDLE, state)
@@ -78,13 +79,13 @@ class PersistentRepositoryTest : RepositoryTest() {
                     state = ProgressListenerState.HISTORY
                 }
 
-                override fun onRevisionPersisted(revisionId: RevisionId) {
+                override fun onRevision(revision: Revision) {
                     assertEquals(ProgressListenerState.HISTORY, state)
-                    assertEquals(revisions.last(), revisionId)
+                    assertEquals(revisions.last(), revision)
                     revisions.removeAt(revisions.size - 1)
                 }
 
-                override fun onHistoryEnd() {
+                override fun onEnd() {
                     assertEquals(ProgressListenerState.HISTORY, state)
                     assertTrue(revisions.isEmpty())
                     state = ProgressListenerState.DONE

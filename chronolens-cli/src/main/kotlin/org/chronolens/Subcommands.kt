@@ -19,13 +19,13 @@ package org.chronolens
 import java.io.File
 import org.chronolens.core.cli.Subcommand
 import org.chronolens.core.cli.exit
+import org.chronolens.core.model.Revision
 import org.chronolens.core.model.RevisionId
-import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.core.model.walkSourceTree
-import org.chronolens.core.repository.PersistentRepository
-import org.chronolens.core.repository.PersistentRepository.Companion.persist
-import org.chronolens.core.repository.PersistentRepository.ProgressListener
+import org.chronolens.core.repository.Repository.HistoryProgressListener
+import org.chronolens.core.repository.RepositoryDatabaseFactory
+import org.chronolens.core.repository.RepositoryDatabaseFactory.persist
 
 class LsTree : Subcommand() {
     override val help: String
@@ -36,9 +36,9 @@ class LsTree : Subcommand() {
     """
 
     private val rev by
-        option<String>()
-            .help("the inspected revision (default: the <head> revision)")
-            .validateRevision(::repository)
+    option<String>()
+        .help("the inspected revision (default: the <head> revision)")
+        .validateRevision(::repository)
 
     private val repository by lazy(::connect)
     private val revision: RevisionId
@@ -78,9 +78,9 @@ class Model : Subcommand() {
     private val id by option<String>().help("the inspected source node").required().validateId()
 
     private val rev by
-        option<String>()
-            .help("the inspected revision (default: the <head> revision)")
-            .validateRevision(::repository)
+    option<String>()
+        .help("the inspected revision (default: the <head> revision)")
+        .validateRevision(::repository)
 
     private val repository by lazy(::connect)
     private val revision: RevisionId
@@ -113,22 +113,22 @@ class Persist : Subcommand() {
         val repository = connect()
         repository.persist(
             File(repositoryDirectory),
-            object : ProgressListener {
+            object : HistoryProgressListener {
                 private var revisions = 0
                 private var i = 0
 
-                override fun onHistoryStart(revisionCount: Int) {
+                override fun onStart(revisionCount: Int) {
                     println("Persisting revisions...")
                     revisions = revisionCount
                     i = 0
                 }
 
-                override fun onRevisionPersisted(revisionId: RevisionId) {
+                override fun onRevision(revision: Revision) {
                     i++
                     print("Persisted $i / $revisions revisions...\r")
                 }
 
-                override fun onHistoryEnd() {
+                override fun onEnd() {
                     println()
                     println("Done!")
                 }
@@ -146,6 +146,6 @@ class Clean : Subcommand() {
     """
 
     override fun run() {
-        PersistentRepository.clean(File(repositoryDirectory))
+        RepositoryDatabaseFactory.clean(File(repositoryDirectory))
     }
 }

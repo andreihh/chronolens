@@ -17,6 +17,7 @@
 package org.chronolens.core.repository
 
 import java.util.stream.Stream
+import java.io.UncheckedIOException
 import kotlin.streams.asStream
 import org.chronolens.core.model.Revision
 import org.chronolens.core.model.RevisionId
@@ -24,26 +25,22 @@ import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 
-/**
- * A wrapper that connects to a repository and allows querying source code metadata and the source
- * tree history.
- */
+/** A wrapper that connects to a repository and allows querying the source and history models. */
 public interface Repository {
-
     /**
      * Returns the id of the `head` revision.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
-     * @throws java.io.UncheckedIOException if any I/O errors occur
+     * @throws UncheckedIOException if any I/O errors occur
      */
     public fun getHeadId(): RevisionId
-
 
     /**
      * Returns the interpretable source files from the revision with the specified [revisionId].
      *
      * @throws IllegalArgumentException if [revisionId] doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
+     * @throws UncheckedIOException if any I/O errors occur
      */
     public fun listSources(revisionId: RevisionId = getHeadId()): Set<SourcePath>
 
@@ -51,7 +48,7 @@ public interface Repository {
      * Returns the list of all revision ids in chronological order.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
-     * @throws java.io.UncheckedIOException if any I/O errors occur
+     * @throws UncheckedIOException if any I/O errors occur
      */
     public fun listRevisions(): List<RevisionId>
 
@@ -66,7 +63,7 @@ public interface Repository {
      *
      * @throws IllegalArgumentException if [revisionId] doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
-     * @throws java.io.UncheckedIOException if any I/O errors occur
+     * @throws UncheckedIOException if any I/O errors occur
      */
     public fun getSource(path: SourcePath, revisionId: RevisionId = getHeadId()): SourceFile?
 
@@ -75,21 +72,67 @@ public interface Repository {
      *
      * @throws IllegalArgumentException if [revisionId] doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
-     * @throws java.io.UncheckedIOException if any I/O errors occur
+     * @throws UncheckedIOException if any I/O errors occur
      */
     public fun getSnapshot(revisionId: RevisionId = getHeadId()): SourceTree
 
     /**
      * Returns a lazy view of all revisions in chronological order.
      *
-     * Iterating over the sequence may throw an [java.io.UncheckedIOException] if any I/O errors
+     * Iterating over the sequence may throw an [UncheckedIOException] if any I/O errors
      * occur, or a [CorruptedRepositoryException] if the repository is corrupted.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
-     * @throws java.io.UncheckedIOException if any I/O errors occur
+     * @throws UncheckedIOException if any I/O errors occur
      */
     public fun getHistory(): Sequence<Revision>
 
-    /** Delegates to [getHistory]. */
-    public fun getHistoryStream(): Stream<Revision> = getHistory().asStream()
+    /**
+     * Returns the repository history and reports the progress to the given [listener]. The history
+     * can be iterated through only once.
+     */
+    public fun getHistory(listener: HistoryProgressListener?): Sequence<Revision> {
+        val history = getHistory().constrainOnce()
+        listener ?: return history
+        val tracker = HistoryTracker(listRevisions().size, listener)
+        return history.map(tracker::onRevision)
+    }
+
+    /** Delegates to [getHistory]. The history can be iterated through only once. */
+    public fun getHistoryStream(listener: HistoryProgressListener? = null): Stream<Revision> =
+        (listener?.let(::getHistory) ?: getHistory()).asStream()
+
+    /** A listener notified on the progress of iterating through a repository's history. */
+    public interface HistoryProgressListener {
+        public fun onStart(revisionCount: Int)
+        public fun onRevision(revision: Revision)
+        public fun onEnd()
+    }
+
+    private class HistoryTracker(
+        private val revisionCount: Int,
+        private val listener: HistoryProgressListener,
+    ) {
+
+        init {
+            checkState(revisionCount > 0) { "History must not be empty!" }
+        }
+
+        private var trackedRevisions = 0
+
+        fun onRevision(revision: Revision): Revision {
+            if (trackedRevisions == 0) {
+                listener.onStart(revisionCount)
+            }
+            trackedRevisions++
+            checkState(trackedRevisions <= revisionCount) {
+                "Tracked '$trackedRevisions' revisions, but only '$revisionCount' were registered!"
+            }
+            listener.onRevision(revision)
+            if (trackedRevisions == revisionCount) {
+                listener.onEnd()
+            }
+            return revision
+        }
+    }
 }
