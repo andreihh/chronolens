@@ -45,7 +45,7 @@ public object RepositoryDatabaseFactory {
 
     @Throws(IOException::class)
     public fun detect(rootDirectory: File): RepositoryDatabase? =
-        if (File(rootDirectory, DATABASE_ROOT_DIRECTORY).isDirectory) null
+        if (!File(rootDirectory, DATABASE_ROOT_DIRECTORY).isDirectory) null
         else RepositoryFileDatabase(rootDirectory)
 
     /**

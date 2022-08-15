@@ -52,7 +52,7 @@ class PersistentRepositoryTest : RepositoryTest() {
     @Test
     fun `test persist already persisted returns same repository`() {
         val expected = repository
-        val actual = repository.persist(tmp.root)
+        val actual = PersistentRepository(repository.persist(tmp.root))
         assertEquals(expected, actual)
     }
 
@@ -81,7 +81,7 @@ class PersistentRepositoryTest : RepositoryTest() {
 
                 override fun onRevision(revision: Revision) {
                     assertEquals(ProgressListenerState.HISTORY, state)
-                    assertEquals(revisions.last(), revision)
+                    assertEquals(revisions.last(), revision.id)
                     revisions.removeAt(revisions.size - 1)
                 }
 
