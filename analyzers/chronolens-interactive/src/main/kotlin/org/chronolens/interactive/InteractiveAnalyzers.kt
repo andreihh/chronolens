@@ -16,10 +16,10 @@
 
 package org.chronolens.interactive
 
-import java.io.IOException
 import org.chronolens.core.analysis.Analyzer
+import org.chronolens.core.analysis.Analyzer.Mode.FAST_HISTORY
+import org.chronolens.core.analysis.Analyzer.Mode.RANDOM_ACCESS
 import org.chronolens.core.analysis.AnalyzerSpec
-import org.chronolens.core.analysis.InteractiveAnalyzer
 import org.chronolens.core.analysis.OptionsProvider
 import org.chronolens.core.analysis.Report
 import org.chronolens.core.analysis.option
@@ -29,7 +29,7 @@ import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.core.model.walkSourceTree
-import org.chronolens.core.repository.PersistentRepository
+import org.chronolens.core.repository.Repository
 
 public class LsTree : AnalyzerSpec {
     override val name: String
@@ -39,7 +39,10 @@ public class LsTree : AnalyzerSpec {
         get() = "Prints all the interpretable files of the repository from the specified revision."
 
     override fun create(optionsProvider: OptionsProvider): Analyzer =
-        object : InteractiveAnalyzer(optionsProvider) {
+        object : Analyzer(optionsProvider) {
+            override val mode: Mode
+                get() = RANDOM_ACCESS
+
             private val rev by option<String>()
                 .name("rev")
                 .alias("r")
@@ -47,7 +50,7 @@ public class LsTree : AnalyzerSpec {
                 .nullable()
                 .transformIfNotNull(::RevisionId)
 
-            override fun analyze(): Report {
+            override fun analyze(repository: Repository): Report {
                 val revisionId = rev ?: repository.getHeadId()
                 return LsTreeReport(repository.listSources(revisionId))
             }
@@ -69,8 +72,12 @@ public class RevList : AnalyzerSpec {
         """.trimIndent()
 
     override fun create(optionsProvider: OptionsProvider): Analyzer =
-        object : InteractiveAnalyzer(optionsProvider) {
-            override fun analyze(): RevListReport = RevListReport(repository.listRevisions())
+        object : Analyzer(optionsProvider) {
+            override val mode: Mode
+                get() = RANDOM_ACCESS
+
+            override fun analyze(repository: Repository): RevListReport =
+                RevListReport(repository.listRevisions())
         }
 
     public data class RevListReport(val revisions: List<RevisionId>) : Report {
@@ -86,7 +93,10 @@ public class Model : AnalyzerSpec {
         get() = ""
 
     override fun create(optionsProvider: OptionsProvider): Analyzer =
-        object : InteractiveAnalyzer(optionsProvider) {
+        object : Analyzer(optionsProvider) {
+            override val mode: Mode
+                get() = RANDOM_ACCESS
+
             private val rev by option<String>()
                 .name("rev")
                 .alias("r")
@@ -97,7 +107,7 @@ public class Model : AnalyzerSpec {
             private val qualifiedId by option<String>().name("qualified-id").description("")
                 .required().transform(::parseQualifiedSourceNodeIdFrom)
 
-            override fun analyze(): ModelReport {
+            override fun analyze(repository: Repository): ModelReport {
                 val revisionId = rev ?: repository.getHeadId()
                 val path = qualifiedId.sourcePath
                 val model =
@@ -124,8 +134,11 @@ public class Persist : AnalyzerSpec {
         get() = ""
 
     override fun create(optionsProvider: OptionsProvider): Analyzer =
-        object : InteractiveAnalyzer(optionsProvider) {
-            override fun analyze(): Report = TODO("not implemented")
+        object : Analyzer(optionsProvider) {
+            override val mode: Mode
+                get() = RANDOM_ACCESS
+
+            override fun analyze(repository: Repository): Report = TODO("not implemented")
         }
 }
 
@@ -138,13 +151,10 @@ public class Clean : AnalyzerSpec {
 
     override fun create(optionsProvider: OptionsProvider): Analyzer =
         object : Analyzer(optionsProvider) {
-            override fun analyze(): Report =
-                try {
-                    PersistentRepository.clean(repositoryRoot)
-                    CleanReport
-                } catch (e: IOException) {
-                    TODO("handle properly")
-                }
+            override val mode: Mode
+                get() = FAST_HISTORY
+
+            override fun analyze(repository: Repository): Report = TODO("not implemented")
         }
 
     public object CleanReport : Report {

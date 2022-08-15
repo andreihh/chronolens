@@ -24,7 +24,6 @@ import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
-import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.Repository
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
@@ -50,8 +49,8 @@ public class RepositoryBuilder {
         history += this
     }
 
-    public fun build(): InteractiveRepository =
-        object : InteractiveRepository {
+    public fun build(): Repository =
+        object : Repository {
             private val snapshots = mutableMapOf<RevisionId, SourceTree>()
 
             init {
@@ -72,6 +71,9 @@ public class RepositoryBuilder {
 
             override fun getSource(path: SourcePath, revisionId: RevisionId): SourceFile? =
                 requireNotNull(snapshots[revisionId])[path]
+
+            override fun getSnapshot(revisionId: RevisionId): SourceTree =
+                requireNotNull(snapshots[revisionId])
 
             override fun getHistory(): Sequence<Revision> = history.asSequence()
         }

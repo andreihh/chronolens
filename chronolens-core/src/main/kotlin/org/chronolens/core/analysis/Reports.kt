@@ -16,10 +16,19 @@
 
 package org.chronolens.core.analysis
 
+import java.io.ByteArrayOutputStream
+import java.io.PrintWriter
+
 /** The result of a repository analysis. Must be stringifiable. */
 public interface Report {
     override fun toString(): String
 }
 
 /** The result of an analysis that produced an expected error. */
-public interface ErrorReport : Report
+public data class ErrorReport(val message: String, val cause: Exception) : Report {
+    override fun toString(): String {
+        val stackTraceByteStream = ByteArrayOutputStream()
+        PrintWriter(stackTraceByteStream).use(cause::printStackTrace)
+        return "Analysis error report: $message\nStacktrace:\n$stackTraceByteStream"
+    }
+}

@@ -18,26 +18,32 @@
 
 package org.chronolens
 
+import kotlinx.cli.ArgParser
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.ErrorReport
 import org.chronolens.core.analysis.InvalidOptionException
+import org.chronolens.core.analysis.Option
+import org.chronolens.core.analysis.analyze
+import org.chronolens.core.analysis.option
 import org.chronolens.core.repository.CorruptedRepositoryException
+import java.io.File
 
 /**
  * A command line subcommand that runs an [org.chronolens.core.analysis.Analyzer].
  *
  * @param analyzerSpec the [AnalyzerSpec] used to create the analyzer
  */
-class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec) :
+class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec, repositoryRootOption: Option<File>) :
     Subcommand(analyzerSpec.name, analyzerSpec.description) {
 
     private val analyzer = analyzerSpec.create(CommandLineOptionsProvider(this))
+    private val repositoryRoot by repositoryRootOption
 
     override fun execute() {
         try {
-            val report = analyzer.analyze()
+            val report = analyzer.analyze(repositoryRoot)
             if (report is ErrorReport) {
                 System.err.println(report)
             } else {
@@ -54,10 +60,19 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec) :
 }
 
 /** Returns the list of [Subcommand]s for all registered [AnalyzerSpec]s. */
-fun assembleAnalyzerSubcommands(): List<Subcommand> {
+fun ArgParser.assembleAnalyzerSubcommands(): List<Subcommand> {
+    val optionsProvider = CommandLineOptionsProvider(this)
+    val repositoryRootOption =
+        optionsProvider
+            .option<String>()
+            .name("repository-root")
+            .description("")
+            .default(".")
+            .transform(::File)
+
     val subcommands = mutableListOf<Subcommand>()
     for (analyzerSpec in AnalyzerSpec.loadAnalyzerSpecs()) {
-        subcommands += AnalyzerSubcommand(analyzerSpec)
+        subcommands += AnalyzerSubcommand(analyzerSpec, repositoryRootOption)
     }
     return subcommands
 }

@@ -33,20 +33,20 @@ class PersistentRepositoryTest : RepositoryTest() {
     @get:Rule val tmp = TemporaryFolder.builder().assureDeletion().build()
 
     override fun createRepository(): PersistentRepository =
-        VcsRepository.connect(tmp.root)?.persist(tmp.root)
+        InteractiveRepository.tryConnect(tmp.root)?.persist(tmp.root)
             ?: fail("Couldn't connect to VCS repository!")
 
     @Test
     fun `test load after clean returns null`() {
         PersistentRepository.clean(tmp.root)
-        assertNull(PersistentRepository.load(tmp.root))
+        assertNull(PersistentRepository.tryLoad(tmp.root))
     }
 
     @Test
     fun `test load returns equal repository`() {
         val expected = repository
         val actual =
-            PersistentRepository.load(tmp.root) ?: fail("Couldn't load persisted repository!")
+            PersistentRepository.tryLoad(tmp.root) ?: fail("Couldn't load persisted repository!")
         assertEquals(expected, actual)
     }
 
@@ -116,7 +116,7 @@ class PersistentRepositoryTest : RepositoryTest() {
                 }
             }
 
-        VcsRepository.connect(tmp.root)?.persist(tmp.root, listener)
+        InteractiveRepository.tryConnect(tmp.root)?.persist(tmp.root, listener)
             ?: fail("Repository not found!")
         assertEquals(ProgressListenerState.DONE, listener.state)
     }

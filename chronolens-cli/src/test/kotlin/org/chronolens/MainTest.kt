@@ -64,7 +64,7 @@ class MainTest {
 
     @Test
     fun `test snapshot equals applied edits from history`() {
-        val repository = PersistentRepository.load(tmp.root) ?: fail()
+        val repository = PersistentRepository.tryLoad(tmp.root) ?: fail()
         val expected = repository.getSnapshot()
 
         val actual = SourceTree.empty()

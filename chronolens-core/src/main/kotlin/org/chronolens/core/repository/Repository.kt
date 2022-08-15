@@ -29,49 +29,55 @@ import org.chronolens.core.model.SourceTree
  * tree history.
  */
 public interface Repository {
+
     /**
      * Returns the id of the `head` revision.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
+     * @throws java.io.UncheckedIOException if any I/O errors occur
      */
     public fun getHeadId(): RevisionId
 
+
     /**
-     * Returns the interpretable source files from the `head` revision.
+     * Returns the interpretable source files from the revision with the specified [revisionId].
      *
+     * @throws IllegalArgumentException if [revisionId] doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public fun listSources(): Set<SourcePath>
+    public fun listSources(revisionId: RevisionId = getHeadId()): Set<SourcePath>
 
     /**
      * Returns the list of all revision ids in chronological order.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
+     * @throws java.io.UncheckedIOException if any I/O errors occur
      */
     public fun listRevisions(): List<RevisionId>
 
     /**
-     * Returns the source file found at the given [path] in the `head` revision, or `null` if the
-     * [path] doesn't exist in the `head` revision or couldn't be interpreted.
+     * Returns the source file found at the given [path] in the revision with the specified
+     * [revisionId], or `null` if the [path] doesn't exist in the specified revision or couldn't be
+     * interpreted.
      *
      * If the source contains syntax errors, then the most recent version which can be parsed
      * without errors will be returned. If all versions of the source contain errors, then the empty
      * source file will be returned.
      *
+     * @throws IllegalArgumentException if [revisionId] doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
+     * @throws java.io.UncheckedIOException if any I/O errors occur
      */
-    public fun getSource(path: SourcePath): SourceFile?
+    public fun getSource(path: SourcePath, revisionId: RevisionId = getHeadId()): SourceFile?
 
     /**
-     * Returns the snapshot of the repository at the `head` revision.
+     * Returns the snapshot of the repository at the revision with the specified [revisionId].
      *
+     * @throws IllegalArgumentException if [revisionId] doesn't exist
      * @throws CorruptedRepositoryException if the repository is corrupted
-     * @see getSource for details on how the latest sources are retrieved
+     * @throws java.io.UncheckedIOException if any I/O errors occur
      */
-    public fun getSnapshot(): SourceTree {
-        val sources = listSources().map(::getSource).checkNoNulls()
-        return SourceTree.of(sources)
-    }
+    public fun getSnapshot(revisionId: RevisionId = getHeadId()): SourceTree
 
     /**
      * Returns a lazy view of all revisions in chronological order.
@@ -80,6 +86,7 @@ public interface Repository {
      * occur, or a [CorruptedRepositoryException] if the repository is corrupted.
      *
      * @throws CorruptedRepositoryException if the repository is corrupted
+     * @throws java.io.UncheckedIOException if any I/O errors occur
      */
     public fun getHistory(): Sequence<Revision>
 

@@ -25,6 +25,8 @@ import org.chronolens.core.model.Revision
 import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
+import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.serialization.JsonModule
 
 /**
@@ -35,6 +37,7 @@ import org.chronolens.core.serialization.JsonModule
  */
 public class PersistentRepository private constructor(private val schema: RepositoryFileSchema) :
     Repository {
+    // TODO: wrap all IOExceptions into UncheckedIOExceptions.
 
     private val head by lazy {
         val rawHeadId = schema.headFile.readFileLines()
@@ -56,14 +59,31 @@ public class PersistentRepository private constructor(private val schema: Reposi
 
     override fun getHeadId(): RevisionId = head
 
-    override fun listSources(): Set<SourcePath> = unmodifiableSet(sources)
+    override fun listSources(revisionId: RevisionId): Set<SourcePath> =
+        if (revisionId == head) unmodifiableSet(sources)
+        else getSnapshot(revisionId).sources.map(SourceFile::path).toSet()
 
     override fun listRevisions(): List<RevisionId> = unmodifiableList(history)
 
-    override fun getSource(path: SourcePath): SourceFile? {
-        val file = schema.getSourceFile(path)
-        return if (path in sources) JsonModule.deserialize(file) else null
-    }
+    override fun getSource(path: SourcePath, revisionId: RevisionId): SourceFile? =
+        if (revisionId == head) {
+            val file = schema.getSourceFile(path)
+            if (path in sources) JsonModule.deserialize(file) else null
+        } else {
+            getSnapshot(revisionId)[path]
+        }
+
+    override fun getSnapshot(revisionId: RevisionId): SourceTree =
+        if (revisionId == head) {
+            SourceTree.of(sources.mapNotNull(::getSource))
+        } else {
+            val snapshot = SourceTree.empty()
+            for (revision in getHistory()) {
+                snapshot.apply(revision.edits)
+                if (revision.id == revisionId) break
+            }
+            snapshot
+        }
 
     override fun getHistory(): Sequence<Revision> =
         history.asSequence().map { revisionId ->
@@ -85,10 +105,23 @@ public class PersistentRepository private constructor(private val schema: Reposi
          */
         @Throws(IOException::class)
         @JvmStatic
-        public fun load(directory: File): PersistentRepository? {
+        public fun tryLoad(directory: File): PersistentRepository? {
             val schema = RepositoryFileSchema(directory)
             return if (!schema.rootDirectory.isDirectory) null else PersistentRepository(schema)
         }
+
+        /**
+         * Returns the persisted repository detected in the given [directory].
+         *
+         * @throws IOException if any input related errors occur
+         * @throws CorruptedRepositoryException if the repository is corrupted, or if no repository
+         * was detected
+         */
+        @Throws(IOException::class)
+        @JvmStatic
+        public fun load(directory: File): PersistentRepository =
+            tryLoad(directory)
+                ?: repositoryError("Persistent repository not found in '$directory'!")
 
         /**
          * Persists [this] repository in the given [directory], notifying the given [listener] of

@@ -16,12 +16,12 @@
 
 package org.chronolens.core.analysis
 
+import org.chronolens.core.analysis.Analyzer.Mode.FAST_HISTORY
+import org.chronolens.core.analysis.Analyzer.Mode.RANDOM_ACCESS
 import org.chronolens.core.repository.CorruptedRepositoryException
-import org.chronolens.core.repository.InteractiveRepository
-import org.chronolens.core.repository.VcsRepository
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
-import org.chronolens.core.repository.repositoryError
+import org.chronolens.core.repository.InteractiveRepository
 import java.io.File
 import java.util.ServiceLoader
 
@@ -35,35 +35,25 @@ import java.util.ServiceLoader
 public abstract class Analyzer(optionsProvider: OptionsProvider)
     : OptionsProvider by optionsProvider {
 
-    /** The root directory of the repository that should be analyzed. */
-    protected val repositoryRoot: File by
-    option<String>()
-        .name("repository-root")
-        .description("the root directory of the repository")
-        .default(".")
-        .transform(::File)
+    /** Specifies the mode in which the analyzed repository is accessed. */
+    public enum class Mode {
+        /** Requires fast access to [Repository.getSource]. */
+        RANDOM_ACCESS,
 
-    /**
-     * The repository that should be analyzed from the given [repositoryRoot].
-     *
-     * Should be lazy and memoized. The default implementation will attempt to connect to an
-     * [VcsRepository], and if it fails, it will fall back to a [PersistentRepository].
-     *
-     * @throws CorruptedRepositoryException if no repository is found or if it is corrupted
-     */
-    protected open val repository: Repository by lazy {
-        VcsRepository.connect(repositoryRoot)
-            ?: PersistentRepository.load(repositoryRoot)
-            ?: repositoryError("No repository detected in directory '$repositoryRoot'!")
+        /** Requires fast access to [Repository.getHistory]. */
+        FAST_HISTORY,
     }
 
+    /** The mode in which the analyzed repository is accessed. */
+    public abstract val mode: Mode
+
     /**
-     * Performs the analysis on the [repository].
+     * Performs the analysis on the given [repository].
      *
      * @throws InvalidOptionException if one of the provided options are invalid
-     * @throws CorruptedRepositoryException if the repository is not found or corrupted
+     * @throws CorruptedRepositoryException if the repository is corrupted
      */
-    public abstract fun analyze(): Report
+    public abstract fun analyze(repository: Repository): Report
 }
 
 /**
@@ -90,14 +80,14 @@ public interface AnalyzerSpec {
     }
 }
 
-/** An [VcsRepository] analyzer. Must abide by the [Analyzer] contract. */
-public abstract class InteractiveAnalyzer(optionsProvider: OptionsProvider)
-    : Analyzer(optionsProvider) {
-
-    protected override val repository: InteractiveRepository by lazy {
-        // TODO: implement InteractiveRepository.{connect,tryConnect} and
-        // PersistentRepository.{load,tryLoad}.
-        VcsRepository.connect(repositoryRoot)
-            ?: repositoryError("No repository detected in directory '$repositoryRoot'!")
+/**
+ * Runs [this] analyzer on the repository found in the [repositoryRoot].
+ *
+ * @throws CorruptedRepositoryException if the repository is corrupted or if no repository could be
+ * unambiguously found
+ */
+public fun Analyzer.analyze(repositoryRoot: File): Report =
+    when (mode) {
+        RANDOM_ACCESS -> analyze(InteractiveRepository.connect(repositoryRoot))
+        FAST_HISTORY -> analyze(PersistentRepository.load(repositoryRoot))
     }
-}
