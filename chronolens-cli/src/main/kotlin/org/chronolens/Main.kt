@@ -45,8 +45,7 @@ class Main : MainCommand() {
 @OptIn(ExperimentalCli::class)
 fun main(args: Array<String>) {
     // TODO: make the default main function once tested.
-    val parser = ArgParser("chronolens")
-    parser.strictSubcommandOptionsOrder = true
+    val parser = ArgParser("chronolens", strictSubcommandOptionsOrder = true)
     parser.subcommands(*assembleAnalyzerSubcommands().toTypedArray())
     parser.parse(args)
 }
