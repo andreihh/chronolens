@@ -23,6 +23,8 @@ import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
+import org.chronolens.core.model.SourceTreeEdit.Companion.apply
+import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.Repository
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
@@ -33,7 +35,6 @@ import java.io.File
 public class RepositoryBuilder {
     private var rootDirectory = File(".")
     private val history = mutableListOf<Revision>()
-    private val snapshot = SourceTree.empty()
 
     public fun rootDirectory(directory: File): RepositoryBuilder {
         rootDirectory = directory
@@ -49,20 +50,28 @@ public class RepositoryBuilder {
         history += this
     }
 
-    public fun build(): Repository =
-        object : Repository {
+    public fun build(): InteractiveRepository =
+        object : InteractiveRepository {
+            private val snapshots = mutableMapOf<RevisionId, SourceTree>()
+
             init {
-                check(history.isNotEmpty())
+                require(history.isNotEmpty()) { "History must not be empty!" }
+                val snapshot = SourceTree.empty()
+                for (revision in history) {
+                    snapshot.apply(revision.edits)
+                    snapshots[revision.id] = SourceTree.of(snapshot.sources)
+                }
             }
 
             override fun getHeadId(): RevisionId = history.last().id
 
-            override fun listSources(): Set<SourcePath> =
-                snapshot.sources.map(SourceFile::path).toSet()
+            override fun listSources(revisionId: RevisionId): Set<SourcePath> =
+                requireNotNull(snapshots[revisionId]).sources.map(SourceFile::path).toSet()
 
             override fun listRevisions(): List<RevisionId> = history.map(Revision::id)
 
-            override fun getSource(path: SourcePath): SourceFile? = snapshot[path]
+            override fun getSource(path: SourcePath, revisionId: RevisionId): SourceFile? =
+                requireNotNull(snapshots[revisionId])[path]
 
             override fun getHistory(): Sequence<Revision> = history.asSequence()
         }

@@ -19,7 +19,7 @@ package org.chronolens.core.cli
 import java.io.File
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.RevisionId
-import org.chronolens.core.repository.InteractiveRepository
+import org.chronolens.core.repository.VcsRepository
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
 
@@ -51,8 +51,8 @@ public abstract class Subcommand : Command() {
      * Returns the interactive repository from the current working directory, or exits if no
      * repository is unambiguously detected.
      */
-    protected fun connect(): InteractiveRepository =
-        InteractiveRepository.connect(File(repositoryDirectory)) ?: exit("Repository not found!")
+    protected fun connect(): VcsRepository =
+        VcsRepository.connect(File(repositoryDirectory)) ?: exit("Repository not found!")
 
     /**
      * Returns the persistent repository from the current working directory, or exits if no

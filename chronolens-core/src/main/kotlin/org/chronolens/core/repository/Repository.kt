@@ -25,7 +25,7 @@ import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 
 /**
- * A wrapper which connects to a repository and allows querying source code metadata and the source
+ * A wrapper that connects to a repository and allows querying source code metadata and the source
  * tree history.
  */
 public interface Repository {

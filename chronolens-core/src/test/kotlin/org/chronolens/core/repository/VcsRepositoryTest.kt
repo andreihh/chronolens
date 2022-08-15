@@ -22,16 +22,16 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
-class InteractiveRepositoryTest : RepositoryTest() {
+class VcsRepositoryTest : RepositoryTest() {
     @get:Rule val tmp = TemporaryFolder.builder().assureDeletion().build()
 
-    override fun createRepository(): InteractiveRepository =
-        InteractiveRepository.connect(tmp.root) ?: fail("Couldn't connect to VCS repository!")
+    override fun createRepository(): VcsRepository =
+        VcsRepository.connect(tmp.root) ?: fail("Couldn't connect to VCS repository!")
 
     @Test
     fun `test connect with empty repository returns null`() {
         resetVcsRepository()
-        assertNull(InteractiveRepository.connect(tmp.root))
+        assertNull(VcsRepository.connect(tmp.root))
     }
 
     // TODO: figure out if test needs to be replaced.

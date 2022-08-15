@@ -18,6 +18,7 @@ package org.chronolens.core.analysis
 
 import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.InteractiveRepository
+import org.chronolens.core.repository.VcsRepository
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.repositoryError
@@ -46,12 +47,12 @@ public abstract class Analyzer(optionsProvider: OptionsProvider)
      * The repository that should be analyzed from the given [repositoryRoot].
      *
      * Should be lazy and memoized. The default implementation will attempt to connect to an
-     * [InteractiveRepository], and if it fails, it will fall back to a [PersistentRepository].
+     * [VcsRepository], and if it fails, it will fall back to a [PersistentRepository].
      *
      * @throws CorruptedRepositoryException if no repository is found or if it is corrupted
      */
     protected open val repository: Repository by lazy {
-        InteractiveRepository.connect(repositoryRoot)
+        VcsRepository.connect(repositoryRoot)
             ?: PersistentRepository.load(repositoryRoot)
             ?: repositoryError("No repository detected in directory '$repositoryRoot'!")
     }
@@ -89,14 +90,14 @@ public interface AnalyzerSpec {
     }
 }
 
-/** An [InteractiveRepository] analyzer. Must abide by the [Analyzer] contract. */
+/** An [VcsRepository] analyzer. Must abide by the [Analyzer] contract. */
 public abstract class InteractiveAnalyzer(optionsProvider: OptionsProvider)
     : Analyzer(optionsProvider) {
 
     protected override val repository: InteractiveRepository by lazy {
         // TODO: implement InteractiveRepository.{connect,tryConnect} and
         // PersistentRepository.{load,tryLoad}.
-        InteractiveRepository.connect(repositoryRoot)
+        VcsRepository.connect(repositoryRoot)
             ?: repositoryError("No repository detected in directory '$repositoryRoot'!")
     }
 }

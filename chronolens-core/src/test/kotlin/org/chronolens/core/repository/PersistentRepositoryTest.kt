@@ -33,7 +33,7 @@ class PersistentRepositoryTest : RepositoryTest() {
     @get:Rule val tmp = TemporaryFolder.builder().assureDeletion().build()
 
     override fun createRepository(): PersistentRepository =
-        InteractiveRepository.connect(tmp.root)?.persist(tmp.root)
+        VcsRepository.connect(tmp.root)?.persist(tmp.root)
             ?: fail("Couldn't connect to VCS repository!")
 
     @Test
@@ -116,7 +116,7 @@ class PersistentRepositoryTest : RepositoryTest() {
                 }
             }
 
-        InteractiveRepository.connect(tmp.root)?.persist(tmp.root, listener)
+        VcsRepository.connect(tmp.root)?.persist(tmp.root, listener)
             ?: fail("Repository not found!")
         assertEquals(ProgressListenerState.DONE, listener.state)
     }
