@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-package org.chronolens.core.analysis
+package org.chronolens.interactive
 
+import java.io.IOException
+import org.chronolens.core.analysis.Analyzer
+import org.chronolens.core.analysis.AnalyzerSpec
+import org.chronolens.core.analysis.InteractiveAnalyzer
+import org.chronolens.core.analysis.OptionsProvider
+import org.chronolens.core.analysis.Report
+import org.chronolens.core.analysis.option
+import org.chronolens.core.analysis.optionError
 import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.PersistentRepository
-import java.io.IOException
 
 public class LsTree : AnalyzerSpec {
     override val name: String
