@@ -34,7 +34,7 @@ import org.chronolens.core.serialization.JsonModule
  * All queries read the interpreted data directly from disk, not having to reinterpret it again or
  * to communicate with other subprocesses.
  */
-public class PersistentRepository private constructor(private val schema: RepositoryFileSchema) :
+public class PersistentRepository internal constructor(private val schema: RepositoryFileSchema) :
     Repository {
     // TODO: wrap all IOExceptions into UncheckedIOExceptions.
 
@@ -75,33 +75,6 @@ public class PersistentRepository private constructor(private val schema: Reposi
         }
 
     public companion object {
-        /**
-         * Returns the persisted repository detected in the given [directory], or `null` if no
-         * repository was detected.
-         *
-         * @throws IOException if any input related errors occur
-         * @throws CorruptedRepositoryException if the repository is corrupted
-         */
-        @Throws(IOException::class)
-        @JvmStatic
-        public fun tryLoad(directory: File): PersistentRepository? {
-            val schema = RepositoryFileSchema(directory)
-            return if (!schema.rootDirectory.isDirectory) null else PersistentRepository(schema)
-        }
-
-        /**
-         * Returns the persisted repository detected in the given [directory].
-         *
-         * @throws IOException if any input related errors occur
-         * @throws CorruptedRepositoryException if the repository is corrupted, or if no repository
-         * was detected
-         */
-        @Throws(IOException::class)
-        @JvmStatic
-        public fun load(directory: File): PersistentRepository =
-            tryLoad(directory)
-                ?: repositoryError("Persistent repository not found in '$directory'!")
-
         /**
          * Persists [this] repository in the given [directory], notifying the given [listener] of
          * the progress if it is not `null`, and returns the persisted repository.

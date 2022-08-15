@@ -25,9 +25,9 @@ import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.ErrorReport
 import org.chronolens.core.analysis.InvalidOptionException
 import org.chronolens.core.analysis.Option
-import org.chronolens.core.analysis.analyze
 import org.chronolens.core.analysis.option
 import org.chronolens.core.repository.CorruptedRepositoryException
+import org.chronolens.core.repository.RepositoryConnector
 import java.io.File
 
 /**
@@ -43,7 +43,8 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec, repositoryRootOption: Optio
 
     override fun execute() {
         try {
-            val report = analyzer.analyze(repositoryRoot)
+            val repository = RepositoryConnector.connect(analyzer.accessMode, repositoryRoot)
+            val report = analyzer.analyze(repository)
             if (report is ErrorReport) {
                 System.err.println(report)
             } else {

@@ -16,7 +16,6 @@
 
 package org.chronolens.core.repository
 
-import java.io.File
 import org.chronolens.core.model.Revision
 import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
@@ -28,7 +27,6 @@ import org.chronolens.core.parsing.Parser
 import org.chronolens.core.parsing.Parser.Companion.canParse
 import org.chronolens.core.parsing.Result
 import org.chronolens.core.versioning.VcsProxy
-import org.chronolens.core.versioning.VcsProxyFactory
 import org.chronolens.core.versioning.VcsRevision
 
 /**
@@ -104,31 +102,5 @@ internal class InteractiveRepository(private val vcs: VcsProxy) : Repository {
             sourceTree.apply(edits)
             Revision(RevisionId(revisionId), date, author, edits)
         }
-    }
-
-    companion object {
-        /**
-         * Returns the instance which can query the repository detected in the given [directory] for
-         * code metadata, or `null` if no supported VCS repository could be unambiguously detected.
-         *
-         * @throws CorruptedRepositoryException if the detected repository is corrupted or empty
-         * (doesn't have a `head` revision)
-         */
-        @JvmStatic
-        fun tryConnect(directory: File): InteractiveRepository? =
-            VcsProxyFactory.detect(directory)?.let(::InteractiveRepository)
-
-        /**
-         * Returns the instance which can query the repository detected in the given [directory] for
-         * code metadata.
-         *
-         * @throws CorruptedRepositoryException if the detected repository is corrupted or empty
-         * (doesn't have a `head` revision), or if no supported VCS repository could be
-         * unambiguously detected
-         */
-        @JvmStatic
-        fun connect(directory: File): InteractiveRepository =
-            tryConnect(directory)
-                ?: repositoryError("Interactive repository not found in '$directory'!")
     }
 }

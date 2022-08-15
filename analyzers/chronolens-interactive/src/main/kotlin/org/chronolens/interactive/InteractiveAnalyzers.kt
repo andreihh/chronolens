@@ -17,8 +17,6 @@
 package org.chronolens.interactive
 
 import org.chronolens.core.analysis.Analyzer
-import org.chronolens.core.analysis.Analyzer.Mode.FAST_HISTORY
-import org.chronolens.core.analysis.Analyzer.Mode.RANDOM_ACCESS
 import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.OptionsProvider
 import org.chronolens.core.analysis.Report
@@ -30,6 +28,9 @@ import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Repository
+import org.chronolens.core.repository.RepositoryConnector.AccessMode
+import org.chronolens.core.repository.RepositoryConnector.AccessMode.ANY
+import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 
 public class LsTree : AnalyzerSpec {
     override val name: String
@@ -40,7 +41,7 @@ public class LsTree : AnalyzerSpec {
 
     override fun create(optionsProvider: OptionsProvider): Analyzer =
         object : Analyzer(optionsProvider) {
-            override val mode: Mode
+            override val accessMode: AccessMode
                 get() = RANDOM_ACCESS
 
             private val rev by option<String>()
@@ -73,7 +74,7 @@ public class RevList : AnalyzerSpec {
 
     override fun create(optionsProvider: OptionsProvider): Analyzer =
         object : Analyzer(optionsProvider) {
-            override val mode: Mode
+            override val accessMode: AccessMode
                 get() = RANDOM_ACCESS
 
             override fun analyze(repository: Repository): RevListReport =
@@ -94,7 +95,7 @@ public class Model : AnalyzerSpec {
 
     override fun create(optionsProvider: OptionsProvider): Analyzer =
         object : Analyzer(optionsProvider) {
-            override val mode: Mode
+            override val accessMode: AccessMode
                 get() = RANDOM_ACCESS
 
             private val rev by option<String>()
@@ -135,7 +136,7 @@ public class Persist : AnalyzerSpec {
 
     override fun create(optionsProvider: OptionsProvider): Analyzer =
         object : Analyzer(optionsProvider) {
-            override val mode: Mode
+            override val accessMode: AccessMode
                 get() = RANDOM_ACCESS
 
             override fun analyze(repository: Repository): Report = TODO("not implemented")
@@ -151,8 +152,8 @@ public class Clean : AnalyzerSpec {
 
     override fun create(optionsProvider: OptionsProvider): Analyzer =
         object : Analyzer(optionsProvider) {
-            override val mode: Mode
-                get() = FAST_HISTORY
+            override val accessMode: AccessMode
+                get() = ANY
 
             override fun analyze(repository: Repository): Report = TODO("not implemented")
         }

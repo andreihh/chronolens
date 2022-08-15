@@ -22,6 +22,9 @@ import org.chronolens.core.model.RevisionId
 import org.chronolens.core.repository.InteractiveRepository
 import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
+import org.chronolens.core.repository.RepositoryConnector
+import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
+import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 
 /**
  * An abstract subcommand of a main command-line interface executable. Implementations must have the
@@ -47,19 +50,13 @@ public abstract class Subcommand : Command() {
         return className.removeSuffix("Command").words().joinToString(separator = "-")
     }
 
-    /**
-     * Returns the interactive repository from the current working directory, or exits if no
-     * repository is unambiguously detected.
-     */
+    /** Returns the interactive repository from the current working directory. */
     protected fun connect(): Repository =
-        InteractiveRepository.tryConnect(File(repositoryDirectory)) ?: exit("Repository not found!")
+        RepositoryConnector.connect(RANDOM_ACCESS, File(repositoryDirectory))
 
-    /**
-     * Returns the persistent repository from the current working directory, or exits if no
-     * persisted repository is found.
-     */
+    /** Returns the persistent repository from the current working directory. */
     protected fun load(): Repository =
-        PersistentRepository.tryLoad(File(repositoryDirectory)) ?: exit("Repository not found!")
+        RepositoryConnector.connect(FAST_HISTORY, File(repositoryDirectory))
 
     protected fun RequiredOption<String>.validateId(): RequiredOption<String> = validate { id ->
         require(QualifiedSourceNodeId.isValid(id)) { "Invalid id '$id'!" }

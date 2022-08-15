@@ -19,34 +19,32 @@ package org.chronolens.core.repository
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.test.fail
 import org.chronolens.core.model.RevisionId
-import org.chronolens.core.model.SourcePath
 import org.chronolens.core.repository.PersistentRepository.Companion.persist
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
+import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
+import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 import org.chronolens.test.core.repository.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 class PersistentRepositoryTest : RepositoryTest() {
-    @get:Rule val tmp = TemporaryFolder.builder().assureDeletion().build()
+    @get:Rule val tmp: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
     override fun createRepository(): PersistentRepository =
-        InteractiveRepository.tryConnect(tmp.root)?.persist(tmp.root)
-            ?: fail("Couldn't connect to VCS repository!")
+        RepositoryConnector.connect(RANDOM_ACCESS, tmp.root).persist(tmp.root)
 
     @Test
     fun `test load after clean returns null`() {
         PersistentRepository.clean(tmp.root)
-        assertNull(PersistentRepository.tryLoad(tmp.root))
+        assertNull(RepositoryConnector.tryConnect(FAST_HISTORY, tmp.root))
     }
 
     @Test
     fun `test load returns equal repository`() {
         val expected = repository
-        val actual =
-            PersistentRepository.tryLoad(tmp.root) ?: fail("Couldn't load persisted repository!")
+        val actual = RepositoryConnector.connect(FAST_HISTORY, tmp.root)
         assertEquals(expected, actual)
     }
 
@@ -93,8 +91,8 @@ class PersistentRepositoryTest : RepositoryTest() {
                 }
             }
 
-        InteractiveRepository.tryConnect(tmp.root)?.persist(tmp.root, listener)
-            ?: fail("Repository not found!")
+        RepositoryConnector.connect(RANDOM_ACCESS, tmp.root).persist(tmp.root, listener)
+
         assertEquals(ProgressListenerState.DONE, listener.state)
     }
 }

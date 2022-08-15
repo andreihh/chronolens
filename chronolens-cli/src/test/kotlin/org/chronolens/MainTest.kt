@@ -22,6 +22,8 @@ import kotlin.test.fail
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.repository.PersistentRepository
+import org.chronolens.core.repository.RepositoryConnector
+import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
 import org.chronolens.core.subprocess.Subprocess.execute
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -64,7 +66,7 @@ class MainTest {
 
     @Test
     fun `test snapshot equals applied edits from history`() {
-        val repository = PersistentRepository.tryLoad(tmp.root) ?: fail()
+        val repository = RepositoryConnector.connect(FAST_HISTORY, tmp.root)
         val expected = repository.getSnapshot()
 
         val actual = SourceTree.empty()

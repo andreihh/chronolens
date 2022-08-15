@@ -16,8 +16,8 @@
 
 package org.chronolens.core.repository
 
+import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 import kotlin.test.assertNull
-import kotlin.test.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -26,12 +26,12 @@ class InteractiveRepositoryTest : RepositoryTest() {
     @get:Rule val tmp = TemporaryFolder.builder().assureDeletion().build()
 
     override fun createRepository(): Repository =
-        InteractiveRepository.tryConnect(tmp.root) ?: fail("Couldn't connect to VCS repository!")
+        RepositoryConnector.connect(RANDOM_ACCESS, tmp.root)
 
     @Test
     fun `test connect with empty repository returns null`() {
         resetVcsRepository()
-        assertNull(InteractiveRepository.tryConnect(tmp.root))
+        assertNull(RepositoryConnector.tryConnect(RANDOM_ACCESS, tmp.root))
     }
 
     // TODO: figure out if test needs to be replaced.

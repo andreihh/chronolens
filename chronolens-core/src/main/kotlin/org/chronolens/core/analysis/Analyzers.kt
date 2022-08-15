@@ -16,13 +16,9 @@
 
 package org.chronolens.core.analysis
 
-import org.chronolens.core.analysis.Analyzer.Mode.FAST_HISTORY
-import org.chronolens.core.analysis.Analyzer.Mode.RANDOM_ACCESS
 import org.chronolens.core.repository.CorruptedRepositoryException
-import org.chronolens.core.repository.PersistentRepository
 import org.chronolens.core.repository.Repository
-import org.chronolens.core.repository.InteractiveRepository
-import java.io.File
+import org.chronolens.core.repository.RepositoryConnector.AccessMode
 import java.util.ServiceLoader
 
 /**
@@ -35,17 +31,8 @@ import java.util.ServiceLoader
 public abstract class Analyzer(optionsProvider: OptionsProvider)
     : OptionsProvider by optionsProvider {
 
-    /** Specifies the mode in which the analyzed repository is accessed. */
-    public enum class Mode {
-        /** Requires fast access to [Repository.getSource]. */
-        RANDOM_ACCESS,
-
-        /** Requires fast access to [Repository.getHistory]. */
-        FAST_HISTORY,
-    }
-
     /** The mode in which the analyzed repository is accessed. */
-    public abstract val mode: Mode
+    public abstract val accessMode: AccessMode
 
     /**
      * Performs the analysis on the given [repository].
@@ -79,15 +66,3 @@ public interface AnalyzerSpec {
             ServiceLoader.load(AnalyzerSpec::class.java)
     }
 }
-
-/**
- * Runs [this] analyzer on the repository found in the [repositoryRoot].
- *
- * @throws CorruptedRepositoryException if the repository is corrupted or if no repository could be
- * unambiguously found
- */
-public fun Analyzer.analyze(repositoryRoot: File): Report =
-    when (mode) {
-        RANDOM_ACCESS -> analyze(InteractiveRepository.connect(repositoryRoot))
-        FAST_HISTORY -> analyze(PersistentRepository.load(repositoryRoot))
-    }
