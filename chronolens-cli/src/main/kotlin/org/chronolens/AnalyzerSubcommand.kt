@@ -18,37 +18,26 @@
 
 package org.chronolens
 
-import java.io.File
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.ErrorReport
 import org.chronolens.core.analysis.InvalidOptionException
-import org.chronolens.core.analysis.Option
-import org.chronolens.core.analysis.option
 import org.chronolens.core.repository.CorruptedRepositoryException
-import org.chronolens.core.repository.InteractiveRepository
-import org.chronolens.core.repository.PersistentRepository
 
 /**
  * A command line subcommand that runs an [org.chronolens.core.analysis.Analyzer].
  *
  * @param analyzerSpec the [AnalyzerSpec] used to create the analyzer
- * @param repositoryRootOption the repository root directory option
  */
-class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec, repositoryRootOption: Option<File>) :
+class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec) :
     Subcommand(analyzerSpec.name, analyzerSpec.description) {
 
     private val analyzer = analyzerSpec.create(CommandLineOptionsProvider(this))
-    private val repositoryRoot by repositoryRootOption
 
     override fun execute() {
-        val repository =
-            InteractiveRepository.connect(repositoryRoot)
-                ?: PersistentRepository.load(repositoryRoot)
-                ?: error("No repository detected in directory '$repositoryRoot'!")
         try {
-            val report = analyzer.analyze(repository)
+            val report = analyzer.analyze()
             if (report is ErrorReport) {
                 System.err.println(report)
             } else {
@@ -64,16 +53,11 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec, repositoryRootOption: Optio
     }
 }
 
-/**
- * Defines common [org.chronolens.core.analysis.Analyzer] options and returns the list of
- * [Subcommand]s for all registered [AnalyzerSpec]s.
- */
-fun CommandLineOptionsProvider.assembleAnalyzerSubcommands(): List<Subcommand> {
-    val repositoryRootOption =
-        option<String>().name("repository-root").default(".").transform(::File)
+/** Returns the list of [Subcommand]s for all registered [AnalyzerSpec]s. */
+fun assembleAnalyzerSubcommands(): List<Subcommand> {
     val subcommands = mutableListOf<Subcommand>()
     for (analyzerSpec in AnalyzerSpec.loadAnalyzerSpecs()) {
-        subcommands += AnalyzerSubcommand(analyzerSpec, repositoryRootOption)
+        subcommands += AnalyzerSubcommand(analyzerSpec)
     }
     return subcommands
 }

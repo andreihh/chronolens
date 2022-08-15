@@ -25,6 +25,15 @@ import org.chronolens.core.serialization.JsonModule
 import org.chronolens.core.versioning.VcsRevision
 
 /**
+ * Throws a [CorruptedRepositoryException] with the given [message].
+ *
+ * @throws CorruptedRepositoryException
+ */
+internal fun repositoryError(message: String): Nothing {
+    throw CorruptedRepositoryException(message)
+}
+
+/**
  * Checks that the given [condition] is true.
  *
  * @throws CorruptedRepositoryException if [condition] is false

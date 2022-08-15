@@ -46,8 +46,7 @@ class Main : MainCommand() {
 fun main(args: Array<String>) {
     // TODO: make the default main function once tested.
     val parser = ArgParser("chronolens")
-    val optionsProvider = CommandLineOptionsProvider(parser)
     parser.strictSubcommandOptionsOrder = true
-    parser.subcommands(*optionsProvider.assembleAnalyzerSubcommands().toTypedArray())
+    parser.subcommands(*assembleAnalyzerSubcommands().toTypedArray())
     parser.parse(args)
 }

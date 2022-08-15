@@ -55,9 +55,6 @@ internal class GitProxy(
         require(result.isSuccess) { "Revision '$revisionId' doesn't exist!" }
     }
 
-    override val rootDirectory: File
-        get() = directory
-
     override fun getHead(): VcsRevision = getRevision(headId) ?: error("'$headId' must exist!")
 
     override fun getRevision(revisionId: String): VcsRevision? {

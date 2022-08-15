@@ -42,9 +42,6 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
     private val headSources by lazy { listSources(head) }
     private val history by lazy { vcs.getHistory().let(::checkValidHistory) }
 
-    override val rootDirectory: File
-        get() = vcs.rootDirectory
-
     override fun getHeadId(): RevisionId = head
 
     override fun listSources(): Set<SourcePath> = unmodifiableSet(headSources)

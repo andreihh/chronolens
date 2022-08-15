@@ -55,9 +55,6 @@ public class RepositoryBuilder {
                 check(history.isNotEmpty())
             }
 
-            override val rootDirectory: File
-                get() = this@RepositoryBuilder.rootDirectory
-
             override fun getHeadId(): RevisionId = history.last().id
 
             override fun listSources(): Set<SourcePath> =

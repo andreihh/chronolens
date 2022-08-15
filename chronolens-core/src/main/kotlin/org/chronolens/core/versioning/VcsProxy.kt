@@ -16,8 +16,6 @@
 
 package org.chronolens.core.versioning
 
-import java.io.File
-
 /**
  * A version control system (VCS) proxy which interacts with the repository detected in a specified
  * directory (repository root).
@@ -26,9 +24,6 @@ import java.io.File
  * be in a valid state.
  */
 public interface VcsProxy {
-    /** The root directory of this VCS repository. */
-    public val rootDirectory: File
-
     /** Returns the `head` revision. */
     public fun getHead(): VcsRevision
 

@@ -16,8 +16,6 @@
 
 package org.chronolens.core.versioning
 
-import java.io.File
-
 class VcsProxyMock(private val revisions: List<RevisionMock>) : VcsProxy {
     private val revisionsById = revisions.associateBy(RevisionMock::id)
     private val files: Map<String, Map<String, String?>>
@@ -39,9 +37,6 @@ class VcsProxyMock(private val revisions: List<RevisionMock>) : VcsProxy {
 
     private fun getRevisionMock(id: String): RevisionMock =
         requireNotNull(revisionsById[id]) { "Revision '$id' doesn't exist!" }
-
-    override val rootDirectory: File
-        get() = File(".")
 
     override fun getHead(): VcsRevision = checkNotNull(revisions.lastOrNull()).toRevision()
 
