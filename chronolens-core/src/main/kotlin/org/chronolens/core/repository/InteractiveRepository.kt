@@ -36,7 +36,7 @@ import org.chronolens.core.versioning.VcsRevision
  *
  * All queries retrieve and interpret the data from a VCS subprocess.
  */
-public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
+internal class InteractiveRepository(private val vcs: VcsProxy) : Repository {
     private val head by lazy { vcs.getHead().id.let(::checkValidRevisionId) }
     private val history by lazy { vcs.getHistory().let(::checkValidHistory) }
 
@@ -44,7 +44,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
 
     override fun listRevisions(): List<RevisionId> = history.map(VcsRevision::id).map(::RevisionId)
 
-    public override fun listSources(revisionId: RevisionId): Set<SourcePath> {
+    override fun listSources(revisionId: RevisionId): Set<SourcePath> {
         val allSources = checkValidSources(vcs.listFiles(revisionId.toString()))
         return allSources.filter(::canParse).toSet()
     }
@@ -70,7 +70,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
         return SourceFile(path)
     }
 
-    public override fun getSource(path: SourcePath, revisionId: RevisionId): SourceFile? {
+    override fun getSource(path: SourcePath, revisionId: RevisionId): SourceFile? {
         return when (val result = parseSource(revisionId, path)) {
             is Result.Success -> result.source
             Result.SyntaxError -> getLatestValidSource(revisionId, path)
@@ -78,7 +78,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
         }
     }
 
-    public override fun getSnapshot(revisionId: RevisionId): SourceTree {
+    override fun getSnapshot(revisionId: RevisionId): SourceTree {
         val sources = listSources().map(::getSource).checkNoNulls()
         return SourceTree.of(sources)
     }
@@ -106,7 +106,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
         }
     }
 
-    public companion object {
+    companion object {
         /**
          * Returns the instance which can query the repository detected in the given [directory] for
          * code metadata, or `null` if no supported VCS repository could be unambiguously detected.
@@ -115,7 +115,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
          * (doesn't have a `head` revision)
          */
         @JvmStatic
-        public fun tryConnect(directory: File): InteractiveRepository? =
+        fun tryConnect(directory: File): InteractiveRepository? =
             VcsProxyFactory.detect(directory)?.let(::InteractiveRepository)
 
         /**
@@ -127,7 +127,7 @@ public class InteractiveRepository(private val vcs: VcsProxy) : Repository {
          * unambiguously detected
          */
         @JvmStatic
-        public fun connect(directory: File): InteractiveRepository =
+        fun connect(directory: File): InteractiveRepository =
             tryConnect(directory)
                 ?: repositoryError("Interactive repository not found in '$directory'!")
     }

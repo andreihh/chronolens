@@ -114,25 +114,8 @@ class Persist : Subcommand() {
         repository.persist(
             File(repositoryDirectory),
             object : ProgressListener {
-                private var sources = 0
                 private var revisions = 0
                 private var i = 0
-
-                override fun onSnapshotStart(headId: RevisionId, sourceCount: Int) {
-                    println("Persisting snapshot '$headId'...")
-                    sources = sourceCount
-                    i = 0
-                }
-
-                override fun onSourcePersisted(path: SourcePath) {
-                    i++
-                    print("Persisted $i / $sources sources...\r")
-                }
-
-                override fun onSnapshotEnd() {
-                    println()
-                    println("Done!")
-                }
 
                 override fun onHistoryStart(revisionCount: Int) {
                     println("Persisting revisions...")

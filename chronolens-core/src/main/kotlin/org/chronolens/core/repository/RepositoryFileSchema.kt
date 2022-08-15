@@ -18,19 +18,11 @@ package org.chronolens.core.repository
 
 import java.io.File
 import org.chronolens.core.model.RevisionId
-import org.chronolens.core.model.SourcePath
 
 internal data class RepositoryFileSchema(val repositoryDirectory: File) {
     val rootDirectory: File = File(repositoryDirectory, ".chronolens")
-    val headFile: File = File(rootDirectory, "HEAD")
-    val sourcesFile: File = File(rootDirectory, "SOURCES")
     val historyFile: File = File(rootDirectory, "HISTORY")
-    val snapshotDirectory: File = File(rootDirectory, "snapshot")
     val revisionsDirectory: File = File(rootDirectory, "revisions")
-
-    fun getSourceDirectory(path: SourcePath): File = File(snapshotDirectory, path.toString())
-
-    fun getSourceFile(path: SourcePath): File = File(getSourceDirectory(path), "model.json")
 
     fun getRevisionsFile(id: RevisionId): File = File(revisionsDirectory, "$id.json")
 }

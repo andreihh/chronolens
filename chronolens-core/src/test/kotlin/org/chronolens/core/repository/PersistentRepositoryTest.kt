@@ -59,8 +59,6 @@ class PersistentRepositoryTest : RepositoryTest() {
 
     private enum class ProgressListenerState {
         IDLE,
-        SNAPSHOT,
-        TRANSIENT,
         HISTORY,
         DONE
     }
@@ -72,33 +70,12 @@ class PersistentRepositoryTest : RepositoryTest() {
                 var state = ProgressListenerState.IDLE
                     private set
 
-                private val sources = mutableSetOf<SourcePath>()
                 private val revisions = mutableListOf<RevisionId>()
-
-                override fun onSnapshotStart(headId: RevisionId, sourceCount: Int) {
-                    sources += repository.listSources()
-                    assertEquals(ProgressListenerState.IDLE, state)
-                    assertEquals(repository.getHeadId(), headId)
-                    assertEquals(sources.size, sourceCount)
-                    state = ProgressListenerState.SNAPSHOT
-                }
-
-                override fun onSourcePersisted(path: SourcePath) {
-                    assertEquals(ProgressListenerState.SNAPSHOT, state)
-                    assertTrue(path in sources)
-                    sources -= path
-                }
-
-                override fun onSnapshotEnd() {
-                    assertEquals(ProgressListenerState.SNAPSHOT, state)
-                    assertTrue(sources.isEmpty())
-                    state = ProgressListenerState.TRANSIENT
-                }
 
                 override fun onHistoryStart(revisionCount: Int) {
                     revisions += repository.listRevisions()
                     revisions.reverse()
-                    assertEquals(ProgressListenerState.TRANSIENT, state)
+                    assertEquals(ProgressListenerState.IDLE, state)
                     assertEquals(revisions.size, revisionCount)
                     state = ProgressListenerState.HISTORY
                 }

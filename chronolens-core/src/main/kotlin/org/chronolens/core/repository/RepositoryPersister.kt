@@ -18,7 +18,6 @@ package org.chronolens.core.repository
 
 import java.io.IOException
 import org.chronolens.core.model.Revision
-import org.chronolens.core.model.SourceFile
 import org.chronolens.core.repository.PersistentRepository.ProgressListener
 import org.chronolens.core.serialization.JsonModule
 
@@ -31,35 +30,7 @@ internal class RepositoryPersister(
     @Throws(IOException::class)
     fun persist() {
         mkdirs(schema.rootDirectory)
-        schema.headFile.printWriter().use { out -> out.println(repository.getHeadId()) }
-        persistSnapshot()
         persistHistory()
-    }
-
-    private fun persistSource(source: SourceFile) {
-        mkdirs(schema.getSourceDirectory(source.path))
-        schema.getSourceFile(source.path).outputStream().use { out ->
-            JsonModule.serialize(out, source)
-        }
-    }
-
-    private fun persistSnapshot() {
-        listener?.onSnapshotStart(
-            headId = repository.getHeadId(),
-            sourceCount = repository.listSources().size,
-        )
-        mkdirs(schema.snapshotDirectory)
-        schema.sourcesFile.printWriter().use { out ->
-            for (path in repository.listSources()) {
-                val source =
-                    repository.getSource(path)
-                        ?: throw CorruptedRepositoryException("'$path' couldn't be interpreted!")
-                out.println(path)
-                persistSource(source)
-                listener?.onSourcePersisted(path)
-            }
-        }
-        listener?.onSnapshotEnd()
     }
 
     private fun persistRevision(revision: Revision) {

@@ -25,7 +25,7 @@ import org.junit.rules.TemporaryFolder
 class InteractiveRepositoryTest : RepositoryTest() {
     @get:Rule val tmp = TemporaryFolder.builder().assureDeletion().build()
 
-    override fun createRepository(): InteractiveRepository =
+    override fun createRepository(): Repository =
         InteractiveRepository.tryConnect(tmp.root) ?: fail("Couldn't connect to VCS repository!")
 
     @Test

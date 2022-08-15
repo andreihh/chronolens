@@ -20,7 +20,6 @@ import java.io.File
 import java.io.IOException
 import java.io.UncheckedIOException
 import java.util.Collections.unmodifiableList
-import java.util.Collections.unmodifiableSet
 import org.chronolens.core.model.Revision
 import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
@@ -39,51 +38,31 @@ public class PersistentRepository private constructor(private val schema: Reposi
     Repository {
     // TODO: wrap all IOExceptions into UncheckedIOExceptions.
 
-    private val head by lazy {
-        val rawHeadId = schema.headFile.readFileLines()
-        checkState(rawHeadId.size == 1) {
-            "'${schema.headFile}' must contain a single line with the head id!"
-        }
-        checkValidRevisionId(rawHeadId.single())
-    }
-
-    private val sources by lazy {
-        val rawSources = schema.sourcesFile.readFileLines()
-        checkValidSources(rawSources)
-    }
-
     private val history by lazy {
         val rawHistory = schema.historyFile.readFileLines()
         checkValidHistory(rawHistory)
     }
 
+    private val head by lazy { history.last() }
+
     override fun getHeadId(): RevisionId = head
 
     override fun listSources(revisionId: RevisionId): Set<SourcePath> =
-        if (revisionId == head) unmodifiableSet(sources)
-        else getSnapshot(revisionId).sources.map(SourceFile::path).toSet()
+        getSnapshot(revisionId).sources.map(SourceFile::path).toSet()
 
     override fun listRevisions(): List<RevisionId> = unmodifiableList(history)
 
     override fun getSource(path: SourcePath, revisionId: RevisionId): SourceFile? =
-        if (revisionId == head) {
-            val file = schema.getSourceFile(path)
-            if (path in sources) JsonModule.deserialize(file) else null
-        } else {
-            getSnapshot(revisionId)[path]
-        }
+        getSnapshot(revisionId)[path]
 
-    override fun getSnapshot(revisionId: RevisionId): SourceTree =
-        if (revisionId == head) {
-            SourceTree.of(sources.mapNotNull(::getSource))
-        } else {
-            val snapshot = SourceTree.empty()
-            for (revision in getHistory()) {
-                snapshot.apply(revision.edits)
-                if (revision.id == revisionId) break
-            }
-            snapshot
+    override fun getSnapshot(revisionId: RevisionId): SourceTree {
+        val snapshot = SourceTree.empty()
+        for (revision in getHistory()) {
+            snapshot.apply(revision.edits)
+            if (revision.id == revisionId) break
         }
+        return snapshot
+    }
 
     override fun getHistory(): Sequence<Revision> =
         history.asSequence().map { revisionId ->
@@ -162,9 +141,6 @@ public class PersistentRepository private constructor(private val schema: Reposi
 
     /** A listener notified on the progress of persisting a repository. */
     public interface ProgressListener {
-        public fun onSnapshotStart(headId: RevisionId, sourceCount: Int)
-        public fun onSourcePersisted(path: SourcePath)
-        public fun onSnapshotEnd()
         public fun onHistoryStart(revisionCount: Int)
         public fun onRevisionPersisted(revisionId: RevisionId)
         public fun onHistoryEnd()
