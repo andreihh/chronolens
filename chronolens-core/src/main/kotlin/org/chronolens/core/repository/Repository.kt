@@ -114,25 +114,72 @@ public interface Repository {
         private val listener: HistoryProgressListener,
     ) {
 
-        init {
-            checkState(revisionCount > 0) { "History must not be empty!" }
-        }
-
         private var trackedRevisions = 0
 
         fun onRevision(revision: Revision): Revision {
             if (trackedRevisions == 0) {
                 listener.onStart(revisionCount)
             }
-            trackedRevisions++
-            checkState(trackedRevisions <= revisionCount) {
-                "Tracked '$trackedRevisions' revisions, but only '$revisionCount' were registered!"
-            }
             listener.onRevision(revision)
+            trackedRevisions++
             if (trackedRevisions == revisionCount) {
                 listener.onEnd()
             }
             return revision
         }
     }
+}
+
+/**
+ * Throws a [CorruptedRepositoryException] with the given [message].
+ *
+ * @throws CorruptedRepositoryException
+ */
+internal fun repositoryError(message: String): Nothing {
+    throw CorruptedRepositoryException(message)
+}
+
+/**
+ * Checks that the given [condition] is true.
+ *
+ * @throws CorruptedRepositoryException if [condition] is false
+ */
+internal fun checkState(condition: Boolean, lazyMessage: () -> String) {
+    if (!condition) throw CorruptedRepositoryException(lazyMessage())
+}
+
+/**
+ * Checks that the given revision [id] is valid.
+ *
+ * @throws CorruptedRepositoryException if the given [id] is invalid
+ */
+internal fun checkValidRevisionId(id: String): RevisionId {
+    checkState(RevisionId.isValid(id)) { "Invalid revision id '$id'!" }
+    return RevisionId(id)
+}
+
+/**
+ * Checks that the given source file [path] is valid.
+ *
+ * @throws CorruptedRepositoryException if the given [path] is invalid
+ */
+internal fun checkValidPath(path: String): SourcePath {
+    checkState(SourcePath.isValid(path)) { "Invalid source file path '$path'!" }
+    return SourcePath(path)
+}
+
+/**
+ * Checks that [this] list of revision ids represent a valid history.
+ *
+ * @throws CorruptedRepositoryException if [this] list is empty, contains duplicates or invalid
+ * revision ids
+ */
+internal fun List<String>.checkValidHistory(): List<RevisionId> {
+    checkState(isNotEmpty()) { "History must not be empty!" }
+    val revisionIds = HashSet<RevisionId>(this.size)
+    for (id in this.map(::checkValidRevisionId)) {
+        checkState(id !in revisionIds) { "Duplicated revision id '$id'!" }
+        revisionIds += id
+    }
+    return this.map(::RevisionId)
 }

@@ -19,21 +19,22 @@ package org.chronolens.core.repository
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.ANY
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
+import org.chronolens.core.repository.RepositoryFileStorage.Companion.STORAGE_ROOT_DIRECTORY
 import org.chronolens.core.versioning.VcsProxyFactory
 import java.io.File
 import java.io.IOException
 import java.io.UncheckedIOException
 
-public object RepositoryConnector {
+public class RepositoryConnector private constructor(private val rootDirectory: File) {
     /** Specifies the mode in which the [Repository] is accessed. */
     public enum class AccessMode {
         /** No specific requirements. */
         ANY,
 
-        /** Requires fast access to [Repository.getSource]. */
+        /** Requires fast access to [Repository.getSnapshot] and [Repository.getSource]. */
         RANDOM_ACCESS,
 
-        /** Requires fast access to [Repository.getHistory]. */
+        /** Requires fast access to [Repository.getHistory] and [Repository.listRevisions]. */
         FAST_HISTORY,
     }
 
@@ -44,12 +45,11 @@ public object RepositoryConnector {
      * @throws CorruptedRepositoryException if the detected repository is corrupted
      * @throws UncheckedIOException if any I/O errors occur
      */
-    @JvmStatic
-    public fun tryConnect(accessMode: AccessMode, rootDirectory: File): Repository? =
+    public fun tryConnect(accessMode: AccessMode): Repository? =
         when (accessMode) {
-            RANDOM_ACCESS -> tryConnectInteractive(rootDirectory)
-            FAST_HISTORY -> tryLoadPersistent(rootDirectory)
-            ANY -> tryConnectInteractive(rootDirectory) ?: tryLoadPersistent(rootDirectory)
+            RANDOM_ACCESS -> tryConnectInteractive()
+            FAST_HISTORY -> tryLoadPersistent()
+            ANY -> tryConnectInteractive() ?: tryLoadPersistent()
         }
 
     /**
@@ -60,18 +60,51 @@ public object RepositoryConnector {
      * supported repository could be unambiguously detected
      * @throws UncheckedIOException if any I/O errors occur
      */
-    @JvmStatic
-    public fun connect(accessMode: AccessMode, rootDirectory: File): Repository =
-        tryConnect(accessMode, rootDirectory)
+    public fun connect(accessMode: AccessMode): Repository =
+        tryConnect(accessMode)
             ?: repositoryError("No repository found in '$rootDirectory' for mode '$accessMode'!")
 
-    private fun tryConnectInteractive(rootDirectory: File): Repository? =
+    @Throws(IOException::class)
+    public fun tryOpen(): RepositoryStorage? =
+        if (!File(rootDirectory, STORAGE_ROOT_DIRECTORY).isDirectory) null
+        else RepositoryFileStorage(rootDirectory)
+
+    @Throws(IOException::class)
+    public fun open(): RepositoryStorage =
+        tryOpen() ?: throw IOException("No repository storage found in '$rootDirectory'!")
+
+    @Throws(IOException::class)
+    public fun openForWrite(): RepositoryStorage =
+        RepositoryFileStorage(rootDirectory)
+
+    /**
+     * Deletes the repository storage from the given [rootDirectory].
+     *
+     * All corresponding [RepositoryStorage] and [PersistentRepository] instances will become
+     * corrupted after this method is called.
+     *
+     * @throws IOException if any I/O errors occur
+     */
+    @Throws(IOException::class)
+    public fun delete() {
+        if (!File(rootDirectory, STORAGE_ROOT_DIRECTORY).deleteRecursively()) {
+            throw IOException("Failed to delete '$rootDirectory' recursively!")
+        }
+    }
+
+    private fun tryConnectInteractive(): Repository? =
         VcsProxyFactory.detect(rootDirectory)?.let(::InteractiveRepository)
 
-    private fun tryLoadPersistent(rootDirectory: File): Repository? =
+    private fun tryLoadPersistent(): Repository? =
         try {
-            RepositoryDatabaseFactory.detect(rootDirectory)?.let(::PersistentRepository)
+            tryOpen()?.let(::PersistentRepository)
         } catch (e: IOException) {
             throw UncheckedIOException(e)
         }
+
+    public companion object {
+        @JvmStatic
+        public fun newConnector(rootDirectory: File): RepositoryConnector =
+            RepositoryConnector(rootDirectory)
+    }
 }

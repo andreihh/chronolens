@@ -24,8 +24,8 @@ import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.core.model.walkSourceTree
 import org.chronolens.core.repository.Repository.HistoryProgressListener
-import org.chronolens.core.repository.RepositoryDatabaseFactory
-import org.chronolens.core.repository.RepositoryDatabaseFactory.persist
+import org.chronolens.core.repository.RepositoryConnector
+import org.chronolens.core.repository.persist
 
 class LsTree : Subcommand() {
     override val help: String
@@ -112,7 +112,7 @@ class Persist : Subcommand() {
     override fun run() {
         val repository = connect()
         repository.persist(
-            File(repositoryDirectory),
+            RepositoryConnector.newConnector(File(repositoryDirectory)).openForWrite(),
             object : HistoryProgressListener {
                 private var revisions = 0
                 private var i = 0
@@ -146,6 +146,6 @@ class Clean : Subcommand() {
     """
 
     override fun run() {
-        RepositoryDatabaseFactory.clean(File(repositoryDirectory))
+        RepositoryConnector.newConnector(File(repositoryDirectory)).delete()
     }
 }

@@ -50,11 +50,11 @@ public abstract class Subcommand : Command() {
 
     /** Returns the interactive repository from the current working directory. */
     protected fun connect(): Repository =
-        RepositoryConnector.connect(RANDOM_ACCESS, File(repositoryDirectory))
+        RepositoryConnector.newConnector(File(repositoryDirectory)).connect(RANDOM_ACCESS)
 
     /** Returns the persistent repository from the current working directory. */
     protected fun load(): Repository =
-        RepositoryConnector.connect(FAST_HISTORY, File(repositoryDirectory))
+        RepositoryConnector.newConnector(File(repositoryDirectory)).connect(FAST_HISTORY)
 
     protected fun RequiredOption<String>.validateId(): RequiredOption<String> = validate { id ->
         require(QualifiedSourceNodeId.isValid(id)) { "Invalid id '$id'!" }

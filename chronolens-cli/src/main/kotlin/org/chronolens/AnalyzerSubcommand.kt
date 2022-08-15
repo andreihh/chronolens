@@ -28,7 +28,11 @@ import org.chronolens.core.analysis.Option
 import org.chronolens.core.analysis.option
 import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.RepositoryConnector
+import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
+import org.chronolens.core.repository.persist
 import java.io.File
+import java.io.IOException
+import java.io.UncheckedIOException
 
 /**
  * A command line subcommand that runs an [org.chronolens.core.analysis.Analyzer].
@@ -43,7 +47,8 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec, repositoryRootOption: Optio
 
     override fun execute() {
         try {
-            val repository = RepositoryConnector.connect(analyzer.accessMode, repositoryRoot)
+            val repository =
+                RepositoryConnector.newConnector(repositoryRoot).connect(analyzer.accessMode)
             val report = analyzer.analyze(repository)
             if (report is ErrorReport) {
                 System.err.println(report)
@@ -56,6 +61,34 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec, repositoryRootOption: Optio
         } catch (e: CorruptedRepositoryException) {
             System.err.println("The repository is corrupted!")
             e.printStackTrace()
+        } catch (e: UncheckedIOException) {
+            System.err.println("An I/O error occurred!")
+            e.printStackTrace()
+        }
+    }
+}
+
+class PersistSubcommand(repositoryRootOption: Option<File>) : Subcommand("persist", "") {
+    private val repositoryRoot by repositoryRootOption
+    private val connector by lazy { RepositoryConnector.newConnector(repositoryRoot) }
+
+    override fun execute() {
+        try {
+            connector.connect(RANDOM_ACCESS).persist(connector.openForWrite())
+        } catch (e: IOException) {
+            throw UncheckedIOException(e)
+        }
+    }
+}
+
+class CleanSubcommand(repositoryRootOption: Option<File>) : Subcommand("clean", "") {
+    private val repositoryRoot by repositoryRootOption
+
+    override fun execute() {
+        try {
+            RepositoryConnector.newConnector(repositoryRoot).delete()
+        } catch (e: IOException) {
+            throw UncheckedIOException(e)
         }
     }
 }
@@ -75,5 +108,7 @@ fun ArgParser.assembleAnalyzerSubcommands(): List<Subcommand> {
     for (analyzerSpec in AnalyzerSpec.loadAnalyzerSpecs()) {
         subcommands += AnalyzerSubcommand(analyzerSpec, repositoryRootOption)
     }
+    subcommands += PersistSubcommand(repositoryRootOption)
+    subcommands += CleanSubcommand(repositoryRootOption)
     return subcommands
 }

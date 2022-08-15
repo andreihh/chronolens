@@ -24,7 +24,6 @@ import org.chronolens.core.model.RevisionId
 import org.chronolens.core.repository.Repository.HistoryProgressListener
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
-import org.chronolens.core.repository.RepositoryDatabaseFactory.persist
 import org.chronolens.test.core.repository.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -33,26 +32,28 @@ import org.junit.rules.TemporaryFolder
 class PersistentRepositoryTest : RepositoryTest() {
     @get:Rule val tmp: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
+    private val connector by lazy { RepositoryConnector.newConnector(tmp.root) }
+
     override fun createRepository(): Repository =
-        PersistentRepository(RepositoryConnector.connect(RANDOM_ACCESS, tmp.root).persist(tmp.root))
+        connector.connect(RANDOM_ACCESS).persist(connector.openForWrite())
 
     @Test
     fun `test load after clean returns null`() {
-        RepositoryDatabaseFactory.clean(tmp.root)
-        assertNull(RepositoryConnector.tryConnect(FAST_HISTORY, tmp.root))
+        connector.delete()
+        assertNull(connector.tryConnect(FAST_HISTORY))
     }
 
     @Test
     fun `test load returns equal repository`() {
         val expected = repository
-        val actual = RepositoryConnector.connect(FAST_HISTORY, tmp.root)
+        val actual = connector.connect(FAST_HISTORY)
         assertEquals(expected, actual)
     }
 
     @Test
     fun `test persist already persisted returns same repository`() {
         val expected = repository
-        val actual = PersistentRepository(repository.persist(tmp.root))
+        val actual = repository.persist(connector.openForWrite())
         assertEquals(expected, actual)
     }
 
@@ -92,7 +93,7 @@ class PersistentRepositoryTest : RepositoryTest() {
                 }
             }
 
-        RepositoryConnector.connect(RANDOM_ACCESS, tmp.root).persist(tmp.root, listener)
+        connector.connect(RANDOM_ACCESS).persist(connector.openForWrite(), listener)
 
         assertEquals(ProgressListenerState.DONE, listener.state)
     }

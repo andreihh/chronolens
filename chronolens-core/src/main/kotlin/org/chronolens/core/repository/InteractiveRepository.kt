@@ -36,14 +36,14 @@ import org.chronolens.core.versioning.VcsRevision
  */
 internal class InteractiveRepository(private val vcs: VcsProxy) : Repository {
     private val head by lazy { vcs.getHead().id.let(::checkValidRevisionId) }
-    private val history by lazy { vcs.getHistory().let(::checkValidHistory) }
+    private val history by lazy { vcs.getHistory().checkValidHistory() }
 
     override fun getHeadId(): RevisionId = head
 
     override fun listRevisions(): List<RevisionId> = history.map(VcsRevision::id).map(::RevisionId)
 
     override fun listSources(revisionId: RevisionId): Set<SourcePath> {
-        val allSources = checkValidSources(vcs.listFiles(revisionId.toString()))
+        val allSources = vcs.listFiles(revisionId.toString()).checkValidSources()
         return allSources.filter(::canParse).toSet()
     }
 
@@ -77,7 +77,7 @@ internal class InteractiveRepository(private val vcs: VcsProxy) : Repository {
     }
 
     override fun getSnapshot(revisionId: RevisionId): SourceTree {
-        val sources = listSources().map(::getSource).checkNoNulls()
+        val sources = listSources(revisionId).map(::getSource).checkNoNulls()
         return SourceTree.of(sources)
     }
 
@@ -103,4 +103,44 @@ internal class InteractiveRepository(private val vcs: VcsProxy) : Repository {
             Revision(RevisionId(revisionId), date, author, edits)
         }
     }
+}
+
+/**
+ * Checks that [this] list of revision ids represent a valid history.
+ *
+ * @throws CorruptedRepositoryException if [this] list is empty, or contains invalid or duplicated
+ * revision ids
+ */
+private fun List<VcsRevision>.checkValidHistory(): List<VcsRevision> {
+    this.map(VcsRevision::id).checkValidHistory()
+    return this
+}
+
+/**
+ * Checks that [this] collection of source paths is valid.
+ *
+ * @throws CorruptedRepositoryException if [this] collection contains any invalid or duplicated
+ * source paths
+ */
+private fun Collection<String>.checkValidSources(): Set<SourcePath> {
+    val sourceFiles = LinkedHashSet<SourcePath>(this.size)
+    for (source in this.map(::checkValidPath)) {
+        checkState(source !in sourceFiles) { "Duplicated source file '$source'!" }
+        sourceFiles += source
+    }
+    return sourceFiles
+}
+
+/**
+ * Checks that [this] collection doesn't contain any `null` elements.
+ *
+ * @throws CorruptedRepositoryException if any element is `null`
+ */
+private fun <T : Any> Collection<T?>.checkNoNulls(): Collection<T> {
+    for (item in this) {
+        if (item == null) {
+            throw CorruptedRepositoryException("'null' found in '$this'!")
+        }
+    }
+    @Suppress("UNCHECKED_CAST") return this as Collection<T>
 }

@@ -16,10 +16,11 @@
 
 package org.chronolens.core.analysis
 
+import java.io.UncheckedIOException
+import java.util.ServiceLoader
 import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.RepositoryConnector.AccessMode
-import java.util.ServiceLoader
 
 /**
  * A [Repository] analyzer.
@@ -39,6 +40,7 @@ public abstract class Analyzer(optionsProvider: OptionsProvider)
      *
      * @throws InvalidOptionException if one of the provided options are invalid
      * @throws CorruptedRepositoryException if the repository is corrupted
+     * @throws UncheckedIOException if any I/O errors occur
      */
     public abstract fun analyze(repository: Repository): Report
 }

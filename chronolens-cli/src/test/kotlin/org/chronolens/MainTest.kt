@@ -59,12 +59,14 @@ class MainTest {
 
     @get:Rule val exitRule = ExpectedSystemExit.none()
 
+    private val connector = RepositoryConnector.newConnector(tmp.root)
+
     private fun readResource(resource: String): String =
         javaClass.getResourceAsStream(resource).bufferedReader().use(BufferedReader::readText)
 
     @Test
     fun `test snapshot equals applied edits from history`() {
-        val repository = RepositoryConnector.connect(FAST_HISTORY, tmp.root)
+        val repository = connector.connect(FAST_HISTORY)
         val expected = repository.getSnapshot()
 
         val actual = SourceTree.empty()

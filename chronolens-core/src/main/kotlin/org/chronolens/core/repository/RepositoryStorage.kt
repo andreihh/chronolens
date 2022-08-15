@@ -17,9 +17,13 @@
 package org.chronolens.core.repository
 
 import org.chronolens.core.model.Revision
+import org.chronolens.core.repository.Repository.HistoryProgressListener
 import java.io.IOException
 
-public interface RepositoryDatabase {
+public interface RepositoryStorage {
+    @Throws(IOException::class)
+    public fun readHistoryIds(): List<String>
+
     @Throws(IOException::class)
     public fun readHistory(): Sequence<Revision>
 
@@ -27,3 +31,18 @@ public interface RepositoryDatabase {
     public fun writeHistory(revisions: Sequence<Revision>)
 }
 
+/**
+ * Writes the history of [this] repository to the given [storage] and reports the progress to
+ * the given [listener].
+ *
+ * @throws CorruptedRepositoryException if the repository is corrupted
+ * @throws IOException if any I/O errors occur
+ */
+@Throws(IOException::class)
+public fun Repository.persist(
+    storage: RepositoryStorage,
+    listener: HistoryProgressListener? = null
+): Repository {
+    storage.writeHistory(getHistory(listener))
+    return PersistentRepository(storage)
+}
