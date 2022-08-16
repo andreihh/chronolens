@@ -52,7 +52,7 @@ public class PersistAnalyzer(optionsProvider: OptionsProvider) : Analyzer(option
 
     override fun analyze(repository: Repository): PersistReport {
         val listener = ProgressListener()
-        repository.persist(RepositoryConnector.newConnector(File(".")).openForWrite(), listener)
+        repository.persist(RepositoryConnector.newConnector(File(".")).openOrCreate(), listener)
         return PersistReport(listener.headId, listener.revisionCount)
     }
 

@@ -112,7 +112,7 @@ class Persist : Subcommand() {
     override fun run() {
         val repository = connect()
         repository.persist(
-            RepositoryConnector.newConnector(File(repositoryDirectory)).openForWrite(),
+            RepositoryConnector.newConnector(File(repositoryDirectory)).openOrCreate(),
             object : HistoryProgressListener {
                 private var revisions = 0
                 private var i = 0

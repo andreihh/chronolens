@@ -20,6 +20,7 @@ import org.chronolens.core.repository.RepositoryConnector.AccessMode.ANY
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 import org.chronolens.core.repository.RepositoryFileStorage.Companion.STORAGE_ROOT_DIRECTORY
+import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsProxyFactory
 import java.io.File
 import java.io.IOException
@@ -74,7 +75,7 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
         tryOpen() ?: throw IOException("No repository storage found in '$rootDirectory'!")
 
     @Throws(IOException::class)
-    public fun openForWrite(): RepositoryStorage =
+    public fun openOrCreate(): RepositoryStorage =
         RepositoryFileStorage(rootDirectory)
 
     /**
@@ -92,8 +93,9 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
         }
     }
 
-    private fun tryConnectInteractive(): Repository? =
-        VcsProxyFactory.detect(rootDirectory)?.let(::InteractiveRepository)
+    private fun tryConnectVcs(): VcsProxy? = VcsProxyFactory.detect(rootDirectory)
+
+    private fun tryConnectInteractive(): Repository? = tryConnectVcs()?.let(::InteractiveRepository)
 
     private fun tryLoadPersistent(): Repository? =
         try {

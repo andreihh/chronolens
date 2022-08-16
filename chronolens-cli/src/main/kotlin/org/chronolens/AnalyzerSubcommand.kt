@@ -74,7 +74,7 @@ class PersistSubcommand(repositoryRootOption: Option<File>) : Subcommand("persis
 
     override fun execute() {
         try {
-            connector.connect(RANDOM_ACCESS).persist(connector.openForWrite())
+            connector.connect(RANDOM_ACCESS).persist(connector.openOrCreate())
         } catch (e: IOException) {
             throw UncheckedIOException(e)
         }

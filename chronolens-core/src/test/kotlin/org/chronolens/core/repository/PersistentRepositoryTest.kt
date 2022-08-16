@@ -35,7 +35,7 @@ class PersistentRepositoryTest : RepositoryTest() {
     private val connector by lazy { RepositoryConnector.newConnector(tmp.root) }
 
     override fun createRepository(): Repository =
-        connector.connect(RANDOM_ACCESS).persist(connector.openForWrite())
+        connector.connect(RANDOM_ACCESS).persist(connector.openOrCreate())
 
     @Test
     fun `test load after clean returns null`() {
@@ -53,7 +53,7 @@ class PersistentRepositoryTest : RepositoryTest() {
     @Test
     fun `test persist already persisted returns same repository`() {
         val expected = repository
-        val actual = repository.persist(connector.openForWrite())
+        val actual = repository.persist(connector.openOrCreate())
         assertEquals(expected, actual)
     }
 
@@ -93,7 +93,7 @@ class PersistentRepositoryTest : RepositoryTest() {
                 }
             }
 
-        connector.connect(RANDOM_ACCESS).persist(connector.openForWrite(), listener)
+        connector.connect(RANDOM_ACCESS).persist(connector.openOrCreate(), listener)
 
         assertEquals(ProgressListenerState.DONE, listener.state)
     }
