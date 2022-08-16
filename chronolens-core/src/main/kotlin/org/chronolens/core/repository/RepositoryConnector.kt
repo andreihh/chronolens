@@ -65,18 +65,18 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
         tryConnect(accessMode)
             ?: repositoryError("No repository found in '$rootDirectory' for mode '$accessMode'!")
 
-    @Throws(IOException::class)
     public fun tryOpen(): RepositoryStorage? =
-        if (!File(rootDirectory, STORAGE_ROOT_DIRECTORY).isDirectory) null
-        else RepositoryFileStorage(rootDirectory)
+        try {
+            if (!File(rootDirectory, STORAGE_ROOT_DIRECTORY).isDirectory) null
+            else RepositoryFileStorage(rootDirectory)
+        } catch (e: IOException) {
+            throw UncheckedIOException(e)
+        }
 
-    @Throws(IOException::class)
     public fun open(): RepositoryStorage =
-        tryOpen() ?: throw IOException("No repository storage found in '$rootDirectory'!")
+        tryOpen() ?: ioError("No repository storage found in '$rootDirectory'!")
 
-    @Throws(IOException::class)
-    public fun openOrCreate(): RepositoryStorage =
-        RepositoryFileStorage(rootDirectory)
+    public fun openOrCreate(): RepositoryStorage = RepositoryFileStorage(rootDirectory)
 
     /**
      * Deletes the repository storage from the given [rootDirectory].
@@ -84,12 +84,11 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
      * All corresponding [RepositoryStorage] and [PersistentRepository] instances will become
      * corrupted after this method is called.
      *
-     * @throws IOException if any I/O errors occur
+     * @throws UncheckedIOException if any I/O errors occur
      */
-    @Throws(IOException::class)
     public fun delete() {
         if (!File(rootDirectory, STORAGE_ROOT_DIRECTORY).deleteRecursively()) {
-            throw IOException("Failed to delete '$rootDirectory' recursively!")
+            ioError("Failed to delete '$rootDirectory' recursively!")
         }
     }
 
@@ -109,4 +108,8 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
         public fun newConnector(rootDirectory: File): RepositoryConnector =
             RepositoryConnector(rootDirectory)
     }
+}
+
+private fun ioError(message: String, cause: Throwable? = null): Nothing {
+    throw UncheckedIOException(IOException(message, cause))
 }
