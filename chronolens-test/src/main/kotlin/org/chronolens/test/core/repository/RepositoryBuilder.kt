@@ -19,26 +19,14 @@
 package org.chronolens.test.core.repository
 
 import org.chronolens.core.model.Revision
-import org.chronolens.core.model.RevisionId
-import org.chronolens.core.model.SourceFile
-import org.chronolens.core.model.SourcePath
-import org.chronolens.core.model.SourceTree
-import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.repository.Repository
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
-import java.io.File
 
 @BuilderMarker
 public class RepositoryBuilder {
-    private var rootDirectory = File(".")
     private val history = mutableListOf<Revision>()
-
-    public fun rootDirectory(directory: File): RepositoryBuilder {
-        rootDirectory = directory
-        return this
-    }
 
     public fun revision(revision: Revision): RepositoryBuilder {
         +revision
@@ -49,34 +37,7 @@ public class RepositoryBuilder {
         history += this
     }
 
-    public fun build(): Repository =
-        object : Repository {
-            private val snapshots = mutableMapOf<RevisionId, SourceTree>()
-
-            init {
-                require(history.isNotEmpty()) { "History must not be empty!" }
-                val snapshot = SourceTree.empty()
-                for (revision in history) {
-                    snapshot.apply(revision.edits)
-                    snapshots[revision.id] = SourceTree.of(snapshot.sources)
-                }
-            }
-
-            override fun getHeadId(): RevisionId = history.last().id
-
-            override fun listSources(revisionId: RevisionId): Set<SourcePath> =
-                requireNotNull(snapshots[revisionId]).sources.map(SourceFile::path).toSet()
-
-            override fun listRevisions(): List<RevisionId> = history.map(Revision::id)
-
-            override fun getSource(path: SourcePath, revisionId: RevisionId): SourceFile? =
-                requireNotNull(snapshots[revisionId])[path]
-
-            override fun getSnapshot(revisionId: RevisionId): SourceTree =
-                requireNotNull(snapshots[revisionId])
-
-            override fun getHistory(): Sequence<Revision> = history.asSequence()
-        }
+    public fun build(): Repository = FakeRepository(history)
 }
 
 public fun repository(init: Init<RepositoryBuilder>): Repository =
