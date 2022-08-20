@@ -20,6 +20,7 @@ import org.chronolens.core.model.ListEdit
 import org.chronolens.core.model.SetEdit
 import org.chronolens.test.core.BuilderMarker
 
+@BuilderMarker
 public class SetEditBuilder<T> {
     private val setEdits = mutableListOf<SetEdit<T>>()
 

@@ -47,6 +47,7 @@ public class SourceFileBuilder(private val path: String) {
     public fun build(): SourceFile = SourceFile(SourcePath(path), entities)
 }
 
+@BuilderMarker
 public class TypeBuilder(private val name: String) {
     private var supertypes = emptySet<Identifier>()
     private var modifiers = emptySet<String>()
@@ -78,6 +79,7 @@ public class TypeBuilder(private val name: String) {
     public fun build(): Type = Type(Identifier(name), supertypes, modifiers, members)
 }
 
+@BuilderMarker
 public class FunctionBuilder(private val signature: String) {
     private var modifiers = emptySet<String>()
     private var parameters = emptyList<Identifier>()
@@ -108,6 +110,7 @@ public class FunctionBuilder(private val signature: String) {
     public fun build(): Function = Function(Signature(signature), parameters, modifiers, body)
 }
 
+@BuilderMarker
 public class VariableBuilder(private val name: String) {
     private var modifiers = emptySet<String>()
     private val initializer = mutableListOf<String>()

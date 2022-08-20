@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,37 @@
 
 package org.chronolens.git
 
-import org.chronolens.core.subprocess.Subprocess.execute
+import org.chronolens.core.subprocess.Subprocess
+import org.chronolens.core.versioning.VcsProxy
+import org.chronolens.core.versioning.VcsProxyFactory
 import org.chronolens.test.core.versioning.AbstractVcsProxyTest
+import org.chronolens.test.core.versioning.VcsChangeSet
 import java.io.File
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class GitProxyTest : AbstractVcsProxyTest() {
-    override fun createRepository(
-        directory: File,
-        changeSets: List<Map<String, String>>,
-    ): Set<String> {
-        execute(directory, "git", "init")
-        execute(
-            directory,
-            "git",
-            "config",
-            "user.email",
-            "test@test.com"
-        )
-        execute(directory, "git", "config", "user.name", "test")
+    private fun commit(directory: File, changeSet: VcsChangeSet) {
+        for ((path, content) in changeSet) {
+            if (content != null) {
+                File(directory, path).writeText(content)
+            } else {
+                assertTrue(File(directory, path).delete())
+            }
+        }
+        Subprocess.execute(directory, "git", "add", "-A")
+        Subprocess.execute(directory, "git", "commit", "-m", "Test commit.")
+    }
 
-        for (changeSet in changeSets) {
+    override fun createRepository(directory: File, vararg revisions: VcsChangeSet): VcsProxy {
+        Subprocess.execute(directory, "git", "init")
+        Subprocess.execute(directory, "git", "config", "user.email", "t@test.com")
+        Subprocess.execute(directory, "git", "config", "user.name", "test")
+
+        for (changeSet in revisions) {
             commit(directory, changeSet)
         }
 
-        return setOf(".git")
-    }
-
-    private fun commit(directory: File, changeSet: Map<String, String>) {
-        for ((path, content) in changeSet) {
-            File(directory, path).writeText(content)
-        }
-        execute(directory, "git", "add", "-A")
-        execute(directory, "git", "commit", "-m", "Test commit.")
+        return assertNotNull(VcsProxyFactory.detect(directory))
     }
 }

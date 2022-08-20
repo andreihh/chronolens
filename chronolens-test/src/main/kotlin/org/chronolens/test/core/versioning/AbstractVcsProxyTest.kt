@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.chronolens.test.core.versioning
 
+import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsProxyFactory
 import org.junit.Rule
 import org.junit.Test
@@ -23,146 +24,243 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.fail
 
-/**
- * Tests for [org.chronolens.core.versioning.VcsProxy] and [VcsProxyFactory]
- * implementations.
- */
+/** Tests for [VcsProxy] and [VcsProxyFactory] implementations. */
 public abstract class AbstractVcsProxyTest {
     @get:Rule public val tmp: TemporaryFolder =
         TemporaryFolder.builder().assureDeletion().build()
 
     /**
-     * Creates a repository in the given [directory] with a revision for each of
-     * the [changeSets], and returns the set of VCS-internal directories created
-     * in the given [directory] as a result (if any).
+     * Creates a repository in the given [directory] with the change sets of the given [revisions],
+     * and returns a [VcsProxy] connection to the repository.
      *
-     * The VCS-internal directories should be ignored when comparing local with
-     * committed file trees.
-     *
-     * If no [changeSets] are specified, an empty repository (without any
-     * revisions) should be created.
+     * If no [revisions] are specified, an empty repository (without any revisions) should be
+     * created (even though that is an invalid repository state).
      */
     protected abstract fun createRepository(
         directory: File,
-        changeSets: List<Map<String, String>> = emptyList(),
-    ): Set<String>
+        vararg revisions: VcsChangeSet
+    ): VcsProxy
 
-    private val directory by lazy { tmp.root }
-    private val vcs by lazy {
-        VcsProxyFactory.detect(directory)
-            ?: fail("Failed to connect to repository!")
-    }
+    protected fun createRepository(vararg revisions: VcsChangeSet): VcsProxy =
+        createRepository(tmp.root, *revisions)
 
-    @Test public fun detect_whenNoRepository_returnsNull() {
-        assertNull(VcsProxyFactory.detect(directory))
-    }
-
-    @Test public fun getHead_whenEmptyRepository_throws() {
-        createRepository(directory)
+    @Test
+    public fun getHead_whenEmptyRepository_throws() {
+        val vcs = createRepository()
 
         assertFailsWith<IllegalStateException> {
             vcs.getHead()
         }
     }
 
-    @Test public fun getRevision_whenHeadId_returnsHead() {
-        createRepository(directory, TEST_CHANGE_SETS)
+    @Test
+    public fun getRevision_whenHeadId_returnsHead() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("README.txt", "This is a test repository.")
+            },
+            vcsRevision {
+                delete("README.txt")
+            },
+        )
 
-        val head = vcs.getHead()
-        val commit = vcs.getRevision(head.id)
-
-        assertEquals(head, commit)
+        assertEquals(expected = vcs.getHead(), actual = vcs.getRevision(vcs.getHead().id))
     }
 
-    @Test public fun getRevision_whenInvalidId_returnsNull() {
-        createRepository(directory, TEST_CHANGE_SETS)
-        val invalidRevisions = listOf("0123456789", "master-invalid", "gradle")
+    @Test
+    public fun getRevision_whenInvalidId_returnsNull() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("README.txt", "This is a test repository.")
+            },
+            vcsRevision {
+                delete("README.txt")
+            },
+        )
+        val invalidRevisionIds = listOf("0123456789", "master-invalid", "gradle")
 
-        for (rev in invalidRevisions) {
-            assertNull(vcs.getRevision(rev))
+        for (revisionId in invalidRevisionIds) {
+            assertNull(vcs.getRevision(revisionId))
         }
     }
 
-    @Test public fun getChangeSet_returnsChangedFiles() {
-        createRepository(directory, TEST_CHANGE_SETS)
+    @Test
+    public fun getChangeSet_returnsChangedFiles() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("README.txt", "This is a test repository.")
+            },
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=true")
+            }
+        )
 
         assertEquals(
             expected = setOf("gradle.properties"),
-            actual = vcs.getChangeSet(vcs.getHead().id),
+            actual = vcs.getChangeSet(vcs.getHead().id)
         )
     }
 
-    @Test public fun listFiles_returnsCommittedFilesAtHead() {
-        val internalDirectories = createRepository(directory, TEST_CHANGE_SETS)
-        val expected = directory
-            .walk()
-            .onEnter { it.name !in internalDirectories }
-            .filter(File::isFile)
-            .map { it.path.removePrefix("${directory.absolutePath}/") }
-            .toSet()
+    @Test
+    public fun listFiles_returnsCommittedFilesAtHead() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("README.txt", "This is a test repository.")
+                change("tmp.txt", "Temporary file.")
+            },
+            vcsRevision {
+                delete("tmp.txt")
+                delete("README.txt")
+            },
+            vcsRevision {
+                change("README.txt", "This is a test repo.")
+            },
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=true")
+            }
+        )
 
-        val actual = vcs.listFiles(vcs.getHead().id)
-
-        assertEquals(expected, actual)
+        assertEquals(
+            expected = setOf("README.txt", "gradle.properties"),
+            actual = vcs.listFiles(vcs.getHead().id)
+        )
     }
 
-    @Test public fun getFile_returnsContent() {
-        createRepository(directory, TEST_CHANGE_SETS)
-        val path = "gradle.properties"
-        val expected = File(directory, path).readText()
+    @Test
+    public fun getFile_returnsContent() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=false")
+            },
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=true")
+            },
+        )
 
-        val actual = vcs.getFile(vcs.getHead().id, path)
-
-        assertEquals(expected, actual)
+        assertEquals(
+            expected = "org.gradle.daemon=true",
+            actual = vcs.getFile(vcs.getHead().id, path = "gradle.properties")
+        )
     }
 
-    @Test public fun getFile_whenFileNotFound_returnsNull() {
-        createRepository(directory, TEST_CHANGE_SETS)
+    @Test
+    public fun getFile_whenFileNotFound_returnsNull() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=false")
+            },
+        )
 
-        assertNull(vcs.getFile(vcs.getHead().id, "non-existent.txt"))
+        assertNull(vcs.getFile(vcs.getHead().id, path = "README.txt"))
     }
 
-    @Test public fun getFile_whenInvalidRevision_throws() {
-        createRepository(directory, TEST_CHANGE_SETS)
-        val path = "gradle.properties"
+    @Test
+    public fun getFile_whenInvalidRevision_throws() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=false")
+            },
+        )
 
         assertFailsWith<IllegalArgumentException> {
-            vcs.getFile("invalid-revision", path)
+            vcs.getFile(revisionId = "invalid-revision", path = "gradle.properties")
         }
     }
 
-    @Test public fun getHistory_whenFileNotFound_returnsEmpty() {
-        createRepository(directory, TEST_CHANGE_SETS)
+    @Test
+    public fun getHistory_whenFileNotFound_returnsEmpty() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=false")
+            },
+        )
 
-        assertEquals(emptyList(), vcs.getHistory("non-existent.txt"))
+        assertEquals(expected = emptyList(), actual = vcs.getHistory("README.txt"))
     }
 
-    @Test public fun getHistory_forFile_returnsRevisionsThatTouchedFile() {
-        createRepository(directory, TEST_CHANGE_SETS)
+    @Test
+    public fun getHistory_forFile_returnsRevisionsThatTouchedFile() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("README.txt", "This is a test repository.")
+                change("tmp.txt", "Temporary file.")
+            },
+            vcsRevision {
+                delete("tmp.txt")
+                delete("README.txt")
+            },
+            vcsRevision {
+                change("README.txt", "This is a test repo.")
+            },
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=true")
+            },
+        )
 
-        val history = vcs.getHistory("README.txt")
-
-        assertEquals(1, history.size)
+        assertEquals(expected = 3, actual = vcs.getHistory("README.txt").size)
     }
 
-    @Test public fun getHistory_returnsAllRevisions() {
-        createRepository(directory, TEST_CHANGE_SETS)
+    @Test
+    public fun getHistory_returnsAllRevisions() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("README.txt", "This is a test repository.")
+                change("tmp.txt", "Temporary file.")
+            },
+            vcsRevision {
+                delete("tmp.txt")
+                delete("README.txt")
+            },
+            vcsRevision {
+                change("README.txt", "This is a test repo.")
+            },
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=true")
+            },
+        )
 
         val history = vcs.getHistory()
 
-        assertEquals(2, history.size)
-        assertEquals(vcs.getHead(), history.last())
+        assertEquals(expected = 4, actual = history.size)
+        assertEquals(expected = vcs.getHead(), actual = history.last())
+    }
+
+    @Test
+    public fun detect_whenNoRepository_returnsNull() {
+        assertNull(VcsProxyFactory.detect(tmp.root))
+    }
+
+    @Test
+    public fun detect_returnsEqualRepository() {
+        val expectedVcs =
+            createRepository(
+                vcsRevision {
+                    change("README.txt", "This is a test repository.")
+                    change("tmp.txt", "Temporary file.")
+                },
+                vcsRevision {
+                    delete("tmp.txt")
+                    delete("README.txt")
+                },
+                vcsRevision {
+                    change("README.txt", "This is a test repo.")
+                },
+                vcsRevision {
+                    change("gradle.properties", "org.gradle.daemon=true")
+                },
+            )
+
+        val detectedVcs = assertNotNull(VcsProxyFactory.detect(tmp.root))
+
+        assertEquals(expected = expectedVcs.getHistory(), actual = detectedVcs.getHistory())
+        for ((revisionId, _, _) in detectedVcs.getHistory()) {
+            assertEquals(
+                expected = expectedVcs.listFiles(revisionId),
+                actual = detectedVcs.listFiles(revisionId)
+            )
+        }
     }
 }
-
-private val TEST_CHANGE_SETS =
-    listOf(
-        mapOf(
-            "gradle.properties" to "org.gradle.daemon=false",
-            "README.txt" to "This is a test repository.",
-        ),
-        mapOf("gradle.properties" to "org.gradle.daemon=true"),
-    )
