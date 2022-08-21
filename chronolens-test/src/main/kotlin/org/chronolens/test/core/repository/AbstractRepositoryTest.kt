@@ -21,6 +21,7 @@ import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
+import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.Repository.HistoryProgressListener
 import org.chronolens.test.core.model.assertEqualSourceTrees
@@ -284,5 +285,29 @@ public abstract class AbstractRepositoryTest {
         repository.getHistory(listener)
 
         assertFalse(listener.started)
+    }
+
+    @Test
+    public fun allOperations_whenEmptyRepository_throw() {
+       val emptyRepository = createRepository()
+
+        assertFailsWith<CorruptedRepositoryException> {
+            emptyRepository.getHeadId()
+        }
+        assertFailsWith<CorruptedRepositoryException> {
+            emptyRepository.listSources()
+        }
+        assertFailsWith<CorruptedRepositoryException> {
+            emptyRepository.getSource(SourcePath("src/Main.fake"))
+        }
+        assertFailsWith<CorruptedRepositoryException> {
+            emptyRepository.listRevisions()
+        }
+        assertFailsWith<CorruptedRepositoryException> {
+            emptyRepository.getSnapshot()
+        }
+        assertFailsWith<CorruptedRepositoryException> {
+            emptyRepository.getHistory()
+        }
     }
 }

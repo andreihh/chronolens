@@ -26,7 +26,6 @@ import org.chronolens.test.core.versioning.vcsProxy
 
 class InteractiveRepositoryTest : AbstractRepositoryTest() {
     override fun createRepository(vararg history: RevisionChangeSet): Repository {
-        // TODO: fix tests.
         val parser = FakeParser()
         val revisions = history.map { changeSet ->
             changeSet.associate { change ->

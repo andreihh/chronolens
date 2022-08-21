@@ -38,37 +38,43 @@ internal class InteractiveRepository(
     private val parser: Parser
 ) : Repository {
 
-    private val head by lazy { vcs.getHead().id.let(::checkValidRevisionId) }
-    private val history by lazy { vcs.getHistory().checkValidHistory() }
+    private val head by lazy { tryRun { vcs.getHead() }.id.let(::checkValidRevisionId) }
+    private val history by lazy { tryRun { vcs.getHistory() }.checkValidHistory() }
+
+    private fun getSourceContent(revisionId: RevisionId, path: SourcePath): String? =
+        tryRun { vcs.getFile(revisionId.toString(), path.toString()) }
+
+    private fun getChangeSet(revisionId: String): Set<SourcePath> =
+        tryRun { vcs.getChangeSet(revisionId) }.map(::checkValidPath).toSet()
+
+    private fun getAllSources(revisionId: RevisionId): Set<SourcePath> =
+        tryRun { vcs.listFiles(revisionId.toString()) }.checkValidSources()
+
+    private fun getSourceHistory(path: SourcePath) =
+        tryRun { vcs.getHistory(path.toString()) }.map(VcsRevision::id).map(::RevisionId)
 
     override fun getHeadId(): RevisionId = head
 
     override fun listRevisions(): List<RevisionId> = history.map(VcsRevision::id).map(::RevisionId)
 
-    override fun listSources(revisionId: RevisionId): Set<SourcePath> {
-        val allSources = vcs.listFiles(revisionId.toString()).checkValidSources()
-        return allSources.filter(parser::canParse).toSet()
-    }
+    override fun listSources(revisionId: RevisionId): Set<SourcePath> =
+        getAllSources(revisionId).filter(parser::canParse).toSet()
 
     private fun parseSource(revisionId: RevisionId, path: SourcePath): Result? {
         if (!parser.canParse(path)) return null
-        val rawSource = vcs.getFile(revisionId.toString(), path.toString()) ?: return null
+        val rawSource = getSourceContent(revisionId, path) ?: return null
         return parser.tryParse(path, rawSource)
     }
 
     private fun getLatestValidSource(revisionId: RevisionId, path: SourcePath): SourceFile {
-        val revisions =
-            vcs.getHistory(path.toString()).asReversed().dropWhile {
-                it.id != revisionId.toString()
-            }
-        for ((id, _, _) in revisions) {
-            val result = parseSource(RevisionId(id), path)
+        val revisions = getSourceHistory(path).asReversed().dropWhile { it != revisionId }
+        for (id in revisions) {
+            val result = parseSource(id, path)
             if (result is Result.Success) {
                 return result.source
             }
         }
-        // TODO: figure out if should return null or empty file if no valid
-        // version is found.
+        // TODO: figure out if should return null or empty file if no valid version is found.
         return SourceFile(path)
     }
 
@@ -81,14 +87,14 @@ internal class InteractiveRepository(
     }
 
     override fun getSnapshot(revisionId: RevisionId): SourceTree {
-        val sources = listSources(revisionId).map(::getSource).checkNoNulls()
+        val sources = listSources(revisionId).map { getSource(it, revisionId) }.checkNoNulls()
         return SourceTree.of(sources)
     }
 
     override fun getHistory(): Sequence<Revision> {
         val sourceTree = SourceTree.empty()
         return history.asSequence().map { (revisionId, date, author) ->
-            val changeSet = vcs.getChangeSet(revisionId).map(::checkValidPath)
+            val changeSet = getChangeSet(revisionId)
             val before = HashSet<SourceFile>(changeSet.size)
             val after = HashSet<SourceFile>(changeSet.size)
             for (path in changeSet) {
@@ -147,4 +153,10 @@ private fun <T : Any> Collection<T?>.checkNoNulls(): Collection<T> {
         }
     }
     @Suppress("UNCHECKED_CAST") return this as Collection<T>
+}
+
+private fun <T> tryRun(block: () -> T): T = try {
+    block()
+} catch (e: IllegalStateException) {
+    throw CorruptedRepositoryException(e)
 }

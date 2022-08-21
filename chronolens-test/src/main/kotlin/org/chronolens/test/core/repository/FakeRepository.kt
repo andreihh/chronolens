@@ -22,18 +22,25 @@ import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
+import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.Repository
 
-internal class FakeRepository(private val history: List<Revision>) : Repository {
-    private val snapshots = mutableMapOf<RevisionId, SourceTree>()
+internal class FakeRepository(revisions: List<Revision>) : Repository {
+    private val history by lazy {
+        if (revisions.isEmpty()) {
+            throw CorruptedRepositoryException("History must not be empty!")
+        }
+        revisions
+    }
 
-    init {
-        require(history.isNotEmpty()) { "History must not be empty!" }
+    private val snapshots by lazy {
+        val snapshots = mutableMapOf<RevisionId, SourceTree>()
         val snapshot = SourceTree.empty()
         for (revision in history) {
             snapshot.apply(revision.edits)
             snapshots[revision.id] = SourceTree.of(snapshot.sources)
         }
+        snapshots
     }
 
     override fun getHeadId(): RevisionId = history.last().id
