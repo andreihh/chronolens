@@ -41,11 +41,11 @@ abstract class RepositoryTest {
     fun initVcsRepository() {
         VcsProxyFactoryMock.setRepository {
             revision {
-                change("src/Main.mock" to "{")
+                change("src/Main.fake" to "{")
                 change(
-                    "src/Worksheet.mock" to
+                    "src/Worksheet.fake" to
                         """{
-                        "path": "src/Worksheet.mock",
+                        "path": "src/Worksheet.fake",
                         "@class": "SourceFile",
                         "entities": [{
                             "signature": "println()",
@@ -54,27 +54,27 @@ abstract class RepositoryTest {
                     }"""
                 )
                 change(
-                    "src/Test.mock" to
+                    "src/Test.fake" to
                         """{
-                        "path": "src/Test.mock",
+                        "path": "src/Test.fake",
                         "@class": "SourceFile"
                     }"""
                 )
                 change(
-                    "src/BuildVersion.mock" to
+                    "src/BuildVersion.fake" to
                         """
-                        "path": "src/BuildVersion.mock",
+                        "path": "src/BuildVersion.fake",
                         "@class": "SourceFile"
                     """
                 )
-                change("README.md" to "## Mock repository\n")
+                change("README.md" to "## Fake repository\n")
             }
 
             revision {
                 change(
-                    "src/Main.mock" to
+                    "src/Main.fake" to
                         """{
-                        "path": "src/Main.mock",
+                        "path": "src/Main.fake",
                         "@class": "SourceFile",
                         "entities": [{
                             "name": "Main",
@@ -82,10 +82,10 @@ abstract class RepositoryTest {
                         }]
                     }"""
                 )
-                change("src/Test.mock" to null)
-                change("src/Error.mock" to "{")
-                change("src/Worksheet.mock" to "{")
-                change("README.md" to "## Mock repository v2\n")
+                change("src/Test.fake" to null)
+                change("src/Error.fake" to "{")
+                change("src/Worksheet.fake" to "{")
+                change("README.md" to "## Fake repository v2\n")
             }
         }
     }
@@ -106,10 +106,10 @@ abstract class RepositoryTest {
     fun `test list sources`() {
         val expected =
             setOf(
-                SourcePath("src/Main.mock"),
-                SourcePath("src/BuildVersion.mock"),
-                SourcePath("src/Error.mock"),
-                SourcePath("src/Worksheet.mock")
+                SourcePath("src/Main.fake"),
+                SourcePath("src/BuildVersion.fake"),
+                SourcePath("src/Error.fake"),
+                SourcePath("src/Worksheet.fake")
             )
         val actual = repository.listSources()
         assertEquals(expected, actual)
@@ -124,14 +124,14 @@ abstract class RepositoryTest {
 
     @Test
     fun `test get source`() {
-        val expected = sourceFile("src/Main.mock") { +type("Main") {} }
-        val actual = repository.getSource(SourcePath("src/Main.mock"))
+        val expected = sourceFile("src/Main.fake") { +type("Main") {} }
+        val actual = repository.getSource(SourcePath("src/Main.fake"))
         assertEquals(expected, actual)
     }
 
     @Test
     fun `test get non-existing source returns null`() {
-        val actual = repository.getSource(SourcePath("src/Test.mock"))
+        val actual = repository.getSource(SourcePath("src/Test.fake"))
         assertNull(actual)
     }
 
@@ -143,25 +143,25 @@ abstract class RepositoryTest {
 
     @Test
     fun `test get invalid source returns latest valid version`() {
-        val expected = sourceFile("src/Worksheet.mock") { +function("println()") {} }
-        val actual = repository.getSource(SourcePath("src/Worksheet.mock"))
+        val expected = sourceFile("src/Worksheet.fake") { +function("println()") {} }
+        val actual = repository.getSource(SourcePath("src/Worksheet.fake"))
         assertEquals(expected, actual)
     }
 
     @Test
     fun `test get invalid source with no history returns empty`() {
-        val expected = sourceFile("src/Error.mock") {}
-        val actual = repository.getSource(SourcePath("src/Error.mock"))
+        val expected = sourceFile("src/Error.fake") {}
+        val actual = repository.getSource(SourcePath("src/Error.fake"))
         assertEquals(expected, actual)
     }
 
     @Test
     fun `test get snapshot`() {
         val expected = sourceTree {
-            +sourceFile("src/Main.mock") { +type("Main") {} }
-            +sourceFile("src/BuildVersion.mock") {}
-            +sourceFile("src/Worksheet.mock") { +function("println()") {} }
-            +sourceFile("src/Error.mock") {}
+            +sourceFile("src/Main.fake") { +type("Main") {} }
+            +sourceFile("src/BuildVersion.fake") {}
+            +sourceFile("src/Worksheet.fake") { +function("println()") {} }
+            +sourceFile("src/Error.fake") {}
         }
         val actual = repository.getSnapshot()
         assertEquals(expected, actual)
@@ -170,10 +170,10 @@ abstract class RepositoryTest {
     @Test
     fun `test get history`() {
         val expected = sourceTree {
-            +sourceFile("src/Main.mock") { +type("Main") {} }
-            +sourceFile("src/BuildVersion.mock") {}
-            +sourceFile("src/Worksheet.mock") { +function("println()") {} }
-            +sourceFile("src/Error.mock") {}
+            +sourceFile("src/Main.fake") { +type("Main") {} }
+            +sourceFile("src/BuildVersion.fake") {}
+            +sourceFile("src/Worksheet.fake") { +function("println()") {} }
+            +sourceFile("src/Error.fake") {}
         }
         val revisions = repository.getHistory()
         val actual = sourceTree {}

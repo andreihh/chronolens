@@ -31,11 +31,16 @@ abstract class JavaParserTest {
         sourceFile(defaultPath, init)
 
     protected fun parse(source: String, path: String = defaultPath): SourceFile =
-        when (val result = Parser.parse(SourcePath(path), source)) {
+        when (val result = Parser.Registry.tryParse(SourcePath(path), source)) {
             is Result.Success -> result.source
             else -> fail()
         }
 
-    protected fun parseResult(source: String, path: String = defaultPath): Result =
-        Parser.parse(SourcePath(path), source) ?: fail()
+    protected fun parseResult(source: String, path: String = defaultPath): Result {
+        val sourcePath = SourcePath(path)
+        if (!Parser.Registry.canParse(sourcePath)) {
+            fail()
+        }
+        return Parser.Registry.tryParse(sourcePath, source)
+    }
 }

@@ -24,7 +24,6 @@ import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.SourceTreeEdit.Companion.apply
 import org.chronolens.core.model.diff
 import org.chronolens.core.parsing.Parser
-import org.chronolens.core.parsing.Parser.Companion.canParse
 import org.chronolens.core.parsing.Result
 import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsRevision
@@ -32,9 +31,13 @@ import org.chronolens.core.versioning.VcsRevision
 /**
  * A wrapper around a repository persisted in a version control system (VCS).
  *
- * All queries retrieve and interpret the data from a VCS subprocess.
+ * All queries retrieve and interpret the data from a [vcs] subprocess using the given [parser].
  */
-internal class InteractiveRepository(private val vcs: VcsProxy) : Repository {
+internal class InteractiveRepository(
+    private val vcs: VcsProxy,
+    private val parser: Parser
+) : Repository {
+
     private val head by lazy { vcs.getHead().id.let(::checkValidRevisionId) }
     private val history by lazy { vcs.getHistory().checkValidHistory() }
 
@@ -44,12 +47,13 @@ internal class InteractiveRepository(private val vcs: VcsProxy) : Repository {
 
     override fun listSources(revisionId: RevisionId): Set<SourcePath> {
         val allSources = vcs.listFiles(revisionId.toString()).checkValidSources()
-        return allSources.filter(::canParse).toSet()
+        return allSources.filter(parser::canParse).toSet()
     }
 
     private fun parseSource(revisionId: RevisionId, path: SourcePath): Result? {
+        if (!parser.canParse(path)) return null
         val rawSource = vcs.getFile(revisionId.toString(), path.toString()) ?: return null
-        return Parser.parse(path, rawSource)
+        return parser.tryParse(path, rawSource)
     }
 
     private fun getLatestValidSource(revisionId: RevisionId, path: SourcePath): SourceFile {

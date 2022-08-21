@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,17 @@ package org.chronolens.core.parsing
 
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
-import org.chronolens.core.serialization.JsonException
-import org.chronolens.core.serialization.JsonModule
 
-class ParserMock : Parser() {
-    override fun canParse(path: SourcePath): Boolean = path.toString().endsWith(".mock")
+/**
+ * A [Parser] capable of parsing multiple languages by delegating to one of the provided [parsers].
+ */
+public class MultiParser(private val parsers: Collection<Parser>) : Parser {
+    override fun canParse(path: SourcePath): Boolean =
+        parsers.any { it.canParse(path) }
 
-    override fun parse(path: SourcePath, rawSource: String): SourceFile =
-        try {
-            JsonModule.deserialize(rawSource.byteInputStream())
-        } catch (e: JsonException) {
-            throw SyntaxErrorException(e)
-        }
+    override fun parse(path: SourcePath, rawSource: String): SourceFile {
+        val parser = parsers.find { it.canParse(path) }
+            ?: throw SyntaxErrorException("No parser found for source file '$path'!")
+        return parser.parse(path, rawSource)
+    }
 }

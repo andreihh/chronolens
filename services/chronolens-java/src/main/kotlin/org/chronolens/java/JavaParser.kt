@@ -27,11 +27,14 @@ import org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT
 import org.eclipse.jdt.core.dom.CompilationUnit
 
 /** Java 11 language parser. */
-internal class JavaParser : Parser() {
+internal class JavaParser : Parser {
     override fun canParse(path: SourcePath): Boolean = path.toString().endsWith(".java")
 
     @Throws(SyntaxErrorException::class)
     override fun parse(path: SourcePath, rawSource: String): SourceFile {
+        if (!canParse(path)) {
+            throw SyntaxErrorException("Cannot parse source path '$path'!")
+        }
         val options = JavaCore.getOptions()
         JavaCore.setComplianceOptions(JavaCore.VERSION_11, options)
         val jdtParser =

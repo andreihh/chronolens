@@ -26,46 +26,36 @@ import org.chronolens.core.model.SourcePath
  * Parsers must have a public no-arg constructor and must supply an entry in the
  * `META-INF/services/org.chronolens.core.parsing.Parser` configuration file.
  */
-public abstract class Parser {
+public interface Parser {
     /** Returns whether this parser can interpret the given file [path]. */
-    protected abstract fun canParse(path: SourcePath): Boolean
+    public fun canParse(path: SourcePath): Boolean
 
     /**
      * Parses the given `UTF-8` encoded [rawSource] assuming it is located at the specified [path].
      *
-     * @throws SyntaxErrorException if the [rawSource] contains errors
+     * @throws SyntaxErrorException if the [rawSource] contains errors or cannot be parsed
+     * @throws IllegalArgumentException if the parsed source file has a different path than the
+     * given [path]
      */
     @Throws(SyntaxErrorException::class)
-    protected abstract fun parse(path: SourcePath, rawSource: String): SourceFile
+    public fun parse(path: SourcePath, rawSource: String): SourceFile
 
-    public companion object {
-        private val parsers = ServiceLoader.load(Parser::class.java)
-
-        /**
-         * Returns a parser which can interpret the given file [path], or `null` if no such parser
-         * was provided.
-         */
-        private fun getParser(path: SourcePath): Parser? = parsers.firstOrNull { it.canParse(path) }
-
-        /** Returns whether a provided parser can interpret the given file [path]. */
-        public fun canParse(path: SourcePath): Boolean = getParser(path) != null
-
-        /**
-         * Parses the given `UTF-8` encoded [rawSource] assuming it is located at the specified
-         * [path] and returns the result, or `null` if no such parser was provided.
-         *
-         * @throws IllegalStateException if the parsed source file has a different path than the
-         * given [path]
-         */
-        public fun parse(path: SourcePath, rawSource: String): Result? {
-            val parser = getParser(path) ?: return null
-            return try {
-                val source = parser.parse(path, rawSource)
-                check(source.path == path) { "Source '${source.path}' must be located at '$path'!" }
-                Result.Success(source)
-            } catch (e: SyntaxErrorException) {
-                Result.SyntaxError
-            }
+    /**
+     * Parses the given `UTF-8` encoded [rawSource] assuming it is located at the specified [path]
+     * and returns the [Result].
+     *
+     * @throws IllegalArgumentException if the parsed source file has a different path than the
+     * given [path]
+     */
+    public fun tryParse(path: SourcePath, rawSource: String): Result =
+        try {
+            val source = parse(path, rawSource)
+            require(source.path == path) { "Source '${source.path}' must be located at '$path'!" }
+            Result.Success(source)
+        } catch (e: SyntaxErrorException) {
+            Result.SyntaxError
         }
-    }
+
+    public companion object Registry :
+        Parser by MultiParser(ServiceLoader.load(Parser::class.java).toList())
 }

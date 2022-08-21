@@ -16,6 +16,7 @@
 
 package org.chronolens.core.repository
 
+import org.chronolens.core.parsing.Parser
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.ANY
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
@@ -94,7 +95,9 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
 
     private fun tryConnectVcs(): VcsProxy? = VcsProxyFactory.detect(rootDirectory)
 
-    private fun tryConnectInteractive(): Repository? = tryConnectVcs()?.let(::InteractiveRepository)
+    private fun tryConnectInteractive(): Repository? = tryConnectVcs()?.let { vcsProxy ->
+        InteractiveRepository(vcsProxy, Parser.Registry)
+    }
 
     private fun tryLoadPersistent(): Repository? =
         try {
