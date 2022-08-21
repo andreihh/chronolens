@@ -30,6 +30,7 @@ import org.chronolens.core.repository.Repository
 import org.chronolens.test.core.BuilderMarker
 import org.chronolens.test.core.Init
 import org.chronolens.test.core.apply
+import org.chronolens.test.core.parsing.FakeParser
 import org.chronolens.test.core.repository.SourceFileChange.ChangeFile
 import org.chronolens.test.core.repository.SourceFileChange.DeleteFile
 import org.chronolens.test.core.repository.SourceFileChange.InvalidateFile
@@ -55,9 +56,9 @@ public fun repository(init: Init<RepositoryBuilder>): Repository =
     RepositoryBuilder().apply(init).build()
 
 public fun repository(vararg history: RevisionChangeSet): Repository {
-    // TODO: receive a Parser as a parameter.
     val repositoryBuilder = RepositoryBuilder()
     val sources = mutableMapOf<SourcePath, SourceFile>()
+    val parser = FakeParser()
 
     fun getRemoveEdits(path: SourcePath): List<SourceTreeEdit> =
         if (path in sources) listOf(RemoveNode(qualifiedSourcePathOf(path)))
@@ -74,7 +75,7 @@ public fun repository(vararg history: RevisionChangeSet): Repository {
         for (change in changeSet) {
             when (change) {
                 is ChangeFile -> {
-                    require(change.sourcePath.toString().endsWith(".fake")) {
+                    require(parser.canParse(change.sourcePath)) {
                         "Cannot parse source path '${change.sourcePath}'!"
                     }
                     edits += getAddEdits(change.sourceFile)
@@ -85,8 +86,7 @@ public fun repository(vararg history: RevisionChangeSet): Repository {
                     sources -= change.sourcePath
                 }
                 is InvalidateFile -> {
-                    val canParse = change.sourcePath.toString().endsWith(".fake")
-                    if (canParse && change.sourcePath !in sources) {
+                    if (parser.canParse(change.sourcePath) && change.sourcePath !in sources) {
                         val emptySourceFile = SourceFile(change.sourcePath)
                         edits += getAddEdits(emptySourceFile)
                         sources[change.sourcePath] = emptySourceFile
