@@ -100,7 +100,7 @@ public interface Repository {
 
     /** Delegates to [getHistory]. The history can be iterated through only once. */
     public fun getHistoryStream(listener: HistoryProgressListener? = null): Stream<Revision> =
-        (listener?.let(::getHistory) ?: getHistory()).asStream()
+        getHistory(listener).asStream()
 
     /** A listener notified on the progress of iterating through a repository's history. */
     public interface HistoryProgressListener {

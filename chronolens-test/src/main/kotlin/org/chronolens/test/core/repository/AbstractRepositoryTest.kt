@@ -30,6 +30,7 @@ import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
 import org.chronolens.test.core.model.type
 import org.junit.Test
+import kotlin.streams.toList
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -285,6 +286,14 @@ public abstract class AbstractRepositoryTest {
         repository.getHistory(listener)
 
         assertFalse(listener.started)
+    }
+
+    @Test
+    public fun getHistoryStream_returnsSameHistory() {
+        assertEquals(
+            expected = repository.getHistory().toList(),
+            actual = repository.getHistoryStream().toList()
+        )
     }
 
     @Test
