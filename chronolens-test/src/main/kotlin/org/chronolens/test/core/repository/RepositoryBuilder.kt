@@ -95,7 +95,8 @@ public fun repository(vararg history: RevisionChangeSet): Repository {
             }
         }
 
-        val revision = Revision(revisionId, date = Instant.now(), author = "t@test.com", edits)
+        val date = Instant.ofEpochMilli(1000L * index)
+        val revision = Revision(revisionId, date, author = "t@test.com", edits)
         repositoryBuilder.revision(revision)
     }
 

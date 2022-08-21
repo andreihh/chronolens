@@ -30,6 +30,7 @@ public fun assertEqualRepositories(
     assertEquals(expected?.getHeadId(), actual?.getHeadId(), message)
     assertEquals(expected?.listSources(), actual?.listSources(), message)
     assertEquals(expected?.getSnapshot(), actual?.getSnapshot(), message)
+    assertEquals(expected?.listRevisions(), actual?.listRevisions(), message)
     assertEquals(
         expected = expected?.getHistory()?.toList(),
         actual = actual?.getHistory()?.toList(),

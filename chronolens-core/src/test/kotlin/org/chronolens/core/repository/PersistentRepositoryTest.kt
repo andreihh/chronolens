@@ -23,78 +23,100 @@ import kotlin.test.assertTrue
 import org.chronolens.core.model.RevisionId
 import org.chronolens.core.repository.Repository.HistoryProgressListener
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
-import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
+import org.chronolens.test.core.model.sourceFile
+import org.chronolens.test.core.repository.AbstractRepositoryTest
+import org.chronolens.test.core.repository.RevisionChangeSet
 import org.chronolens.test.core.repository.assertEqualRepositories
+import org.chronolens.test.core.repository.repository
+import org.chronolens.test.core.repository.revisionChangeSet
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 
-class PersistentRepositoryTest : RepositoryTest() {
+class PersistentRepositoryTest : AbstractRepositoryTest() {
     @get:Rule val tmp: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
     private val connector by lazy { RepositoryConnector.newConnector(tmp.root) }
 
-    override fun createRepository(): Repository =
-        connector.connect(RANDOM_ACCESS).persist(connector.openOrCreate())
+    // TODO: fix test by creating a FakeRepositoryStorage that allows empty history.
+    override fun createRepository(vararg history: RevisionChangeSet): Repository =
+        repository(*history).persist(connector.openOrCreate())
 
     @Test
-    fun `test load after clean returns null`() {
+    fun loadPersistent_afterDelete_returnsNull() {
+        createRepository(revisionChangeSet {})
+
         connector.delete()
+
         assertNull(connector.tryConnect(FAST_HISTORY))
     }
 
     @Test
-    fun `test load returns equal repository`() {
-        val expected = repository
+    fun loadPersistent_afterCreateRepository_returnsEqualRepository() {
+        val expected = createRepository(revisionChangeSet {})
+
         val actual = connector.connect(FAST_HISTORY)
+
         assertEqualRepositories(expected, actual)
     }
 
     @Test
-    fun `test persist already persisted returns same repository`() {
-        val expected = repository
-        val actual = repository.persist(connector.openOrCreate())
+    fun persist_whenNotYetPersisted_returnsSameRepository() {
+        val expected = repository(revisionChangeSet {
+            +sourceFile("src/Main.fake") {}
+        })
+
+        val actual = expected.persist(connector.openOrCreate())
+
         assertEqualRepositories(expected, actual)
     }
 
-    private enum class ProgressListenerState {
-        IDLE,
-        HISTORY,
-        DONE
+    @Test
+    fun persist_whenAlreadyPersisted_returnsSameRepository() {
+        val expected = createRepository(revisionChangeSet {
+            +sourceFile("src/Main.fake") {}
+        })
+
+        val actual = expected.persist(connector.openOrCreate())
+
+        assertEqualRepositories(expected, actual)
     }
 
     @Test
-    fun `test progress listener`() {
-        val listener =
-            object : HistoryProgressListener {
-                var state = ProgressListenerState.IDLE
-                    private set
+    fun persist_invokesProgressListener() {
+        val repository = createRepository(
+            revisionChangeSet {},
+            revisionChangeSet {},
+            revisionChangeSet {},
+        )
 
-                private val revisions = mutableListOf<RevisionId>()
+        val listener = object : HistoryProgressListener {
+            var count = -1
+            val revisions = mutableListOf<RevisionId>()
+            var ended = false
 
-                override fun onStart(revisionCount: Int) {
-                    revisions += repository.listRevisions()
-                    revisions.reverse()
-                    assertEquals(ProgressListenerState.IDLE, state)
-                    assertEquals(revisions.size, revisionCount)
-                    state = ProgressListenerState.HISTORY
-                }
-
-                override fun onRevision(revision: Revision) {
-                    assertEquals(ProgressListenerState.HISTORY, state)
-                    assertEquals(revisions.last(), revision.id)
-                    revisions.removeAt(revisions.size - 1)
-                }
-
-                override fun onEnd() {
-                    assertEquals(ProgressListenerState.HISTORY, state)
-                    assertTrue(revisions.isEmpty())
-                    state = ProgressListenerState.DONE
-                }
+            override fun onStart(revisionCount: Int) {
+                assertEquals(expected = -1, actual = count)
+                count = revisionCount
             }
 
-        connector.connect(RANDOM_ACCESS).persist(connector.openOrCreate(), listener)
+            override fun onRevision(revision: Revision) {
+                assertNotEquals(illegal = -1, actual = count)
+                assertFalse(ended)
+                revisions += revision.id
+            }
 
-        assertEquals(ProgressListenerState.DONE, listener.state)
+            override fun onEnd() {
+                assertEquals(expected = count, actual = revisions.size)
+                ended = true
+            }
+        }
+
+        repository.persist(connector.openOrCreate(), listener)
+
+        assertTrue(listener.ended)
+        assertEquals(expected = repository.listRevisions(), actual = listener.revisions)
     }
 }

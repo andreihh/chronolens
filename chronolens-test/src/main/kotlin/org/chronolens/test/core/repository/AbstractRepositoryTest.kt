@@ -35,6 +35,7 @@ import kotlin.streams.toList
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -297,23 +298,26 @@ public abstract class AbstractRepositoryTest {
             var ended = false
 
             override fun onStart(revisionCount: Int) {
+                assertEquals(expected = -1, actual = count)
                 count = revisionCount
             }
 
             override fun onRevision(revision: Revision) {
+                assertNotEquals(illegal = -1, actual = count)
+                assertFalse(ended)
                 revisions += revision.id
             }
 
             override fun onEnd() {
+                assertEquals(expected = count, actual = revisions.size)
                 ended = true
             }
         }
 
         repository.getHistory(listener).toList()
 
-        assertEquals(expected = 3, actual = listener.count)
-        assertEquals(expected = repository.listRevisions(), actual = listener.revisions)
         assertTrue(listener.ended)
+        assertEquals(expected = repository.listRevisions(), actual = listener.revisions)
     }
 
     @Test

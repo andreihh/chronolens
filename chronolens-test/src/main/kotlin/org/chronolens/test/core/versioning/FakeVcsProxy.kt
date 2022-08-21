@@ -29,7 +29,8 @@ internal class FakeVcsProxy(revisions: List<VcsChangeSet>) : VcsProxy {
         val snapshot = mutableMapOf<String, String>()
         for ((index, changeSet) in revisions.withIndex()) {
             val revisionId = index.toString()
-            history += VcsRevision(revisionId, date = Instant.now(), author = "t@test.com")
+            val date = Instant.ofEpochMilli(1000L * index)
+            history += VcsRevision(revisionId, date, author = "t@test.com")
             for ((path, content) in changeSet) {
                 if (content == null) {
                     snapshot -= path
