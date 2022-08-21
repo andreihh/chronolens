@@ -94,7 +94,8 @@ internal class GitProxy(
         return execute(vcs, "cat-file", "blob", "$revisionId:$prefix$path").getOrNull()
     }
 
-    override fun getHistory(path: String): List<VcsRevision> {
+    override fun getHistory(revisionId: String, path: String): List<VcsRevision> {
+        validateRevision(revisionId)
         val result =
             execute(
                 vcs,
@@ -102,7 +103,7 @@ internal class GitProxy(
                 "--first-parent",
                 "--reverse",
                 format,
-                headId,
+                revisionId,
                 "--",
                 path.ifEmpty { "./" }
             )

@@ -57,11 +57,13 @@ public interface VcsProxy {
 
     /**
      * Returns the chronological list of revisions which modified the file or directory at the given
-     * [path] up to the `head` revision, or the empty list if [path] never existed in the `head`
-     * revision or any of its ancestors.
+     * [path] up to and including the given [revisionId], or the empty list if [path] never existed
+     * in the given revision or any of its ancestors.
      *
      * A directory is modified if any file in its subtree is modified. The empty string is a path
      * that represents the repository root.
+     *
+     * @throws IllegalArgumentException if [revisionId] doesn't exist
      */
-    public fun getHistory(path: String = ""): List<VcsRevision>
+    public fun getHistory(revisionId: String = getHead().id, path: String = ""): List<VcsRevision>
 }

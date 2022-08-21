@@ -52,8 +52,9 @@ class VcsProxyMock(private val revisions: List<RevisionMock>) : VcsProxy {
     override fun getFile(revisionId: String, path: String): String? =
         checkNotNull(files[getRevisionMock(revisionId).id])[path]
 
-    override fun getHistory(path: String): List<VcsRevision> =
+    override fun getHistory(revisionId: String, path: String): List<VcsRevision> =
         revisions
+            .dropLastWhile { it.id != revisionId }
             .filter { commit -> commit.changeSet.keys.any { file -> file.startsWith(path) } }
             .map { it.toRevision() }
 }

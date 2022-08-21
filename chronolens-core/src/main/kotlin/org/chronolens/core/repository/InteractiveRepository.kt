@@ -42,16 +42,18 @@ internal class InteractiveRepository(
     private val history by lazy { tryRun { vcs.getHistory() }.checkValidHistory() }
 
     private fun getSourceContent(revisionId: RevisionId, path: SourcePath): String? =
-        tryRun { vcs.getFile(revisionId.toString(), path.toString()) }
+        tryRun { vcs.getFile(revisionId = revisionId.toString(), path.toString()) }
 
     private fun getChangeSet(revisionId: String): Set<SourcePath> =
-        tryRun { vcs.getChangeSet(revisionId) }.map(::checkValidPath).toSet()
+        tryRun { vcs.getChangeSet(revisionId = revisionId) }.map(::checkValidPath).toSet()
 
     private fun getAllSources(revisionId: RevisionId): Set<SourcePath> =
-        tryRun { vcs.listFiles(revisionId.toString()) }.checkValidSources()
+        tryRun { vcs.listFiles(revisionId = revisionId.toString()) }.checkValidSources()
 
-    private fun getSourceHistory(path: SourcePath) =
-        tryRun { vcs.getHistory(path.toString()) }.map(VcsRevision::id).map(::RevisionId)
+    private fun getSourceHistory(revisionId: RevisionId, path: SourcePath) =
+        tryRun { vcs.getHistory(revisionId = revisionId.toString(), path = path.toString()) }
+            .map(VcsRevision::id)
+            .map(::RevisionId)
 
     override fun getHeadId(): RevisionId = head
 
@@ -67,7 +69,7 @@ internal class InteractiveRepository(
     }
 
     private fun getLatestValidSource(revisionId: RevisionId, path: SourcePath): SourceFile {
-        val revisions = getSourceHistory(path).asReversed().dropWhile { it != revisionId }
+        val revisions = getSourceHistory(revisionId, path).asReversed()
         for (id in revisions) {
             val result = parseSource(id, path)
             if (result is Result.Success) {

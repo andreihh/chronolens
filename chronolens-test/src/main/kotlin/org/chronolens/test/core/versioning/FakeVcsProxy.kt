@@ -57,6 +57,10 @@ internal class FakeVcsProxy(revisions: List<VcsChangeSet>) : VcsProxy {
     override fun getChangeSet(revisionId: String): Set<String> =
         requireNotNull(changeSets[revisionId]).keys
 
-    override fun getHistory(path: String): List<VcsRevision> =
-        history.filter { changeSets.getValue(it.id).touches(path) }
+    override fun getHistory(revisionId: String, path: String): List<VcsRevision> {
+        require(revisionId in changeSets)
+        return history
+            .dropLastWhile { it.id != revisionId }
+            .filter { changeSets.getValue(it.id).touches(path) }
+    }
 }

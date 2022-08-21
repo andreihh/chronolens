@@ -29,6 +29,7 @@ import org.chronolens.test.core.model.function
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.model.sourceTree
 import org.chronolens.test.core.model.type
+import org.chronolens.test.core.model.variable
 import org.junit.Test
 import kotlin.streams.toList
 import kotlin.test.assertEquals
@@ -48,15 +49,19 @@ public abstract class AbstractRepositoryTest {
                     +function("println()") {}
                 }
                 +sourceFile("src/Test.fake") {}
-                +sourceFile("src/BuildVersion.fake") {}
+                +sourceFile("src/BuildVersion.fake") {
+                    +variable("VERSION") {}
+                }
                 invalidate("src/Error.fake")
+                +sourceFile("src/Delete.fake") {}
                 invalidate("README.md")
             },
             revisionChangeSet {
                 invalidate("src/Main.fake")
                 invalidate("src/Worksheet.fake")
+                invalidate("src/BuildVersion.fake")
                 delete("src/Test.fake")
-                delete("src/BuildVersion.fake")
+                delete("src/Delete.fake")
             },
             revisionChangeSet {
                 +sourceFile("src/Main.fake") {
@@ -90,10 +95,17 @@ public abstract class AbstractRepositoryTest {
                 "src/Worksheet.fake",
                 "src/Test.fake",
                 "src/BuildVersion.fake",
-                "src/Error.fake"
+                "src/Error.fake",
+                "src/Delete.fake"
             ),
-            setOf("src/Main.fake", "src/Worksheet.fake", "src/Error.fake"),
-            setOf("src/Main.fake", "src/Worksheet.fake", "src/Test.fake", "src/Error.fake")
+            setOf("src/Main.fake", "src/Worksheet.fake", "src/BuildVersion.fake", "src/Error.fake"),
+            setOf(
+                "src/Main.fake",
+                "src/Worksheet.fake",
+                "src/Test.fake",
+                "src/BuildVersion.fake",
+                "src/Error.fake"
+            )
         ).map { it.map(::SourcePath).toSet() }
 
         val actualSources = repository.listRevisions().map(repository::listSources)
@@ -168,6 +180,32 @@ public abstract class AbstractRepositoryTest {
     }
 
     @Test
+    public fun getSource_whenInvalidAndNotChangedInRevision_returnsLatestValidSourceFileVersion() {
+        val expectedSourceFile =
+            listOf(
+                sourceFile("src/BuildVersion.fake") {
+                    +variable("VERSION") {}
+                },
+                sourceFile("src/BuildVersion.fake") {
+                    +variable("VERSION") {}
+                },
+                sourceFile("src/BuildVersion.fake") {
+                    +variable("VERSION") {}
+                },
+            )
+
+        val actualSourceFile = repository.listRevisions().map { revisionId ->
+            repository.getSource(SourcePath("src/BuildVersion.fake"), revisionId)
+        }
+
+        assertEquals(expected = expectedSourceFile, actual = actualSourceFile)
+        assertEquals(
+            expected = expectedSourceFile.last(),
+            actual = repository.getSource(SourcePath("src/BuildVersion.fake"))
+        )
+    }
+
+    @Test
     public fun getSource_whenRevisionDoesNotExist_throws() {
         assertFailsWith<IllegalArgumentException> {
             repository.getSource(SourcePath("src/Main.fake"), RevisionId("invalid-revision"))
@@ -183,13 +221,19 @@ public abstract class AbstractRepositoryTest {
                     +function("println()") {}
                 }
                 +sourceFile("src/Test.fake") {}
-                +sourceFile("src/BuildVersion.fake") {}
+                +sourceFile("src/BuildVersion.fake") {
+                    +variable("VERSION") {}
+                }
                 +sourceFile("src/Error.fake") {}
+                +sourceFile("src/Delete.fake") {}
             },
             sourceTree {
                 +sourceFile("src/Main.fake") {}
                 +sourceFile("src/Worksheet.fake") {
                     +function("println()") {}
+                }
+                +sourceFile("src/BuildVersion.fake") {
+                    +variable("VERSION") {}
                 }
                 +sourceFile("src/Error.fake") {}
             },
@@ -197,6 +241,9 @@ public abstract class AbstractRepositoryTest {
                 +sourceFile("src/Main.fake") { +type("Main") {} }
                 +sourceFile("src/Test.fake") { +type("MainTest") {} }
                 +sourceFile("src/Worksheet.fake") { +function("println(String)") {} }
+                +sourceFile("src/BuildVersion.fake") {
+                    +variable("VERSION") {}
+                }
                 +sourceFile("src/Error.fake") {}
             }
         )

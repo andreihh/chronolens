@@ -178,7 +178,7 @@ public abstract class AbstractVcsProxyTest {
             },
         )
 
-        assertEquals(expected = emptyList(), actual = vcs.getHistory("README.txt"))
+        assertEquals(expected = emptyList(), actual = vcs.getHistory(path = "README.txt"))
     }
 
     @Test
@@ -200,7 +200,33 @@ public abstract class AbstractVcsProxyTest {
             },
         )
 
-        assertEquals(expected = 3, actual = vcs.getHistory("README.txt").size)
+        assertEquals(expected = 3, actual = vcs.getHistory(path = "README.txt").size)
+    }
+
+    @Test
+    public fun getHistory_forFileAtRevision_returnsAncestorRevisionsThatTouchedFile() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("README.txt", "This is a test repository.")
+                change("tmp.txt", "Temporary file.")
+                change("gradle.properties", "org.gradle.daemon=false")
+            },
+            vcsRevision {
+                delete("tmp.txt")
+                delete("README.txt")
+            },
+            vcsRevision {
+                change("README.txt", "This is a test repo.")
+            },
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=true")
+            },
+        )
+
+        val history =
+            vcs.getHistory(revisionId = vcs.getHistory()[2].id, path = "gradle.properties")
+
+        assertEquals(expected = vcs.getHistory().take(1), actual = history)
     }
 
     @Test
@@ -226,6 +252,43 @@ public abstract class AbstractVcsProxyTest {
 
         assertEquals(expected = 4, actual = history.size)
         assertEquals(expected = vcs.getHead(), actual = history.last())
+    }
+
+    @Test
+    public fun getHistory_atRevision_returnsAncestorRevisions() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("README.txt", "This is a test repository.")
+                change("tmp.txt", "Temporary file.")
+            },
+            vcsRevision {
+                delete("tmp.txt")
+                delete("README.txt")
+            },
+            vcsRevision {
+                change("README.txt", "This is a test repo.")
+            },
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=true")
+            },
+        )
+
+        val history = vcs.getHistory(revisionId = vcs.getHistory()[2].id)
+
+        assertEquals(expected = vcs.getHistory().take(3), actual = history)
+    }
+
+    @Test
+    public fun getHistory_whenInvalidRevision_throws() {
+        val vcs = createRepository(
+            vcsRevision {
+                change("gradle.properties", "org.gradle.daemon=false")
+            },
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            vcs.getHistory(revisionId = "invalid-revision", path = "gradle.properties")
+        }
     }
 
     @Test
