@@ -255,12 +255,6 @@ public abstract class AbstractVcsProxyTest {
 
         val detectedVcs = assertNotNull(VcsProxyFactory.detect(tmp.root))
 
-        assertEquals(expected = expectedVcs.getHistory(), actual = detectedVcs.getHistory())
-        for ((revisionId, _, _) in detectedVcs.getHistory()) {
-            assertEquals(
-                expected = expectedVcs.listFiles(revisionId),
-                actual = detectedVcs.listFiles(revisionId)
-            )
-        }
+        assertEqualVcsProxies(expected = expectedVcs, actual = detectedVcs)
     }
 }
