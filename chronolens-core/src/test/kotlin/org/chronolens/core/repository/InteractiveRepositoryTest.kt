@@ -16,34 +16,29 @@
 
 package org.chronolens.core.repository
 
-import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
-import kotlin.test.assertNull
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.chronolens.test.core.parsing.FakeParser
+import org.chronolens.test.core.repository.AbstractRepositoryTest
+import org.chronolens.test.core.repository.RevisionChangeSet
+import org.chronolens.test.core.repository.SourceFileChange.ChangeFile
+import org.chronolens.test.core.repository.SourceFileChange.DeleteFile
+import org.chronolens.test.core.repository.SourceFileChange.InvalidateFile
+import org.chronolens.test.core.versioning.vcsProxy
 
-class InteractiveRepositoryTest : RepositoryTest() {
-    @get:Rule val tmp: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
-
-    private val connector by lazy { RepositoryConnector.newConnector(tmp.root) }
-
-    override fun createRepository(): Repository =
-        connector.connect(RANDOM_ACCESS)
-
-    @Test
-    fun `test connect with empty repository returns null`() {
-        resetVcsRepository()
-        assertNull(connector.tryConnect(RANDOM_ACCESS))
-    }
-
-    // TODO: figure out if test needs to be replaced.
-    /*@Test
-    fun `test get source from invalid revision throws`() {
-        assertFailsWith<IllegalArgumentException> {
-            (repository as InteractiveRepository).getSource(
-                path = SourcePath("src/Main.mock"),
-                revisionId = "^-+"
-            )
+class InteractiveRepositoryTest : AbstractRepositoryTest() {
+    override fun createRepository(vararg history: RevisionChangeSet): Repository {
+        // TODO: fix tests.
+        val parser = FakeParser()
+        val revisions = history.map { changeSet ->
+            changeSet.associate { change ->
+                val source = when (change) {
+                    is ChangeFile -> parser.unparse(change.sourceFile)
+                    is DeleteFile -> null
+                    is InvalidateFile -> "SyntaxError"
+                }
+                change.sourcePath.toString() to source
+            }
         }
-    }*/
+        val vcs = vcsProxy { revisions.forEach(this::revision) }
+        return InteractiveRepository(vcs, parser)
+    }
 }
