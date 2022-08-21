@@ -24,7 +24,7 @@ import org.chronolens.core.model.RevisionId
 import org.chronolens.core.repository.Repository.HistoryProgressListener
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
-import org.chronolens.test.core.repository.assertEquals
+import org.chronolens.test.core.repository.assertEqualRepositories
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -47,14 +47,14 @@ class PersistentRepositoryTest : RepositoryTest() {
     fun `test load returns equal repository`() {
         val expected = repository
         val actual = connector.connect(FAST_HISTORY)
-        assertEquals(expected, actual)
+        assertEqualRepositories(expected, actual)
     }
 
     @Test
     fun `test persist already persisted returns same repository`() {
         val expected = repository
         val actual = repository.persist(connector.openOrCreate())
-        assertEquals(expected, actual)
+        assertEqualRepositories(expected, actual)
     }
 
     private enum class ProgressListenerState {

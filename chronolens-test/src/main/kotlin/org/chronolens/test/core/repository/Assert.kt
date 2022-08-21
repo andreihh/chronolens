@@ -22,7 +22,7 @@ import org.chronolens.core.repository.Repository
 import org.chronolens.test.core.model.assertEquals
 import kotlin.test.assertEquals
 
-public fun assertEquals(
+public fun assertEqualRepositories(
     expected: Repository?,
     actual: Repository?,
     message: String? = null,
