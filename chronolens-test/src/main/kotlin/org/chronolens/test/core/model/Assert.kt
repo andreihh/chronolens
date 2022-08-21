@@ -26,3 +26,13 @@ public fun assertEquals(expected: SourceTree?, actual: SourceTree?, message: Str
     val actualSources = actual?.sources?.sortedBy { it.path.toString() }
     assertEqualsKt(expectedSources, actualSources, message)
 }
+
+public fun assertEqualSourceTrees(
+    expected: SourceTree?,
+    actual: SourceTree?,
+    message: String? = null
+) {
+    val expectedSources = expected?.sources?.sortedBy { it.path.toString() }
+    val actualSources = actual?.sources?.sortedBy { it.path.toString() }
+    assertEqualsKt(expectedSources, actualSources, message)
+}

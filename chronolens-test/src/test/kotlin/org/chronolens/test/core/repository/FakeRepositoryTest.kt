@@ -14,24 +14,11 @@
  * limitations under the License.
  */
 
-package org.chronolens.test.core.analysis
+package org.chronolens.test.core.repository
 
-import org.chronolens.core.analysis.OptionsProvider
-import org.chronolens.test.core.BuilderMarker
+import org.chronolens.core.repository.Repository
 
-@BuilderMarker
-public class OptionsProviderBuilder {
-    private val options = mutableMapOf<String, Any>()
-
-    public fun <T : Any> setOption(name: String, value: T): OptionsProviderBuilder {
-        options[name] = value
-        return this
-    }
-
-    public fun <T : Any> setOption(name: String, value: List<T>): OptionsProviderBuilder {
-        options[name] = value
-        return this
-    }
-
-    public fun build(): OptionsProvider = FakeOptionsProvider(options)
+class FakeRepositoryTest : AbstractRepositoryTest() {
+    override fun createRepository(vararg history: RevisionChangeSet): Repository =
+        repository(*history)
 }

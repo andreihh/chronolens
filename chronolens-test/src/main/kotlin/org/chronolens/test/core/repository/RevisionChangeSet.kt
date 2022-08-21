@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package org.chronolens.test.core.analysis
+package org.chronolens.test.core.repository
 
-import org.chronolens.core.analysis.OptionsProvider
-import org.chronolens.test.core.BuilderMarker
+import org.chronolens.core.model.SourceFile
+import org.chronolens.core.model.SourcePath
 
-@BuilderMarker
-public class OptionsProviderBuilder {
-    private val options = mutableMapOf<String, Any>()
+public typealias RevisionChangeSet = Set<SourceFileChange>
 
-    public fun <T : Any> setOption(name: String, value: T): OptionsProviderBuilder {
-        options[name] = value
-        return this
+public sealed interface SourceFileChange {
+    public val sourcePath: SourcePath
+
+    public data class ChangeFile(val sourceFile: SourceFile) : SourceFileChange {
+        override val sourcePath: SourcePath
+            get() = sourceFile.path
     }
 
-    public fun <T : Any> setOption(name: String, value: List<T>): OptionsProviderBuilder {
-        options[name] = value
-        return this
-    }
+    public data class InvalidateFile(override val sourcePath: SourcePath) : SourceFileChange
 
-    public fun build(): OptionsProvider = FakeOptionsProvider(options)
+    public data class DeleteFile(override val sourcePath: SourcePath) : SourceFileChange
 }
