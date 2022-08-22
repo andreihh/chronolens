@@ -25,6 +25,7 @@ import org.chronolens.core.repository.Repository.HistoryProgressListener
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.FAST_HISTORY
 import org.chronolens.test.core.model.sourceFile
 import org.chronolens.test.core.repository.AbstractRepositoryTest
+import org.chronolens.test.core.repository.FakeRepositoryStorage
 import org.chronolens.test.core.repository.RevisionChangeSet
 import org.chronolens.test.core.repository.assertEqualRepositories
 import org.chronolens.test.core.repository.repository
@@ -39,14 +40,16 @@ class PersistentRepositoryTest : AbstractRepositoryTest() {
     @get:Rule val tmp: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
     private val connector by lazy { RepositoryConnector.newConnector(tmp.root) }
+    private val repositoryStorage = FakeRepositoryStorage()
 
-    // TODO: fix test by creating a FakeRepositoryStorage that allows empty history.
     override fun createRepository(vararg history: RevisionChangeSet): Repository =
-        repository(*history).persist(connector.openOrCreate())
+        if (history.isNotEmpty()) repository(*history).persist(repositoryStorage)
+        else PersistentRepository(repositoryStorage)
 
+    // TODO: move loadPersistent tests to RepositoryConnectorTest.
     @Test
     fun loadPersistent_afterDelete_returnsNull() {
-        createRepository(revisionChangeSet {})
+        repository(revisionChangeSet {}).persist(connector.openOrCreate())
 
         connector.delete()
 
@@ -54,8 +57,8 @@ class PersistentRepositoryTest : AbstractRepositoryTest() {
     }
 
     @Test
-    fun loadPersistent_afterCreateRepository_returnsEqualRepository() {
-        val expected = createRepository(revisionChangeSet {})
+    fun loadPersistent_afterPersist_returnsEqualRepository() {
+        val expected = repository(revisionChangeSet {}).persist(connector.openOrCreate())
 
         val actual = connector.connect(FAST_HISTORY)
 
@@ -68,7 +71,7 @@ class PersistentRepositoryTest : AbstractRepositoryTest() {
             +sourceFile("src/Main.fake") {}
         })
 
-        val actual = expected.persist(connector.openOrCreate())
+        val actual = expected.persist(repositoryStorage)
 
         assertEqualRepositories(expected, actual)
     }
@@ -79,7 +82,7 @@ class PersistentRepositoryTest : AbstractRepositoryTest() {
             +sourceFile("src/Main.fake") {}
         })
 
-        val actual = expected.persist(connector.openOrCreate())
+        val actual = expected.persist(repositoryStorage)
 
         assertEqualRepositories(expected, actual)
     }

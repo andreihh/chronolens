@@ -64,7 +64,7 @@ internal class PersistentRepository(private val storage: RepositoryStorage) : Re
 
     override fun getHistory(): Sequence<Revision> =
         try {
-            storage.readHistory()
+            storage.readHistory().ifEmpty { repositoryError("History must not be empty!") }
         } catch (e: IOException) {
             throw UncheckedIOException(e)
         }

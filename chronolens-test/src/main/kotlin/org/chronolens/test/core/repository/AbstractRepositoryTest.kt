@@ -367,7 +367,7 @@ public abstract class AbstractRepositoryTest {
             emptyRepository.getSnapshot()
         }
         assertFailsWith<CorruptedRepositoryException> {
-            emptyRepository.getHistory()
+            emptyRepository.getHistory().toList()
         }
     }
 }
