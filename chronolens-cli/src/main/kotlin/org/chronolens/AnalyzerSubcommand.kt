@@ -18,6 +18,9 @@
 
 package org.chronolens
 
+import java.io.File
+import java.io.IOException
+import java.io.UncheckedIOException
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
@@ -30,9 +33,6 @@ import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.RepositoryConnector
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 import org.chronolens.core.repository.persist
-import java.io.File
-import java.io.IOException
-import java.io.UncheckedIOException
 
 /**
  * A command line subcommand that runs an [org.chronolens.core.analysis.Analyzer].

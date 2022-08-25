@@ -16,6 +16,7 @@
 
 package org.chronolens
 
+import kotlin.reflect.KProperty
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.MultipleOption
@@ -26,7 +27,6 @@ import kotlinx.cli.multiple
 import kotlinx.cli.required
 import org.chronolens.core.analysis.Option
 import org.chronolens.core.analysis.OptionsProvider
-import kotlin.reflect.KProperty
 
 /** An option provider that parses the options from command line arguments. */
 class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvider {
@@ -57,7 +57,8 @@ class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvide
         description: String,
         elementType: Class<T>
     ): Option<List<T>> {
-        return parser.option(elementType.toArgType(), name, alias, description)
+        return parser
+            .option(elementType.toArgType(), name, alias, description)
             .multiple()
             .toOption()
     }
@@ -83,10 +84,12 @@ private fun <T : Any> MultipleOption<T, *, *>.toOption(): Option<List<T>> =
 
 // TODO: add support for enums, SourcePath, RevisionId and QualifiedSourceNodeId.
 @Suppress("UNCHECKED_CAST")
-private fun <T : Any> Class<T>.toArgType(): ArgType<T> = when (this.kotlin) {
-    Boolean::class -> ArgType.Boolean
-    Int::class -> ArgType.Int
-    Double::class -> ArgType.Double
-    String::class -> ArgType.String
-    else -> error("Unsupported option type '$this'!")
-} as ArgType<T>
+private fun <T : Any> Class<T>.toArgType(): ArgType<T> =
+    when (this.kotlin) {
+        Boolean::class -> ArgType.Boolean
+        Int::class -> ArgType.Int
+        Double::class -> ArgType.Double
+        String::class -> ArgType.String
+        else -> error("Unsupported option type '$this'!")
+    }
+        as ArgType<T>

@@ -36,9 +36,9 @@ class LsTree : Subcommand() {
     """
 
     private val rev by
-    option<String>()
-        .help("the inspected revision (default: the <head> revision)")
-        .validateRevision(::repository)
+        option<String>()
+            .help("the inspected revision (default: the <head> revision)")
+            .validateRevision(::repository)
 
     private val repository by lazy(::connect)
     private val revision: RevisionId
@@ -78,9 +78,9 @@ class Model : Subcommand() {
     private val id by option<String>().help("the inspected source node").required().validateId()
 
     private val rev by
-    option<String>()
-        .help("the inspected revision (default: the <head> revision)")
-        .validateRevision(::repository)
+        option<String>()
+            .help("the inspected revision (default: the <head> revision)")
+            .validateRevision(::repository)
 
     private val repository by lazy(::connect)
     private val revision: RevisionId

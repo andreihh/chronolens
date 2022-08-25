@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2017-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,13 @@ import org.chronolens.core.cli.MainCommand
 import org.chronolens.core.cli.run
 
 class Main : MainCommand() {
-    override val name: String get() = "chronolens"
-    override val version: String get() = "0.2"
+    override val name: String
+        get() = "chronolens"
+    override val version: String
+        get() = "0.2"
     override val help: String
-        get() = """
+        get() =
+            """
         ChronoLens is a software evolution analysis tool that inspects the
         repository detected in the current working directory.
     """
@@ -34,9 +37,7 @@ class Main : MainCommand() {
         @JvmStatic
         fun main(vararg args: String) {
             val command = Main()
-            command.registerSubcommands(
-                listOf(LsTree(), RevList(), Model(), Persist(), Clean())
-            )
+            command.registerSubcommands(listOf(LsTree(), RevList(), Model(), Persist(), Clean()))
             run(command, *args)
         }
     }
