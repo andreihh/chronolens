@@ -102,3 +102,9 @@ public fun repository(vararg history: RevisionChangeSet): Repository {
 
     return repositoryBuilder.build()
 }
+
+public fun revisionListOf(vararg revisionIds: String): List<RevisionId> =
+    revisionIds.map(::RevisionId)
+
+public fun sourceSetOf(vararg paths: String): Set<SourcePath> =
+    paths.map(::SourcePath).toSet()

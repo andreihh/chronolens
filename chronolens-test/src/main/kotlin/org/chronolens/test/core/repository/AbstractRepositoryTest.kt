@@ -91,7 +91,7 @@ public abstract class AbstractRepositoryTest {
     @Test
     public fun listSources_returnsAllInterpretableSourcePathsAtRevision() {
         val expectedSources = listOf(
-            setOf(
+            sourceSetOf(
                 "src/Main.fake",
                 "src/Worksheet.fake",
                 "src/Test.fake",
@@ -99,15 +99,20 @@ public abstract class AbstractRepositoryTest {
                 "src/Error.fake",
                 "src/Delete.fake"
             ),
-            setOf("src/Main.fake", "src/Worksheet.fake", "src/BuildVersion.fake", "src/Error.fake"),
-            setOf(
+            sourceSetOf(
+                "src/Main.fake",
+                "src/Worksheet.fake",
+                "src/BuildVersion.fake",
+                "src/Error.fake"
+            ),
+            sourceSetOf(
                 "src/Main.fake",
                 "src/Worksheet.fake",
                 "src/Test.fake",
                 "src/BuildVersion.fake",
                 "src/Error.fake"
             )
-        ).map { it.map(::SourcePath).toSet() }
+        )
 
         val actualSources = repository.listRevisions().map(repository::listSources)
 

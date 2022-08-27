@@ -11,6 +11,7 @@ dependencies {
     implementation(libs.kotlinx.cli)
     runtimeOnly(project(":services:chronolens-git"))
     runtimeOnly(project(":services:chronolens-java"))
+    runtimeOnly(project(":analyzers:chronolens-interactive"))
     runtimeOnly(project(":analyzers:chronolens-churn"))
     runtimeOnly(project(":analyzers:chronolens-coupling"))
     runtimeOnly(project(":analyzers:chronolens-decapsulations"))
