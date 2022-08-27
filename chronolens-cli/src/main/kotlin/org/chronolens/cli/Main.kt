@@ -14,19 +14,26 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalCli::class)
+
 package org.chronolens.cli
 
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ExperimentalCli
+import kotlinx.cli.Subcommand
+import org.chronolens.core.analysis.AnalyzerSpec
 
 class Main {
     companion object {
-        @OptIn(ExperimentalCli::class)
         @JvmStatic
         fun main(args: Array<String>) {
             val parser = ArgParser("chronolens", strictSubcommandOptionsOrder = true)
-            parser.subcommands(*parser.assembleAnalyzerSubcommands().toTypedArray())
+            parser.subcommands(*assembleSubcommands().toTypedArray())
             parser.parse(args)
         }
     }
 }
+
+private fun assembleSubcommands(): List<Subcommand> =
+    AnalyzerSpec.loadAnalyzerSpecs().map(::AnalyzerSubcommand) +
+        listOf(PersistSubcommand(), CleanSubcommand())

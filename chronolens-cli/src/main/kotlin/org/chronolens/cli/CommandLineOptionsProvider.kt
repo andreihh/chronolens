@@ -26,6 +26,8 @@ import kotlinx.cli.multiple
 import kotlinx.cli.required
 import org.chronolens.core.analysis.Option
 import org.chronolens.core.analysis.OptionsProvider
+import org.chronolens.core.analysis.option
+import java.io.File
 import kotlin.reflect.KProperty
 
 /** An option provider that parses the options from command line arguments. */
@@ -62,6 +64,13 @@ class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvide
             .multiple()
             .toOption()
     }
+
+    fun repositoryRootOption(): Option<File> =
+        option<String>()
+            .name("repository-root")
+            .description("The root directory of the repository.")
+            .default(".")
+            .transform(::File)
 }
 
 private fun <T : Any> SingleNullableOption<T>.toOption(): Option<T?> =
