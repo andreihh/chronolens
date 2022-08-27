@@ -30,7 +30,8 @@ public class RevListSpec : AnalyzerSpec {
         get() = "rev-list"
 
     override val description: String
-        get() = """
+        get() =
+            """
         Prints all revisions on the path from the currently checked-out (<head>) revision to the
         root of the revision tree / graph in chronological order.
         """.trimIndent()

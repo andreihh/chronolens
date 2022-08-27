@@ -45,18 +45,20 @@ public class ModelAnalyzer(optionsProvider: OptionsProvider) : Analyzer(optionsP
     override val accessMode: AccessMode
         get() = RANDOM_ACCESS
 
-    private val rev by option<String>()
-        .name("rev")
-        .alias("r")
-        .description("the inspected revision (default: the <head> revision")
-        .nullable()
-        .transformIfNotNull(::RevisionId)
+    private val rev by
+        option<String>()
+            .name("rev")
+            .alias("r")
+            .description("the inspected revision (default: the <head> revision")
+            .nullable()
+            .transformIfNotNull(::RevisionId)
 
-    private val qualifiedId by option<String>()
-        .name("qualified-id")
-        .description("")
-        .required()
-        .transform(::parseQualifiedSourceNodeIdFrom)
+    private val qualifiedId by
+        option<String>()
+            .name("qualified-id")
+            .description("")
+            .required()
+            .transform(::parseQualifiedSourceNodeIdFrom)
 
     override fun analyze(repository: Repository): ModelReport {
         val revisionId = rev ?: repository.getHeadId()
@@ -72,6 +74,5 @@ public class ModelAnalyzer(optionsProvider: OptionsProvider) : Analyzer(optionsP
 }
 
 public data class ModelReport(val sourceNode: SourceNode) : Report {
-    // TODO: pretty-print.
-    override fun toString(): String = sourceNode.toString()
+    override fun toString(): String = PrettyPrinter.stringify(sourceNode)
 }

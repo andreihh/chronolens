@@ -18,9 +18,7 @@ package org.chronolens.core.analysis
 
 import kotlin.reflect.KProperty
 
-/**
- * A provider that supplies values for a set of registered [Option]s.
- */
+/** A provider that supplies values for a set of registered [Option]s. */
 public interface OptionsProvider {
     /**
      * Returns a fluent [OptionBuilder] that will register the created option to this provider.

@@ -16,6 +16,7 @@
 
 package org.chronolens.interactive
 
+import java.io.File
 import org.chronolens.core.analysis.Analyzer
 import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.OptionsProvider
@@ -28,14 +29,14 @@ import org.chronolens.core.repository.RepositoryConnector
 import org.chronolens.core.repository.RepositoryConnector.AccessMode
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 import org.chronolens.core.repository.persist
-import java.io.File
 
 public class PersistSpec : AnalyzerSpec {
     override val name: String
         get() = "persist"
 
     override val description: String
-        get() = """
+        get() =
+            """
         Connects to the repository and persists the source and history model from all the files that
         can be interpreted.
 

@@ -42,12 +42,13 @@ public class LsTreeAnalyzer(optionsProvider: OptionsProvider) : Analyzer(options
     override val accessMode: AccessMode
         get() = RANDOM_ACCESS
 
-    private val rev by option<String>()
-        .name("rev")
-        .alias("r")
-        .description("the inspected revision (default: the <head> revision")
-        .nullable()
-        .transformIfNotNull(::RevisionId)
+    private val rev by
+        option<String>()
+            .name("rev")
+            .alias("r")
+            .description("the inspected revision (default: the <head> revision")
+            .nullable()
+            .transformIfNotNull(::RevisionId)
 
     override fun analyze(repository: Repository): LsTreeReport {
         val revisionId = rev ?: repository.getHeadId()
