@@ -18,7 +18,19 @@ package org.chronolens.core.analysis
 
 import kotlin.reflect.KProperty
 
-/** A provider that supplies values for a set of registered [Option]s. */
+/**
+ * A provider that supplies values for a set of registered [Option]s.
+ *
+ * Only the following option types are supported:
+ * - [String]
+ * - [Boolean]
+ * - [Int]
+ * - [Double]
+ * - [Enum]
+ * - [List] of the above types
+ *
+ * Options of other types can be created with [Option.transform] or [Option.transformIfNotNull].
+ */
 public interface OptionsProvider {
     /**
      * Returns a fluent [OptionBuilder] that will register the created option to this provider.

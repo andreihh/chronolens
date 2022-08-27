@@ -16,10 +16,9 @@
 
 @file:OptIn(ExperimentalCli::class)
 
-package org.chronolens
+package org.chronolens.cli
 
 import java.io.File
-import java.io.IOException
 import java.io.UncheckedIOException
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ExperimentalCli
@@ -31,8 +30,6 @@ import org.chronolens.core.analysis.Option
 import org.chronolens.core.analysis.option
 import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.RepositoryConnector
-import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
-import org.chronolens.core.repository.persist
 
 /**
  * A command line subcommand that runs an [org.chronolens.core.analysis.Analyzer].
@@ -64,31 +61,6 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec, repositoryRootOption: Optio
         } catch (e: UncheckedIOException) {
             System.err.println("An I/O error occurred!")
             e.printStackTrace()
-        }
-    }
-}
-
-class PersistSubcommand(repositoryRootOption: Option<File>) : Subcommand("persist", "") {
-    private val repositoryRoot by repositoryRootOption
-    private val connector by lazy { RepositoryConnector.newConnector(repositoryRoot) }
-
-    override fun execute() {
-        try {
-            connector.connect(RANDOM_ACCESS).persist(connector.openOrCreate())
-        } catch (e: IOException) {
-            throw UncheckedIOException(e)
-        }
-    }
-}
-
-class CleanSubcommand(repositoryRootOption: Option<File>) : Subcommand("clean", "") {
-    private val repositoryRoot by repositoryRootOption
-
-    override fun execute() {
-        try {
-            RepositoryConnector.newConnector(repositoryRoot).delete()
-        } catch (e: IOException) {
-            throw UncheckedIOException(e)
         }
     }
 }

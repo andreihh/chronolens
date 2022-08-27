@@ -16,8 +16,6 @@
 
 package org.chronolens
 
-import kotlinx.cli.ArgParser
-import kotlinx.cli.ExperimentalCli
 import org.chronolens.core.cli.MainCommand
 import org.chronolens.core.cli.run
 
@@ -41,12 +39,4 @@ class Main : MainCommand() {
             run(command, *args)
         }
     }
-}
-
-@OptIn(ExperimentalCli::class)
-fun main(args: Array<String>) {
-    // TODO: make the default main function once tested.
-    val parser = ArgParser("chronolens", strictSubcommandOptionsOrder = true)
-    parser.subcommands(*parser.assembleAnalyzerSubcommands().toTypedArray())
-    parser.parse(args)
 }
