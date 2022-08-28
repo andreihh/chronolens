@@ -32,8 +32,8 @@ internal class DecapsulationAnalyzerSpec : AnalyzerSpec {
 
     override val description: String
         get() =
-            """Detects the decapsulations that occurred during the evolution of the repository
-            and reports the results to the standard output."""
+            """Detects the decapsulations that occurred during the evolution of the repository and
+            reports the results to the standard output."""
 
     override fun create(optionsProvider: OptionsProvider): DecapsulationAnalyzer =
         DecapsulationAnalyzer(optionsProvider)

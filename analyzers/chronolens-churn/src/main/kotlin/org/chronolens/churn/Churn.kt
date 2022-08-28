@@ -63,7 +63,7 @@ internal class ChurnAnalyzer(optionsProvider: OptionsProvider) : Analyzer(option
     private val minMetricValue by
         option<Int>()
             .name("min-metric-value")
-            .description("ignore source files that have less churn than the specified limit")
+            .description("ignore sources that have less churn than the specified limit")
             .default(0)
             .validate { it >= 0 }
 
