@@ -208,39 +208,61 @@ abstract class TransactionVisitor {
 }
 ```
 
-Implementing a command-line interface for the main executable can be done as
-follows:
+Implementing a analyzer for the main executable can be done as follows:
 ```java
-import org.chronolens.core.cli.MainCommand;
-import org.chronolens.core.cli.OptionDelegate;
-import org.chronolens.core.cli.Utils;
+import org.chronolens.core.analysis.AnalyzerSpec;
+import org.chronolens.core.analysis.Analyzer;
+import org.chronolens.core.analysis.OptionsProvider;
+import org.chronolens.core.analysis.Report;
+import org.chronolens.core.repository.RepositoryConnector.AccessMode;
 
-public final class Main extends MainCommand {
+public final class SampleAnalyzerSpec implements AnalyzerSpec {
     @Override
-    public String getName() { return "echo-message"; }
+    public String getName() { return "sample-analyzer"; }
 
     @Override
-    protected String getVersion() { return "1.0"; }
+    public String getDescription() { return "An example analyzer implementation."; }
 
     @Override
-    protected String getHelp() { return "Prints a given message."; }
+    public SampleAnalyzer create(OptionsProvider optionsProvider) {
+        return new SampleAnalyzer(optionsProvider);
+    }
+}
 
-    private final OptionDelegate<String> message = option("--message")
+public final class SampleAnalyzer extends Analyzer {
+    public SampleAnalyzer(OptionsProvider optionsProvider) {
+        super(optionsProvider);
+    }
+
+    @Override
+    public AccessMode getAccessMode() { return AccessMode.ANY; }
+
+    private final Option<String> message =
+        untypedOption()
+            .name("message")
             .type(String.class)
-            .help("The message to display to standard output.")
-            .paramLabel("TEXT")
+            .description("The message to display to standard output.")
             .defaultValue("Hello, world!")
             .provideDelegate();
 
     private String getMessage() { return message.getValue(); }
 
     @Override
-    public void run() {
-        System.out.println(getMessage());
+    public SampleReport analyze(Repository repository) {
+        return getMessage();
+    }
+}
+
+public final class SampleReport implements Report {
+    private final String message;
+
+    public SampleReport(String message) {
+        this.message = message;
     }
 
-    public static void main(String[] args) {
-        Utils.run(new Main(), args);
+    @Override
+    public String toString() {
+      return message;
     }
 }
 ```

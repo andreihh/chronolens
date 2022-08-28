@@ -13,6 +13,5 @@ kotlinx-cli = { module = "org.jetbrains.kotlinx:kotlinx-cli", version = "0.3.5" 
 junit = { module = "junit:junit", version = "4.13.2" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
-picocli = { module = "info.picocli:picocli", version = "3.8.1" }
 systemrules = { module = "com.github.stefanbirkner:system-rules", version = "1.17.1" }
 eclipse-jdt = { module = "org.eclipse.jdt:org.eclipse.jdt.core", version = "3.26.0" }

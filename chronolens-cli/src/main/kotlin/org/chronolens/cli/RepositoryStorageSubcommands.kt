@@ -51,12 +51,10 @@ class PersistSubcommand :
     Subcommand(
         name = "persist",
         actionDescription =
-            """
-    Connects to the repository and persists the source and history model from all the files that can
-    be interpreted.
+            """Connects to the repository and persists the source and history model from all the
+            files that can be interpreted.
 
-    The model is persisted in the '.chronolens' directory of the repository root.
-    """.trimIndent()
+            The model is persisted in the '.chronolens' directory of the repository root."""
     ) {
 
     private val optionsProvider = CommandLineOptionsProvider(this)

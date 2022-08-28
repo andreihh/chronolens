@@ -30,8 +30,8 @@ import org.chronolens.core.model.qualifiedSourcePathOf
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.RepositoryConnector.AccessMode
 import org.chronolens.core.serialization.JsonModule
-import org.chronolens.coupling.FeatureEnvyCommand.FeatureEnvy
-import org.chronolens.coupling.FeatureEnvyCommand.FileReport
+import org.chronolens.coupling.FeatureEnvyReport.FeatureEnvy
+import org.chronolens.coupling.FeatureEnvyReport.FileReport
 import org.chronolens.coupling.Graph.Node
 
 internal class FeatureEnvyAnalyzerSpec : AnalyzerSpec {
@@ -145,7 +145,7 @@ internal class FeatureEnvyAnalyzer(optionsProvider: OptionsProvider) : Analyzer(
         return featureEnvyInstances.sortedByDescending(FeatureEnvy::enviedCoupling)
     }
 
-    private fun analyze(history: Sequence<Revision>): FeatureEnvyCommand.Report {
+    private fun analyze(history: Sequence<Revision>): FeatureEnvyReport {
         val analyzer = HistoryAnalyzer(maxChangeSet, minRevisions, minCoupling)
         val temporalContext = analyzer.analyze(history)
         val functionToFileCoupling = temporalContext.computeFunctionToFileCouplings()
@@ -156,7 +156,7 @@ internal class FeatureEnvyAnalyzer(optionsProvider: OptionsProvider) : Analyzer(
                 .map { (file, instances) -> FileReport(file, instances) }
                 .sortedByDescending(FileReport::featureEnvyCount)
         val coloredGraphs = temporalContext.buildColoredGraphs(featureEnvyInstancesByFile)
-        return FeatureEnvyCommand.Report(fileReports, coloredGraphs)
+        return FeatureEnvyReport(fileReports, coloredGraphs)
     }
 
     override fun analyze(repository: Repository): Report {
@@ -180,6 +180,28 @@ internal data class FeatureEnvyReport(
 ) : Report {
 
     override fun toString(): String = JsonModule.stringify(this)
+
+    data class FileReport(
+        val file: SourcePath,
+        val featureEnvyInstances: List<FeatureEnvy>,
+    ) {
+
+        val featureEnvyCount: Int = featureEnvyInstances.size
+
+        val category: String = "Temporal Coupling Anti-Patterns"
+        val name: String = "Feature Envy"
+        val value: Int = featureEnvyCount
+    }
+
+    data class FeatureEnvy(
+        val function: QualifiedSourceNodeId<*>,
+        val coupling: Double,
+        val enviedFile: SourcePath,
+        val enviedCoupling: Double,
+    ) {
+        val file: SourcePath
+            get() = function.sourcePath
+    }
 }
 
 private fun Graph.colorNodes(

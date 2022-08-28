@@ -27,7 +27,7 @@ import org.chronolens.core.model.Revision
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.RepositoryConnector.AccessMode
 import org.chronolens.core.serialization.JsonModule
-import org.chronolens.coupling.DivergentChangeCommand.FileReport
+import org.chronolens.coupling.DivergentChangeReport.FileReport
 import org.chronolens.coupling.Graph.Subgraph
 
 internal class DivergentChangeAnalyzerSpec : AnalyzerSpec {
@@ -111,7 +111,7 @@ internal class DivergentChangeAnalyzer(optionsProvider: OptionsProvider) :
         }
     }
 
-    private fun analyze(history: Sequence<Revision>): DivergentChangeCommand.Report {
+    private fun analyze(history: Sequence<Revision>): DivergentChangeReport {
         val analyzer = HistoryAnalyzer(maxChangeSet, minRevisions, minCoupling)
         val temporalContext = analyzer.analyze(history)
         val graphs = temporalContext.aggregateGraphs()
@@ -124,7 +124,7 @@ internal class DivergentChangeAnalyzer(optionsProvider: OptionsProvider) :
             files += FileReport(graph.label, blobs, antiBlob)
         }
         files.sortByDescending(FileReport::value)
-        return DivergentChangeCommand.Report(files, coloredGraphs)
+        return DivergentChangeReport(files, coloredGraphs)
     }
 
     override fun analyze(repository: Repository): Report {
@@ -148,6 +148,19 @@ internal data class DivergentChangeReport(
 ) : Report {
 
     override fun toString(): String = JsonModule.stringify(this)
+
+    data class FileReport(
+        val file: String,
+        val blobs: List<Subgraph>,
+        val antiBlob: Subgraph?,
+    ) {
+
+        val responsibilities: Int = blobs.size + if (antiBlob != null) 1 else 0
+
+        val category: String = "SOLID Breakers"
+        val name: String = "Single Responsibility Breakers"
+        val value: Int = responsibilities
+    }
 }
 
 private fun Graph.colorNodes(blobs: List<Subgraph>, antiBlob: Subgraph?): ColoredGraph {
