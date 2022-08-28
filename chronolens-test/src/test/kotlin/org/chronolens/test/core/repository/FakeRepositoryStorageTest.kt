@@ -16,29 +16,24 @@
 
 package org.chronolens.test.core.repository
 
-import org.chronolens.test.core.model.revision
 import java.io.IOException
 import java.io.UncheckedIOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import org.chronolens.test.core.model.revision
 
 class FakeRepositoryStorageTest {
     private val storage = FakeRepositoryStorage()
 
     @Test
     fun writeHistory_persistsRevisions() {
-        val history = listOf(
-            revision("abc") {
-                author("t1@test.com")
-            },
-            revision("def") {
-                author("t2@test.com")
-            },
-            revision("ghi") {
-                author("t3@test.com")
-            }
-        )
+        val history =
+            listOf(
+                revision("abc") { author("t1@test.com") },
+                revision("def") { author("t2@test.com") },
+                revision("ghi") { author("t3@test.com") }
+            )
 
         storage.writeHistory(history.asSequence())
 
@@ -50,15 +45,9 @@ class FakeRepositoryStorageTest {
     fun allOperations_afterSetError_throw() {
         storage.setError(IOException("test"))
 
-        assertFailsWith<IOException> {
-            storage.readHistoryIds()
-        }
-        assertFailsWith<IOException> {
-            storage.readHistory()
-        }
-        assertFailsWith<IOException> {
-            storage.writeHistory(emptySequence())
-        }
+        assertFailsWith<IOException> { storage.readHistoryIds() }
+        assertFailsWith<IOException> { storage.readHistory() }
+        assertFailsWith<IOException> { storage.writeHistory(emptySequence()) }
     }
 
     @Test
@@ -79,8 +68,6 @@ class FakeRepositoryStorageTest {
 
         storage.setError(IOException("test"))
 
-        assertFailsWith<UncheckedIOException> {
-            history.toList()
-        }
+        assertFailsWith<UncheckedIOException> { history.toList() }
     }
 }

@@ -16,6 +16,8 @@
 
 package org.chronolens.cli
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import org.chronolens.cli.Main.Companion.main
 import org.chronolens.core.versioning.VcsRevision
 import org.chronolens.test.core.versioning.FakeVcsProxyFactory
@@ -24,8 +26,6 @@ import org.junit.Rule
 import org.junit.contrib.java.lang.system.ExpectedSystemExit
 import org.junit.contrib.java.lang.system.SystemOutRule
 import org.junit.rules.TemporaryFolder
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class MainTest {
     @get:Rule val tmp: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
@@ -36,14 +36,11 @@ class MainTest {
 
     @Test
     fun main_whenRevList_printsRevisions() {
-        val vcsProxy = FakeVcsProxyFactory.createRepository(directory) {
-            +vcsRevision {
-                change("README.md", "Hello, world!")
+        val vcsProxy =
+            FakeVcsProxyFactory.createRepository(directory) {
+                +vcsRevision { change("README.md", "Hello, world!") }
+                +vcsRevision { delete("README.md") }
             }
-            +vcsRevision {
-                delete("README.md")
-            }
-        }
         val expected =
             vcsProxy.getHistory().joinToString(separator = "\n", transform = VcsRevision::id) + "\n"
 

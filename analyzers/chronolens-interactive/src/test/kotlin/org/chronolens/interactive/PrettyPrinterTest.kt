@@ -235,9 +235,7 @@ class PrettyPrinterTest {
         """.trimIndent() +
                 "\n"
 
-        val sourceNode = type("Main") {
-            supertypes("Object")
-        }
+        val sourceNode = type("Main") { supertypes("Object") }
 
         assertEquals(expected, PrettyPrinter.stringify(sourceNode))
     }
@@ -253,9 +251,7 @@ class PrettyPrinterTest {
         """.trimIndent() +
                 "\n"
 
-        val sourceNode = type("Main") {
-            supertypes("Comparable<Main>", "Object")
-        }
+        val sourceNode = type("Main") { supertypes("Comparable<Main>", "Object") }
 
         assertEquals(expected, PrettyPrinter.stringify(sourceNode))
     }
@@ -270,9 +266,7 @@ class PrettyPrinterTest {
         """.trimIndent() +
                 "\n"
 
-        val sourceNode = type("Main") {
-            modifiers("public")
-        }
+        val sourceNode = type("Main") { modifiers("public") }
 
         assertEquals(expected, PrettyPrinter.stringify(sourceNode))
     }
@@ -288,9 +282,7 @@ class PrettyPrinterTest {
         """.trimIndent() +
                 "\n"
 
-        val sourceNode = type("Main") {
-            modifiers("public", "final")
-        }
+        val sourceNode = type("Main") { modifiers("public", "final") }
 
         assertEquals(expected, PrettyPrinter.stringify(sourceNode))
     }
@@ -305,9 +297,7 @@ class PrettyPrinterTest {
         """.trimIndent() +
                 "\n"
 
-        val sourceNode = type("Main") {
-            +variable("VERSION") {}
-        }
+        val sourceNode = type("Main") { +variable("VERSION") {} }
 
         assertEquals(expected, PrettyPrinter.stringify(sourceNode))
     }
@@ -323,10 +313,11 @@ class PrettyPrinterTest {
         """.trimIndent() +
                 "\n"
 
-        val sourceNode = type("Main") {
-            +variable("VERSION") {}
-            +function("main(String[])") {}
-        }
+        val sourceNode =
+            type("Main") {
+                +variable("VERSION") {}
+                +function("main(String[])") {}
+            }
 
         assertEquals(expected, PrettyPrinter.stringify(sourceNode))
     }
@@ -373,27 +364,28 @@ class PrettyPrinterTest {
         """.trimIndent() +
                 "\n"
 
-        val sourceNode = type("Main") {
-            supertypes("Comparable<Main>", "Serializable", "Object")
-            modifiers("public", "final", "class")
-            +variable("VERSION") {
-                modifiers("public", "static", "final")
-                +"123"
-                +"+ 456"
-                +"+ 789"
+        val sourceNode =
+            type("Main") {
+                supertypes("Comparable<Main>", "Serializable", "Object")
+                modifiers("public", "final", "class")
+                +variable("VERSION") {
+                    modifiers("public", "static", "final")
+                    +"123"
+                    +"+ 456"
+                    +"+ 789"
+                }
+                +function("main(int, int, String[])") {
+                    parameters("n", "argSize", "args")
+                    modifiers("public", "static", "void")
+                    +"{"
+                    +"System.out.println(n);"
+                    +"}"
+                }
+                +type("InnerType") {
+                    supertypes("Object", "Serializable", "Comparable<InnerType>")
+                    modifiers("public", "static", "class")
+                }
             }
-            +function("main(int, int, String[])") {
-                parameters("n", "argSize", "args")
-                modifiers("public", "static", "void")
-                +"{"
-                +"System.out.println(n);"
-                +"}"
-            }
-            +type("InnerType") {
-                supertypes("Object", "Serializable", "Comparable<InnerType>")
-                modifiers("public", "static", "class")
-            }
-        }
 
         assertEquals(expected, PrettyPrinter.stringify(sourceNode))
     }
@@ -416,9 +408,7 @@ class PrettyPrinterTest {
         """.trimIndent() +
                 "\n"
 
-        val sourceNode = sourceFile("src/Main.java") {
-            +variable("VERSION") {}
-        }
+        val sourceNode = sourceFile("src/Main.java") { +variable("VERSION") {} }
 
         assertEquals(expected, PrettyPrinter.stringify(sourceNode))
     }
@@ -433,10 +423,11 @@ class PrettyPrinterTest {
         """.trimIndent() +
                 "\n"
 
-        val sourceNode = sourceFile("src/Main.java") {
-            +variable("VERSION") {}
-            +function("main(String[])") {}
-        }
+        val sourceNode =
+            sourceFile("src/Main.java") {
+                +variable("VERSION") {}
+                +function("main(String[])") {}
+            }
 
         assertEquals(expected, PrettyPrinter.stringify(sourceNode))
     }

@@ -18,7 +18,6 @@
 
 package org.chronolens.cli
 
-import java.io.File
 import java.io.UncheckedIOException
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand

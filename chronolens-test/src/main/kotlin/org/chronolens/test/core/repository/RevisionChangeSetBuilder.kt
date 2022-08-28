@@ -51,8 +51,7 @@ public class RevisionChangeSetBuilder {
         return this
     }
 
-    public fun delete(sourcePath: String): RevisionChangeSetBuilder =
-        delete(SourcePath(sourcePath))
+    public fun delete(sourcePath: String): RevisionChangeSetBuilder = delete(SourcePath(sourcePath))
 
     public fun build(): RevisionChangeSet = changeSet
 }

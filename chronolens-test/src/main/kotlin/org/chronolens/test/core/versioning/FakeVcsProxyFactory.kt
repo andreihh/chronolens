@@ -16,16 +16,15 @@
 
 package org.chronolens.test.core.versioning
 
+import java.io.File
 import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsProxyFactory
 import org.chronolens.test.core.Init
-import java.io.File
 
 public class FakeVcsProxyFactory : VcsProxyFactory() {
     override fun isSupported(): Boolean = true
 
-    override fun createProxy(directory: File): VcsProxy? =
-        repositories[directory]
+    override fun createProxy(directory: File): VcsProxy? = repositories[directory]
 
     public companion object {
         private val repositories = mutableMapOf<File, VcsProxy>()

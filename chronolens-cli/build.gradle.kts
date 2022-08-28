@@ -1,10 +1,6 @@
-plugins {
-    id("chronolens.application-conventions")
-}
+plugins { id("chronolens.application-conventions") }
 
-application {
-    mainClass.set("org.chronolens.Main")
-}
+application { mainClass.set("org.chronolens.Main") }
 
 dependencies {
     implementation(project(":chronolens-core"))

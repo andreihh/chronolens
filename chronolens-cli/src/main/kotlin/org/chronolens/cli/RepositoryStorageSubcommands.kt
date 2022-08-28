@@ -18,6 +18,8 @@
 
 package org.chronolens.cli
 
+import java.io.IOException
+import java.io.UncheckedIOException
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.core.model.Revision
@@ -25,13 +27,12 @@ import org.chronolens.core.repository.Repository.HistoryProgressListener
 import org.chronolens.core.repository.RepositoryConnector
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 import org.chronolens.core.repository.persist
-import java.io.IOException
-import java.io.UncheckedIOException
 
-class CleanSubcommand : Subcommand(
-    name = "clean",
-    actionDescription = "Deletes any persisted repositories from the given directory."
-) {
+class CleanSubcommand :
+    Subcommand(
+        name = "clean",
+        actionDescription = "Deletes any persisted repositories from the given directory."
+    ) {
 
     private val optionsProvider = CommandLineOptionsProvider(this)
     private val repositoryRoot by optionsProvider.repositoryRootOption()
@@ -46,15 +47,17 @@ class CleanSubcommand : Subcommand(
     }
 }
 
-class PersistSubcommand : Subcommand(
-    name = "persist",
-    actionDescription = """
+class PersistSubcommand :
+    Subcommand(
+        name = "persist",
+        actionDescription =
+            """
     Connects to the repository and persists the source and history model from all the files that can
     be interpreted.
 
     The model is persisted in the '.chronolens' directory of the repository root.
     """.trimIndent()
-) {
+    ) {
 
     private val optionsProvider = CommandLineOptionsProvider(this)
     private val repositoryRoot by optionsProvider.repositoryRootOption()

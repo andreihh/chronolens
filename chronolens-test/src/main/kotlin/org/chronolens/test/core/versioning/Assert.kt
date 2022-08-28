@@ -16,8 +16,8 @@
 
 package org.chronolens.test.core.versioning
 
-import org.chronolens.core.versioning.VcsProxy
 import kotlin.test.assertEquals
+import org.chronolens.core.versioning.VcsProxy
 
 public fun assertEqualVcsProxies(
     expected: VcsProxy?,

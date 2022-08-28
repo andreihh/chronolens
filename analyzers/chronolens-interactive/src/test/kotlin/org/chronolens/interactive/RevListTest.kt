@@ -16,12 +16,12 @@
 
 package org.chronolens.interactive
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
 import org.chronolens.test.core.analysis.OptionsProviderBuilder
 import org.chronolens.test.core.model.revision
 import org.chronolens.test.core.repository.repository
 import org.chronolens.test.core.repository.revisionListOf
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class RevListTest {
     private fun create() = RevListSpec().create(OptionsProviderBuilder().build())
@@ -43,7 +43,8 @@ class RevListTest {
 
     @Test
     fun reportToString_listsOneRevisionPerLine() {
-        val expected = """
+        val expected =
+            """
             12
             34
             ab

@@ -1,6 +1,4 @@
-plugins {
-    id("chronolens.library-conventions")
-}
+plugins { id("chronolens.library-conventions") }
 
 dependencies {
     implementation(kotlin("reflect"))

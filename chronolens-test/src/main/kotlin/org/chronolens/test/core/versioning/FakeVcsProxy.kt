@@ -16,9 +16,9 @@
 
 package org.chronolens.test.core.versioning
 
+import java.time.Instant
 import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsRevision
-import java.time.Instant
 
 internal class FakeVcsProxy(revisions: List<VcsChangeSet>) : VcsProxy {
     private val history = mutableListOf<VcsRevision>()

@@ -16,9 +16,9 @@
 
 package org.chronolens.test.core.versioning
 
-import org.chronolens.core.versioning.VcsProxy
 import java.io.File
 import kotlin.test.BeforeTest
+import org.chronolens.core.versioning.VcsProxy
 
 class FakeVcsProxyTest : AbstractVcsProxyTest() {
     @BeforeTest

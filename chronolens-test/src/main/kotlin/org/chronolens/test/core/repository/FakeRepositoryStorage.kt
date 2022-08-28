@@ -16,11 +16,11 @@
 
 package org.chronolens.test.core.repository
 
+import java.io.IOException
+import java.io.UncheckedIOException
 import org.chronolens.core.model.Revision
 import org.chronolens.core.model.RevisionId
 import org.chronolens.core.repository.RepositoryStorage
-import java.io.IOException
-import java.io.UncheckedIOException
 
 public class FakeRepositoryStorage : RepositoryStorage {
     private var history = emptyList<Revision>()

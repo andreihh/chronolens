@@ -16,6 +16,9 @@
 
 package org.chronolens.interactive
 
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import org.chronolens.core.analysis.InvalidOptionException
 import org.chronolens.core.model.qualifiedSourcePathOf
 import org.chronolens.core.repository.CorruptedRepositoryException
@@ -28,9 +31,6 @@ import org.chronolens.test.core.model.type
 import org.chronolens.test.core.repository.repository
 import org.chronolens.test.core.repository.revisionListOf
 import org.chronolens.test.core.repository.sourceSetOf
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class LsTreeTest {
     private fun create(revision: String? = null): LsTreeAnalyzer {
@@ -44,13 +44,9 @@ class LsTreeTest {
     @Test
     fun analyze_whenInvalidRevision_throws() {
         val analyzer = create("invalid-rev-(!*&$(#Q")
-        val repository = repository {
-            +revision("1") {}
-        }
+        val repository = repository { +revision("1") {} }
 
-        assertFailsWith<InvalidOptionException> {
-            analyzer.analyze(repository)
-        }
+        assertFailsWith<InvalidOptionException> { analyzer.analyze(repository) }
     }
 
     @Test
@@ -58,9 +54,7 @@ class LsTreeTest {
         val analyzer = create("HEAD")
         val repository = repository {}
 
-        assertFailsWith<CorruptedRepositoryException> {
-            analyzer.analyze(repository)
-        }
+        assertFailsWith<CorruptedRepositoryException> { analyzer.analyze(repository) }
     }
 
     @Test
@@ -68,31 +62,27 @@ class LsTreeTest {
         val repository = repository {
             +revision("1") {
                 +qualifiedSourcePathOf("src/Main.java").add {
-                    +type("Main") {
-                        +function("main(String[])") {}
-                    }
+                    +type("Main") { +function("main(String[])") {} }
                 }
             }
-            +revision("2") {
-                +qualifiedSourcePathOf("src/Test.java").add {
-                    +type("Test") {}
-                }
-            }
-            +revision("3") {
-                +qualifiedSourcePathOf("src/Main.java").remove()
-            }
+            +revision("2") { +qualifiedSourcePathOf("src/Test.java").add { +type("Test") {} } }
+            +revision("3") { +qualifiedSourcePathOf("src/Main.java").remove() }
         }
 
         val expectedSources =
-            revisionListOf("1", "2", "3").zip(listOf(
-                sourceSetOf("src/Main.java"),
-                sourceSetOf("src/Main.java", "src/Test.java"),
-                sourceSetOf("src/Test.java")
-            ))
+            revisionListOf("1", "2", "3")
+                .zip(
+                    listOf(
+                        sourceSetOf("src/Main.java"),
+                        sourceSetOf("src/Main.java", "src/Test.java"),
+                        sourceSetOf("src/Test.java")
+                    )
+                )
 
         assertEquals(
             expected = expectedSources.last().second,
-            actual = create().analyze(repository).sources)
+            actual = create().analyze(repository).sources
+        )
         for ((revisionId, expected) in expectedSources) {
             val actual = create(revisionId.toString()).analyze(repository).sources
             assertEquals(expected, actual)
@@ -101,7 +91,8 @@ class LsTreeTest {
 
     @Test
     fun reportToString_listsOneSourcePerLine() {
-        val expected = """
+        val expected =
+            """
             src/Main.java
             src/Test.java
         """.trimIndent()

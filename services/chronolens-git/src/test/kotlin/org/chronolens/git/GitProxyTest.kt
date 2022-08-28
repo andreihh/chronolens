@@ -16,14 +16,14 @@
 
 package org.chronolens.git
 
+import java.io.File
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 import org.chronolens.core.subprocess.Subprocess
 import org.chronolens.core.versioning.VcsProxy
 import org.chronolens.core.versioning.VcsProxyFactory
 import org.chronolens.test.core.versioning.AbstractVcsProxyTest
 import org.chronolens.test.core.versioning.VcsChangeSet
-import java.io.File
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class GitProxyTest : AbstractVcsProxyTest() {
     private fun commit(directory: File, changeSet: VcsChangeSet) {

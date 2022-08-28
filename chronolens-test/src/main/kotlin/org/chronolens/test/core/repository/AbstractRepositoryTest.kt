@@ -16,6 +16,13 @@
 
 package org.chronolens.test.core.repository
 
+import kotlin.streams.toList
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.chronolens.core.model.Revision
 import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceFile
@@ -31,13 +38,6 @@ import org.chronolens.test.core.model.sourceTree
 import org.chronolens.test.core.model.type
 import org.chronolens.test.core.model.variable
 import org.junit.Test
-import kotlin.streams.toList
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 public abstract class AbstractRepositoryTest {
     protected abstract fun createRepository(vararg history: RevisionChangeSet): Repository
@@ -46,13 +46,9 @@ public abstract class AbstractRepositoryTest {
         createRepository(
             revisionChangeSet {
                 +sourceFile("src/Main.fake") {}
-                +sourceFile("src/Worksheet.fake") {
-                    +function("println()") {}
-                }
+                +sourceFile("src/Worksheet.fake") { +function("println()") {} }
                 +sourceFile("src/Test.fake") {}
-                +sourceFile("src/BuildVersion.fake") {
-                    +variable("VERSION") {}
-                }
+                +sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} }
                 invalidate("src/Error.fake")
                 +sourceFile("src/Delete.fake") {}
                 invalidate("README.md")
@@ -65,15 +61,9 @@ public abstract class AbstractRepositoryTest {
                 delete("src/Delete.fake")
             },
             revisionChangeSet {
-                +sourceFile("src/Main.fake") {
-                    +type("Main") {}
-                }
-                +sourceFile("src/Worksheet.fake") {
-                    +function("println(String)") {}
-                }
-                +sourceFile("src/Test.fake") {
-                    +type("MainTest") {}
-                }
+                +sourceFile("src/Main.fake") { +type("Main") {} }
+                +sourceFile("src/Worksheet.fake") { +function("println(String)") {} }
+                +sourceFile("src/Test.fake") { +type("MainTest") {} }
             }
         )
     }
@@ -90,29 +80,30 @@ public abstract class AbstractRepositoryTest {
 
     @Test
     public fun listSources_returnsAllInterpretableSourcePathsAtRevision() {
-        val expectedSources = listOf(
-            sourceSetOf(
-                "src/Main.fake",
-                "src/Worksheet.fake",
-                "src/Test.fake",
-                "src/BuildVersion.fake",
-                "src/Error.fake",
-                "src/Delete.fake"
-            ),
-            sourceSetOf(
-                "src/Main.fake",
-                "src/Worksheet.fake",
-                "src/BuildVersion.fake",
-                "src/Error.fake"
-            ),
-            sourceSetOf(
-                "src/Main.fake",
-                "src/Worksheet.fake",
-                "src/Test.fake",
-                "src/BuildVersion.fake",
-                "src/Error.fake"
+        val expectedSources =
+            listOf(
+                sourceSetOf(
+                    "src/Main.fake",
+                    "src/Worksheet.fake",
+                    "src/Test.fake",
+                    "src/BuildVersion.fake",
+                    "src/Error.fake",
+                    "src/Delete.fake"
+                ),
+                sourceSetOf(
+                    "src/Main.fake",
+                    "src/Worksheet.fake",
+                    "src/BuildVersion.fake",
+                    "src/Error.fake"
+                ),
+                sourceSetOf(
+                    "src/Main.fake",
+                    "src/Worksheet.fake",
+                    "src/Test.fake",
+                    "src/BuildVersion.fake",
+                    "src/Error.fake"
+                )
             )
-        )
 
         val actualSources = repository.listRevisions().map(repository::listSources)
 
@@ -131,20 +122,15 @@ public abstract class AbstractRepositoryTest {
     public fun getSource_returnsLatestValidSourceFileVersion() {
         val expectedSourceFile =
             listOf(
-                sourceFile("src/Worksheet.fake") {
-                    +function("println()") {}
-                },
-                sourceFile("src/Worksheet.fake") {
-                    +function("println()") {}
-                },
-                sourceFile("src/Worksheet.fake") {
-                    +function("println(String)") {}
-                }
+                sourceFile("src/Worksheet.fake") { +function("println()") {} },
+                sourceFile("src/Worksheet.fake") { +function("println()") {} },
+                sourceFile("src/Worksheet.fake") { +function("println(String)") {} }
             )
 
-        val actualSourceFile = repository.listRevisions().map { revisionId ->
-            repository.getSource(SourcePath("src/Worksheet.fake"), revisionId)
-        }
+        val actualSourceFile =
+            repository.listRevisions().map { revisionId ->
+                repository.getSource(SourcePath("src/Worksheet.fake"), revisionId)
+            }
 
         assertEquals(expected = expectedSourceFile, actual = actualSourceFile)
         assertEquals(
@@ -155,15 +141,17 @@ public abstract class AbstractRepositoryTest {
 
     @Test
     public fun getSource_whenSourcePathDoesNotExist_returnsNull() {
-        val expectedSourceFile = listOf(
-            sourceFile("src/Test.fake") {},
-            null,
-            sourceFile("src/Test.fake") { +type("MainTest") {} }
-        )
+        val expectedSourceFile =
+            listOf(
+                sourceFile("src/Test.fake") {},
+                null,
+                sourceFile("src/Test.fake") { +type("MainTest") {} }
+            )
 
-        val actualSourceFile = repository.listRevisions().map { revisionId ->
-            repository.getSource(SourcePath("src/Test.fake"), revisionId)
-        }
+        val actualSourceFile =
+            repository.listRevisions().map { revisionId ->
+                repository.getSource(SourcePath("src/Test.fake"), revisionId)
+            }
 
         assertEquals(expected = expectedSourceFile, actual = actualSourceFile)
     }
@@ -189,20 +177,15 @@ public abstract class AbstractRepositoryTest {
     public fun getSource_whenInvalidAndNotChangedInRevision_returnsLatestValidSourceFileVersion() {
         val expectedSourceFile =
             listOf(
-                sourceFile("src/BuildVersion.fake") {
-                    +variable("VERSION") {}
-                },
-                sourceFile("src/BuildVersion.fake") {
-                    +variable("VERSION") {}
-                },
-                sourceFile("src/BuildVersion.fake") {
-                    +variable("VERSION") {}
-                },
+                sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} },
+                sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} },
+                sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} },
             )
 
-        val actualSourceFile = repository.listRevisions().map { revisionId ->
-            repository.getSource(SourcePath("src/BuildVersion.fake"), revisionId)
-        }
+        val actualSourceFile =
+            repository.listRevisions().map { revisionId ->
+                repository.getSource(SourcePath("src/BuildVersion.fake"), revisionId)
+            }
 
         assertEquals(expected = expectedSourceFile, actual = actualSourceFile)
         assertEquals(
@@ -220,39 +203,30 @@ public abstract class AbstractRepositoryTest {
 
     @Test
     public fun getSnapshot_returnsAllSourceTrees() {
-        val expectedSourceTrees = listOf(
-            sourceTree {
-                +sourceFile("src/Main.fake") {}
-                +sourceFile("src/Worksheet.fake") {
-                    +function("println()") {}
+        val expectedSourceTrees =
+            listOf(
+                sourceTree {
+                    +sourceFile("src/Main.fake") {}
+                    +sourceFile("src/Worksheet.fake") { +function("println()") {} }
+                    +sourceFile("src/Test.fake") {}
+                    +sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} }
+                    +sourceFile("src/Error.fake") {}
+                    +sourceFile("src/Delete.fake") {}
+                },
+                sourceTree {
+                    +sourceFile("src/Main.fake") {}
+                    +sourceFile("src/Worksheet.fake") { +function("println()") {} }
+                    +sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} }
+                    +sourceFile("src/Error.fake") {}
+                },
+                sourceTree {
+                    +sourceFile("src/Main.fake") { +type("Main") {} }
+                    +sourceFile("src/Test.fake") { +type("MainTest") {} }
+                    +sourceFile("src/Worksheet.fake") { +function("println(String)") {} }
+                    +sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} }
+                    +sourceFile("src/Error.fake") {}
                 }
-                +sourceFile("src/Test.fake") {}
-                +sourceFile("src/BuildVersion.fake") {
-                    +variable("VERSION") {}
-                }
-                +sourceFile("src/Error.fake") {}
-                +sourceFile("src/Delete.fake") {}
-            },
-            sourceTree {
-                +sourceFile("src/Main.fake") {}
-                +sourceFile("src/Worksheet.fake") {
-                    +function("println()") {}
-                }
-                +sourceFile("src/BuildVersion.fake") {
-                    +variable("VERSION") {}
-                }
-                +sourceFile("src/Error.fake") {}
-            },
-            sourceTree {
-                +sourceFile("src/Main.fake") { +type("Main") {} }
-                +sourceFile("src/Test.fake") { +type("MainTest") {} }
-                +sourceFile("src/Worksheet.fake") { +function("println(String)") {} }
-                +sourceFile("src/BuildVersion.fake") {
-                    +variable("VERSION") {}
-                }
-                +sourceFile("src/Error.fake") {}
-            }
-        )
+            )
 
         val actualSourceTrees = repository.listRevisions().map(repository::getSnapshot)
 
@@ -297,27 +271,28 @@ public abstract class AbstractRepositoryTest {
 
     @Test
     public fun getHistory_whenProgressListenerIsProvided_invokesListener() {
-        val listener = object : HistoryProgressListener {
-            var count = -1
-            val revisions = mutableListOf<RevisionId>()
-            var ended = false
+        val listener =
+            object : HistoryProgressListener {
+                var count = -1
+                val revisions = mutableListOf<RevisionId>()
+                var ended = false
 
-            override fun onStart(revisionCount: Int) {
-                assertEquals(expected = -1, actual = count)
-                count = revisionCount
-            }
+                override fun onStart(revisionCount: Int) {
+                    assertEquals(expected = -1, actual = count)
+                    count = revisionCount
+                }
 
-            override fun onRevision(revision: Revision) {
-                assertNotEquals(illegal = -1, actual = count)
-                assertFalse(ended)
-                revisions += revision.id
-            }
+                override fun onRevision(revision: Revision) {
+                    assertNotEquals(illegal = -1, actual = count)
+                    assertFalse(ended)
+                    revisions += revision.id
+                }
 
-            override fun onEnd() {
-                assertEquals(expected = count, actual = revisions.size)
-                ended = true
+                override fun onEnd() {
+                    assertEquals(expected = count, actual = revisions.size)
+                    ended = true
+                }
             }
-        }
 
         repository.getHistory(listener).toList()
 
@@ -327,17 +302,18 @@ public abstract class AbstractRepositoryTest {
 
     @Test
     public fun getHistory_returnsLazyCollection() {
-        val listener = object : HistoryProgressListener {
-            var started = false
+        val listener =
+            object : HistoryProgressListener {
+                var started = false
 
-            override fun onStart(revisionCount: Int) {
-                started = true
+                override fun onStart(revisionCount: Int) {
+                    started = true
+                }
+
+                override fun onRevision(revision: Revision) {}
+
+                override fun onEnd() {}
             }
-
-            override fun onRevision(revision: Revision) {}
-
-            override fun onEnd() {}
-        }
 
         repository.getHistory(listener)
 
@@ -354,25 +330,15 @@ public abstract class AbstractRepositoryTest {
 
     @Test
     public fun allOperations_whenEmptyRepository_throw() {
-       val emptyRepository = createRepository()
+        val emptyRepository = createRepository()
 
-        assertFailsWith<CorruptedRepositoryException> {
-            emptyRepository.getHeadId()
-        }
-        assertFailsWith<CorruptedRepositoryException> {
-            emptyRepository.listSources()
-        }
+        assertFailsWith<CorruptedRepositoryException> { emptyRepository.getHeadId() }
+        assertFailsWith<CorruptedRepositoryException> { emptyRepository.listSources() }
         assertFailsWith<CorruptedRepositoryException> {
             emptyRepository.getSource(SourcePath("src/Main.fake"))
         }
-        assertFailsWith<CorruptedRepositoryException> {
-            emptyRepository.listRevisions()
-        }
-        assertFailsWith<CorruptedRepositoryException> {
-            emptyRepository.getSnapshot()
-        }
-        assertFailsWith<CorruptedRepositoryException> {
-            emptyRepository.getHistory().toList()
-        }
+        assertFailsWith<CorruptedRepositoryException> { emptyRepository.listRevisions() }
+        assertFailsWith<CorruptedRepositoryException> { emptyRepository.getSnapshot() }
+        assertFailsWith<CorruptedRepositoryException> { emptyRepository.getHistory().toList() }
     }
 }

@@ -18,6 +18,7 @@
 
 package org.chronolens.test.core.repository
 
+import java.time.Instant
 import org.chronolens.core.model.AddNode
 import org.chronolens.core.model.RemoveNode
 import org.chronolens.core.model.Revision
@@ -34,7 +35,6 @@ import org.chronolens.test.core.parsing.FakeParser
 import org.chronolens.test.core.repository.SourceFileChange.ChangeFile
 import org.chronolens.test.core.repository.SourceFileChange.DeleteFile
 import org.chronolens.test.core.repository.SourceFileChange.InvalidateFile
-import java.time.Instant
 
 @BuilderMarker
 public class RepositoryBuilder {
@@ -61,8 +61,7 @@ public fun repository(vararg history: RevisionChangeSet): Repository {
     val parser = FakeParser()
 
     fun getRemoveEdits(path: SourcePath): List<SourceTreeEdit> =
-        if (path in sources) listOf(RemoveNode(qualifiedSourcePathOf(path)))
-        else emptyList()
+        if (path in sources) listOf(RemoveNode(qualifiedSourcePathOf(path))) else emptyList()
 
     fun getAddEdits(sourceFile: SourceFile): List<SourceTreeEdit> =
         getRemoveEdits(sourceFile.path) +
@@ -106,5 +105,4 @@ public fun repository(vararg history: RevisionChangeSet): Repository {
 public fun revisionListOf(vararg revisionIds: String): List<RevisionId> =
     revisionIds.map(::RevisionId)
 
-public fun sourceSetOf(vararg paths: String): Set<SourcePath> =
-    paths.map(::SourcePath).toSet()
+public fun sourceSetOf(vararg paths: String): Set<SourcePath> = paths.map(::SourcePath).toSet()

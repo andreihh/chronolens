@@ -22,8 +22,7 @@ import org.chronolens.test.core.apply
 
 public typealias VcsChangeSet = Map<String, String?>
 
-public fun VcsChangeSet.touches(path: String): Boolean =
-    this.keys.any { it.startsWith(path) }
+public fun VcsChangeSet.touches(path: String): Boolean = this.keys.any { it.startsWith(path) }
 
 @BuilderMarker
 public class VcsChangeSetBuilder {

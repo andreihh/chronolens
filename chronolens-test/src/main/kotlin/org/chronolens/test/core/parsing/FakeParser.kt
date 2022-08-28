@@ -16,13 +16,13 @@
 
 package org.chronolens.test.core.parsing
 
+import java.io.ByteArrayOutputStream
 import org.chronolens.core.model.SourceFile
 import org.chronolens.core.model.SourcePath
 import org.chronolens.core.parsing.Parser
 import org.chronolens.core.parsing.SyntaxErrorException
 import org.chronolens.core.serialization.JsonException
 import org.chronolens.core.serialization.JsonModule
-import java.io.ByteArrayOutputStream
 
 public class FakeParser : Parser {
     override fun canParse(path: SourcePath): Boolean = path.toString().endsWith(".fake")

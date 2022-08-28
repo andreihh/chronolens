@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@
 
 package org.chronolens.test.core.repository
 
+import kotlin.test.assertEquals
 import org.chronolens.core.repository.Repository
 import org.chronolens.test.core.model.assertEquals
-import kotlin.test.assertEquals
 
 public fun assertEqualRepositories(
     expected: Repository?,
