@@ -39,6 +39,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -166,6 +167,20 @@ public object JsonModule {
             throw JsonException(e)
         }
     }
+
+    /**
+     * Serializes the given [value] object into a [String].
+     *
+     * @throws JsonException if there are any serialization errors
+     * @throws IOException if there are any output related errors
+     */
+    @Throws(IOException::class)
+    @JvmStatic
+    public fun stringify(value: Any): String =
+        ByteArrayOutputStream().use { out ->
+            serialize(out, value)
+            out.toByteArray().decodeToString()
+        }
 
     /**
      * Deserializes an object of the given non-generic [type] from the given [src] stream.

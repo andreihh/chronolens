@@ -107,15 +107,12 @@ class JsonModuleTest {
     }
 
     @Test
-    fun serializeSourceNodeId_printsString() {
+    fun stringifySourceNodeId_printsString() {
         val ids =
             listOf(SourcePath("src/Main.java"), Identifier("Main"), Signature("getVersion(String)"))
 
         for (id in ids) {
-            val out = ByteArrayOutputStream()
-            JsonModule.serialize(out, id)
-
-            assertEquals("\"$id\"", out.toByteArray().decodeToString())
+            assertEquals(expected = "\"$id\"", actual = JsonModule.stringify(id))
         }
     }
 
