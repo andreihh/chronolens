@@ -22,7 +22,7 @@ import org.chronolens.core.model.SourcePath
 import org.chronolens.core.model.SourceTree
 import org.chronolens.core.model.Variable
 
-internal abstract class DecapsulationAnalyzer {
+internal abstract class AbstractDecapsulationAnalyzer {
     protected abstract fun canProcess(sourcePath: SourcePath): Boolean
 
     protected abstract fun getField(
@@ -41,12 +41,12 @@ internal abstract class DecapsulationAnalyzer {
     ): Boolean
 
     companion object {
-        private val analyzers = ServiceLoader.load(DecapsulationAnalyzer::class.java)
+        private val analyzers = ServiceLoader.load(AbstractDecapsulationAnalyzer::class.java)
 
         private fun findAnalyzer(
             sourceTree: SourceTree,
             id: QualifiedSourceNodeId<*>,
-        ): DecapsulationAnalyzer? {
+        ): AbstractDecapsulationAnalyzer? {
             if (id !in sourceTree) return null
             val sourcePath = id.sourcePath
             return analyzers.find { it.canProcess(sourcePath) }

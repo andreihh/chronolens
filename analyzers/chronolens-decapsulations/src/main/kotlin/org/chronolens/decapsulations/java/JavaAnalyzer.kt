@@ -31,9 +31,9 @@ import org.chronolens.core.model.Type
 import org.chronolens.core.model.Variable
 import org.chronolens.core.model.signature
 import org.chronolens.core.model.variable
-import org.chronolens.decapsulations.DecapsulationAnalyzer
+import org.chronolens.decapsulations.AbstractDecapsulationAnalyzer
 
-internal class JavaAnalyzer : DecapsulationAnalyzer() {
+internal class JavaAnalyzer : AbstractDecapsulationAnalyzer() {
     override fun canProcess(sourcePath: SourcePath): Boolean =
         sourcePath.toString().endsWith(".java")
 

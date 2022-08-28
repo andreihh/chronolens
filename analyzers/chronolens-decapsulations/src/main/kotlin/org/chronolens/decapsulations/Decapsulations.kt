@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package org.chronolens.churn
+package org.chronolens.decapsulations
 
-import org.chronolens.churn.HistoryAnalyzer.FileReport
-import org.chronolens.churn.HistoryAnalyzer.Metric
 import org.chronolens.core.analysis.Analyzer
 import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.OptionsProvider
@@ -26,54 +24,45 @@ import org.chronolens.core.analysis.option
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.RepositoryConnector.AccessMode
 import org.chronolens.core.serialization.JsonModule
+import org.chronolens.decapsulations.HistoryAnalyzer.FileReport
 
-internal class ChurnAnalyzerSpec : AnalyzerSpec {
+internal class DecapsulationAnalyzerSpec : AnalyzerSpec {
     override val name: String
-        get() = "churn"
+        get() = "decapsulations"
 
     override val description: String
         get() =
-            """Detects the churners in the repository and reports the results to the standard
-            output."""
+            """Detects the decapsulations that occurred during the evolution of the repository
+            and reports the results to the standard output."""
 
-    override fun create(optionsProvider: OptionsProvider): ChurnAnalyzer =
-        ChurnAnalyzer(optionsProvider)
+    override fun create(optionsProvider: OptionsProvider): DecapsulationAnalyzer =
+        DecapsulationAnalyzer(optionsProvider)
 }
 
-internal class ChurnAnalyzer(optionsProvider: OptionsProvider) : Analyzer(optionsProvider) {
+internal class DecapsulationAnalyzer(optionsProvider: OptionsProvider) : Analyzer(optionsProvider) {
     override val accessMode: AccessMode
         get() = AccessMode.ANY
 
-    private val metric by
-        option<Metric>()
-            .name("metric")
-            .description("the metric used to rank and highlight source nodes")
-            .default(Metric.WEIGHTED_CHURN)
-
-    private val skipDays by
-        option<Int>()
-            .name("skip-days")
-            .description(
-                """when analyzing source nodes, ignore revisions occurring in the first specified
-                number of days, counting from the revision when the source node was created."""
-            )
-            .default(14)
-            .validate { it >= 0 }
+    private val keepConstants by
+        option<Boolean>()
+            .name("keep-constants")
+            .description("do not ignore decapsulations of constant fields")
+            .default(false)
 
     private val minMetricValue by
         option<Int>()
             .name("min-metric-value")
-            .description("ignore source files that have less churn than the specified limit")
+            .description("ignore sources that have less decapsulations than the specified limit")
             .default(0)
             .validate { it >= 0 }
 
-    override fun analyze(repository: Repository): ChurnReport {
-        val report = HistoryAnalyzer(metric, skipDays).analyze(repository.getHistory())
+    override fun analyze(repository: Repository): DecapsulationReport {
+        val report = HistoryAnalyzer(!keepConstants).analyze(repository.getHistory())
         val files = report.files.filter { it.value >= minMetricValue }
-        return ChurnReport(files)
+        return DecapsulationReport(files)
     }
 }
 
-internal data class ChurnReport(val files: List<FileReport>) : Report {
+internal data class DecapsulationReport(val files: List<FileReport>) : Report {
     override fun toString(): String = JsonModule.stringify(this)
 }

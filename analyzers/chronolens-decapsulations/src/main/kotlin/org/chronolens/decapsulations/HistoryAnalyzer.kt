@@ -38,13 +38,13 @@ internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
         hashMapOf<QualifiedSourceNodeId<Variable>, List<Decapsulation>>()
 
     private fun getField(nodeId: QualifiedSourceNodeId<*>): QualifiedSourceNodeId<Variable>? =
-        DecapsulationAnalyzer.getField(sourceTree, nodeId)
+        AbstractDecapsulationAnalyzer.getField(sourceTree, nodeId)
 
     private fun getVisibility(nodeId: QualifiedSourceNodeId<*>): Int? =
-        DecapsulationAnalyzer.getVisibility(sourceTree, nodeId)
+        AbstractDecapsulationAnalyzer.getVisibility(sourceTree, nodeId)
 
     private fun isConstant(nodeId: QualifiedSourceNodeId<*>): Boolean =
-        DecapsulationAnalyzer.isConstant(sourceTree, nodeId)
+        AbstractDecapsulationAnalyzer.isConstant(sourceTree, nodeId)
 
     private fun addDecapsulation(
         fieldId: QualifiedSourceNodeId<Variable>,
