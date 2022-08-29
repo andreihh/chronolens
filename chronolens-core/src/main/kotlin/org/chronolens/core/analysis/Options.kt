@@ -81,7 +81,11 @@ public inline fun <reified T : Any> OptionsProvider.option(): OptionBuilder<T> =
  * @param T the type of the option
  */
 public interface Option<T> {
-    public operator fun getValue(thisRef: Any?, property: KProperty<*>): T
+    /** Returns the value of this option. */
+    public fun getValue(): T
+
+    /** Delegates to [getValue]. */
+    public operator fun getValue(thisRef: Any?, property: KProperty<*>): T = getValue()
 
     /**
      * Wraps this option delegate and executes the given [validator] on the first option access.
@@ -93,22 +97,17 @@ public interface Option<T> {
      */
     public fun validate(validator: (value: T & Any) -> Unit): Option<T> =
         object : Option<T> {
-            private lateinit var validatedOption: Lazy<T>
-
-            override fun getValue(thisRef: Any?, property: KProperty<*>): T {
-                if (!this::validatedOption.isInitialized) {
-                    validatedOption = lazy {
-                        val value = this@Option.getValue(thisRef, property)
-                        try {
-                            value?.let { validator(it) }
-                        } catch (e: IllegalArgumentException) {
-                            throw InvalidOptionException(e)
-                        }
-                        value
-                    }
+            private val validatedValue by lazy {
+                val value = this@Option.getValue()
+                try {
+                    value?.let { validator(it) }
+                } catch (e: IllegalArgumentException) {
+                    throw InvalidOptionException(e)
                 }
-                return validatedOption.getValue(thisRef, property)
+                value
             }
+
+            override fun getValue(): T = validatedValue
         }
 
     /**
@@ -119,21 +118,16 @@ public interface Option<T> {
      */
     public fun <V> transform(transformer: (value: T) -> V): Option<V> =
         object : Option<V> {
-            private lateinit var transformedOption: Lazy<V>
-
-            override fun getValue(thisRef: Any?, property: KProperty<*>): V {
-                if (!this::transformedOption.isInitialized) {
-                    transformedOption = lazy {
-                        val value = this@Option.getValue(thisRef, property)
-                        try {
-                            transformer(value)
-                        } catch (e: IllegalArgumentException) {
-                            throw InvalidOptionException(e)
-                        }
-                    }
+            private val transformedValue by lazy {
+                val value = this@Option.getValue()
+                try {
+                    transformer(value)
+                } catch (e: IllegalArgumentException) {
+                    throw InvalidOptionException(e)
                 }
-                return transformedOption.getValue(thisRef, property)
             }
+
+            override fun getValue(): V = transformedValue
         }
 
     /**
@@ -141,7 +135,7 @@ public interface Option<T> {
      * and will propagate the `null` value instead.
      */
     public fun <V> transformIfNotNull(transformer: (value: T & Any) -> V): Option<V?> =
-        transform { it?.let(transformer) }
+        transform { value -> value?.let(transformer) }
 }
 
 /**

@@ -17,7 +17,6 @@
 package org.chronolens.cli
 
 import java.io.File
-import kotlin.reflect.KProperty
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ArgType
 import kotlinx.cli.MultipleOption
@@ -75,20 +74,17 @@ class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvide
 
 private fun <T : Any> SingleNullableOption<T>.toOption(): Option<T?> =
     object : Option<T?> {
-        override fun getValue(thisRef: Any?, property: KProperty<*>): T? =
-            this@toOption.provideDelegate(thisRef, property).getValue(thisRef, property)
+        override fun getValue(): T? = value
     }
 
 private fun <T : Any> SingleOption<T, *>.toOption(): Option<T> =
     object : Option<T> {
-        override fun getValue(thisRef: Any?, property: KProperty<*>): T =
-            this@toOption.provideDelegate(thisRef, property).getValue(thisRef, property)
+        override fun getValue(): T = value
     }
 
 private fun <T : Any> MultipleOption<T, *, *>.toOption(): Option<List<T>> =
     object : Option<List<T>> {
-        override fun getValue(thisRef: Any?, property: KProperty<*>): List<T> =
-            this@toOption.provideDelegate(thisRef, property).getValue(thisRef, property)
+        override fun getValue(): List<T> = value
     }
 
 @Suppress("UNCHECKED_CAST")

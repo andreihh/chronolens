@@ -16,14 +16,13 @@
 
 package org.chronolens.test.core.analysis
 
-import kotlin.reflect.KProperty
 import org.chronolens.core.analysis.Option
 
 public data class OptionHolder<T>(private val value: T) : Option<T> {
     public var timesRetrieved: Int = 0
         private set
 
-    override fun getValue(thisRef: Any?, property: KProperty<*>): T {
+    override fun getValue(): T {
         timesRetrieved++
         return value
     }

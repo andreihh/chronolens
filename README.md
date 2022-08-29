@@ -242,8 +242,7 @@ public final class SampleAnalyzer extends Analyzer {
             .name("message")
             .type(String.class)
             .description("The message to display to standard output.")
-            .defaultValue("Hello, world!")
-            .provideDelegate();
+            .defaultValue("Hello, world!");
 
     private String getMessage() { return message.getValue(); }
 
