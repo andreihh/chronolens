@@ -83,8 +83,10 @@ class LsTreeTest {
             expected = expectedSources.last().second,
             actual = create().analyze(repository).sources
         )
+
         for ((revisionId, expected) in expectedSources) {
             val actual = create(revisionId.toString()).analyze(repository).sources
+
             assertEquals(expected, actual)
         }
     }

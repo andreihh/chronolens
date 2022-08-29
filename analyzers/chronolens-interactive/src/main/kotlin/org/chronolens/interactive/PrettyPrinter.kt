@@ -59,10 +59,8 @@ internal class PrettyPrinter private constructor(private val out: Appendable) {
             when (value) {
                 is String -> context.visit("$key: $value")
                 is Collection<*> -> {
-                    if (value.isNotEmpty()) {
-                        context.visit("$key:")
-                        context.visit(value)
-                    }
+                    context.visit("$key:")
+                    context.visit(value)
                 }
             }
         }

@@ -56,7 +56,7 @@ public class ModelAnalyzer(optionsProvider: OptionsProvider) : Analyzer(optionsP
     private val qualifiedId by
         option<String>()
             .name("qualified-id")
-            .description("")
+            .description("the qualified id of the inspected source node")
             .required()
             .transform(::parseQualifiedSourceNodeIdFrom)
 
