@@ -147,7 +147,9 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
             if (memberSeparatorIndex != -1 && nextSeparatorIndex != -1) return false
 
             val tokens = rawQualifiedId.split(*SEPARATORS)
-            if (tokens.isEmpty() || tokens.any(String::isBlank)) return false
+
+            // There is always at least one token. None of the tokens can be blank.
+            if (tokens.any(String::isBlank)) return false
 
             // The first token always denotes a source file.
             if (!SourcePath.isValid(tokens.first())) return false

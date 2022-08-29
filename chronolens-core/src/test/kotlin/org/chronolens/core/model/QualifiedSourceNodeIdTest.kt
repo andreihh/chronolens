@@ -138,6 +138,27 @@ class QualifiedSourceNodeIdTest {
     }
 
     @Test
+    fun name_ofType_returnsTypeName() {
+        val qualifiedId = qualifiedSourcePathOf("src/Main.java").type("Test")
+
+        assertEquals(Identifier("Test"), qualifiedId.name)
+    }
+
+    @Test
+    fun signature_ofFunction_returnsFunctionSignature() {
+        val qualifiedId = qualifiedSourcePathOf("src/Main.java").function("main()")
+
+        assertEquals(Signature("main()"), qualifiedId.signature)
+    }
+
+    @Test
+    fun name_ofVariable_returnsVariableName() {
+        val qualifiedId = qualifiedSourcePathOf("src/Main.java").variable("VERSION")
+
+        assertEquals(Identifier("VERSION"), qualifiedId.name)
+    }
+
+    @Test
     fun isValid_whenValidId_returnsTrue() {
         val rawQualifiedIds =
             listOf(
@@ -176,6 +197,7 @@ class QualifiedSourceNodeIdTest {
                 "src/Main.java:Main#VERSION/file",
                 "src/Main.java:Main#main()/file",
                 "src/Main.java:Main:InnerMain/file",
+                "src/Main.java:main():InnerMain",
                 "src/Main.java:Main#main():VERSION",
                 "src/Main.java:Main#main()#main(String[])",
             )
@@ -213,6 +235,8 @@ class QualifiedSourceNodeIdTest {
                 "",
                 "src/Main::Main",
                 "src/Main:#Main",
+                "src/Main:   :Main",
+                "src/Main:main():Main",
                 "src/Main.java:Main#main():VERSION",
                 "src/Main.java:Main#main()#main(String[])",
             )
