@@ -16,29 +16,25 @@
 
 package org.chronolens.core.analysis
 
-import org.chronolens.test.core.analysis.OptionsProviderBuilder
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertNull
+import org.chronolens.test.core.analysis.OptionsProviderBuilder
+import org.junit.Test
 
 class OptionBuilderTest {
     @Test
     fun nullable_whenNoName_throws() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
-        assertFails {
-            optionsProvider.option<Int>().description("simple int").nullable()
-        }
+        assertFails { optionsProvider.option<Int>().description("simple int").nullable() }
     }
 
     @Test
     fun nullable_whenNoDescription_throws() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
-        assertFails {
-            optionsProvider.option<Int>().name("abc").nullable()
-        }
+        assertFails { optionsProvider.option<Int>().name("abc").nullable() }
     }
 
     @Test
@@ -54,11 +50,13 @@ class OptionBuilderTest {
     fun nullable_whenNotProvided_returnsNull() {
         val optionsProvider = OptionsProviderBuilder().build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("simple int")
-            .nullable()
+        val option by
+            optionsProvider
+                .option<Int>()
+                .name("abc")
+                .alias("a")
+                .description("simple int")
+                .nullable()
 
         assertNull(option)
     }
@@ -67,11 +65,13 @@ class OptionBuilderTest {
     fun nullable_whenNameProvided_returnsValue() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("simple int")
-            .nullable()
+        val option by
+            optionsProvider
+                .option<Int>()
+                .name("abc")
+                .alias("a")
+                .description("simple int")
+                .nullable()
 
         assertEquals(option, 5)
     }
@@ -80,11 +80,13 @@ class OptionBuilderTest {
     fun nullable_whenAliasProvided_returnsValue() {
         val optionsProvider = OptionsProviderBuilder().setOption("a", 5).build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("simple int")
-            .nullable()
+        val option by
+            optionsProvider
+                .option<Int>()
+                .name("abc")
+                .alias("a")
+                .description("simple int")
+                .nullable()
 
         assertEquals(option, 5)
     }
@@ -94,7 +96,8 @@ class OptionBuilderTest {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 3).setOption("a", 5).build()
 
         assertFails {
-            optionsProvider.option<Int>()
+            optionsProvider
+                .option<Int>()
                 .name("abc")
                 .alias("a")
                 .description("simple int")
@@ -106,18 +109,14 @@ class OptionBuilderTest {
     fun required_whenNoName_throws() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
-        assertFails {
-            optionsProvider.option<Int>().description("simple int").required()
-        }
+        assertFails { optionsProvider.option<Int>().description("simple int").required() }
     }
 
     @Test
     fun required_whenNoDescription_throws() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
-        assertFails {
-            optionsProvider.option<Int>().name("abc").required()
-        }
+        assertFails { optionsProvider.option<Int>().name("abc").required() }
     }
 
     @Test
@@ -134,7 +133,8 @@ class OptionBuilderTest {
         val optionsProvider = OptionsProviderBuilder().build()
 
         assertFails {
-            optionsProvider.option<Int>()
+            optionsProvider
+                .option<Int>()
                 .name("abc")
                 .alias("a")
                 .description("simple int")
@@ -146,11 +146,13 @@ class OptionBuilderTest {
     fun required_whenNameProvided_returnsValue() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("simple int")
-            .required()
+        val option by
+            optionsProvider
+                .option<Int>()
+                .name("abc")
+                .alias("a")
+                .description("simple int")
+                .required()
 
         assertEquals(option, 5)
     }
@@ -159,11 +161,13 @@ class OptionBuilderTest {
     fun required_whenAliasProvided_returnsValue() {
         val optionsProvider = OptionsProviderBuilder().setOption("a", 5).build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("simple int")
-            .required()
+        val option by
+            optionsProvider
+                .option<Int>()
+                .name("abc")
+                .alias("a")
+                .description("simple int")
+                .required()
 
         assertEquals(option, 5)
     }
@@ -173,7 +177,8 @@ class OptionBuilderTest {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 3).setOption("a", 5).build()
 
         assertFails {
-            optionsProvider.option<Int>()
+            optionsProvider
+                .option<Int>()
                 .name("abc")
                 .alias("a")
                 .description("simple int")
@@ -185,18 +190,14 @@ class OptionBuilderTest {
     fun default_whenNoName_throws() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
-        assertFails {
-            optionsProvider.option<Int>().description("simple int").defaultValue(3)
-        }
+        assertFails { optionsProvider.option<Int>().description("simple int").defaultValue(3) }
     }
 
     @Test
     fun default_whenNoDescription_throws() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
-        assertFails {
-            optionsProvider.option<Int>().name("abc").defaultValue(3)
-        }
+        assertFails { optionsProvider.option<Int>().name("abc").defaultValue(3) }
     }
 
     @Test
@@ -204,7 +205,11 @@ class OptionBuilderTest {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
         assertFails {
-            optionsProvider.untypedOption<Int>().name("abc").description("simple int").defaultValue(3)
+            optionsProvider
+                .untypedOption<Int>()
+                .name("abc")
+                .description("simple int")
+                .defaultValue(3)
         }
     }
 
@@ -212,11 +217,13 @@ class OptionBuilderTest {
     fun default_whenNotProvided_returnsDefault() {
         val optionsProvider = OptionsProviderBuilder().build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("simple int")
-            .defaultValue(5)
+        val option by
+            optionsProvider
+                .option<Int>()
+                .name("abc")
+                .alias("a")
+                .description("simple int")
+                .defaultValue(5)
 
         assertEquals(option, 5)
     }
@@ -225,11 +232,13 @@ class OptionBuilderTest {
     fun default_whenNameProvided_returnsValue() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 3).build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("simple int")
-            .defaultValue(5)
+        val option by
+            optionsProvider
+                .option<Int>()
+                .name("abc")
+                .alias("a")
+                .description("simple int")
+                .defaultValue(5)
 
         assertEquals(option, 3)
     }
@@ -238,11 +247,13 @@ class OptionBuilderTest {
     fun default_whenAliasProvided_returnsValue() {
         val optionsProvider = OptionsProviderBuilder().setOption("a", 3).build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("simple int")
-            .defaultValue(5)
+        val option by
+            optionsProvider
+                .option<Int>()
+                .name("abc")
+                .alias("a")
+                .description("simple int")
+                .defaultValue(5)
 
         assertEquals(option, 3)
     }
@@ -252,7 +263,8 @@ class OptionBuilderTest {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 3).setOption("a", 5).build()
 
         assertFails {
-            optionsProvider.option<Int>()
+            optionsProvider
+                .option<Int>()
                 .name("abc")
                 .alias("a")
                 .description("simple int")
@@ -264,18 +276,14 @@ class OptionBuilderTest {
     fun repeated_whenNoName_throws() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", listOf(2, 5)).build()
 
-        assertFails {
-            optionsProvider.option<Int>().description("list int").repeated()
-        }
+        assertFails { optionsProvider.option<Int>().description("list int").repeated() }
     }
 
     @Test
     fun repeated_whenNoDescription_throws() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", listOf(2, 5)).build()
 
-        assertFails {
-            optionsProvider.option<Int>().name("abc").repeated()
-        }
+        assertFails { optionsProvider.option<Int>().name("abc").repeated() }
     }
 
     @Test
@@ -291,11 +299,8 @@ class OptionBuilderTest {
     fun repeated_whenNotProvided_returnsEmptyList() {
         val optionsProvider = OptionsProviderBuilder().build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("list int")
-            .repeated()
+        val option by
+            optionsProvider.option<Int>().name("abc").alias("a").description("list int").repeated()
 
         assertEquals(option, emptyList())
     }
@@ -304,11 +309,8 @@ class OptionBuilderTest {
     fun repeated_whenNameProvided_returnsValue() {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", listOf(2, 5)).build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("list int")
-            .repeated()
+        val option by
+            optionsProvider.option<Int>().name("abc").alias("a").description("list int").repeated()
 
         assertEquals(option, listOf(2, 5))
     }
@@ -317,11 +319,8 @@ class OptionBuilderTest {
     fun repeated_whenAliasProvided_returnsValue() {
         val optionsProvider = OptionsProviderBuilder().setOption("a", listOf(2, 5)).build()
 
-        val option by optionsProvider.option<Int>()
-            .name("abc")
-            .alias("a")
-            .description("list int")
-            .repeated()
+        val option by
+            optionsProvider.option<Int>().name("abc").alias("a").description("list int").repeated()
 
         assertEquals(option, listOf(2, 5))
     }
@@ -335,11 +334,7 @@ class OptionBuilderTest {
                 .build()
 
         assertFails {
-            optionsProvider.option<Int>()
-                .name("abc")
-                .alias("a")
-                .description("list int")
-                .repeated()
+            optionsProvider.option<Int>().name("abc").alias("a").description("list int").repeated()
         }
     }
 }
