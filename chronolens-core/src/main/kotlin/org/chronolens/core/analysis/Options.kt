@@ -145,6 +145,16 @@ public interface Option<T> {
 }
 
 /**
+ * Delegates to [Option.validate] to ensure the option value is within the ([min], [max]) range.
+ * Skips the corresponding check if [min] or [max] are `null`.
+ */
+public fun <T : Comparable<T>> Option<T>.constrainTo(min: T? = null, max: T? = null): Option<T> =
+    validate { value ->
+        require(min == null || value >= min) { "Option value can't be less than '$min'!" }
+        require(max == null || value <= max) { "Option value can't be greater than '$max'!" }
+    }
+
+/**
  * A fluent [Option] builder that will register the created option to the given [optionsProvider].
  */
 public class OptionBuilder<T : Any>(private val optionsProvider: OptionsProvider) {
