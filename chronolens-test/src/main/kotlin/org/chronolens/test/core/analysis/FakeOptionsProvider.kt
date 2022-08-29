@@ -47,9 +47,9 @@ internal class FakeOptionsProvider(private val options: Map<String, Any>) : Opti
         alias: String?,
         description: String,
         type: Class<T>,
-        default: T?
+        defaultValue: T?
     ): Option<T> {
-        val value = getOptionValue(name, alias) ?: default
+        val value = getOptionValue(name, alias) ?: defaultValue
         requireNotNull(value) { "Option '$name' is required!" }
         require(type.isInstance(value)) {
             "Option '$name' with value '$value' is not of type '$type'!"

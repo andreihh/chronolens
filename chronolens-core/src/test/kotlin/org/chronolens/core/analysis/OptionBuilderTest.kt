@@ -186,7 +186,7 @@ class OptionBuilderTest {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
         assertFails {
-            optionsProvider.option<Int>().description("simple int").default(3)
+            optionsProvider.option<Int>().description("simple int").defaultValue(3)
         }
     }
 
@@ -195,7 +195,7 @@ class OptionBuilderTest {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
         assertFails {
-            optionsProvider.option<Int>().name("abc").default(3)
+            optionsProvider.option<Int>().name("abc").defaultValue(3)
         }
     }
 
@@ -204,7 +204,7 @@ class OptionBuilderTest {
         val optionsProvider = OptionsProviderBuilder().setOption("abc", 5).build()
 
         assertFails {
-            optionsProvider.untypedOption<Int>().name("abc").description("simple int").default(3)
+            optionsProvider.untypedOption<Int>().name("abc").description("simple int").defaultValue(3)
         }
     }
 
@@ -216,7 +216,7 @@ class OptionBuilderTest {
             .name("abc")
             .alias("a")
             .description("simple int")
-            .default(5)
+            .defaultValue(5)
 
         assertEquals(option, 5)
     }
@@ -229,7 +229,7 @@ class OptionBuilderTest {
             .name("abc")
             .alias("a")
             .description("simple int")
-            .default(5)
+            .defaultValue(5)
 
         assertEquals(option, 3)
     }
@@ -242,7 +242,7 @@ class OptionBuilderTest {
             .name("abc")
             .alias("a")
             .description("simple int")
-            .default(5)
+            .defaultValue(5)
 
         assertEquals(option, 3)
     }
@@ -256,7 +256,7 @@ class OptionBuilderTest {
                 .name("abc")
                 .alias("a")
                 .description("simple int")
-                .default(7)
+                .defaultValue(7)
         }
     }
 

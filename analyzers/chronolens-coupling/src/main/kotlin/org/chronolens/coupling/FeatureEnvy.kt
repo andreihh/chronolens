@@ -58,35 +58,35 @@ internal class FeatureEnvyAnalyzer(optionsProvider: OptionsProvider) : Analyzer(
         option<Int>()
             .name("max-change-set")
             .description("the maximum number of changed files in a revision")
-            .default(100)
+            .defaultValue(100)
             .constrainTo(min = 1)
 
     private val minRevisions by
         option<Int>()
             .name("min-revisions")
             .description("the minimum number of revisions of a method or coupling relation")
-            .default(5)
+            .defaultValue(5)
             .constrainTo(min = 1)
 
     private val minCoupling by
         option<Double>()
             .name("min-coupling")
             .description("the minimum temporal coupling between two methods")
-            .default(0.1)
+            .defaultValue(0.1)
             .constrainTo(min = 0.0)
 
     private val minEnvyRatio by
         option<Double>()
             .name("min-envy-ratio")
             .description("the minimum ratio of coupling to another source file")
-            .default(1.0)
+            .defaultValue(1.0)
             .constrainTo(min = 0.0, max = 1.0)
 
     private val maxEnviedFiles by
         option<Int>()
             .name("max-envied-files")
             .description("the maximum number of files envied by a method that will be reported")
-            .default(1)
+            .defaultValue(1)
             .constrainTo(min = 1)
 
     private val minMetricValue by
@@ -95,7 +95,7 @@ internal class FeatureEnvyAnalyzer(optionsProvider: OptionsProvider) : Analyzer(
             .description(
                 "ignore sources that have fewer Feature Envy instances than the specified limit"
             )
-            .default(1)
+            .defaultValue(1)
             .constrainTo(min = 0)
 
     private fun TemporalContext.buildColoredGraphs(

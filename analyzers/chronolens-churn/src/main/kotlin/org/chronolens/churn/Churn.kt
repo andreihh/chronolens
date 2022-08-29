@@ -49,7 +49,7 @@ internal class ChurnAnalyzer(optionsProvider: OptionsProvider) : Analyzer(option
         option<Metric>()
             .name("metric")
             .description("the metric used to rank and highlight source nodes")
-            .default(Metric.WEIGHTED_CHURN)
+            .defaultValue(Metric.WEIGHTED_CHURN)
 
     private val skipDays by
         option<Int>()
@@ -58,14 +58,14 @@ internal class ChurnAnalyzer(optionsProvider: OptionsProvider) : Analyzer(option
                 """when analyzing source nodes, ignore revisions occurring in the first specified
                 number of days, counting from the revision when the source node was created."""
             )
-            .default(14)
+            .defaultValue(14)
             .constrainTo(min = 0)
 
     private val minMetricValue by
         option<Int>()
             .name("min-metric-value")
             .description("ignore sources that have less churn than the specified limit")
-            .default(0)
+            .defaultValue(0)
             .constrainTo(min = 0)
 
     override fun analyze(repository: Repository): ChurnReport {

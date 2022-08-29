@@ -46,11 +46,11 @@ class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvide
         alias: String?,
         description: String,
         type: Class<T>,
-        default: T?
+        defaultValue: T?
     ): Option<T> {
         val option = parser.option(type.toArgType(), name, alias, description)
-        return if (default == null) option.required().toOption()
-        else option.default(default).toOption()
+        return if (defaultValue == null) option.required().toOption()
+        else option.default(defaultValue).toOption()
     }
 
     override fun <T : Any> repeatedOption(
@@ -69,7 +69,7 @@ class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvide
         option<String>()
             .name("repository-root")
             .description("The root directory of the repository.")
-            .default(".")
+            .defaultValue(".")
             .transform(::File)
 }
 

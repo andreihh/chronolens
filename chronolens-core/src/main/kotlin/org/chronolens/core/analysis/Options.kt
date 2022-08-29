@@ -53,7 +53,7 @@ public interface OptionsProvider {
         alias: String?,
         description: String,
         type: Class<T>,
-        default: T? = null
+        defaultValue: T? = null
     ): Option<T>
 
     /** Registers a repeated [Option] with the given parameters. */
@@ -196,7 +196,7 @@ public class OptionBuilder<T : Any>(private val optionsProvider: OptionsProvider
         optionsProvider.requiredOption(name, alias, description, type)
 
     /** Returns an [Option] with the specified default [value]. */
-    public fun default(value: T): Option<T> =
+    public fun defaultValue(value: T): Option<T> =
         optionsProvider.requiredOption(name, alias, description, type, value)
 
     /** Returns a repeated [Option]. */

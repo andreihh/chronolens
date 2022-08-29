@@ -55,42 +55,42 @@ internal class DivergentChangeAnalyzer(optionsProvider: OptionsProvider) :
         option<Int>()
             .name("max-change-set")
             .description("the maximum number of changed files in a revision")
-            .default(100)
+            .defaultValue(100)
             .constrainTo(min = 1)
 
     private val minRevisions by
         option<Int>()
             .name("min-revisions")
             .description("the minimum number of revisions of a method or coupling relation")
-            .default(5)
+            .defaultValue(5)
             .constrainTo(min = 1)
 
     private val minCoupling by
         option<Double>()
             .name("min-coupling")
             .description("the minimum temporal coupling between two methods")
-            .default(0.1)
+            .defaultValue(0.1)
             .constrainTo(min = 0.0)
 
     private val minBlobDensity by
         option<Double>()
             .name("min-blob-density")
             .description("the minimum average degree (sum of coupling) of methods in a blob")
-            .default(2.5)
+            .defaultValue(2.5)
             .constrainTo(min = 0.0)
 
     private val maxAntiCoupling by
         option<Double>()
             .name("max-anti-coupling")
             .description("the maximum degree (sum of coupling) of a method in an anti-blob")
-            .default(0.5)
+            .defaultValue(0.5)
             .constrainTo(min = 0.0)
 
     private val minAntiBlobSize by
         option<Int>()
             .name("min-anti-blob-size")
             .description("the minimum size of an anti-blob")
-            .default(10)
+            .defaultValue(10)
             .constrainTo(min = 1)
 
     private val minMetricValue by
@@ -99,7 +99,7 @@ internal class DivergentChangeAnalyzer(optionsProvider: OptionsProvider) :
             .description(
                 "ignore sources that have fewer blobs / anti-blobs than the specified limit"
             )
-            .default(0)
+            .defaultValue(0)
             .constrainTo(min = 0)
 
     private fun TemporalContext.aggregateGraphs(): List<Graph> {

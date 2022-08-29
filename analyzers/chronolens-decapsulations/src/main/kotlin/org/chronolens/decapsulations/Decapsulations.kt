@@ -48,13 +48,13 @@ internal class DecapsulationAnalyzer(optionsProvider: OptionsProvider) : Analyze
         option<Boolean>()
             .name("keep-constants")
             .description("do not ignore decapsulations of constant fields")
-            .default(false)
+            .defaultValue(false)
 
     private val minMetricValue by
         option<Int>()
             .name("min-metric-value")
             .description("ignore sources that have less decapsulations than the specified limit")
-            .default(0)
+            .defaultValue(0)
             .constrainTo(min = 0)
 
     override fun analyze(repository: Repository): DecapsulationReport {
