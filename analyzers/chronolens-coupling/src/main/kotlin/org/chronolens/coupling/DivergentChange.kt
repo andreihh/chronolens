@@ -21,6 +21,7 @@ import org.chronolens.core.analysis.Analyzer
 import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.OptionsProvider
 import org.chronolens.core.analysis.Report
+import org.chronolens.core.analysis.constrainTo
 import org.chronolens.core.analysis.option
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.Revision
@@ -55,42 +56,42 @@ internal class DivergentChangeAnalyzer(optionsProvider: OptionsProvider) :
             .name("max-change-set")
             .description("the maximum number of changed files in a revision")
             .default(100)
-            .validate { it >= 1 }
+            .constrainTo(min = 1)
 
     private val minRevisions by
         option<Int>()
             .name("min-revisions")
             .description("the minimum number of revisions of a method or coupling relation")
             .default(5)
-            .validate { it > 0 }
+            .constrainTo(min = 1)
 
     private val minCoupling by
         option<Double>()
             .name("min-coupling")
             .description("the minimum temporal coupling between two methods")
             .default(0.1)
-            .validate { it > 0.0 }
+            .constrainTo(min = 0.0)
 
     private val minBlobDensity by
         option<Double>()
             .name("min-blob-density")
             .description("the minimum average degree (sum of coupling) of methods in a blob")
             .default(2.5)
-            .validate { it > 0.0 }
+            .constrainTo(min = 0.0)
 
     private val maxAntiCoupling by
         option<Double>()
             .name("max-anti-coupling")
             .description("the maximum degree (sum of coupling) of a method in an anti-blob")
             .default(0.5)
-            .validate { it > 0.0 }
+            .constrainTo(min = 0.0)
 
     private val minAntiBlobSize by
         option<Int>()
             .name("min-anti-blob-size")
             .description("the minimum size of an anti-blob")
             .default(10)
-            .validate { it > 0 }
+            .constrainTo(min = 1)
 
     private val minMetricValue by
         option<Int>()
@@ -99,7 +100,7 @@ internal class DivergentChangeAnalyzer(optionsProvider: OptionsProvider) :
                 "ignore sources that have fewer blobs / anti-blobs than the specified limit"
             )
             .default(0)
-            .validate { it >= 0 }
+            .constrainTo(min = 0)
 
     private fun TemporalContext.aggregateGraphs(): List<Graph> {
         val idsByFile = ids.groupBy(QualifiedSourceNodeId<*>::sourcePath)

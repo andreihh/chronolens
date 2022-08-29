@@ -20,6 +20,7 @@ import org.chronolens.core.analysis.Analyzer
 import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.OptionsProvider
 import org.chronolens.core.analysis.Report
+import org.chronolens.core.analysis.constrainTo
 import org.chronolens.core.analysis.option
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.RepositoryConnector.AccessMode
@@ -54,7 +55,7 @@ internal class DecapsulationAnalyzer(optionsProvider: OptionsProvider) : Analyze
             .name("min-metric-value")
             .description("ignore sources that have less decapsulations than the specified limit")
             .default(0)
-            .validate { it >= 0 }
+            .constrainTo(min = 0)
 
     override fun analyze(repository: Repository): DecapsulationReport {
         val report = HistoryAnalyzer(!keepConstants).analyze(repository.getHistory())

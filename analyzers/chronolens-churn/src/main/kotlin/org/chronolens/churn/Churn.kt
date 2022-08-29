@@ -22,6 +22,7 @@ import org.chronolens.core.analysis.Analyzer
 import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.OptionsProvider
 import org.chronolens.core.analysis.Report
+import org.chronolens.core.analysis.constrainTo
 import org.chronolens.core.analysis.option
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.RepositoryConnector.AccessMode
@@ -58,14 +59,14 @@ internal class ChurnAnalyzer(optionsProvider: OptionsProvider) : Analyzer(option
                 number of days, counting from the revision when the source node was created."""
             )
             .default(14)
-            .validate { it >= 0 }
+            .constrainTo(min = 0)
 
     private val minMetricValue by
         option<Int>()
             .name("min-metric-value")
             .description("ignore sources that have less churn than the specified limit")
             .default(0)
-            .validate { it >= 0 }
+            .constrainTo(min = 0)
 
     override fun analyze(repository: Repository): ChurnReport {
         val report = HistoryAnalyzer(metric, skipDays).analyze(repository.getHistory())
