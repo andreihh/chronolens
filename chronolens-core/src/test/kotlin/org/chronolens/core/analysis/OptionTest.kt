@@ -16,11 +16,11 @@
 
 package org.chronolens.core.analysis
 
-import org.chronolens.test.core.analysis.OptionHolder
-import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import org.chronolens.test.core.analysis.OptionHolder
+import org.junit.Test
 
 class OptionTest {
     @Test
@@ -29,9 +29,9 @@ class OptionTest {
         val validatedOption = option.validate {}
         val optionProperty by validatedOption
 
-        assertEquals(optionProperty, 5)
-        assertEquals(optionProperty, 5)
-        assertEquals(option.timesRetrieved, 1)
+        assertEquals(expected = 5, actual = optionProperty)
+        assertEquals(expected = 5, actual = optionProperty)
+        assertEquals(expected = 1, actual = option.timesRetrieved)
     }
 
     @Test
@@ -49,10 +49,7 @@ class OptionTest {
         val validatedOption = option.validate { require(false) }
         val optionProperty by validatedOption
 
-        assertFailsWith<InvalidOptionException> {
-            @Suppress("UNUSED_EXPRESSION")
-            optionProperty
-        }
+        assertFailsWith<InvalidOptionException> { @Suppress("UNUSED_EXPRESSION") optionProperty }
     }
 
     @Test
@@ -61,9 +58,9 @@ class OptionTest {
         val transformedOption = option.transform(Int::toString)
         val optionProperty by transformedOption
 
-        assertEquals(optionProperty, "5")
-        assertEquals(optionProperty, "5")
-        assertEquals(option.timesRetrieved, 1)
+        assertEquals(expected = "5", actual = optionProperty)
+        assertEquals(expected = "5", actual = optionProperty)
+        assertEquals(expected = 1, actual = option.timesRetrieved)
     }
 
     @Test
@@ -72,10 +69,7 @@ class OptionTest {
         val transformedOption = option.transform { require(false) }
         val optionProperty by transformedOption
 
-        assertFailsWith<InvalidOptionException> {
-            @Suppress("UNUSED_EXPRESSION")
-            optionProperty
-        }
+        assertFailsWith<InvalidOptionException> { @Suppress("UNUSED_EXPRESSION") optionProperty }
     }
 
     @Test
@@ -84,9 +78,9 @@ class OptionTest {
         val transformedOption = option.transformIfNotNull(Int::toString)
         val optionProperty by transformedOption
 
-        assertEquals(optionProperty, "5")
-        assertEquals(optionProperty, "5")
-        assertEquals(option.timesRetrieved, 1)
+        assertEquals(expected = "5", actual = optionProperty)
+        assertEquals(expected = "5", actual = optionProperty)
+        assertEquals(expected = 1, actual = option.timesRetrieved)
     }
 
     @Test
@@ -104,10 +98,54 @@ class OptionTest {
         val transformedOption = option.transformIfNotNull { require(false) }
         val optionProperty by transformedOption
 
-        assertFailsWith<InvalidOptionException> {
-            @Suppress("UNUSED_EXPRESSION")
-            optionProperty
+        assertFailsWith<InvalidOptionException> { @Suppress("UNUSED_EXPRESSION") optionProperty }
+    }
+
+    @Test
+    fun constrainTo_whenMinAndMaxAreNull_skipsValidationAndReturnsInitialValue() {
+        for (value in listOf(Int.MIN_VALUE, 0, Int.MAX_VALUE)) {
+            val option = OptionHolder(value)
+            val constrainedOption = option.constrainTo()
+            val optionProperty by constrainedOption
+
+            assertEquals(expected = value, actual = optionProperty)
         }
+    }
+
+    @Test
+    fun constrainTo_whenLessThanMin_throwsInvalidOptionException() {
+        val option = OptionHolder(5)
+        val constrainedOption = option.constrainTo(min = 6)
+        val optionProperty by constrainedOption
+
+        assertFailsWith<InvalidOptionException> { @Suppress("UNUSED_EXPRESSION") optionProperty }
+    }
+
+    @Test
+    fun constrainTo_whenGreaterThanMax_throwsInvalidOptionException() {
+        val option = OptionHolder(7)
+        val constrainedOption = option.constrainTo(max = 6)
+        val optionProperty by constrainedOption
+
+        assertFailsWith<InvalidOptionException> { @Suppress("UNUSED_EXPRESSION") optionProperty }
+    }
+
+    @Test
+    fun constrainTo_whenValueIsWithinRange_returnsInitialValue() {
+        val option = OptionHolder(6)
+        val constrainedOption = option.constrainTo(min = 5, max = 7)
+        val optionProperty by constrainedOption
+
+        assertEquals(expected = 6, actual = optionProperty)
+    }
+
+    @Test
+    fun constrainTo_whenValueIsEqualToBoundaries_returnsInitialValue() {
+        val option = OptionHolder(6)
+        val constrainedOption = option.constrainTo(min = 6, max = 6)
+        val optionProperty by constrainedOption
+
+        assertEquals(expected = 6, actual = optionProperty)
     }
 
     @Test
@@ -117,15 +155,11 @@ class OptionTest {
 
     @Test
     fun requireOption_whenConditionIsFalse_throwsInvalidOptionException() {
-        assertFailsWith<InvalidOptionException> {
-            requireOption(false) { "fail" }
-        }
+        assertFailsWith<InvalidOptionException> { requireOption(false) { "fail" } }
     }
 
     @Test
     fun optionError_throwsInvalidOptionException() {
-        assertFailsWith<InvalidOptionException> {
-            optionError("fail")
-        }
+        assertFailsWith<InvalidOptionException> { optionError("fail") }
     }
 }
