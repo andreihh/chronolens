@@ -44,12 +44,13 @@ class RevListTest {
     @Test
     fun reportToString_listsOneRevisionPerLine() {
         val expected =
-            """
+            ("""
             12
             34
             ab
             cd
-        """.trimIndent()
+            """)
+                .trimIndent()
 
         val actual = RevListReport(revisionListOf("12", "34", "ab", "cd")).toString()
 

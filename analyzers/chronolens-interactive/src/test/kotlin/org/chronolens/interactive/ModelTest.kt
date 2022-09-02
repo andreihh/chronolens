@@ -60,7 +60,7 @@ class ModelTest {
 
     @Test
     fun analyze_whenMissingSourceFile_throws() {
-        val analyzer = create(qualifiedId = "src/Test.java:Test", revision = "invalid-rev-(!*&$(#Q")
+        val analyzer = create(qualifiedId = "src/Test.java:Test", revision = "1")
         val repository = repository {
             +revision("1") { +qualifiedSourcePathOf("src/Main.java").add {} }
         }
@@ -70,7 +70,7 @@ class ModelTest {
 
     @Test
     fun analyze_whenMissingSourceNode_throws() {
-        val analyzer = create(qualifiedId = "src/Main.java:Test", revision = "invalid-rev-(!*&$(#Q")
+        val analyzer = create(qualifiedId = "src/Main.java:Test", revision = "1")
         val repository = repository {
             +revision("1") {
                 +qualifiedSourcePathOf("src/Main.java").add {
@@ -134,12 +134,13 @@ class ModelTest {
     @Test
     fun reportToString_prettyPrintsSourceNode() {
         val expected =
-            """
+            ("""
             type Main
             `- members:
                `- variable VERSION
-        """.trimIndent() +
-                "\n"
+
+            """)
+                .trimIndent()
 
         val actual = ModelReport(type("Main") { +variable("VERSION") {} }).toString()
 

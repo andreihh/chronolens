@@ -67,4 +67,32 @@ class MainTest {
 
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun main_whenModel_printsSourceNode() {
+        FakeVcsProxyFactory.createRepository(directory) {
+            +vcsRevision {
+                change("src/Main.java", "")
+                change("src/Test.java", "")
+            }
+        }
+        val expected = """
+            file src/Main.java
+
+
+            """.trimIndent()
+
+        main(
+            arrayOf(
+                "model",
+                "--repository-root",
+                directory.absolutePath,
+                "--qualified-id",
+                "src/Main.java"
+            )
+        )
+        val actual = outRule.log
+
+        assertEquals(expected, actual)
+    }
 }

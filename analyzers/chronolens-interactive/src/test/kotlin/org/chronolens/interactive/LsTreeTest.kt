@@ -94,10 +94,10 @@ class LsTreeTest {
     @Test
     fun reportToString_listsOneSourcePerLine() {
         val expected =
-            """
+            ("""
             src/Main.java
             src/Test.java
-        """.trimIndent()
+            """).trimIndent()
 
         val actual = LsTreeReport(sourceSetOf("src/Main.java", "src/Test.java")).toString()
 
