@@ -19,7 +19,7 @@ repositories {
 // Set versions for common dependencies, as library catalogs are not yet
 // avalable in buildSrc implementation files.
 val junitVersion by extra("4.13.2")
-val ktfmtVersion by extra("0.39")
+val ktfmtVersion by extra("0.40")
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
