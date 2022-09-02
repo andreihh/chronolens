@@ -18,7 +18,6 @@ package org.chronolens.cli
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import org.chronolens.cli.Main.Companion.main
 import org.chronolens.core.versioning.VcsRevision
 import org.chronolens.test.core.versioning.FakeVcsProxyFactory
 import org.chronolens.test.core.versioning.vcsRevision

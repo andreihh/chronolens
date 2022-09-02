@@ -15,6 +15,7 @@
  */
 
 @file:OptIn(ExperimentalCli::class)
+@file:JvmName("Main")
 
 package org.chronolens.cli
 
@@ -23,15 +24,10 @@ import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.core.analysis.AnalyzerSpec
 
-class Main {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            val parser = ArgParser("chronolens", strictSubcommandOptionsOrder = true)
-            parser.subcommands(*assembleSubcommands().toTypedArray())
-            parser.parse(args)
-        }
-    }
+fun main(args: Array<String>) {
+    val parser = ArgParser("chronolens", strictSubcommandOptionsOrder = true)
+    parser.subcommands(*assembleSubcommands().toTypedArray())
+    parser.parse(args)
 }
 
 private fun assembleSubcommands(): List<Subcommand> =

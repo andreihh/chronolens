@@ -175,7 +175,7 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
         @JvmStatic
         public val QualifiedSourceNodeId<SourceEntity>.parentId:
             QualifiedSourceNodeId<SourceContainer>
-            get() = checkNotNull(parent)
+            get() = parent ?: throw AssertionError("Parent id of '$this' must not be null!")
     }
 }
 
@@ -219,12 +219,12 @@ public fun parseQualifiedSourceNodeIdFrom(rawQualifiedId: String): QualifiedSour
     // There are at least two tokens, so the separator exists.
     val separator = rawQualifiedId.last { it in SEPARATORS }
     val lastId = tokens.last()
-    val isSignature = '(' in lastId && lastId.endsWith(')')
+    val isSignature = Signature.isValid(lastId)
     return when {
         separator == CONTAINER_SEPARATOR -> qualifiedId.type(lastId)
         separator == MEMBER_SEPARATOR && isSignature -> qualifiedId.function(lastId)
         separator == MEMBER_SEPARATOR && !isSignature -> qualifiedId.variable(lastId)
-        else -> error("Invalid separator '$separator' in '$rawQualifiedId'!")
+        else -> throw AssertionError("Invalid separator '$separator' in '$rawQualifiedId'!")
     }
 }
 

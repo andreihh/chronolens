@@ -35,7 +35,7 @@ public class ModelSpec : AnalyzerSpec {
         get() = "model"
 
     override val description: String
-        get() = ""
+        get() = "Prints the requested source node from the specified revision."
 
     override fun create(optionsProvider: OptionsProvider): ModelAnalyzer =
         ModelAnalyzer(optionsProvider)

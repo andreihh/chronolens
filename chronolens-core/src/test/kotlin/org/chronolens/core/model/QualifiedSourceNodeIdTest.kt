@@ -237,6 +237,8 @@ class QualifiedSourceNodeIdTest {
                 "src/Main:#Main",
                 "src/Main:   :Main",
                 "src/Main:main():Main",
+                "src/Main:main(s",
+                "src/Main:main)",
                 "src/Main.java:Main#main():VERSION",
                 "src/Main.java:Main#main()#main(String[])",
             )

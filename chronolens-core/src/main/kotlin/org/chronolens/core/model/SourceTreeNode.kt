@@ -33,8 +33,11 @@ public data class SourceTreeNode<out T : SourceNode>(
 ) {
 
     init {
+        require(qualifiedId.id == sourceNode.id) {
+            "Qualified id '$qualifiedId' must match source node id '${sourceNode.id}'!"
+        }
         require(qualifiedId.kind == sourceNode.kind) {
-            "Qualified id kind '${qualifiedId.kind}' must match source node '${sourceNode.kind}'!"
+            "Qualified id '$qualifiedId' must match source node kind '${sourceNode.kind}'!"
         }
     }
 
@@ -95,6 +98,21 @@ public data class SourceTreeNode<out T : SourceNode>(
         @JvmStatic
         public fun of(sourceFile: SourceFile): SourceTreeNode<SourceFile> =
             SourceTreeNode(qualifiedSourcePathOf(sourceFile.path), sourceFile)
+
+        /** Creates a new source tree node from the given [parentId] and [sourceEntity]. */
+        @JvmStatic
+        public fun <T : SourceEntity> of(
+            parentId: QualifiedSourceNodeId<SourceContainer>,
+            sourceEntity: T
+        ): SourceTreeNode<T> {
+            val qualifiedId =
+                when (val entity = sourceEntity as SourceEntity) {
+                    is Type -> parentId.type(entity.name)
+                    is Function -> parentId.function(entity.signature)
+                    is Variable -> parentId.variable(entity.name)
+                }.cast(sourceEntity.javaClass)
+            return SourceTreeNode(qualifiedId, sourceEntity)
+        }
     }
 }
 
@@ -102,15 +120,8 @@ public val SourceTreeNode<SourceEntity>.parentId: QualifiedSourceNodeId<SourceCo
     get() = qualifiedId.parentId
 
 /** Returns a source tree node that wraps the given [child] node and has [this] node as a parent. */
-public fun <T : SourceEntity> SourceTreeNode<SourceContainer>.append(child: T): SourceTreeNode<T> {
-    val childQualifiedId =
-        when (val node = child as SourceEntity) {
-            is Type -> qualifiedId.type(node.name)
-            is Function -> qualifiedId.function(node.signature)
-            is Variable -> qualifiedId.variable(node.name)
-        }
-    return SourceTreeNode(childQualifiedId.cast(child.javaClass), child)
-}
+public fun <T : SourceEntity> SourceTreeNode<SourceContainer>.append(child: T): SourceTreeNode<T> =
+    SourceTreeNode.of(qualifiedId, child)
 
 /** Returns all the source tree nodes contained in [this] source file in top-down order. */
 public fun SourceFile.walkSourceTree(): List<SourceTreeNode<*>> =
