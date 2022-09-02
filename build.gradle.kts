@@ -23,11 +23,11 @@ dependencies {
 
 reporting {
     reports {
-        val testAggregateTestReport by creating(AggregateTestReport::class) {
+        val aggregateTestReport by creating(AggregateTestReport::class) {
             testType.set(TestSuiteType.UNIT_TEST)
         }
 
-        val testCodeCoverageReport by creating(JacocoCoverageReport::class) {
+        val codeCoverageReport by creating(JacocoCoverageReport::class) {
             testType.set(TestSuiteType.UNIT_TEST)
         }
     }

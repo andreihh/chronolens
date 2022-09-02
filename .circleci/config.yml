@@ -8,14 +8,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Run tests and generate code coverage report
+          name: Run tests and generate test and code coverage reports
           command: |
-            ./gradlew testAggregateTestReport testCodeCoverageReport --continue
+            ./gradlew check aggregateTestReport codeCoverageReport --continue
       - run:
-          name: Upload Codecov report
+          name: Upload code coverage report to Codecov
           command: |
             bash <(curl -s https://codecov.io/bash) -f \
-                build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml
+                build/reports/jacoco/codeCoverageReport/codeCoverageReport.xml
       - store_artifacts:
           path: build/reports/tests/unit-test/aggregated-results
 
