@@ -19,6 +19,9 @@ package org.chronolens.core.analysis
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import org.chronolens.core.analysis.Option.Companion.constrainTo
+import org.chronolens.core.analysis.Option.Companion.optionError
+import org.chronolens.core.analysis.Option.Companion.requireOption
 import org.chronolens.test.core.analysis.OptionHolder
 import org.junit.Test
 

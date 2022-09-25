@@ -19,6 +19,7 @@ package org.chronolens.core.analysis
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertNull
+import org.chronolens.core.analysis.OptionsProvider.Companion.option
 import org.chronolens.test.core.analysis.OptionsProviderBuilder
 import org.junit.Test
 

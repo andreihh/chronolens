@@ -19,10 +19,10 @@ package org.chronolens.coupling
 import java.io.File
 import org.chronolens.core.analysis.Analyzer
 import org.chronolens.core.analysis.AnalyzerSpec
+import org.chronolens.core.analysis.Option.Companion.constrainTo
 import org.chronolens.core.analysis.OptionsProvider
+import org.chronolens.core.analysis.OptionsProvider.Companion.option
 import org.chronolens.core.analysis.Report
-import org.chronolens.core.analysis.constrainTo
-import org.chronolens.core.analysis.option
 import org.chronolens.core.model.QualifiedSourceNodeId
 import org.chronolens.core.model.Revision
 import org.chronolens.core.repository.Repository

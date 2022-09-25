@@ -20,10 +20,10 @@ import org.chronolens.churn.HistoryAnalyzer.FileReport
 import org.chronolens.churn.HistoryAnalyzer.Metric
 import org.chronolens.core.analysis.Analyzer
 import org.chronolens.core.analysis.AnalyzerSpec
+import org.chronolens.core.analysis.Option.Companion.constrainTo
 import org.chronolens.core.analysis.OptionsProvider
+import org.chronolens.core.analysis.OptionsProvider.Companion.option
 import org.chronolens.core.analysis.Report
-import org.chronolens.core.analysis.constrainTo
-import org.chronolens.core.analysis.option
 import org.chronolens.core.repository.Repository
 import org.chronolens.core.repository.RepositoryConnector.AccessMode
 import org.chronolens.core.serialization.JsonModule

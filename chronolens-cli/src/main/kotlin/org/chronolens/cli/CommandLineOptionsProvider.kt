@@ -27,7 +27,7 @@ import kotlinx.cli.multiple
 import kotlinx.cli.required
 import org.chronolens.core.analysis.Option
 import org.chronolens.core.analysis.OptionsProvider
-import org.chronolens.core.analysis.option
+import org.chronolens.core.analysis.OptionsProvider.Companion.option
 
 /** An option provider that parses the options from command line arguments. */
 class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvider {

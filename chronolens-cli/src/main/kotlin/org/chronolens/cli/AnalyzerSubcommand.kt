@@ -21,8 +21,8 @@ package org.chronolens.cli
 import java.io.UncheckedIOException
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
+import org.chronolens.core.analysis.AnalysisException
 import org.chronolens.core.analysis.AnalyzerSpec
-import org.chronolens.core.analysis.ErrorReport
 import org.chronolens.core.analysis.InvalidOptionException
 import org.chronolens.core.repository.CorruptedRepositoryException
 import org.chronolens.core.repository.RepositoryConnector
@@ -44,11 +44,7 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec) :
             val repository =
                 RepositoryConnector.newConnector(repositoryRoot).connect(analyzer.accessMode)
             val report = analyzer.analyze(repository)
-            if (report is ErrorReport) {
-                System.err.println(report)
-            } else {
-                println(report)
-            }
+            println(report)
         } catch (e: InvalidOptionException) {
             System.err.println("An invalid option has been provided!")
             e.printStackTrace()
@@ -57,6 +53,9 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec) :
             e.printStackTrace()
         } catch (e: UncheckedIOException) {
             System.err.println("An I/O error occurred!")
+            e.printStackTrace()
+        } catch (e: AnalysisException) {
+            System.err.println("An error occurred while analyzing the repository!")
             e.printStackTrace()
         }
     }

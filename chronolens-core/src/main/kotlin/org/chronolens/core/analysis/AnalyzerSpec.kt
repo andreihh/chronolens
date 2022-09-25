@@ -16,34 +16,7 @@
 
 package org.chronolens.core.analysis
 
-import java.io.UncheckedIOException
 import java.util.ServiceLoader
-import org.chronolens.core.repository.CorruptedRepositoryException
-import org.chronolens.core.repository.Repository
-import org.chronolens.core.repository.RepositoryConnector.AccessMode
-
-/**
- * A [Repository] analyzer.
- *
- * Implementations must have a public single-arg constructor that receives the [OptionsProvider].
- *
- * @param optionsProvider the provider of this analyzer's options
- */
-public abstract class Analyzer(optionsProvider: OptionsProvider)
-    : OptionsProvider by optionsProvider {
-
-    /** The mode in which the analyzed repository is accessed. */
-    public abstract val accessMode: AccessMode
-
-    /**
-     * Performs the analysis on the given [repository].
-     *
-     * @throws InvalidOptionException if one of the provided options are invalid
-     * @throws CorruptedRepositoryException if the repository is corrupted
-     * @throws UncheckedIOException if any I/O errors occur
-     */
-    public abstract fun analyze(repository: Repository): Report
-}
 
 /**
  * An [Analyzer] specification.

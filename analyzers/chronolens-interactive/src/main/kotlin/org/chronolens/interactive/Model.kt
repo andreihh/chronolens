@@ -18,10 +18,10 @@ package org.chronolens.interactive
 
 import org.chronolens.core.analysis.Analyzer
 import org.chronolens.core.analysis.AnalyzerSpec
+import org.chronolens.core.analysis.Option.Companion.optionError
 import org.chronolens.core.analysis.OptionsProvider
+import org.chronolens.core.analysis.OptionsProvider.Companion.option
 import org.chronolens.core.analysis.Report
-import org.chronolens.core.analysis.option
-import org.chronolens.core.analysis.optionError
 import org.chronolens.core.model.RevisionId
 import org.chronolens.core.model.SourceNode
 import org.chronolens.core.model.parseQualifiedSourceNodeIdFrom
