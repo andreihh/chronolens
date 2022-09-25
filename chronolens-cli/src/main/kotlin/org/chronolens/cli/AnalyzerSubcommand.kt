@@ -21,7 +21,6 @@ package org.chronolens.cli
 import java.io.UncheckedIOException
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
-import org.chronolens.core.analysis.AnalysisException
 import org.chronolens.core.analysis.AnalyzerSpec
 import org.chronolens.core.analysis.InvalidOptionException
 import org.chronolens.core.repository.CorruptedRepositoryException
@@ -53,9 +52,6 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec) :
             e.printStackTrace()
         } catch (e: UncheckedIOException) {
             System.err.println("An I/O error occurred!")
-            e.printStackTrace()
-        } catch (e: AnalysisException) {
-            System.err.println("An error occurred while analyzing the repository!")
             e.printStackTrace()
         }
     }

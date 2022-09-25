@@ -40,7 +40,6 @@ public abstract class Analyzer(optionsProvider: OptionsProvider) :
      * @throws InvalidOptionException if one of the provided options are invalid
      * @throws CorruptedRepositoryException if the repository is corrupted
      * @throws UncheckedIOException if any I/O errors occur
-     * @throws AnalysisException if an error occurs while performing the analysis
      */
-    @Throws(AnalysisException::class) public abstract fun analyze(repository: Repository): Report
+    public abstract fun analyze(repository: Repository): Report
 }
