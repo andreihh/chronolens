@@ -36,12 +36,12 @@ class PrettyPrinterTest {
     @Test
     fun print_variableWithSingleModifier() {
         val expected =
-            ("""
+            """
             variable VERSION
             `- modifiers:
                `- public
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = variable("VERSION") { modifiers("public") }
@@ -52,13 +52,13 @@ class PrettyPrinterTest {
     @Test
     fun print_variableWithMultipleModifiers() {
         val expected =
-            ("""
+            """
             variable VERSION
             `- modifiers:
                |- public
                `- final
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = variable("VERSION") { modifiers("public", "final") }
@@ -69,11 +69,11 @@ class PrettyPrinterTest {
     @Test
     fun print_variableWithSingleLineInitializer() {
         val expected =
-            ("""
+            """
             variable VERSION
             `- initializer: "123"
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = variable("VERSION") { +"123" }
@@ -84,11 +84,11 @@ class PrettyPrinterTest {
     @Test
     fun print_variableWithMultipleLineInitializer() {
         val expected =
-            ("""
+            """
             variable VERSION
             `- initializer: "123 + " ... (trimmed)
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode =
@@ -103,7 +103,7 @@ class PrettyPrinterTest {
     @Test
     fun print_variableWithMultipleModifiersAndMultipleLineInitializer() {
         val expected =
-            ("""
+            """
             variable VERSION
             |- modifiers:
             |  |- public
@@ -111,7 +111,7 @@ class PrettyPrinterTest {
             |  `- final
             `- initializer: "123 + " ... (trimmed)
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode =
@@ -137,12 +137,12 @@ class PrettyPrinterTest {
     @Test
     fun print_functionWithSingleParameter() {
         val expected =
-            ("""
+            """
             function main(String[])
             `- parameters:
                `- args
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = function("main(String[])") { parameters("args") }
@@ -153,13 +153,13 @@ class PrettyPrinterTest {
     @Test
     fun print_functionWithMultipleParameters() {
         val expected =
-            ("""
+            """
             function main(int, String[])
             `- parameters:
                |- argSize
                `- args
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = function("main(int, String[])") { parameters("argSize", "args") }
@@ -170,11 +170,11 @@ class PrettyPrinterTest {
     @Test
     fun print_functionWithSingleLineBody() {
         val expected =
-            ("""
+            """
             function main(String[])
             `- body: "{}"
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = function("main(String[])") { +"{}" }
@@ -185,11 +185,11 @@ class PrettyPrinterTest {
     @Test
     fun print_functionWithMultipleLineBody() {
         val expected =
-            ("""
+            """
             function main(String[])
             `- body: "{" ... (trimmed)
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode =
@@ -204,7 +204,7 @@ class PrettyPrinterTest {
     @Test
     fun print_functionWithMultipleParametersAndMultipleLineBody() {
         val expected =
-            ("""
+            """
             function main(int, int, String[])
             |- parameters:
             |  |- n
@@ -212,7 +212,7 @@ class PrettyPrinterTest {
             |  `- args
             `- body: "{" ... (trimmed)
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode =
@@ -238,12 +238,12 @@ class PrettyPrinterTest {
     @Test
     fun print_typeWithSingleSupertype() {
         val expected =
-            ("""
+            """
             type Main
             `- supertypes:
                `- Object
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = type("Main") { supertypes("Object") }
@@ -254,13 +254,13 @@ class PrettyPrinterTest {
     @Test
     fun print_typeWithMultipleSupertypes() {
         val expected =
-            ("""
+            """
             type Main
             `- supertypes:
                |- Comparable<Main>
                `- Object
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = type("Main") { supertypes("Comparable<Main>", "Object") }
@@ -271,12 +271,12 @@ class PrettyPrinterTest {
     @Test
     fun print_typeWithSingleModifier() {
         val expected =
-            ("""
+            """
             type Main
             `- modifiers:
                `- public
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = type("Main") { modifiers("public") }
@@ -287,13 +287,13 @@ class PrettyPrinterTest {
     @Test
     fun print_typeWithMultipleModifiers() {
         val expected =
-            ("""
+            """
             type Main
             `- modifiers:
                |- public
                `- final
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = type("Main") { modifiers("public", "final") }
@@ -304,12 +304,12 @@ class PrettyPrinterTest {
     @Test
     fun print_typeWithSingleMember() {
         val expected =
-            ("""
+            """
             type Main
             `- members:
                `- variable VERSION
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = type("Main") { +variable("VERSION") {} }
@@ -320,13 +320,13 @@ class PrettyPrinterTest {
     @Test
     fun print_typeWithMultipleMembers() {
         val expected =
-            ("""
+            """
             type Main
             `- members:
                |- variable VERSION
                `- function main(String[])
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode =
@@ -341,7 +341,7 @@ class PrettyPrinterTest {
     @Test
     fun print_typeWithMultipleSupertypesAndModifiersAndMembers() {
         val expected =
-            ("""
+            """
             type Main
             |- supertypes:
             |  |- Comparable<Main>
@@ -378,7 +378,7 @@ class PrettyPrinterTest {
                      |- static
                      `- class
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode =
@@ -419,11 +419,11 @@ class PrettyPrinterTest {
     @Test
     fun print_sourceFileWithSingleEntity() {
         val expected =
-            ("""
+            """
             file src/Main.java
             `- variable VERSION
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode = sourceFile("src/Main.java") { +variable("VERSION") {} }
@@ -434,12 +434,12 @@ class PrettyPrinterTest {
     @Test
     fun print_sourceFileWithMultipleEntities() {
         val expected =
-            ("""
+            """
             file src/Main.java
             |- variable VERSION
             `- function main(String[])
 
-            """)
+            """
                 .trimIndent()
 
         val sourceNode =

@@ -134,12 +134,12 @@ class ModelTest {
     @Test
     fun reportToString_prettyPrintsSourceNode() {
         val expected =
-            ("""
+            """
             type Main
             `- members:
                `- variable VERSION
 
-            """)
+            """
                 .trimIndent()
 
         val actual = ModelReport(type("Main") { +variable("VERSION") {} }).toString()
