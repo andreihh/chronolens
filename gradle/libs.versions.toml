@@ -2,7 +2,7 @@
 kotlin-gradle = "1.7.10"
 dokka-gradle = "1.7.10"
 spotless-gradle = "6.8.0"
-ktfmt = "0.40"
+ktfmt = "0.41"
 jackson = "2.13.2"
 
 [libraries]
