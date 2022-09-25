@@ -31,10 +31,8 @@ public class RevListSpec : AnalyzerSpec {
 
     override val description: String
         get() =
-            """
-        Prints all revisions on the path from the currently checked-out (<head>) revision to the
-        root of the revision tree / graph in chronological order.
-        """.trimIndent()
+            """Prints all revisions on the path from the currently checked-out (<head>) revision to
+            the root of the revision tree / graph in chronological order."""
 
     override fun create(optionsProvider: OptionsProvider): RevListAnalyzer =
         RevListAnalyzer(optionsProvider)

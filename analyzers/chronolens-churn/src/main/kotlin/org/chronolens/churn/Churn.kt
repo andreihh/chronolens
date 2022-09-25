@@ -34,8 +34,7 @@ internal class ChurnAnalyzerSpec : AnalyzerSpec {
 
     override val description: String
         get() =
-            """Detects the churners in the repository and reports the results to the standard
-            output."""
+            "Detects the churners in the repository and reports the results to the standard output."
 
     override fun create(optionsProvider: OptionsProvider): ChurnAnalyzer =
         ChurnAnalyzer(optionsProvider)
