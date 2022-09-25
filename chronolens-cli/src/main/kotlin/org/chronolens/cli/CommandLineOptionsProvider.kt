@@ -36,9 +36,7 @@ class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvide
         alias: String?,
         description: String,
         type: Class<T>
-    ): Option<T?> {
-        return parser.option(type.toArgType(), name, alias, description).toOption()
-    }
+    ): Option<T?> = parser.option(type.toArgType(), name, alias, description).toOption()
 
     override fun <T : Any> requiredOption(
         name: String,
@@ -57,12 +55,11 @@ class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvide
         alias: String?,
         description: String,
         elementType: Class<T>
-    ): Option<List<T>> {
-        return parser
+    ): Option<List<T>> =
+        parser
             .option(elementType.toArgType(), name, alias, description)
             .multiple()
             .toOption()
-    }
 
     fun repositoryRootOption(): Option<File> =
         option<String>()

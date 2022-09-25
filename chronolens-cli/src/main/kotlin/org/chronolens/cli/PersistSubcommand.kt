@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalCli::class)
-
 package org.chronolens.cli
 
-import java.io.IOException
-import java.io.UncheckedIOException
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.core.model.Revision
@@ -27,26 +23,10 @@ import org.chronolens.core.repository.Repository.HistoryProgressListener
 import org.chronolens.core.repository.RepositoryConnector
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 import org.chronolens.core.repository.persist
+import java.io.IOException
+import java.io.UncheckedIOException
 
-class CleanSubcommand :
-    Subcommand(
-        name = "clean",
-        actionDescription = "Deletes any persisted repositories from the given directory."
-    ) {
-
-    private val optionsProvider = CommandLineOptionsProvider(this)
-    private val repositoryRoot by optionsProvider.repositoryRootOption()
-
-    override fun execute() {
-        try {
-            RepositoryConnector.newConnector(repositoryRoot).delete()
-            println("Cleared persisted repositories!")
-        } catch (e: IOException) {
-            throw UncheckedIOException(e)
-        }
-    }
-}
-
+@OptIn(ExperimentalCli::class)
 class PersistSubcommand :
     Subcommand(
         name = "persist",
