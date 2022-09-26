@@ -16,6 +16,8 @@
 
 package org.chronolens.cli
 
+import java.io.IOException
+import java.io.UncheckedIOException
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.core.model.Revision
@@ -23,8 +25,6 @@ import org.chronolens.core.repository.Repository.HistoryProgressListener
 import org.chronolens.core.repository.RepositoryConnector
 import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
 import org.chronolens.core.repository.persist
-import java.io.IOException
-import java.io.UncheckedIOException
 
 @OptIn(ExperimentalCli::class)
 class PersistSubcommand :

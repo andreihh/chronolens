@@ -24,10 +24,10 @@ import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.core.analysis.AnalyzerSpec
 
-fun main(args: Array<String>) {
+fun main(vararg args: String) {
     val parser = ArgParser("chronolens", strictSubcommandOptionsOrder = true)
     parser.subcommands(*assembleSubcommands().toTypedArray())
-    parser.parse(args)
+    parser.parse(args.asList().toTypedArray())
 }
 
 private fun assembleSubcommands(): List<Subcommand> =

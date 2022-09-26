@@ -16,11 +16,11 @@
 
 package org.chronolens.cli
 
+import java.io.IOException
+import java.io.UncheckedIOException
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.core.repository.RepositoryConnector
-import java.io.IOException
-import java.io.UncheckedIOException
 
 @OptIn(ExperimentalCli::class)
 class CleanSubcommand :

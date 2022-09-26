@@ -32,6 +32,7 @@ class MainTest {
     @get:Rule val exitRule: ExpectedSystemExit = ExpectedSystemExit.none()
 
     private val directory by lazy { tmp.root }
+    private val directoryPath by lazy { directory.absolutePath }
 
     @Test
     fun main_whenRevList_printsRevisions() {
@@ -41,9 +42,9 @@ class MainTest {
                 +vcsRevision { delete("README.md") }
             }
         val expected =
-            vcsProxy.getHistory().joinToString(separator = "\n", transform = VcsRevision::id) + "\n"
+            vcsProxy.getHistory().joinToString(separator = "\n", transform = VcsRevision::id)
 
-        main(arrayOf("rev-list", "--repository-root", directory.absolutePath))
+        main("rev-list", "--repository-root", directoryPath)
         val actual = outRule.log
 
         assertEquals(expected, actual)
@@ -59,9 +60,14 @@ class MainTest {
                 change("src/Test.java", "")
             }
         }
-        val expected = setOf("src/Main.java", "src/Test.java").joinToString("\n") + "\n"
+        val expected =
+            """
+            src/Main.java
+            src/Test.java
+            """
+                .trimIndent()
 
-        main(arrayOf("ls-tree", "--repository-root", directory.absolutePath))
+        main("ls-tree", "--repository-root", directoryPath)
         val actual = outRule.log
 
         assertEquals(expected, actual)
@@ -75,21 +81,14 @@ class MainTest {
                 change("src/Test.java", "")
             }
         }
-        val expected = """
+        val expected =
+            """
             file src/Main.java
 
+            """
+                .trimIndent()
 
-            """.trimIndent()
-
-        main(
-            arrayOf(
-                "model",
-                "--repository-root",
-                directory.absolutePath,
-                "--qualified-id",
-                "src/Main.java"
-            )
-        )
+        main("model", "--repository-root", directoryPath, "--qualified-id", "src/Main.java")
         val actual = outRule.log
 
         assertEquals(expected, actual)

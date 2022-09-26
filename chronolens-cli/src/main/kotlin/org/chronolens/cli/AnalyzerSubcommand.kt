@@ -43,7 +43,7 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec) :
             val repository =
                 RepositoryConnector.newConnector(repositoryRoot).connect(analyzer.accessMode)
             val report = analyzer.analyze(repository)
-            println(report)
+            print(report)
         } catch (e: InvalidOptionException) {
             System.err.println("An invalid option has been provided!")
             e.printStackTrace()

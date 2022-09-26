@@ -56,10 +56,7 @@ class CommandLineOptionsProvider(private val parser: ArgParser) : OptionsProvide
         description: String,
         elementType: Class<T>
     ): Option<List<T>> =
-        parser
-            .option(elementType.toArgType(), name, alias, description)
-            .multiple()
-            .toOption()
+        parser.option(elementType.toArgType(), name, alias, description).multiple().toOption()
 
     fun repositoryRootOption(): Option<File> =
         option<String>()
