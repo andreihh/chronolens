@@ -97,6 +97,7 @@ class LsTreeTest {
             """
             src/Main.java
             src/Test.java
+
             """
                 .trimIndent()
 

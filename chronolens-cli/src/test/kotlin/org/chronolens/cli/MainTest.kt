@@ -42,7 +42,7 @@ class MainTest {
                 +vcsRevision { delete("README.md") }
             }
         val expected =
-            vcsProxy.getHistory().joinToString(separator = "\n", transform = VcsRevision::id)
+            vcsProxy.getHistory().joinToString(separator = "\n", transform = VcsRevision::id) + "\n"
 
         main("rev-list", "--repository-root", directoryPath)
         val actual = outRule.log
@@ -64,6 +64,7 @@ class MainTest {
             """
             src/Main.java
             src/Test.java
+
             """
                 .trimIndent()
 

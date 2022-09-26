@@ -49,6 +49,7 @@ class RevListTest {
             34
             ab
             cd
+
             """
                 .trimIndent()
 

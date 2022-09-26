@@ -36,7 +36,6 @@ import org.chronolens.test.core.model.type
 import org.junit.Ignore
 import org.junit.Test
 
-// TODO: better tests
 @Ignore
 class JavaAnalyzerTest {
     private fun getSourceTreeWithType(className: String, modifier: String? = null): SourceTree =

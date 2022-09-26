@@ -47,5 +47,5 @@ public class RevListAnalyzer(optionsProvider: OptionsProvider) : Analyzer(option
 }
 
 public data class RevListReport(val revisions: List<RevisionId>) : Report {
-    override fun toString(): String = revisions.joinToString("\n")
+    override fun toString(): String = revisions.joinToString("\n") + "\n"
 }
