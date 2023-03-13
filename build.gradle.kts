@@ -13,12 +13,11 @@ tasks.wrapper {
 }
 
 dependencies {
-    // Direct and transitive project dependencies are selected for aggregation.
-    // The ":chronolens-cli" application project should assemble all other
-    // subprojects (":chronolens-core", all ":services" subprojects, and all
-    // ":analyzers" subprojects).
-    testReportAggregation(project(":chronolens-cli"))
-    jacocoAggregation(project(":chronolens-cli"))
+    // Direct and transitive project dependencies are selected for aggregation. The
+    // ":api:chronolens-cli" application project should assemble all other subprojects
+    // (":chronolens-model", ":chronolens-api", ":chronolens-core", and all ":plugins" subprojects).
+    testReportAggregation(project(":app:chronolens-cli"))
+    jacocoAggregation(project(":app:chronolens-cli"))
 }
 
 reporting {

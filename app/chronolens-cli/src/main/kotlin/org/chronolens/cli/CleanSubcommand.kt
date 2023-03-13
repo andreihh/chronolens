@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,20 @@ import org.chronolens.core.repository.RepositoryConnector
 
 @OptIn(ExperimentalCli::class)
 class CleanSubcommand :
-    Subcommand(
-        name = "clean",
-        actionDescription = "Deletes any persisted repositories from the given directory."
-    ) {
+  Subcommand(
+    name = "clean",
+    actionDescription = "Deletes any persisted repositories from the given directory."
+  ) {
 
-    private val optionsProvider = CommandLineOptionsProvider(this)
-    private val repositoryRoot by optionsProvider.repositoryRootOption()
+  private val optionsProvider = CommandLineOptionsProvider(this)
+  private val repositoryRoot by optionsProvider.repositoryRootOption()
 
-    override fun execute() {
-        try {
-            RepositoryConnector.newConnector(repositoryRoot).delete()
-            println("Cleared persisted repositories!")
-        } catch (e: IOException) {
-            throw UncheckedIOException(e)
-        }
+  override fun execute() {
+    try {
+      RepositoryConnector.newConnector(repositoryRoot).delete()
+      println("Cleared persisted repositories!")
+    } catch (e: IOException) {
+      throw UncheckedIOException(e)
     }
+  }
 }

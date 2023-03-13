@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,28 +19,26 @@ package org.chronolens.coupling
 import org.chronolens.coupling.Graph.Node
 
 internal data class ColoredGraph(
-    val graph: Graph,
-    val colors: Map<String, Int>,
+  val graph: Graph,
+  val colors: Map<String, Int>,
 ) {
 
-    init {
-        require(graph.nodes.map(Node::label).toSet() == colors.keys)
-    }
+  init {
+    require(graph.nodes.map(Node::label).toSet() == colors.keys)
+  }
 }
 
-internal fun Graph.colorNodes(
-    groups: Collection<Iterable<String>>
-): ColoredGraph {
-    val colors = hashMapOf<String, Int>()
-    var color = 0
-    for ((label, _) in nodes) {
-        colors[label] = color
+internal fun Graph.colorNodes(groups: Collection<Iterable<String>>): ColoredGraph {
+  val colors = hashMapOf<String, Int>()
+  var color = 0
+  for ((label, _) in nodes) {
+    colors[label] = color
+  }
+  for (group in groups) {
+    color++
+    for (label in group) {
+      colors[label] = color
     }
-    for (group in groups) {
-        color++
-        for (label in group) {
-            colors[label] = color
-        }
-    }
-    return ColoredGraph(this, colors)
+  }
+  return ColoredGraph(this, colors)
 }

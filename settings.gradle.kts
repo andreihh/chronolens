@@ -2,12 +2,12 @@ rootProject.name = "chronolens"
 
 include("chronolens-model", "chronolens-api", "chronolens-test")
 include("chronolens-core")
-include("chronolens-cli")
-include("services:chronolens-git")
-include("services:chronolens-java")
+include("app:chronolens-cli")
+include("plugins:vcs:chronolens-git")
+include("plugins:parsers:chronolens-java")
 include(
-  "analyzers:chronolens-interactive",
-  "analyzers:chronolens-churn",
-  "analyzers:chronolens-coupling",
-  "analyzers:chronolens-decapsulations",
+  "plugins:analyzers:chronolens-interactive",
+  "plugins:analyzers:chronolens-churn",
+  "plugins:analyzers:chronolens-coupling",
+  "plugins:analyzers:chronolens-decapsulations",
 )
