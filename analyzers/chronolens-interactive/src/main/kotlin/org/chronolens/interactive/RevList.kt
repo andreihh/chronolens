@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,36 +16,36 @@
 
 package org.chronolens.interactive
 
-import org.chronolens.core.analysis.Analyzer
-import org.chronolens.core.analysis.AnalyzerSpec
-import org.chronolens.core.analysis.OptionsProvider
-import org.chronolens.core.analysis.Report
-import org.chronolens.core.model.RevisionId
-import org.chronolens.core.repository.Repository
-import org.chronolens.core.repository.RepositoryConnector.AccessMode
-import org.chronolens.core.repository.RepositoryConnector.AccessMode.RANDOM_ACCESS
+import org.chronolens.api.analysis.Analyzer
+import org.chronolens.api.analysis.AnalyzerSpec
+import org.chronolens.api.analysis.OptionsProvider
+import org.chronolens.api.analysis.Report
+import org.chronolens.api.repository.Repository
+import org.chronolens.api.repository.Repository.AccessMode
+import org.chronolens.api.repository.Repository.AccessMode.RANDOM_ACCESS
+import org.chronolens.model.RevisionId
 
 public class RevListSpec : AnalyzerSpec {
-    override val name: String
-        get() = "rev-list"
+  override val name: String
+    get() = "rev-list"
 
-    override val description: String
-        get() =
-            """Prints all revisions on the path from the currently checked-out (<head>) revision to
+  override val description: String
+    get() =
+      """Prints all revisions on the path from the currently checked-out (<head>) revision to
             the root of the revision tree / graph in chronological order."""
 
-    override fun create(optionsProvider: OptionsProvider): RevListAnalyzer =
-        RevListAnalyzer(optionsProvider)
+  override fun create(optionsProvider: OptionsProvider): RevListAnalyzer =
+    RevListAnalyzer(optionsProvider)
 }
 
 public class RevListAnalyzer(optionsProvider: OptionsProvider) : Analyzer(optionsProvider) {
-    override val accessMode: AccessMode
-        get() = RANDOM_ACCESS
+  override val accessMode: AccessMode
+    get() = RANDOM_ACCESS
 
-    override fun analyze(repository: Repository): RevListReport =
-        RevListReport(repository.listRevisions())
+  override fun analyze(repository: Repository): RevListReport =
+    RevListReport(repository.listRevisions())
 }
 
 public data class RevListReport(val revisions: List<RevisionId>) : Report {
-    override fun toString(): String = revisions.joinToString("\n") + "\n"
+  override fun toString(): String = revisions.joinToString("\n") + "\n"
 }

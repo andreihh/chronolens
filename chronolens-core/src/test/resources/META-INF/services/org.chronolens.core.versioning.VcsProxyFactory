@@ -1,3 +1,0 @@
-org.chronolens.core.versioning.VcsProxyFactoryTest$UnsupportedVcsProxyFactory
-org.chronolens.core.versioning.VcsProxyFactoryTest$UndetectedVcsProxyFactory
-org.chronolens.test.core.versioning.FakeVcsProxyFactory

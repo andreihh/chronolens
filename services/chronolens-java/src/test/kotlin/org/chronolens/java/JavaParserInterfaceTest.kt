@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,108 +17,114 @@
 package org.chronolens.java
 
 import kotlin.test.assertEquals
-import org.chronolens.core.model.returnTypeModifierOf
-import org.chronolens.core.model.typeModifierOf
-import org.chronolens.test.core.model.function
-import org.chronolens.test.core.model.type
-import org.chronolens.test.core.model.variable
+import org.chronolens.model.returnTypeModifierOf
+import org.chronolens.model.typeModifierOf
+import org.chronolens.test.model.function
+import org.chronolens.test.model.type
+import org.chronolens.test.model.variable
 import org.junit.Test
 
 class JavaParserInterfaceTest : JavaParserTest() {
-    @Test
-    fun `test interface`() {
-        val source = """
+  @Test
+  fun `test interface`() {
+    val source =
+      """
         interface IInterface {
         }
-        """.trimIndent()
-        val expected = sourceFile { +type("IInterface") { modifiers("interface") } }
-        assertEquals(expected, parse(source))
-    }
+        """
+        .trimIndent()
+    val expected = sourceFile { +type("IInterface") { modifiers("interface") } }
+    assertEquals(expected, parse(source))
+  }
 
-    @Test
-    fun `test interface with fields`() {
-        val source =
-            """
+  @Test
+  fun `test interface with fields`() {
+    val source =
+      """
         interface IInterface {
             String name = null;
             int version = 1;
         }
-        """.trimIndent()
-        val expected = sourceFile {
-            +type("IInterface") {
-                modifiers("interface")
-                +variable("name") {
-                    modifiers(typeModifierOf("String"))
-                    +"null"
-                }
-                +variable("version") {
-                    modifiers(typeModifierOf("int"))
-                    +"1"
-                }
-            }
+        """
+        .trimIndent()
+    val expected = sourceFile {
+      +type("IInterface") {
+        modifiers("interface")
+        +variable("name") {
+          modifiers(typeModifierOf("String"))
+          +"null"
         }
-        assertEquals(expected, parse(source))
+        +variable("version") {
+          modifiers(typeModifierOf("int"))
+          +"1"
+        }
+      }
     }
+    assertEquals(expected, parse(source))
+  }
 
-    @Test
-    fun `test interface with methods`() {
-        val source =
-            """
+  @Test
+  fun `test interface with methods`() {
+    val source =
+      """
         interface IInterface {
             String getName();
             int getVersion();
         }
-        """.trimIndent()
-        val expected = sourceFile {
-            +type("IInterface") {
-                modifiers("interface")
-                +function("getName()") { modifiers(returnTypeModifierOf("String")) }
-                +function("getVersion()") { modifiers(returnTypeModifierOf("int")) }
-            }
-        }
-        assertEquals(expected, parse(source))
+        """
+        .trimIndent()
+    val expected = sourceFile {
+      +type("IInterface") {
+        modifiers("interface")
+        +function("getName()") { modifiers(returnTypeModifierOf("String")) }
+        +function("getVersion()") { modifiers(returnTypeModifierOf("int")) }
+      }
     }
+    assertEquals(expected, parse(source))
+  }
 
-    @Test
-    fun `test interface with default methods`() {
-        val source =
-            """
+  @Test
+  fun `test interface with default methods`() {
+    val source =
+      """
         interface IInterface {
             String getName();
             default int getVersion() {
                 return 1;
             }
         }
-        """.trimIndent()
-        val expected = sourceFile {
-            +type("IInterface") {
-                modifiers("interface")
-                +function("getName()") { modifiers(returnTypeModifierOf("String")) }
-                +function("getVersion()") {
-                    modifiers("default", returnTypeModifierOf("int"))
+        """
+        .trimIndent()
+    val expected = sourceFile {
+      +type("IInterface") {
+        modifiers("interface")
+        +function("getName()") { modifiers(returnTypeModifierOf("String")) }
+        +function("getVersion()") {
+          modifiers("default", returnTypeModifierOf("int"))
 
-                    +"{"
-                    +"return 1;"
-                    +"}"
-                }
-            }
+          +"{"
+          +"return 1;"
+          +"}"
         }
-        assertEquals(expected, parse(source))
+      }
     }
+    assertEquals(expected, parse(source))
+  }
 
-    @Test
-    fun `test interface with supertypes`() {
-        val source =
-            """
+  @Test
+  fun `test interface with supertypes`() {
+    val source =
+      """
         interface IInterface extends Comparable<IInterface> {
         }
-        """.trimIndent()
-        val expected = sourceFile {
-            +type("IInterface") {
-                modifiers("interface")
-                supertypes("Comparable<IInterface>")
-            }
-        }
-        assertEquals(expected, parse(source))
+        """
+        .trimIndent()
+    val expected = sourceFile {
+      +type("IInterface") {
+        modifiers("interface")
+        supertypes("Comparable<IInterface>")
+      }
     }
+    assertEquals(expected, parse(source))
+  }
 }

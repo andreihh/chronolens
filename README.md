@@ -1,9 +1,4 @@
-# ChronoLens
-
-[![](https://jitpack.io/v/andreihh/chronolens.svg)](https://jitpack.io/#andreihh/chronolens)
-[![andreihh](https://circleci.com/gh/andreihh/chronolens/tree/master.svg?style=shield)](https://circleci.com/gh/andreihh/chronolens?branch=master)
-[![codecov](https://codecov.io/gh/andreihh/chronolens/branch/master/graph/badge.svg)](https://codecov.io/gh/andreihh/chronolens)
-[![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
+# <img src="chronolens.svg" alt="ChronoLens Logo" width="24" height="24"/> ChronoLens [![](https://jitpack.io/v/andreihh/chronolens.svg)](https://jitpack.io/#andreihh/chronolens) [![andreihh](https://circleci.com/gh/andreihh/chronolens/tree/master.svg?style=shield)](https://circleci.com/gh/andreihh/chronolens?branch=master) [![codecov](https://codecov.io/gh/andreihh/chronolens/branch/master/graph/badge.svg)](https://codecov.io/gh/andreihh/chronolens) [![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 ## Features
 

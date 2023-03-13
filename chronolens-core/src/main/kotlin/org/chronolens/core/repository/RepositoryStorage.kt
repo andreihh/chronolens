@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,33 +16,32 @@
 
 package org.chronolens.core.repository
 
-import org.chronolens.core.model.Revision
-import org.chronolens.core.repository.Repository.HistoryProgressListener
 import java.io.IOException
+import org.chronolens.api.repository.CorruptedRepositoryException
+import org.chronolens.api.repository.Repository
+import org.chronolens.api.repository.Repository.HistoryProgressListener
+import org.chronolens.model.Revision
 
 public interface RepositoryStorage {
-    @Throws(IOException::class)
-    public fun readHistoryIds(): List<String>
+  @Throws(IOException::class) public fun readHistoryIds(): List<String>
 
-    @Throws(IOException::class)
-    public fun readHistory(): Sequence<Revision>
+  @Throws(IOException::class) public fun readHistory(): Sequence<Revision>
 
-    @Throws(IOException::class)
-    public fun writeHistory(revisions: Sequence<Revision>)
+  @Throws(IOException::class) public fun writeHistory(revisions: Sequence<Revision>)
 }
 
 /**
- * Writes the history of [this] repository to the given [storage] and reports the progress to
- * the given [listener].
+ * Writes the history of [this] repository to the given [storage] and reports the progress to the
+ * given [listener].
  *
  * @throws CorruptedRepositoryException if the repository is corrupted
  * @throws IOException if any I/O errors occur
  */
 @Throws(IOException::class)
 public fun Repository.persist(
-    storage: RepositoryStorage,
-    listener: HistoryProgressListener? = null
+  storage: RepositoryStorage,
+  listener: HistoryProgressListener? = null
 ): Repository {
-    storage.writeHistory(getHistory(listener))
-    return PersistentRepository(storage)
+  storage.writeHistory(getHistory(listener))
+  return PersistentRepository(storage)
 }

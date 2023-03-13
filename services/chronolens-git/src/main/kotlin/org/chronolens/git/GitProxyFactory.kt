@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,27 @@
 
 package org.chronolens.git
 
-import org.chronolens.core.subprocess.Subprocess.execute
-import org.chronolens.core.versioning.VcsProxy
-import org.chronolens.core.versioning.VcsProxyFactory
 import java.io.File
+import org.chronolens.api.process.ProcessExecutorProvider
+import org.chronolens.api.versioning.VcsProxy
+import org.chronolens.api.versioning.VcsProxyFactory
 
 /** Creates proxies which delegate their operations to the `git` VCS. */
 internal class GitProxyFactory : VcsProxyFactory() {
-    private val vcs: String = "git"
+  private val vcs: String = "git"
 
-    private fun getPrefix(directory: File): String? {
-        val result = execute(directory, vcs, "rev-parse", "--show-prefix")
-        val rawPrefix = result.getOrNull() ?: return null
-        return rawPrefix.lines().first()
-    }
+  private fun getPrefix(directory: File): String? {
+    val result =
+      ProcessExecutorProvider.INSTANCE.provide(directory).execute(vcs, "rev-parse", "--show-prefix")
+    val rawPrefix = result.getOrNull() ?: return null
+    return rawPrefix.lines().first()
+  }
 
-    override fun isSupported(): Boolean = execute(vcs, "--version").isSuccess
+  override fun isSupported(): Boolean =
+    ProcessExecutorProvider.INSTANCE.provide(File(".")).execute(vcs, "--version").isSuccess
 
-    override fun createProxy(directory: File): VcsProxy? {
-        val prefix = getPrefix(directory) ?: return null
-        return GitProxy(directory, prefix)
-    }
+  override fun createProxy(directory: File): VcsProxy? {
+    val prefix = getPrefix(directory) ?: return null
+    return GitProxy(directory, prefix)
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,54 +16,51 @@
 
 package org.chronolens.decapsulations
 
-import org.chronolens.core.analysis.Analyzer
-import org.chronolens.core.analysis.AnalyzerSpec
-import org.chronolens.core.analysis.Option.Companion.constrainTo
-import org.chronolens.core.analysis.OptionsProvider
-import org.chronolens.core.analysis.OptionsProvider.Companion.option
-import org.chronolens.core.analysis.Report
-import org.chronolens.core.repository.Repository
-import org.chronolens.core.repository.RepositoryConnector.AccessMode
-import org.chronolens.core.serialization.JsonModule
+import org.chronolens.api.analysis.Analyzer
+import org.chronolens.api.analysis.AnalyzerSpec
+import org.chronolens.api.analysis.Option.Companion.constrainTo
+import org.chronolens.api.analysis.OptionsProvider
+import org.chronolens.api.analysis.Report
+import org.chronolens.api.analysis.option
+import org.chronolens.api.repository.Repository
+import org.chronolens.api.repository.Repository.AccessMode
 import org.chronolens.decapsulations.HistoryAnalyzer.FileReport
 
 internal class DecapsulationAnalyzerSpec : AnalyzerSpec {
-    override val name: String
-        get() = "decapsulations"
+  override val name: String
+    get() = "decapsulations"
 
-    override val description: String
-        get() =
-            """Detects the decapsulations that occurred during the evolution of the repository and
+  override val description: String
+    get() =
+      """Detects the decapsulations that occurred during the evolution of the repository and
             reports the results to the standard output."""
 
-    override fun create(optionsProvider: OptionsProvider): DecapsulationAnalyzer =
-        DecapsulationAnalyzer(optionsProvider)
+  override fun create(optionsProvider: OptionsProvider): DecapsulationAnalyzer =
+    DecapsulationAnalyzer(optionsProvider)
 }
 
 internal class DecapsulationAnalyzer(optionsProvider: OptionsProvider) : Analyzer(optionsProvider) {
-    override val accessMode: AccessMode
-        get() = AccessMode.ANY
+  override val accessMode: AccessMode
+    get() = AccessMode.ANY
 
-    private val keepConstants by
-        option<Boolean>()
-            .name("keep-constants")
-            .description("do not ignore decapsulations of constant fields")
-            .defaultValue(false)
+  private val keepConstants by
+    option<Boolean>()
+      .name("keep-constants")
+      .description("do not ignore decapsulations of constant fields")
+      .defaultValue(false)
 
-    private val minMetricValue by
-        option<Int>()
-            .name("min-metric-value")
-            .description("ignore sources that have less decapsulations than the specified limit")
-            .defaultValue(0)
-            .constrainTo(min = 0)
+  private val minMetricValue by
+    option<Int>()
+      .name("min-metric-value")
+      .description("ignore sources that have less decapsulations than the specified limit")
+      .defaultValue(0)
+      .constrainTo(min = 0)
 
-    override fun analyze(repository: Repository): DecapsulationReport {
-        val report = HistoryAnalyzer(!keepConstants).analyze(repository.getHistory())
-        val files = report.files.filter { it.value >= minMetricValue }
-        return DecapsulationReport(files)
-    }
+  override fun analyze(repository: Repository): DecapsulationReport {
+    val report = HistoryAnalyzer(!keepConstants).analyze(repository.getHistory())
+    val files = report.files.filter { it.value >= minMetricValue }
+    return DecapsulationReport(files)
+  }
 }
 
-internal data class DecapsulationReport(val files: List<FileReport>) : Report {
-    override fun toString(): String = JsonModule.stringify(this)
-}
+internal data class DecapsulationReport(val files: List<FileReport>) : Report

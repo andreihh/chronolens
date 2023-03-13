@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,14 @@ package org.chronolens.cli
 import kotlinx.cli.ArgParser
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
-import org.chronolens.core.analysis.AnalyzerSpec
+import org.chronolens.api.analysis.AnalyzerSpec
 
 fun main(vararg args: String) {
-    val parser = ArgParser("chronolens", strictSubcommandOptionsOrder = true)
-    parser.subcommands(*assembleSubcommands().toTypedArray())
-    parser.parse(args.asList().toTypedArray())
+  val parser = ArgParser("chronolens", strictSubcommandOptionsOrder = true)
+  parser.subcommands(*assembleSubcommands().toTypedArray())
+  parser.parse(args.asList().toTypedArray())
 }
 
 private fun assembleSubcommands(): List<Subcommand> =
-    AnalyzerSpec.loadAnalyzerSpecs().map(::AnalyzerSubcommand) +
-        listOf(PersistSubcommand(), CleanSubcommand())
+  AnalyzerSpec.loadAnalyzerSpecs().map(::AnalyzerSubcommand) +
+    listOf(PersistSubcommand(), CleanSubcommand())

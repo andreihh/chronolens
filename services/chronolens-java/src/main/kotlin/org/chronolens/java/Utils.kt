@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.chronolens.java
 
-import org.chronolens.core.model.Identifier
-import org.chronolens.core.model.Signature
-import org.chronolens.core.model.SourcePath
-import org.chronolens.core.parsing.SyntaxErrorException
+import org.chronolens.api.parsing.SyntaxErrorException
+import org.chronolens.model.Identifier
+import org.chronolens.model.Signature
+import org.chronolens.model.SourcePath
 import org.eclipse.jdt.core.dom.ASTNode
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration
@@ -48,50 +48,50 @@ import org.eclipse.jdt.core.dom.WildcardType
  * which consist only of whitespaces) and trims leading and trailing whitespaces from all lines.
  */
 internal fun String?.toBlock(): List<String> =
-    orEmpty().lines().filter(String::isNotBlank).map(String::trim)
+  orEmpty().lines().filter(String::isNotBlank).map(String::trim)
 
 internal fun <T> Collection<T>.requireDistinct(): Set<T> {
-    val unique = LinkedHashSet<T>(size)
-    for (element in this) {
-        if (element in unique) {
-            throw SyntaxErrorException("Duplicated element '$element'!")
-        }
-        unique += element
+  val unique = LinkedHashSet<T>(size)
+  for (element in this) {
+    if (element in unique) {
+      throw SyntaxErrorException("Duplicated element '$element'!")
     }
-    return unique
+    unique += element
+  }
+  return unique
 }
 
 internal fun requireValidPath(path: String) {
-    if (!SourcePath.isValid(path)) {
-        throw SyntaxErrorException("Invalid path '$path'!")
-    }
+  if (!SourcePath.isValid(path)) {
+    throw SyntaxErrorException("Invalid path '$path'!")
+  }
 }
 
 internal fun requireValidIdentifier(identifier: String) {
-    if (!Identifier.isValid(identifier)) {
-        throw SyntaxErrorException("Invalid identifier '$identifier'!")
-    }
+  if (!Identifier.isValid(identifier)) {
+    throw SyntaxErrorException("Invalid identifier '$identifier'!")
+  }
 }
 
 internal fun requireValidSignature(signature: String) {
-    if (!Signature.isValid(signature)) {
-        throw SyntaxErrorException("Invalid signature '$signature'!")
-    }
+  if (!Signature.isValid(signature)) {
+    throw SyntaxErrorException("Invalid signature '$signature'!")
+  }
 }
 
 @Suppress("UNCHECKED_CAST")
 internal inline fun <reified T> List<*>.requireIsInstance(): List<T> =
-    onEach {
-        if (it !is T) {
-            throw SyntaxErrorException("'$it' is not of type '${T::class}'!")
-        }
+  onEach {
+    if (it !is T) {
+      throw SyntaxErrorException("'$it' is not of type '${T::class}'!")
     }
-        as List<T>
+  }
+    as List<T>
 
 internal fun requireNotMalformed(node: ASTNode) {
-    if ((node.flags and (ASTNode.MALFORMED or ASTNode.RECOVERED)) != 0) {
-        throw SyntaxErrorException("Malformed AST node!")
-    }
+  if ((node.flags and (ASTNode.MALFORMED or ASTNode.RECOVERED)) != 0) {
+    throw SyntaxErrorException("Malformed AST node!")
+  }
 }
 
 /** Returns the name of this node. */
@@ -106,11 +106,11 @@ internal fun VariableDeclaration.name(): String = name.identifier
 internal fun MethodDeclaration.returnType(): String? = returnType2?.asString(extraDimensions)
 
 internal fun MethodDeclaration.signature(): String {
-    val parameterList =
-        parameters().requireIsInstance<SingleVariableDeclaration>().joinToString { parameter ->
-            parameter.type() ?: throw AssertionError("'$parameter' must specify type!")
-        }
-    return "${name.identifier}($parameterList)"
+  val parameterList =
+    parameters().requireIsInstance<SingleVariableDeclaration>().joinToString { parameter ->
+      parameter.type() ?: throw AssertionError("'$parameter' must specify type!")
+    }
+  return "${name.identifier}($parameterList)"
 }
 
 /**
@@ -125,59 +125,59 @@ internal fun MethodDeclaration.signature(): String {
  * - [Initializer]
  */
 internal fun AbstractTypeDeclaration.members(): List<*> {
-    val declarations = mutableListOf<Any?>()
-    if (this is EnumDeclaration) {
-        declarations.addAll(enumConstants())
-    }
-    bodyDeclarations().flatMapTo(declarations) { member ->
-        if (member is FieldDeclaration) member.fragments() else listOf(member)
-    }
-    return declarations
+  val declarations = mutableListOf<Any?>()
+  if (this is EnumDeclaration) {
+    declarations.addAll(enumConstants())
+  }
+  bodyDeclarations().flatMapTo(declarations) { member ->
+    if (member is FieldDeclaration) member.fragments() else listOf(member)
+  }
+  return declarations
 }
 
 internal fun AbstractTypeDeclaration.supertypes(): Set<String> =
-    when (this) {
-            is AnnotationTypeDeclaration -> emptyList<Type>()
-            is EnumDeclaration -> superInterfaceTypes()
-            is TypeDeclaration -> superInterfaceTypes() + listOfNotNull(superclassType)
-            else -> throw AssertionError("Unknown declaration '$this'!")
-        }
-        .requireIsInstance<Type>()
-        .map(Type::asString)
-        .requireDistinct()
+  when (this) {
+      is AnnotationTypeDeclaration -> emptyList<Type>()
+      is EnumDeclaration -> superInterfaceTypes()
+      is TypeDeclaration -> superInterfaceTypes() + listOfNotNull(superclassType)
+      else -> throw AssertionError("Unknown declaration '$this'!")
+    }
+    .requireIsInstance<Type>()
+    .map(Type::asString)
+    .requireDistinct()
 
 internal fun AbstractTypeDeclaration.typeModifier(): String =
-    when (this) {
-        is AnnotationTypeDeclaration -> "@interface"
-        is EnumDeclaration -> "enum"
-        is TypeDeclaration -> if (isInterface) "interface" else "class"
-        else -> throw AssertionError("Unknown declaration '$this'!")
-    }
+  when (this) {
+    is AnnotationTypeDeclaration -> "@interface"
+    is EnumDeclaration -> "enum"
+    is TypeDeclaration -> if (isInterface) "interface" else "class"
+    else -> throw AssertionError("Unknown declaration '$this'!")
+  }
 
 internal fun MethodDeclaration.parameterList(): List<String> =
-    parameters().requireIsInstance<SingleVariableDeclaration>().map { it.name() }
+  parameters().requireIsInstance<SingleVariableDeclaration>().map { it.name() }
 
 internal fun getModifiers(node: ASTNode): List<ASTNode> =
-    when (node) {
-        is BodyDeclaration -> node.modifiers()
-        is SingleVariableDeclaration -> node.modifiers()
-        is VariableDeclarationFragment -> getModifiers(node.parent)
-        else -> emptyList<ASTNode>()
-    }.requireIsInstance()
+  when (node) {
+    is BodyDeclaration -> node.modifiers()
+    is SingleVariableDeclaration -> node.modifiers()
+    is VariableDeclarationFragment -> getModifiers(node.parent)
+    else -> emptyList<ASTNode>()
+  }.requireIsInstance()
 
 private fun PrimitiveType.asString(): String =
-    when (primitiveTypeCode) {
-        PrimitiveType.BOOLEAN -> "boolean"
-        PrimitiveType.BYTE -> "byte"
-        PrimitiveType.CHAR -> "char"
-        PrimitiveType.DOUBLE -> "double"
-        PrimitiveType.FLOAT -> "float"
-        PrimitiveType.INT -> "int"
-        PrimitiveType.LONG -> "long"
-        PrimitiveType.SHORT -> "short"
-        PrimitiveType.VOID -> "void"
-        else -> throw AssertionError("Invalid primitive type '$this'!")
-    }
+  when (primitiveTypeCode) {
+    PrimitiveType.BOOLEAN -> "boolean"
+    PrimitiveType.BYTE -> "byte"
+    PrimitiveType.CHAR -> "char"
+    PrimitiveType.DOUBLE -> "double"
+    PrimitiveType.FLOAT -> "float"
+    PrimitiveType.INT -> "int"
+    PrimitiveType.LONG -> "long"
+    PrimitiveType.SHORT -> "short"
+    PrimitiveType.VOID -> "void"
+    else -> throw AssertionError("Invalid primitive type '$this'!")
+  }
 
 private fun ArrayType.asString(): String = elementType.asString(dimensions)
 
@@ -186,45 +186,45 @@ private fun SimpleType.asString(): String = name.fullyQualifiedName
 private fun QualifiedType.asString(): String = "${qualifier.asString()}.${name.fullyQualifiedName}"
 
 private fun NameQualifiedType.asString(): String =
-    "${qualifier.fullyQualifiedName}.${name.fullyQualifiedName}"
+  "${qualifier.fullyQualifiedName}.${name.fullyQualifiedName}"
 
 private fun WildcardType.asString(): String =
-    if (bound == null) "?" else "? ${if (isUpperBound) "extends" else "super"} ${bound.asString()}"
+  if (bound == null) "?" else "? ${if (isUpperBound) "extends" else "super"} ${bound.asString()}"
 
 private fun ParameterizedType.asString(): String {
-    val parameters = typeArguments().requireIsInstance<Type>().map(Type::asString)
-    return "${type.asString()}<${parameters.joinToString()}>"
+  val parameters = typeArguments().requireIsInstance<Type>().map(Type::asString)
+  return "${type.asString()}<${parameters.joinToString()}>"
 }
 
 private fun Type.asString(): String =
-    when (this) {
-        is PrimitiveType -> asString()
-        is SimpleType -> asString()
-        is QualifiedType -> asString()
-        is NameQualifiedType -> asString()
-        is WildcardType -> asString()
-        is ArrayType -> asString()
-        is ParameterizedType -> asString()
-        else -> throw AssertionError("Unknown type '$this'!")
-    }
+  when (this) {
+    is PrimitiveType -> asString()
+    is SimpleType -> asString()
+    is QualifiedType -> asString()
+    is NameQualifiedType -> asString()
+    is WildcardType -> asString()
+    is ArrayType -> asString()
+    is ParameterizedType -> asString()
+    else -> throw AssertionError("Unknown type '$this'!")
+  }
 
 private fun Type.asString(extraDimensions: Int = 0, isVarargs: Boolean = false): String {
-    val suffix = "[]".repeat(extraDimensions) + if (isVarargs) "..." else ""
-    return "${asString()}$suffix"
+  val suffix = "[]".repeat(extraDimensions) + if (isVarargs) "..." else ""
+  return "${asString()}$suffix"
 }
 
 private fun ASTNode.baseType(): Type? =
-    when (this) {
-        is FieldDeclaration -> type
-        is AnnotationTypeMemberDeclaration -> type
-        is SingleVariableDeclaration -> type
-        is VariableDeclarationFragment -> parent.baseType()
-        else -> null
-    }
+  when (this) {
+    is FieldDeclaration -> type
+    is AnnotationTypeMemberDeclaration -> type
+    is SingleVariableDeclaration -> type
+    is VariableDeclarationFragment -> parent.baseType()
+    else -> null
+  }
 
 internal fun ASTNode.type(): String? =
-    when (this) {
-        is SingleVariableDeclaration -> baseType()?.asString(extraDimensions, isVarargs)
-        is VariableDeclarationFragment -> baseType()?.asString(extraDimensions)
-        else -> baseType()?.asString()
-    }
+  when (this) {
+    is SingleVariableDeclaration -> baseType()?.asString(extraDimensions, isVarargs)
+    is VariableDeclarationFragment -> baseType()?.asString(extraDimensions)
+    else -> baseType()?.asString()
+  }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,49 +17,52 @@
 package org.chronolens.java
 
 import kotlin.test.assertEquals
-import org.chronolens.core.model.returnTypeModifierOf
-import org.chronolens.core.model.typeModifierOf
-import org.chronolens.test.core.model.function
-import org.chronolens.test.core.model.type
-import org.chronolens.test.core.model.variable
+import org.chronolens.model.returnTypeModifierOf
+import org.chronolens.model.typeModifierOf
+import org.chronolens.test.model.function
+import org.chronolens.test.model.type
+import org.chronolens.test.model.variable
 import org.junit.Test
 
 class JavaParserEnumTest : JavaParserTest() {
-    @Test
-    fun `test enum`() {
-        val source = """
+  @Test
+  fun `test enum`() {
+    val source =
+      """
         enum Color {
         }
-        """.trimIndent()
-        val expected = sourceFile { +type("Color") { modifiers("enum") } }
-        assertEquals(expected, parse(source))
-    }
+        """
+        .trimIndent()
+    val expected = sourceFile { +type("Color") { modifiers("enum") } }
+    assertEquals(expected, parse(source))
+  }
 
-    @Test
-    fun `test enum with constants`() {
-        val source =
-            """
+  @Test
+  fun `test enum with constants`() {
+    val source =
+      """
         enum Color {
             RED,
             GREEN,
             BLUE;
         }
-        """.trimIndent()
-        val expected = sourceFile {
-            +type("Color") {
-                modifiers("enum")
-                +variable("RED") {}
-                +variable("GREEN") {}
-                +variable("BLUE") {}
-            }
-        }
-        assertEquals(expected, parse(source))
+        """
+        .trimIndent()
+    val expected = sourceFile {
+      +type("Color") {
+        modifiers("enum")
+        +variable("RED") {}
+        +variable("GREEN") {}
+        +variable("BLUE") {}
+      }
     }
+    assertEquals(expected, parse(source))
+  }
 
-    @Test
-    fun `test enum with fields`() {
-        val source =
-            """
+  @Test
+  fun `test enum with fields`() {
+    val source =
+      """
         enum Color {
             RED,
             GREEN,
@@ -68,28 +71,29 @@ class JavaParserEnumTest : JavaParserTest() {
             public final String format = "hex";
             public static int i;
         }
-        """.trimIndent()
-        val expected = sourceFile {
-            +type("Color") {
-                modifiers("enum")
-                +variable("RED") {}
-                +variable("GREEN") {}
-                +variable("BLUE") {}
-                +variable("format") {
-                    modifiers("public", "final", typeModifierOf("String"))
+        """
+        .trimIndent()
+    val expected = sourceFile {
+      +type("Color") {
+        modifiers("enum")
+        +variable("RED") {}
+        +variable("GREEN") {}
+        +variable("BLUE") {}
+        +variable("format") {
+          modifiers("public", "final", typeModifierOf("String"))
 
-                    +"\"hex\""
-                }
-                +variable("i") { modifiers("public", "static", typeModifierOf("int")) }
-            }
+          +"\"hex\""
         }
-        assertEquals(expected, parse(source))
+        +variable("i") { modifiers("public", "static", typeModifierOf("int")) }
+      }
     }
+    assertEquals(expected, parse(source))
+  }
 
-    @Test
-    fun `test enum with anonymous class constants`() {
-        val source =
-            """
+  @Test
+  fun `test enum with anonymous class constants`() {
+    val source =
+      """
         enum Color {
             RED() {
                 @Override String getCode() {
@@ -112,62 +116,64 @@ class JavaParserEnumTest : JavaParserTest() {
 
             abstract String getCode();
         }
-        """.trimIndent()
-        val expected = sourceFile {
-            +type("Color") {
-                modifiers("enum")
+        """
+        .trimIndent()
+    val expected = sourceFile {
+      +type("Color") {
+        modifiers("enum")
 
-                +variable("RED") {
-                    +"{"
-                    +"@Override String getCode() {"
-                    +"return \"#FF0000\";"
-                    +"}"
-                    +"}"
-                }
-
-                +variable("GREEN") {
-                    +"{"
-                    +"@Override String getCode() {"
-                    +"return \"#00FF00\";"
-                    +"}"
-                    +"}"
-                }
-
-                +variable("BLUE") {
-                    +"{"
-                    +"@Override String getCode() {"
-                    +"return \"#0000FF\";"
-                    +"}"
-                    +"}"
-                }
-
-                +function("getCode()") { modifiers("abstract", returnTypeModifierOf("String")) }
-            }
+        +variable("RED") {
+          +"{"
+          +"@Override String getCode() {"
+          +"return \"#FF0000\";"
+          +"}"
+          +"}"
         }
-        assertEquals(expected, parse(source))
-    }
 
-    @Test
-    fun `test enum with annotation on constant`() {
-        val source =
-            """
+        +variable("GREEN") {
+          +"{"
+          +"@Override String getCode() {"
+          +"return \"#00FF00\";"
+          +"}"
+          +"}"
+        }
+
+        +variable("BLUE") {
+          +"{"
+          +"@Override String getCode() {"
+          +"return \"#0000FF\";"
+          +"}"
+          +"}"
+        }
+
+        +function("getCode()") { modifiers("abstract", returnTypeModifierOf("String")) }
+      }
+    }
+    assertEquals(expected, parse(source))
+  }
+
+  @Test
+  fun `test enum with annotation on constant`() {
+    val source =
+      """
             enum Color {
                 @IntColor
                 RED,
                 GREEN,
                 BLUE
             }
-        """.trimIndent()
-        val expected = sourceFile {
-            +type("Color") {
-                modifiers("enum")
+        """
+        .trimIndent()
+    val expected = sourceFile {
+      +type("Color") {
+        modifiers("enum")
 
-                +variable("RED") { modifiers("@IntColor") }
+        +variable("RED") { modifiers("@IntColor") }
 
-                +variable("GREEN") {}
-                +variable("BLUE") {}
-            }
-        }
-        assertEquals(expected, parse(source))
+        +variable("GREEN") {}
+        +variable("BLUE") {}
+      }
     }
+    assertEquals(expected, parse(source))
+  }
 }

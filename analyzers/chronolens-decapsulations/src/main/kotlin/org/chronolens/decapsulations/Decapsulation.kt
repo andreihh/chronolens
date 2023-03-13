@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2018-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package org.chronolens.decapsulations
 
-import org.chronolens.core.model.QualifiedSourceNodeId
-import org.chronolens.core.model.RevisionId
-import org.chronolens.core.model.Variable
+import org.chronolens.model.QualifiedSourceNodeId
+import org.chronolens.model.RevisionId
+import org.chronolens.model.Variable
 
 internal data class Decapsulation(
-    val fieldId: QualifiedSourceNodeId<Variable>,
-    val sourceNodeId: QualifiedSourceNodeId<*>,
-    val revisionId: RevisionId,
-    val message: String,
+  val fieldId: QualifiedSourceNodeId<Variable>,
+  val sourceNodeId: QualifiedSourceNodeId<*>,
+  val revisionId: RevisionId,
+  val message: String,
 )

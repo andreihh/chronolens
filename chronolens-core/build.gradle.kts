@@ -1,9 +1,10 @@
 plugins { id("chronolens.library-conventions") }
 
 dependencies {
-    implementation(kotlin("reflect"))
-    implementation(libs.jackson.kotlin)
-    implementation(libs.jackson.jsr310)
+  api(project(":chronolens-api"))
+  implementation(kotlin("reflect"))
+  implementation(libs.jackson.kotlin)
+  implementation(libs.jackson.jsr310)
 
-    testImplementation(project(":chronolens-test"))
+  testImplementation(project(":chronolens-test"))
 }

@@ -1,7 +1,8 @@
 plugins { id("chronolens.library-conventions") }
 
 dependencies {
-    api(project(":chronolens-core"))
+  // TODO: change to chronolens-api.
+  implementation(project(":chronolens-core"))
 
-    testImplementation(project(":chronolens-test"))
+  testImplementation(project(":chronolens-test"))
 }

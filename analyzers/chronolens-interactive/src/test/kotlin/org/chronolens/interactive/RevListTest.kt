@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,43 +18,43 @@ package org.chronolens.interactive
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import org.chronolens.test.core.analysis.OptionsProviderBuilder
-import org.chronolens.test.core.model.revision
-import org.chronolens.test.core.repository.repository
-import org.chronolens.test.core.repository.revisionListOf
+import org.chronolens.test.api.analysis.OptionsProviderBuilder
+import org.chronolens.test.api.repository.repository
+import org.chronolens.test.api.repository.revisionListOf
+import org.chronolens.test.model.revision
 
 class RevListTest {
-    private fun create() = RevListSpec().create(OptionsProviderBuilder().build())
+  private fun create() = RevListSpec().create(OptionsProviderBuilder().build())
 
-    @Test
-    fun analyze_returnsAllRevisions() {
-        val repository = repository {
-            +revision("1") {}
-            +revision("2") {}
-            +revision("a") {}
-            +revision("b") {}
-        }
-
-        assertEquals(
-            expected = revisionListOf("1", "2", "a", "b"),
-            actual = create().analyze(repository).revisions
-        )
+  @Test
+  fun analyze_returnsAllRevisions() {
+    val repository = repository {
+      +revision("1") {}
+      +revision("2") {}
+      +revision("a") {}
+      +revision("b") {}
     }
 
-    @Test
-    fun reportToString_listsOneRevisionPerLine() {
-        val expected =
-            """
+    assertEquals(
+      expected = revisionListOf("1", "2", "a", "b"),
+      actual = create().analyze(repository).revisions
+    )
+  }
+
+  @Test
+  fun reportToString_listsOneRevisionPerLine() {
+    val expected =
+      """
             12
             34
             ab
             cd
 
             """
-                .trimIndent()
+        .trimIndent()
 
-        val actual = RevListReport(revisionListOf("12", "34", "ab", "cd")).toString()
+    val actual = RevListReport(revisionListOf("12", "34", "ab", "cd")).toString()
 
-        assertEquals(expected, actual)
-    }
+    assertEquals(expected, actual)
+  }
 }

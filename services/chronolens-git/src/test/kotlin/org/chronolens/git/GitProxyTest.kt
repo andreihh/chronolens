@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2022-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,34 +19,34 @@ package org.chronolens.git
 import java.io.File
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import org.chronolens.api.versioning.VcsProxy
+import org.chronolens.api.versioning.VcsProxyFactory
 import org.chronolens.core.subprocess.Subprocess
-import org.chronolens.core.versioning.VcsProxy
-import org.chronolens.core.versioning.VcsProxyFactory
-import org.chronolens.test.core.versioning.AbstractVcsProxyTest
-import org.chronolens.test.core.versioning.VcsChangeSet
+import org.chronolens.test.api.versioning.AbstractVcsProxyTest
+import org.chronolens.test.api.versioning.VcsChangeSet
 
 class GitProxyTest : AbstractVcsProxyTest() {
-    private fun commit(directory: File, changeSet: VcsChangeSet) {
-        for ((path, content) in changeSet) {
-            if (content != null) {
-                File(directory, path).writeText(content)
-            } else {
-                assertTrue(File(directory, path).delete())
-            }
-        }
-        Subprocess.execute(directory, "git", "add", "-A")
-        Subprocess.execute(directory, "git", "commit", "-m", "Test commit.")
+  private fun commit(directory: File, changeSet: VcsChangeSet) {
+    for ((path, content) in changeSet) {
+      if (content != null) {
+        File(directory, path).writeText(content)
+      } else {
+        assertTrue(File(directory, path).delete())
+      }
+    }
+    Subprocess.execute(directory, "git", "add", "-A")
+    Subprocess.execute(directory, "git", "commit", "-m", "Test commit.")
+  }
+
+  override fun createRepository(directory: File, vararg revisions: VcsChangeSet): VcsProxy {
+    Subprocess.execute(directory, "git", "init")
+    Subprocess.execute(directory, "git", "config", "user.email", "t@test.com")
+    Subprocess.execute(directory, "git", "config", "user.name", "test")
+
+    for (changeSet in revisions) {
+      commit(directory, changeSet)
     }
 
-    override fun createRepository(directory: File, vararg revisions: VcsChangeSet): VcsProxy {
-        Subprocess.execute(directory, "git", "init")
-        Subprocess.execute(directory, "git", "config", "user.email", "t@test.com")
-        Subprocess.execute(directory, "git", "config", "user.name", "test")
-
-        for (changeSet in revisions) {
-            commit(directory, changeSet)
-        }
-
-        return assertNotNull(VcsProxyFactory.detect(directory))
-    }
+    return assertNotNull(VcsProxyFactory.detect(directory))
+  }
 }
