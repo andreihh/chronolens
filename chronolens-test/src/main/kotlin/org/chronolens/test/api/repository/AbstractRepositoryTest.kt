@@ -16,6 +16,7 @@
 
 package org.chronolens.test.api.repository
 
+import kotlin.streams.toList
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
