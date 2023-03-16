@@ -26,7 +26,7 @@ import org.junit.Test
 class ParserRegistryTest {
   @Test
   fun canParse_languageWithProvidedParser_returnsTrue() {
-    assertTrue(Parser.Registry.canParse(SourcePath("Test.fake")))
+    assertTrue(Parser.Registry.canParse(SourcePath("Test.kts")))
   }
 
   @Test
@@ -36,8 +36,8 @@ class ParserRegistryTest {
 
   @Test
   fun tryParse_sourceWithErrors_returnsSyntaxError() {
-    val path = SourcePath("res.fake")
-    val rawSource = "{ \"invalid\":2"
+    val path = SourcePath("res.kts")
+    val rawSource = "sourceFile(\"res.kts\") {"
 
     assertIs<ParseResult.SyntaxError>(Parser.Registry.tryParse(path, rawSource))
   }
@@ -45,29 +45,15 @@ class ParserRegistryTest {
   @Test
   fun tryParse_sourceWithUnsupportedPath_returnsSyntaxError() {
     val path = SourcePath("res.mock")
-    val rawSource =
-      """
-            {
-              "@class": "SourceFile",
-              "path": "res.mock"
-            }
-        """
-        .trimIndent()
+    val rawSource = "sourceFile(\"res.mock\") {}"
 
     assertIs<ParseResult.SyntaxError>(Parser.Registry.tryParse(path, rawSource))
   }
 
   @Test
   fun tryParse_sourceWithDifferentPathThrows() {
-    val path = SourcePath("Test.fake")
-    val rawSource =
-      """
-            {
-              "@class": "SourceFile",
-              "path": "Main.fake"
-            }
-        """
-        .trimIndent()
+    val path = SourcePath("Test.kts")
+    val rawSource = "sourceFile(\"Main.kts\") {}"
 
     assertFailsWith<IllegalStateException> { Parser.Registry.tryParse(path, rawSource) }
   }

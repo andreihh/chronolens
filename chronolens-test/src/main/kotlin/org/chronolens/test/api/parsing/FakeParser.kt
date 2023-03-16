@@ -16,30 +16,46 @@
 
 package org.chronolens.test.api.parsing
 
-import java.io.ByteArrayOutputStream
+import javax.script.ScriptEngineManager
+import javax.script.ScriptException
 import org.chronolens.api.parsing.Parser
 import org.chronolens.api.parsing.SyntaxErrorException
-import org.chronolens.api.serialization.SerializationException
-import org.chronolens.api.serialization.deserialize
-import org.chronolens.core.serialization.JsonModule
+import org.chronolens.model.Function
+import org.chronolens.model.Identifier
+import org.chronolens.model.SourceEntity
 import org.chronolens.model.SourceFile
 import org.chronolens.model.SourcePath
+import org.chronolens.model.Type
+import org.chronolens.model.Variable
 
 public class FakeParser : Parser {
-  override fun canParse(path: SourcePath): Boolean = path.toString().endsWith(".fake")
+  private val engine =
+    ScriptEngineManager().getEngineByExtension("kts").apply {
+      eval("import org.chronolens.test.model.sourceFile")
+      eval("import org.chronolens.test.model.type")
+      eval("import org.chronolens.test.model.variable")
+      eval("import org.chronolens.test.model.function")
+    }
+      ?: throw AssertionError("Must support 'kts' scripts!")
+
+  override fun canParse(path: SourcePath): Boolean = path.toString().endsWith(".kts")
 
   @Throws(SyntaxErrorException::class)
   override fun parse(path: SourcePath, rawSource: String): SourceFile {
     if (!canParse(path)) {
       throw SyntaxErrorException("Cannot parse '$path'!")
     }
-    try {
-      val sourceFile = JsonModule.deserialize<SourceFile>(rawSource.byteInputStream())
-      check(sourceFile.path == path) { "Parsed invalid path '${sourceFile.path}'" }
-      return sourceFile
-    } catch (e: SerializationException) {
-      throw SyntaxErrorException(e)
-    }
+    val result =
+      try {
+        engine.eval(rawSource)
+      } catch (e: ScriptException) {
+        throw SyntaxErrorException(e)
+      }
+    val sourceFile =
+      result as? SourceFile
+        ?: throw SyntaxErrorException("Parsed object '$result' is not a source file!")
+    check(sourceFile.path == path) { "Parsed invalid path '${sourceFile.path}'!" }
+    return sourceFile
   }
 
   @Throws(SyntaxErrorException::class)
@@ -47,12 +63,90 @@ public class FakeParser : Parser {
     if (!canParse(sourceFile.path)) {
       throw SyntaxErrorException("Cannot unparse '${sourceFile.path}'!")
     }
-    return try {
-      val out = ByteArrayOutputStream()
-      out.use { JsonModule.serialize(out, sourceFile) }
-      out.toString()
-    } catch (e: SerializationException) {
-      throw SyntaxErrorException(e)
+    val rawSource = StringBuilder()
+    rawSource.appendLine("sourceFile(\"${sourceFile.path}\") {")
+    if (sourceFile.entities.isNotEmpty()) {
+      rawSource.append(unparseChildren(sourceFile.entities, "  "))
     }
+    rawSource.append("}")
+    return rawSource.toString()
   }
+
+  private fun unparseEntity(entity: SourceEntity, indent: String) =
+    when (entity) {
+      is Type -> unparseType(entity, indent)
+      is Variable -> unparseVariable(entity, indent)
+      is Function -> unparseFunction(entity, indent)
+    }
+
+  private fun unparseType(type: Type, indent: String): String {
+    val rawSource = StringBuilder()
+    rawSource.appendLine("${indent}+type(\"${type.name}\") {")
+    if (type.supertypes.isNotEmpty()) {
+      rawSource.appendLine("$indent  ${unparseSupertypes(type.supertypes)}")
+    }
+    if (type.modifiers.isNotEmpty()) {
+      rawSource.appendLine("$indent  ${unparseModifiers(type.modifiers)}")
+    }
+    if (type.members.isNotEmpty()) {
+      rawSource.append(unparseChildren(type.members, "$indent  "))
+    }
+    rawSource.append("${indent}}")
+    return rawSource.toString()
+  }
+
+  private fun unparseVariable(variable: Variable, indent: String): String {
+    val rawSource = StringBuilder()
+    rawSource.appendLine("${indent}+variable(\"${variable.name}\") {")
+    if (variable.modifiers.isNotEmpty()) {
+      rawSource.appendLine("$indent  ${unparseModifiers(variable.modifiers)}")
+    }
+    if (variable.initializer.isNotEmpty()) {
+      rawSource.appendLine("$indent  ${unparseInitializer(variable.initializer)}")
+    }
+    rawSource.append("${indent}}")
+    return rawSource.toString()
+  }
+
+  private fun unparseFunction(function: Function, indent: String): String {
+    val rawSource = StringBuilder()
+    rawSource.appendLine("${indent}+function(\"${function.signature}\") {")
+    if (function.parameters.isNotEmpty()) {
+      rawSource.appendLine("$indent  ${unparseParameters(function.parameters)}")
+    }
+    if (function.modifiers.isNotEmpty()) {
+      rawSource.appendLine("$indent  ${unparseModifiers(function.modifiers)}")
+    }
+    if (function.body.isNotEmpty()) {
+      rawSource.appendLine("$indent  ${unparseBody(function.body)}")
+    }
+    rawSource.append("${indent}}")
+    return rawSource.toString()
+  }
+
+  private fun unparseChildren(children: Collection<SourceEntity>, indent: String): String {
+    val rawSource = StringBuilder()
+    for (child in children) {
+      rawSource.appendLine(unparseEntity(child, indent))
+    }
+    return rawSource.toString()
+  }
+
+  private fun unparseSupertypes(values: Collection<Identifier>) =
+    unparseIdentifiers("supertypes", values)
+
+  private fun unparseParameters(values: Collection<Identifier>) =
+    unparseIdentifiers("parameters", values)
+
+  private fun unparseModifiers(values: Collection<String>) = unparseStrings("modifiers", values)
+
+  private fun unparseInitializer(values: Collection<String>) = unparseStrings("initializer", values)
+
+  private fun unparseBody(values: Collection<String>) = unparseStrings("body", values)
+
+  private fun unparseIdentifiers(field: String, values: Collection<Identifier>) =
+    unparseStrings(field, values.map(Identifier::toString))
+
+  private fun unparseStrings(field: String, values: Collection<String>) =
+    values.joinToString(prefix = "$field(", postfix = ")") { "\"$it\"" }
 }

@@ -45,25 +45,25 @@ public abstract class AbstractRepositoryTest {
   private val repository by lazy {
     createRepository(
       revisionChangeSet {
-        +sourceFile("src/Main.fake") {}
-        +sourceFile("src/Worksheet.fake") { +function("println()") {} }
-        +sourceFile("src/Test.fake") {}
-        +sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} }
-        invalidate("src/Error.fake")
-        +sourceFile("src/Delete.fake") {}
+        +sourceFile("src/Main.kts") {}
+        +sourceFile("src/Worksheet.kts") { +function("println()") {} }
+        +sourceFile("src/Test.kts") {}
+        +sourceFile("src/BuildVersion.kts") { +variable("VERSION") {} }
+        invalidate("src/Error.kts")
+        +sourceFile("src/Delete.kts") {}
         invalidate("README.md")
       },
       revisionChangeSet {
-        invalidate("src/Main.fake")
-        invalidate("src/Worksheet.fake")
-        invalidate("src/BuildVersion.fake")
-        delete("src/Test.fake")
-        delete("src/Delete.fake")
+        invalidate("src/Main.kts")
+        invalidate("src/Worksheet.kts")
+        invalidate("src/BuildVersion.kts")
+        delete("src/Test.kts")
+        delete("src/Delete.kts")
       },
       revisionChangeSet {
-        +sourceFile("src/Main.fake") { +type("Main") {} }
-        +sourceFile("src/Worksheet.fake") { +function("println(String)") {} }
-        +sourceFile("src/Test.fake") { +type("MainTest") {} }
+        +sourceFile("src/Main.kts") { +type("Main") {} }
+        +sourceFile("src/Worksheet.kts") { +function("println(String)") {} }
+        +sourceFile("src/Test.kts") { +type("MainTest") {} }
       }
     )
   }
@@ -83,25 +83,20 @@ public abstract class AbstractRepositoryTest {
     val expectedSources =
       listOf(
         sourceSetOf(
-          "src/Main.fake",
-          "src/Worksheet.fake",
-          "src/Test.fake",
-          "src/BuildVersion.fake",
-          "src/Error.fake",
-          "src/Delete.fake"
+          "src/Main.kts",
+          "src/Worksheet.kts",
+          "src/Test.kts",
+          "src/BuildVersion.kts",
+          "src/Error.kts",
+          "src/Delete.kts"
         ),
+        sourceSetOf("src/Main.kts", "src/Worksheet.kts", "src/BuildVersion.kts", "src/Error.kts"),
         sourceSetOf(
-          "src/Main.fake",
-          "src/Worksheet.fake",
-          "src/BuildVersion.fake",
-          "src/Error.fake"
-        ),
-        sourceSetOf(
-          "src/Main.fake",
-          "src/Worksheet.fake",
-          "src/Test.fake",
-          "src/BuildVersion.fake",
-          "src/Error.fake"
+          "src/Main.kts",
+          "src/Worksheet.kts",
+          "src/Test.kts",
+          "src/BuildVersion.kts",
+          "src/Error.kts"
         )
       )
 
@@ -122,20 +117,20 @@ public abstract class AbstractRepositoryTest {
   public fun getSource_returnsLatestValidSourceFileVersion() {
     val expectedSourceFile =
       listOf(
-        sourceFile("src/Worksheet.fake") { +function("println()") {} },
-        sourceFile("src/Worksheet.fake") { +function("println()") {} },
-        sourceFile("src/Worksheet.fake") { +function("println(String)") {} }
+        sourceFile("src/Worksheet.kts") { +function("println()") {} },
+        sourceFile("src/Worksheet.kts") { +function("println()") {} },
+        sourceFile("src/Worksheet.kts") { +function("println(String)") {} }
       )
 
     val actualSourceFile =
       repository.listRevisions().map { revisionId ->
-        repository.getSource(SourcePath("src/Worksheet.fake"), revisionId)
+        repository.getSource(SourcePath("src/Worksheet.kts"), revisionId)
       }
 
     assertEquals(expected = expectedSourceFile, actual = actualSourceFile)
     assertEquals(
       expected = expectedSourceFile.last(),
-      actual = repository.getSource(SourcePath("src/Worksheet.fake"))
+      actual = repository.getSource(SourcePath("src/Worksheet.kts"))
     )
   }
 
@@ -143,14 +138,14 @@ public abstract class AbstractRepositoryTest {
   public fun getSource_whenSourcePathDoesNotExist_returnsNull() {
     val expectedSourceFile =
       listOf(
-        sourceFile("src/Test.fake") {},
+        sourceFile("src/Test.kts") {},
         null,
-        sourceFile("src/Test.fake") { +type("MainTest") {} }
+        sourceFile("src/Test.kts") { +type("MainTest") {} }
       )
 
     val actualSourceFile =
       repository.listRevisions().map { revisionId ->
-        repository.getSource(SourcePath("src/Test.fake"), revisionId)
+        repository.getSource(SourcePath("src/Test.kts"), revisionId)
       }
 
     assertEquals(expected = expectedSourceFile, actual = actualSourceFile)
@@ -165,11 +160,11 @@ public abstract class AbstractRepositoryTest {
 
   @Test
   public fun getSource_whenNoValidVersionExists_returnsEmptySourceFile() {
-    val emptySourceFile = SourceFile(SourcePath("src/Error.fake"))
+    val emptySourceFile = SourceFile(SourcePath("src/Error.kts"))
 
     assertEquals(
       expected = emptySourceFile,
-      actual = repository.getSource(SourcePath("src/Error.fake"))
+      actual = repository.getSource(SourcePath("src/Error.kts"))
     )
   }
 
@@ -177,27 +172,27 @@ public abstract class AbstractRepositoryTest {
   public fun getSource_whenInvalidAndNotChangedInRevision_returnsLatestValidSourceFileVersion() {
     val expectedSourceFile =
       listOf(
-        sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} },
-        sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} },
-        sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} },
+        sourceFile("src/BuildVersion.kts") { +variable("VERSION") {} },
+        sourceFile("src/BuildVersion.kts") { +variable("VERSION") {} },
+        sourceFile("src/BuildVersion.kts") { +variable("VERSION") {} },
       )
 
     val actualSourceFile =
       repository.listRevisions().map { revisionId ->
-        repository.getSource(SourcePath("src/BuildVersion.fake"), revisionId)
+        repository.getSource(SourcePath("src/BuildVersion.kts"), revisionId)
       }
 
     assertEquals(expected = expectedSourceFile, actual = actualSourceFile)
     assertEquals(
       expected = expectedSourceFile.last(),
-      actual = repository.getSource(SourcePath("src/BuildVersion.fake"))
+      actual = repository.getSource(SourcePath("src/BuildVersion.kts"))
     )
   }
 
   @Test
   public fun getSource_whenRevisionDoesNotExist_throws() {
     assertFailsWith<IllegalArgumentException> {
-      repository.getSource(SourcePath("src/Main.fake"), RevisionId("invalid-revision"))
+      repository.getSource(SourcePath("src/Main.kts"), RevisionId("invalid-revision"))
     }
   }
 
@@ -206,25 +201,25 @@ public abstract class AbstractRepositoryTest {
     val expectedSourceTrees =
       listOf(
         sourceTree {
-          +sourceFile("src/Main.fake") {}
-          +sourceFile("src/Worksheet.fake") { +function("println()") {} }
-          +sourceFile("src/Test.fake") {}
-          +sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} }
-          +sourceFile("src/Error.fake") {}
-          +sourceFile("src/Delete.fake") {}
+          +sourceFile("src/Main.kts") {}
+          +sourceFile("src/Worksheet.kts") { +function("println()") {} }
+          +sourceFile("src/Test.kts") {}
+          +sourceFile("src/BuildVersion.kts") { +variable("VERSION") {} }
+          +sourceFile("src/Error.kts") {}
+          +sourceFile("src/Delete.kts") {}
         },
         sourceTree {
-          +sourceFile("src/Main.fake") {}
-          +sourceFile("src/Worksheet.fake") { +function("println()") {} }
-          +sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} }
-          +sourceFile("src/Error.fake") {}
+          +sourceFile("src/Main.kts") {}
+          +sourceFile("src/Worksheet.kts") { +function("println()") {} }
+          +sourceFile("src/BuildVersion.kts") { +variable("VERSION") {} }
+          +sourceFile("src/Error.kts") {}
         },
         sourceTree {
-          +sourceFile("src/Main.fake") { +type("Main") {} }
-          +sourceFile("src/Test.fake") { +type("MainTest") {} }
-          +sourceFile("src/Worksheet.fake") { +function("println(String)") {} }
-          +sourceFile("src/BuildVersion.fake") { +variable("VERSION") {} }
-          +sourceFile("src/Error.fake") {}
+          +sourceFile("src/Main.kts") { +type("Main") {} }
+          +sourceFile("src/Test.kts") { +type("MainTest") {} }
+          +sourceFile("src/Worksheet.kts") { +function("println(String)") {} }
+          +sourceFile("src/BuildVersion.kts") { +variable("VERSION") {} }
+          +sourceFile("src/Error.kts") {}
         }
       )
 
@@ -332,7 +327,7 @@ public abstract class AbstractRepositoryTest {
     assertFailsWith<CorruptedRepositoryException> { emptyRepository.getHeadId() }
     assertFailsWith<CorruptedRepositoryException> { emptyRepository.listSources() }
     assertFailsWith<CorruptedRepositoryException> {
-      emptyRepository.getSource(SourcePath("src/Main.fake"))
+      emptyRepository.getSource(SourcePath("src/Main.kts"))
     }
     assertFailsWith<CorruptedRepositoryException> { emptyRepository.listRevisions() }
     assertFailsWith<CorruptedRepositoryException> { emptyRepository.getSnapshot() }

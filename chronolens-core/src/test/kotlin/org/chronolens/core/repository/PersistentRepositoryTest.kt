@@ -67,7 +67,7 @@ class PersistentRepositoryTest : AbstractRepositoryTest() {
 
   @Test
   fun persist_whenNotYetPersisted_returnsSameRepository() {
-    val expected = repository(revisionChangeSet { +sourceFile("src/Main.fake") {} })
+    val expected = repository(revisionChangeSet { +sourceFile("src/Main.kts") {} })
 
     val actual = expected.persist(repositoryStorage)
 
@@ -76,7 +76,7 @@ class PersistentRepositoryTest : AbstractRepositoryTest() {
 
   @Test
   fun persist_whenAlreadyPersisted_returnsSameRepository() {
-    val expected = createRepository(revisionChangeSet { +sourceFile("src/Main.fake") {} })
+    val expected = createRepository(revisionChangeSet { +sourceFile("src/Main.kts") {} })
 
     val actual = expected.persist(repositoryStorage)
 

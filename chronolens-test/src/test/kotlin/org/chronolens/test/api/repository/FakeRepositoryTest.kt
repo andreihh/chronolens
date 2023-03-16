@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package org.chronolens.core.repository
+package org.chronolens.test.api.repository
 
 import org.chronolens.api.repository.Repository
-import org.chronolens.test.api.repository.AbstractRepositoryTest
-import org.chronolens.test.api.repository.RevisionChangeSet
-import org.chronolens.test.api.repository.repository
 
-// TODO: move back to chronolens-test.
 class FakeRepositoryTest : AbstractRepositoryTest() {
   override fun createRepository(vararg history: RevisionChangeSet): Repository =
     repository(*history)
