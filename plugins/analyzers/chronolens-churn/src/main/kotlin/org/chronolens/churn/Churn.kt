@@ -72,4 +72,7 @@ internal class ChurnAnalyzer(optionsProvider: OptionsProvider) : Analyzer(option
   }
 }
 
-internal data class ChurnReport(val files: List<FileReport>) : Report
+internal data class ChurnReport(val files: List<FileReport>) : Report {
+  override val name: String
+    get() = "code-churn"
+}

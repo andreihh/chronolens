@@ -57,5 +57,8 @@ public class LsTreeAnalyzer(optionsProvider: OptionsProvider) : Analyzer(options
 }
 
 public data class LsTreeReport(val sources: Set<SourcePath>) : Report {
+  override val name: String
+    get() = "ls-tree"
+
   override fun toString(): String = sources.joinToString("\n") + "\n"
 }

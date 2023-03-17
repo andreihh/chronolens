@@ -15,5 +15,4 @@ mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version = "4.1.
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 kotlin-jsr223 = { module = "org.jetbrains.kotlin:kotlin-scripting-jsr223", version.ref = "kotlin-gradle" }
-systemrules = { module = "com.github.stefanbirkner:system-rules", version = "1.17.1" }
 eclipse-jdt = { module = "org.eclipse.jdt:org.eclipse.jdt.core", version = "3.26.0" }

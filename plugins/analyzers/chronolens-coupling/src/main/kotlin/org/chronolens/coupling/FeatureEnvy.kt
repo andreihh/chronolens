@@ -178,7 +178,8 @@ internal data class FeatureEnvyReport(
   val coloredGraphs: List<ColoredGraph>
 ) : Report {
 
-  override fun toString(): String = JsonModule.stringify(this)
+  override val name: String
+    get() = "feature-envy"
 
   data class FileReport(
     val file: SourcePath,

@@ -74,5 +74,8 @@ public class ModelAnalyzer(optionsProvider: OptionsProvider) : Analyzer(optionsP
 }
 
 public data class ModelReport(val sourceNode: SourceNode) : Report {
+  override val name: String
+    get() = "model"
+
   override fun toString(): String = PrettyPrinter.stringify(sourceNode)
 }

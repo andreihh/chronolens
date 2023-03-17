@@ -16,12 +16,12 @@
 
 package org.chronolens.api.parsing
 
+import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import org.chronolens.model.SourcePath
-import org.junit.Test
 
 class ParserRegistryTest {
   @Test

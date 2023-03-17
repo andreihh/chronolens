@@ -16,11 +16,11 @@
 
 package org.chronolens.api.analysis
 
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import kotlin.test.assertNull
 import org.chronolens.test.api.analysis.OptionsProviderBuilder
-import org.junit.Test
 
 class OptionBuilderTest {
   @Test

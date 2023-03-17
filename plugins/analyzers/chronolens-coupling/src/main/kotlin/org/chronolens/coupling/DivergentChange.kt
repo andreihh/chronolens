@@ -146,7 +146,7 @@ internal data class DivergentChangeReport(
   val coloredGraphs: List<ColoredGraph>
 ) : Report {
 
-  override fun toString(): String = JsonModule.stringify(this)
+  override val name: String = "divergent-change"
 
   data class FileReport(
     val file: String,

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-package org.chronolens.api.analysis
+package org.chronolens.api.database
 
-/** The result of a repository analysis. */
-public interface Report {
-  /** The name of the analysis that produced this report. */
-  public val name: String
+import java.io.IOException
+import org.chronolens.api.repository.RepositoryId
+
+public interface Database : AutoCloseable {
+  @Throws(IOException::class) public fun connect(repositoryId: RepositoryId): RepositoryDatabase
+
+  @Throws(IOException::class) public fun clear(repositoryId: RepositoryId)
+
+  @Throws(IOException::class) override fun close()
 }

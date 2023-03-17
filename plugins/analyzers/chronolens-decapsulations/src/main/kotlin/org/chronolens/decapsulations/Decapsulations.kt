@@ -63,4 +63,7 @@ internal class DecapsulationAnalyzer(optionsProvider: OptionsProvider) : Analyze
   }
 }
 
-internal data class DecapsulationReport(val files: List<FileReport>) : Report
+internal data class DecapsulationReport(val files: List<FileReport>) : Report {
+  override val name: String
+    get() = "decapsulation"
+}

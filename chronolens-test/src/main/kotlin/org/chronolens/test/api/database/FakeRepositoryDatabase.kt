@@ -14,28 +14,35 @@
  * limitations under the License.
  */
 
-package org.chronolens.core.repository
+package org.chronolens.test.api.database
 
 import java.io.IOException
 import java.io.UncheckedIOException
+import org.chronolens.api.analysis.Report
+import org.chronolens.api.database.RepositoryDatabase
 import org.chronolens.model.Revision
 import org.chronolens.model.RevisionId
 
-// TODO: move back to chronolens-test.
-class FakeRepositoryStorage : RepositoryStorage {
+// TODO: add FakeDatabase and FakeDatabaseProvider.
+public class FakeRepositoryDatabase : RepositoryDatabase {
   private var history = emptyList<Revision>()
+  private val reports = mutableMapOf<String, Report>()
+  private var closed: Boolean = false
   private var error: IOException? = null
 
   @Throws(IOException::class)
-  override fun readHistoryIds(): List<String> {
+  override fun readHistoryIds(): List<RevisionId> {
+    throwIfClosed()
     throwIfError()
-    return history.map(Revision::id).map(RevisionId::toString)
+    return history.map(Revision::id)
   }
 
   @Throws(IOException::class)
   override fun readHistory(): Sequence<Revision> {
+    throwIfClosed()
     throwIfError()
     return history.asSequence().map { revision ->
+      throwUncheckedIfClosed()
       throwUncheckedIfError()
       revision
     }
@@ -43,8 +50,36 @@ class FakeRepositoryStorage : RepositoryStorage {
 
   @Throws(IOException::class)
   override fun writeHistory(revisions: Sequence<Revision>) {
+    throwIfClosed()
     throwIfError()
     history = revisions.toList()
+  }
+
+  @Throws(IOException::class)
+  override fun appendHistory(revisions: Sequence<Revision>) {
+    throwIfClosed()
+    throwIfError()
+    history = history + revisions.toList()
+  }
+
+  @Throws(IOException::class)
+  override fun readReport(name: String): Report? {
+    throwIfClosed()
+    throwIfError()
+    return reports[name]
+  }
+
+  @Throws(IOException::class)
+  override fun writeReport(report: Report) {
+    throwIfClosed()
+    throwIfError()
+    reports[report.name] = report
+  }
+
+  @Throws(IOException::class)
+  override fun close() {
+    throwIfError()
+    closed = true
   }
 
   public fun setError(error: IOException) {
@@ -53,6 +88,19 @@ class FakeRepositoryStorage : RepositoryStorage {
 
   public fun clearError() {
     this.error = null
+  }
+
+  @Throws(IOException::class)
+  private fun throwIfClosed() {
+    if (closed) {
+      throw IOException("Database was already closed!")
+    }
+  }
+
+  private fun throwUncheckedIfClosed() {
+    if (closed) {
+      throw UncheckedIOException(IOException("Database was already closed!"))
+    }
   }
 
   @Throws(IOException::class)

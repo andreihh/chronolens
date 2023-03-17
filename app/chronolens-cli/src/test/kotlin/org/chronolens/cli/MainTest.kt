@@ -16,26 +16,28 @@
 
 package org.chronolens.cli
 
-import kotlin.test.Ignore
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import org.chronolens.api.versioning.VcsRevision
 import org.chronolens.test.api.versioning.FakeVcsProxyFactory
 import org.chronolens.test.api.versioning.vcsRevision
 import org.junit.Rule
-import org.junit.contrib.java.lang.system.ExpectedSystemExit
-import org.junit.contrib.java.lang.system.SystemOutRule
 import org.junit.rules.TemporaryFolder
 
-// TODO: fix deprecated SecurityManager errors.
-@Ignore
 class MainTest {
   @get:Rule val tmp: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
-  @get:Rule val outRule: SystemOutRule = SystemOutRule().enableLog()
-  @get:Rule val exitRule: ExpectedSystemExit = ExpectedSystemExit.none()
 
   private val directory by lazy { tmp.root }
   private val directoryPath by lazy { directory.absolutePath }
+  private val out = ByteArrayOutputStream()
+
+  @BeforeTest
+  fun setStdOut() {
+    System.setOut(PrintStream(out))
+  }
 
   @Test
   fun main_whenRevList_printsRevisions() {
@@ -48,7 +50,7 @@ class MainTest {
       vcsProxy.getHistory().joinToString(separator = "\n", transform = VcsRevision::id) + "\n"
 
     main("rev-list", "--repository-root", directoryPath)
-    val actual = outRule.log
+    val actual = out.toString()
 
     assertEquals(expected, actual)
   }
@@ -72,7 +74,7 @@ class MainTest {
         .trimIndent()
 
     main("ls-tree", "--repository-root", directoryPath)
-    val actual = outRule.log
+    val actual = out.toString()
 
     assertEquals(expected, actual)
   }
@@ -93,7 +95,7 @@ class MainTest {
         .trimIndent()
 
     main("model", "--repository-root", directoryPath, "--qualified-id", "src/Main.java")
-    val actual = outRule.log
+    val actual = out.toString()
 
     assertEquals(expected, actual)
   }

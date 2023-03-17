@@ -19,6 +19,7 @@ package org.chronolens.core.repository
 import java.io.File
 import java.io.IOException
 import java.io.UncheckedIOException
+import org.chronolens.api.database.RepositoryDatabase
 import org.chronolens.api.parsing.Parser
 import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.Repository
@@ -58,7 +59,7 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
     tryConnect(accessMode)
       ?: repositoryError("No repository found in '$rootDirectory' for mode '$accessMode'!")
 
-  public fun tryOpen(): RepositoryStorage? =
+  public fun tryOpen(): RepositoryDatabase? =
     try {
       if (!File(rootDirectory, STORAGE_ROOT_DIRECTORY).isDirectory) null
       else RepositoryFileStorage(rootDirectory)
@@ -66,15 +67,15 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
       throw UncheckedIOException(e)
     }
 
-  public fun open(): RepositoryStorage =
+  public fun open(): RepositoryDatabase =
     tryOpen() ?: ioError("No repository storage found in '$rootDirectory'!")
 
-  public fun openOrCreate(): RepositoryStorage = RepositoryFileStorage(rootDirectory)
+  public fun openOrCreate(): RepositoryDatabase = RepositoryFileStorage(rootDirectory)
 
   /**
    * Deletes the repository storage from the given [rootDirectory].
    *
-   * All corresponding [RepositoryStorage] and [PersistentRepository] instances will become
+   * All corresponding [RepositoryDatabase] and [PersistentRepository] instances will become
    * corrupted after this method is called.
    *
    * @throws UncheckedIOException if any I/O errors occur

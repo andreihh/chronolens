@@ -18,12 +18,12 @@ package org.chronolens.api.versioning
 
 import java.io.File
 import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.fail
 import org.chronolens.test.api.versioning.FakeVcsProxyFactory
 import org.junit.Rule
-import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 class VcsProxyFactoryTest {

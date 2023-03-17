@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -140,18 +140,21 @@ public object JsonModule : SerializationModule {
       .addKeyDeserializer<QualifiedSourceNodeId<*>>(QualifiedSourceNodeIdKeyDeserializer)
 
   private val objectMapper =
-    jacksonObjectMapper().apply {
-      registerModule(JavaTimeModule())
-      registerModule(qualifiedIdModule)
-      setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
-      setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
-      setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-      setDefaultTyping(typeResolver)
-      disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
-      disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
-      enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-      enable(SerializationFeature.INDENT_OUTPUT)
-    }
+    jacksonMapperBuilder()
+      .apply {
+        addModules(JavaTimeModule(), qualifiedIdModule)
+        setDefaultTyping(typeResolver)
+        disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+        disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+        enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+        enable(SerializationFeature.INDENT_OUTPUT)
+      }
+      .build()
+      .apply {
+        setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE)
+        setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+        setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+      }
 
   @Throws(IOException::class)
   public override fun serialize(out: OutputStream, value: Any) {

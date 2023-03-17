@@ -26,6 +26,7 @@ import org.chronolens.api.repository.Repository.AccessMode.FAST_HISTORY
 import org.chronolens.api.repository.Repository.HistoryProgressListener
 import org.chronolens.model.Revision
 import org.chronolens.model.RevisionId
+import org.chronolens.test.api.database.FakeRepositoryDatabase
 import org.chronolens.test.api.repository.AbstractRepositoryTest
 import org.chronolens.test.api.repository.RevisionChangeSet
 import org.chronolens.test.api.repository.assertEqualRepositories
@@ -40,7 +41,7 @@ class PersistentRepositoryTest : AbstractRepositoryTest() {
   @get:Rule val tmp: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
 
   private val connector by lazy { RepositoryConnector.newConnector(tmp.root) }
-  private val repositoryStorage = FakeRepositoryStorage()
+  private val repositoryStorage = FakeRepositoryDatabase()
 
   override fun createRepository(vararg history: RevisionChangeSet): Repository =
     if (history.isNotEmpty()) repository(*history).persist(repositoryStorage)

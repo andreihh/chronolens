@@ -18,8 +18,10 @@ package org.chronolens.core.repository
 
 import java.io.IOException
 import java.io.UncheckedIOException
+import org.chronolens.api.database.RepositoryDatabase
+import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.Repository
-import org.chronolens.api.repository.checkValidHistory
+import org.chronolens.api.repository.checkRepositoryState
 import org.chronolens.api.repository.repositoryError
 import org.chronolens.model.Revision
 import org.chronolens.model.RevisionId
@@ -34,10 +36,12 @@ import org.chronolens.model.SourceTreeEdit.Companion.apply
  * All queries read the interpreted history directly from disk, not having to reinterpret it again
  * or to communicate with other subprocesses.
  */
-internal class PersistentRepository(private val storage: RepositoryStorage) : Repository {
+internal class PersistentRepository(private val storage: RepositoryDatabase) : Repository {
   private val history by lazy {
     try {
-      storage.readHistoryIds().checkValidHistory()
+      val revisionIds = storage.readHistoryIds()
+      checkRepositoryState(revisionIds.isNotEmpty()) { "Empty repository!" }
+      revisionIds
     } catch (e: IOException) {
       throw UncheckedIOException(e)
     }
@@ -71,4 +75,20 @@ internal class PersistentRepository(private val storage: RepositoryStorage) : Re
     } catch (e: IOException) {
       throw UncheckedIOException(e)
     }
+}
+
+/**
+ * Writes the history of [this] repository to the given [storage] and reports the progress to the
+ * given [listener].
+ *
+ * @throws CorruptedRepositoryException if the repository is corrupted
+ * @throws IOException if any I/O errors occur
+ */
+@Throws(IOException::class)
+public fun Repository.persist(
+  storage: RepositoryDatabase,
+  listener: Repository.HistoryProgressListener? = null
+): Repository {
+  storage.writeHistory(getHistory(listener))
+  return PersistentRepository(storage)
 }

@@ -18,16 +18,23 @@
 
 package org.chronolens.cli
 
+import java.io.IOException
 import java.io.UncheckedIOException
+import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.full.createType
+import kotlin.reflect.full.declaredMemberFunctions
 import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.api.analysis.AnalyzerSpec
 import org.chronolens.api.analysis.InvalidOptionException
 import org.chronolens.api.repository.CorruptedRepositoryException
+import org.chronolens.api.serialization.SerializationException
 import org.chronolens.core.repository.RepositoryConnector
+import org.chronolens.core.serialization.JsonModule
 
 /**
- * A command line subcommand that runs an [org.chronolens.core.analysis.Analyzer].
+ * A command line subcommand that runs an [org.chronolens.api.analysis.Analyzer].
  *
  * @param analyzerSpec the [AnalyzerSpec] used to create the analyzer
  */
@@ -42,16 +49,33 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec) :
     try {
       val repository = RepositoryConnector.newConnector(repositoryRoot).connect(analyzer.accessMode)
       val report = analyzer.analyze(repository)
-      print(report)
+      if (hasToString(report::class)) {
+        print(report)
+      } else {
+        println(JsonModule.stringify(report))
+      }
     } catch (e: InvalidOptionException) {
       System.err.println("An invalid option has been provided!")
       e.printStackTrace()
     } catch (e: CorruptedRepositoryException) {
       System.err.println("The repository is corrupted!")
       e.printStackTrace()
+    } catch (e: SerializationException) {
+      System.err.println("A serialization error occurred!")
+      e.printStackTrace()
     } catch (e: UncheckedIOException) {
+      System.err.println("An I/O error occurred!")
+      e.printStackTrace()
+    } catch (e: IOException) {
       System.err.println("An I/O error occurred!")
       e.printStackTrace()
     }
   }
 }
+
+private fun hasToString(type: KClass<*>): Boolean = type.declaredMemberFunctions.any(::isToString)
+
+private fun isToString(function: KFunction<*>): Boolean =
+  with(function) {
+    name == "toString" && parameters.size == 1 && returnType == String::class.createType()
+  }

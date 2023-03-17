@@ -19,23 +19,26 @@ package org.chronolens.core.repository
 import java.io.File
 import java.io.IOException
 import java.io.UncheckedIOException
+import org.chronolens.api.analysis.Report
+import org.chronolens.api.database.RepositoryDatabase
 import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.checkRepositoryState
 import org.chronolens.api.serialization.SerializationException
 import org.chronolens.api.serialization.deserialize
 import org.chronolens.core.serialization.JsonModule
 import org.chronolens.model.Revision
+import org.chronolens.model.RevisionId
 
-internal class RepositoryFileStorage(rootDirectory: File) : RepositoryStorage {
+internal class RepositoryFileStorage(rootDirectory: File) : RepositoryDatabase {
   private val storageDirectory = File(rootDirectory, STORAGE_ROOT_DIRECTORY)
   private val historyFile: File = File(storageDirectory, "HISTORY")
   private val revisionsDirectory: File = File(storageDirectory, "revisions")
 
   @Throws(IOException::class)
-  private fun getRevisionFile(revisionId: String): File =
+  private fun getRevisionFile(revisionId: RevisionId): File =
     File(revisionsDirectory, "$revisionId.json")
 
-  private fun readRevision(revisionId: String): Revision =
+  private fun readRevision(revisionId: RevisionId): Revision =
     try {
       JsonModule.deserialize(getRevisionFile(revisionId))
     } catch (e: IOException) {
@@ -44,14 +47,12 @@ internal class RepositoryFileStorage(rootDirectory: File) : RepositoryStorage {
 
   @Throws(IOException::class)
   private fun writeRevision(revision: Revision) {
-    getRevisionFile(revision.id.toString()).outputStream().use { out ->
-      JsonModule.serialize(out, revision)
-    }
+    getRevisionFile(revision.id).outputStream().use { out -> JsonModule.serialize(out, revision) }
   }
 
   @Throws(IOException::class)
-  override fun readHistoryIds(): List<String> =
-    historyFile.readFileLines().dropLastWhile(String::isBlank)
+  override fun readHistoryIds(): List<RevisionId> =
+    historyFile.readFileLines().dropLastWhile(String::isBlank).map(::RevisionId)
 
   @Throws(IOException::class)
   override fun readHistory(): Sequence<Revision> = readHistoryIds().asSequence().map(::readRevision)
@@ -70,6 +71,20 @@ internal class RepositoryFileStorage(rootDirectory: File) : RepositoryStorage {
       }
     }
   }
+
+  override fun appendHistory(revisions: Sequence<Revision>) {
+    TODO("Not yet implemented")
+  }
+
+  override fun readReport(name: String): Report {
+    TODO("Not yet implemented")
+  }
+
+  override fun writeReport(report: Report) {
+    TODO("Not yet implemented")
+  }
+
+  override fun close() {}
 
   companion object {
     /** The directory within the repository root where all storage files should be stored. */

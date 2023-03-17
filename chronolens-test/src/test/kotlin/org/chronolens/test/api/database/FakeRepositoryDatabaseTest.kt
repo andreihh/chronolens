@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-package org.chronolens.core.repository
+package org.chronolens.test.api.database
 
 import java.io.IOException
 import java.io.UncheckedIOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import org.chronolens.model.RevisionId
 import org.chronolens.test.model.revision
 
-// TODO: move back to chronolens-test.
-class FakeRepositoryStorageTest {
-  private val storage = FakeRepositoryStorage()
+// TODO: add tests for reports and for appending history.
+class FakeRepositoryDatabaseTest {
+  private val database = FakeRepositoryDatabase()
 
   @Test
   fun writeHistory_persistsRevisions() {
@@ -33,41 +34,44 @@ class FakeRepositoryStorageTest {
       listOf(
         revision("abc") { author("t1@test.com") },
         revision("def") { author("t2@test.com") },
-        revision("ghi") { author("t3@test.com") }
+        revision("ghi") { author("t3@test.com") },
       )
 
-    storage.writeHistory(history.asSequence())
+    database.writeHistory(history.asSequence())
 
-    assertEquals(expected = listOf("abc", "def", "ghi"), actual = storage.readHistoryIds())
-    assertEquals(expected = history, actual = storage.readHistory().toList())
+    assertEquals(
+      expected = listOf("abc", "def", "ghi"),
+      actual = database.readHistoryIds().map(RevisionId::toString),
+    )
+    assertEquals(expected = history, actual = database.readHistory().toList())
   }
 
   @Test
   fun allOperations_afterSetError_throw() {
-    storage.setError(IOException("test"))
+    database.setError(IOException("test"))
 
-    assertFailsWith<IOException> { storage.readHistoryIds() }
-    assertFailsWith<IOException> { storage.readHistory() }
-    assertFailsWith<IOException> { storage.writeHistory(emptySequence()) }
+    assertFailsWith<IOException> { database.readHistoryIds() }
+    assertFailsWith<IOException> { database.readHistory() }
+    assertFailsWith<IOException> { database.writeHistory(emptySequence()) }
   }
 
   @Test
   fun allOperations_afterSetAndClearError_succeed() {
-    storage.setError(IOException("test"))
-    storage.clearError()
+    database.setError(IOException("test"))
+    database.clearError()
 
-    storage.readHistoryIds()
-    storage.readHistory()
-    storage.writeHistory(emptySequence())
+    database.readHistoryIds()
+    database.readHistory()
+    database.writeHistory(emptySequence())
   }
 
   @Test
   fun readHistory_iterateHistoryAfterSetError_throws() {
-    storage.writeHistory(sequenceOf(revision("abc") {}))
+    database.writeHistory(sequenceOf(revision("abc") {}))
 
-    val history = storage.readHistory()
+    val history = database.readHistory()
 
-    storage.setError(IOException("test"))
+    database.setError(IOException("test"))
 
     assertFailsWith<UncheckedIOException> { history.toList() }
   }
