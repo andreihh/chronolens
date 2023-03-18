@@ -251,12 +251,12 @@ public abstract class AbstractVcsProxyTest {
   }
 
   @Test
-  public fun detect_whenNoRepository_returnsNull() {
-    assertNull(VcsProxyFactory.detect(tmp.root))
+  public fun connect_whenNoRepository_returnsNull() {
+    assertNull(VcsProxyFactory.connect(tmp.root))
   }
 
   @Test
-  public fun detect_returnsEqualRepository() {
+  public fun connect_returnsEqualRepository() {
     val expectedVcs =
       createRepository(
         vcsRevision {
@@ -271,7 +271,7 @@ public abstract class AbstractVcsProxyTest {
         vcsRevision { change("gradle.properties", "org.gradle.daemon=true") },
       )
 
-    val detectedVcs = assertNotNull(VcsProxyFactory.detect(tmp.root))
+    val detectedVcs = assertNotNull(VcsProxyFactory.connect(tmp.root))
 
     assertEqualVcsProxies(expected = expectedVcs, actual = detectedVcs)
   }

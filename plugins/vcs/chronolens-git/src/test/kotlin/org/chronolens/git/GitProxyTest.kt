@@ -19,13 +19,17 @@ package org.chronolens.git
 import java.io.File
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import org.chronolens.api.process.ProcessExecutorProvider
+import org.chronolens.api.process.ProcessResult
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsProxyFactory
-import org.chronolens.core.subprocess.Subprocess
 import org.chronolens.test.api.versioning.AbstractVcsProxyTest
 import org.chronolens.test.api.versioning.VcsChangeSet
 
 class GitProxyTest : AbstractVcsProxyTest() {
+  private fun executeVcs(directory: File, vararg options: String): ProcessResult =
+    ProcessExecutorProvider.INSTANCE.provide(directory).execute("git", *options)
+
   private fun commit(directory: File, changeSet: VcsChangeSet) {
     for ((path, content) in changeSet) {
       if (content != null) {
@@ -34,19 +38,19 @@ class GitProxyTest : AbstractVcsProxyTest() {
         assertTrue(File(directory, path).delete())
       }
     }
-    Subprocess.execute(directory, "git", "add", "-A")
-    Subprocess.execute(directory, "git", "commit", "-m", "Test commit.")
+    executeVcs(directory, "add", "-A")
+    executeVcs(directory, "commit", "-m", "Test commit.")
   }
 
   override fun createRepository(directory: File, vararg revisions: VcsChangeSet): VcsProxy {
-    Subprocess.execute(directory, "git", "init")
-    Subprocess.execute(directory, "git", "config", "user.email", "t@test.com")
-    Subprocess.execute(directory, "git", "config", "user.name", "test")
+    executeVcs(directory, "init")
+    executeVcs(directory, "config", "user.email", "t@test.com")
+    executeVcs(directory, "config", "user.name", "test")
 
     for (changeSet in revisions) {
       commit(directory, changeSet)
     }
 
-    return assertNotNull(VcsProxyFactory.detect(directory))
+    return assertNotNull(VcsProxyFactory.connect(directory))
   }
 }

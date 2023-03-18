@@ -22,7 +22,8 @@ import org.chronolens.api.process.ProcessExecutorProvider
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsRevision
 
-internal class GitProxy(private val directory: File, private val prefix: String) : VcsProxy {
+/** A proxy connected to the root of a `git` repository. */
+internal class GitProxy(private val directory: File) : VcsProxy {
   private val vcs = "git"
   private val headId = "HEAD"
   private val format = "--format=%ct:%an"
@@ -88,7 +89,7 @@ internal class GitProxy(private val directory: File, private val prefix: String)
 
   override fun getFile(revisionId: String, path: String): String? {
     validateRevision(revisionId)
-    return execute(vcs, "cat-file", "blob", "$revisionId:$prefix$path").getOrNull()
+    return execute(vcs, "cat-file", "blob", "$revisionId:$path").getOrNull()
   }
 
   override fun getHistory(revisionId: String, path: String): List<VcsRevision> {

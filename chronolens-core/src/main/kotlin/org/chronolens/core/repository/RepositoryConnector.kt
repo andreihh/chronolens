@@ -86,7 +86,7 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
     }
   }
 
-  private fun tryConnectVcs(): VcsProxy? = VcsProxyFactory.detect(rootDirectory)
+  private fun tryConnectVcs(): VcsProxy? = VcsProxyFactory.connect(rootDirectory)
 
   private fun tryConnectInteractive(): Repository? =
     tryConnectVcs()?.let { vcsProxy -> InteractiveRepository(vcsProxy, Parser.Registry) }

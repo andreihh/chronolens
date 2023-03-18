@@ -17,6 +17,7 @@
 package org.chronolens.api.versioning
 
 import java.io.File
+import java.net.URL
 import java.util.ServiceLoader
 
 /**
@@ -28,44 +29,28 @@ import java.util.ServiceLoader
  * VCS proxy factories must have a public no-arg constructor and must supply an entry in the
  * `META-INF/services/org.chronolens.core.versioning.VcsProxyFactory` configuration file.
  */
-public abstract class VcsProxyFactory {
-  /** Returns whether the associated VCS is supported in the current environment. */
-  protected abstract fun isSupported(): Boolean
-
+public interface VcsProxyFactory {
   /**
-   * Returns a proxy for the repository detected in the given [directory], or `null` if no
-   * repository was detected.
+   * Clones the repository located at the given [url] into the given root [directory] and returns a
+   * VCS proxy connected to it, or `null` if the associated VCS is not supported in this
+   * environment, the [url] is not a valid repository, or the repository couldn't be cloned (e.g.,
+   * due to network errors).
    *
-   * It is required for the associated VCS to be supported.
-   *
-   * @throws IllegalStateException if the detected repository is corrupted or empty (doesn't have a
-   * [head][VcsProxy.getHead] revision)
+   * @throws IllegalStateException if the cloned repository is not in a valid state (it is corrupted
+   * or doesn't have a [head][VcsProxy.getHead] revision)
    */
-  protected abstract fun createProxy(directory: File): VcsProxy?
+  public fun clone(url: URL, directory: File): VcsProxy?
 
   /**
-   * Returns a VCS proxy for the repository detected in the given [directory], or `null` if the
+   * Returns a VCS proxy for the repository detected in the given root [directory], or `null` if the
    * associated VCS is not supported in this environment or no repository could be detected.
    *
    * @throws IllegalStateException if the detected repository is not in a valid state (it is
    * corrupted or doesn't have a [head][VcsProxy.getHead] revision)
    */
-  public fun connect(directory: File): VcsProxy? =
-    if (isSupported()) createProxy(directory) else null
+  public fun connect(directory: File): VcsProxy?
 
-  public companion object {
-    private val vcsProxyFactories =
-      ServiceLoader.load(VcsProxyFactory::class.java).filter(VcsProxyFactory::isSupported)
-
-    /**
-     * Returns the VCS proxy for the repository detected in the given [directory], or `null` if no
-     * supported VCS repository was detected or if multiple repositories were detected.
-     *
-     * @throws IllegalStateException if the detected repository is corrupted or empty (doesn't have
-     * a [head][VcsProxy.getHead] revision)
-     */
-    @JvmStatic
-    public fun detect(directory: File): VcsProxy? =
-      vcsProxyFactories.mapNotNull { it.createProxy(directory) }.singleOrNull()
-  }
+  /** A [MultiVcsProxyFactory] encompassing all registered [VcsProxyFactory]s. */
+  public companion object Registry :
+    VcsProxyFactory by MultiVcsProxyFactory(ServiceLoader.load(VcsProxyFactory::class.java))
 }

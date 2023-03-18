@@ -26,12 +26,12 @@ import org.chronolens.model.SourcePath
 class ParserRegistryTest {
   @Test
   fun canParse_languageWithProvidedParser_returnsTrue() {
-    assertTrue(Parser.Registry.canParse(SourcePath("Test.kts")))
+    assertTrue(Parser.canParse(SourcePath("Test.kts")))
   }
 
   @Test
   fun canParse_unknownLanguage_returnsFalse() {
-    assertFalse(Parser.Registry.canParse(SourcePath("file.mp3")))
+    assertFalse(Parser.canParse(SourcePath("file.mp3")))
   }
 
   @Test
@@ -39,7 +39,7 @@ class ParserRegistryTest {
     val path = SourcePath("res.kts")
     val rawSource = "sourceFile(\"res.kts\") {"
 
-    assertIs<ParseResult.SyntaxError>(Parser.Registry.tryParse(path, rawSource))
+    assertIs<ParseResult.SyntaxError>(Parser.tryParse(path, rawSource))
   }
 
   @Test
@@ -47,7 +47,7 @@ class ParserRegistryTest {
     val path = SourcePath("res.mock")
     val rawSource = "sourceFile(\"res.mock\") {}"
 
-    assertIs<ParseResult.SyntaxError>(Parser.Registry.tryParse(path, rawSource))
+    assertIs<ParseResult.SyntaxError>(Parser.tryParse(path, rawSource))
   }
 
   @Test
@@ -55,6 +55,6 @@ class ParserRegistryTest {
     val path = SourcePath("Test.kts")
     val rawSource = "sourceFile(\"Main.kts\") {}"
 
-    assertFailsWith<IllegalStateException> { Parser.Registry.tryParse(path, rawSource) }
+    assertFailsWith<IllegalStateException> { Parser.tryParse(path, rawSource) }
   }
 }

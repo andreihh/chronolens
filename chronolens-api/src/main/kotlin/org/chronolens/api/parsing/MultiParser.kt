@@ -22,7 +22,7 @@ import org.chronolens.model.SourcePath
 /**
  * A [Parser] capable of parsing multiple languages by delegating to one of the provided [parsers].
  */
-public class MultiParser(private val parsers: Collection<Parser>) : Parser {
+internal class MultiParser(private val parsers: Iterable<Parser>) : Parser {
   override fun canParse(path: SourcePath): Boolean = parsers.any { it.canParse(path) }
 
   override fun parse(path: SourcePath, rawSource: String): SourceFile {

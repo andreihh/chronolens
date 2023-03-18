@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-package org.chronolens.api.repository
+package org.chronolens.api.versioning
 
+import java.io.File
 import java.net.URL
 
-public data class RepositoryId(public val url: URL) {
-  public enum class Mode {
-    LOCAL,
-    REMOTE
-  }
+internal class MultiVcsProxyFactory(private val vcsProxyFactories: Iterable<VcsProxyFactory>) :
+  VcsProxyFactory {
 
-  public val type: Mode =
-    when (url.protocol.lowercase()) {
-      "file" -> Mode.LOCAL
-      "http",
-      "https" -> Mode.REMOTE
-      else -> throw IllegalArgumentException("Invalid repository URL '$url'!")
-    }
+  override fun clone(url: URL, directory: File): VcsProxy? =
+    vcsProxyFactories.firstNotNullOfOrNull { it.clone(url, directory) }
 
-  public override fun toString(): String = url.toString()
+  override fun connect(directory: File): VcsProxy? =
+    vcsProxyFactories.firstNotNullOfOrNull { it.connect(directory) }
 }

@@ -17,24 +17,19 @@
 package org.chronolens.api.versioning
 
 import java.io.File
+import java.net.URL
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.fail
 import org.chronolens.test.api.versioning.FakeVcsProxyFactory
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 
-class VcsProxyFactoryTest {
-  class UnsupportedVcsProxyFactory : VcsProxyFactory() {
-    override fun isSupported() = false
-    override fun createProxy(directory: File) = fail()
-  }
-
-  class UndetectedVcsProxyFactory : VcsProxyFactory() {
-    override fun isSupported() = true
-    override fun createProxy(directory: File) = null
+class VcsProxyFactoryRegistryTest {
+  class UndetectedVcsProxyFactory : VcsProxyFactory {
+    override fun clone(url: URL, directory: File): VcsProxy? = null
+    override fun connect(directory: File): VcsProxy? = null
   }
 
   @get:Rule val tmp: TemporaryFolder = TemporaryFolder.builder().assureDeletion().build()
@@ -47,20 +42,15 @@ class VcsProxyFactoryTest {
   }
 
   @Test
-  fun detect_whenUnsupportedUndetectedUninitialized_returnsNull() {
-    assertNull(VcsProxyFactory.detect(directory))
+  fun registryConnect_whenUnsupportedUndetectedUninitialized_returnsNull() {
+    assertNull(VcsProxyFactory.connect(directory))
   }
 
   @Test
-  fun detect_whenInitialized_returnsNonNull() {
+  fun registryConnect_whenInitialized_returnsNonNull() {
     FakeVcsProxyFactory.createRepository(directory) {}
 
-    assertNotNull(VcsProxyFactory.detect(directory))
-  }
-
-  @Test
-  fun connect_whenUnsupported_returnsNull() {
-    assertNull(UnsupportedVcsProxyFactory().connect(directory))
+    assertNotNull(VcsProxyFactory.connect(directory))
   }
 
   @Test

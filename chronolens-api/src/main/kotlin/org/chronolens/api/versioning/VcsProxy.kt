@@ -16,12 +16,7 @@
 
 package org.chronolens.api.versioning
 
-/**
- * A version control system (VCS) proxy which interacts with a connected repository detected.
- *
- * The associated VCS must be supported in the current environment and the connected repository must
- * be in a valid state.
- */
+/** A version control system (VCS) proxy which interacts with a connected repository. */
 public interface VcsProxy {
   /** Returns the `head` revision. */
   public fun getHead(): VcsRevision

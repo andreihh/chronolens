@@ -17,12 +17,13 @@
 package org.chronolens.git
 
 import java.io.File
+import java.net.URL
 import org.chronolens.api.process.ProcessExecutorProvider
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsProxyFactory
 
-/** Creates proxies which delegate their operations to the `git` VCS. */
-internal class GitProxyFactory : VcsProxyFactory() {
+/** Creates proxies that delegate their operations to the `git` VCS. */
+internal class GitProxyFactory : VcsProxyFactory {
   private val vcs: String = "git"
 
   private fun getPrefix(directory: File): String? {
@@ -32,11 +33,15 @@ internal class GitProxyFactory : VcsProxyFactory() {
     return rawPrefix.lines().first()
   }
 
-  override fun isSupported(): Boolean =
-    ProcessExecutorProvider.INSTANCE.provide(File(".")).execute(vcs, "--version").isSuccess
+  override fun clone(url: URL, directory: File): VcsProxy? {
+    val cloneResult =
+      ProcessExecutorProvider.INSTANCE.provide(directory)
+        .execute(vcs, "clone", url.toString(), "./")
+    return if (cloneResult.isSuccess) connect(directory) else null
+  }
 
-  override fun createProxy(directory: File): VcsProxy? {
+  override fun connect(directory: File): VcsProxy? {
     val prefix = getPrefix(directory) ?: return null
-    return GitProxy(directory, prefix)
+    return if (prefix.isBlank()) GitProxy(directory) else null
   }
 }

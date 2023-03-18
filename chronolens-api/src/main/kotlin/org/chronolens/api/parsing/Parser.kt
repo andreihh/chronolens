@@ -56,6 +56,5 @@ public interface Parser {
     }
 
   /** A [MultiParser] encompassing all registered [Parser]s. */
-  public companion object Registry :
-    Parser by MultiParser(ServiceLoader.load(Parser::class.java).toList())
+  public companion object Registry : Parser by MultiParser(ServiceLoader.load(Parser::class.java))
 }

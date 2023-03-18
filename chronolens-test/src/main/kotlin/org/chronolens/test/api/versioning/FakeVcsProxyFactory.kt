@@ -17,17 +17,31 @@
 package org.chronolens.test.api.versioning
 
 import java.io.File
+import java.net.URL
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsProxyFactory
 import org.chronolens.test.Init
 
-public class FakeVcsProxyFactory : VcsProxyFactory() {
-  override fun isSupported(): Boolean = true
+public class FakeVcsProxyFactory : VcsProxyFactory {
+  override fun clone(url: URL, directory: File): VcsProxy? {
+    val repository = remoteRepositories[url]
+    if (repository != null) {
+      repositories[directory] = repository
+    }
+    return repository
+  }
 
-  override fun createProxy(directory: File): VcsProxy? = repositories[directory]
+  override fun connect(directory: File): VcsProxy? = repositories[directory]
 
   public companion object {
+    private val remoteRepositories = mutableMapOf<URL, VcsProxy>()
     private val repositories = mutableMapOf<File, VcsProxy>()
+
+    @JvmStatic
+    public fun createRemoteRepository(url: URL, init: Init<VcsProxyBuilder>): VcsProxy {
+      remoteRepositories[url] = vcsProxy(init)
+      return remoteRepositories.getValue(url)
+    }
 
     @JvmStatic
     public fun createRepository(directory: File, init: Init<VcsProxyBuilder>): VcsProxy {
