@@ -25,17 +25,17 @@ import org.chronolens.model.SourcePath
 
 class ParserRegistryTest {
   @Test
-  fun canParse_languageWithProvidedParser_returnsTrue() {
+  fun canParse_whenLanguageWithProvidedParser_returnsTrue() {
     assertTrue(Parser.canParse(SourcePath("Test.kts")))
   }
 
   @Test
-  fun canParse_unknownLanguage_returnsFalse() {
+  fun canParse_whenUnknownLanguage_returnsFalse() {
     assertFalse(Parser.canParse(SourcePath("file.mp3")))
   }
 
   @Test
-  fun tryParse_sourceWithErrors_returnsSyntaxError() {
+  fun tryParse_whenSourceWithErrors_returnsSyntaxError() {
     val path = SourcePath("res.kts")
     val rawSource = "sourceFile(\"res.kts\") {"
 
@@ -43,7 +43,7 @@ class ParserRegistryTest {
   }
 
   @Test
-  fun tryParse_sourceWithUnsupportedPath_returnsSyntaxError() {
+  fun tryParse_whenSourceWithUnsupportedPath_returnsSyntaxError() {
     val path = SourcePath("res.mock")
     val rawSource = "sourceFile(\"res.mock\") {}"
 
@@ -51,7 +51,7 @@ class ParserRegistryTest {
   }
 
   @Test
-  fun tryParse_sourceWithDifferentPathThrows() {
+  fun tryParse_whenSourceWithDifferentPath_throws() {
     val path = SourcePath("Test.kts")
     val rawSource = "sourceFile(\"Main.kts\") {}"
 

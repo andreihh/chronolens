@@ -27,7 +27,6 @@ import org.chronolens.api.repository.Repository.AccessMode
 import org.chronolens.api.repository.Repository.AccessMode.ANY
 import org.chronolens.api.repository.Repository.AccessMode.FAST_HISTORY
 import org.chronolens.api.repository.Repository.AccessMode.RANDOM_ACCESS
-import org.chronolens.api.repository.repositoryError
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsProxyFactory
 import org.chronolens.core.repository.RepositoryFileStorage.Companion.STORAGE_ROOT_DIRECTORY

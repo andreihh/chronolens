@@ -22,7 +22,6 @@ import java.io.UncheckedIOException
 import org.chronolens.api.analysis.Report
 import org.chronolens.api.database.RepositoryDatabase
 import org.chronolens.api.repository.CorruptedRepositoryException
-import org.chronolens.api.repository.checkRepositoryState
 import org.chronolens.api.serialization.SerializationException
 import org.chronolens.api.serialization.deserialize
 import org.chronolens.core.serialization.JsonModule

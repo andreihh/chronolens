@@ -99,16 +99,6 @@ public interface Option<T> {
       require(max == null || value <= max) { "Option value can't be greater than '$max'!" }
     }
 
-    /**
-     * Throws an [InvalidOptionException] with the given [lazyMessage] if [condition] is `false`.
-     */
-    @JvmStatic
-    public fun requireOption(condition: Boolean, lazyMessage: () -> String) {
-      if (!condition) {
-        throw InvalidOptionException(lazyMessage())
-      }
-    }
-
     /** Throws an [InvalidOptionException] with the given [message]. */
     @JvmStatic
     public fun optionError(message: String): Nothing {

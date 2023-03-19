@@ -22,7 +22,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import org.chronolens.api.analysis.Option.Companion.constrainTo
 import org.chronolens.api.analysis.Option.Companion.optionError
-import org.chronolens.api.analysis.Option.Companion.requireOption
 import org.chronolens.test.api.analysis.OptionHolder
 
 class OptionTest {
@@ -149,16 +148,6 @@ class OptionTest {
     val optionProperty by constrainedOption
 
     assertEquals(expected = 6, actual = optionProperty)
-  }
-
-  @Test
-  fun requireOption_whenConditionIsTrue_doesNothing() {
-    requireOption(true) { "should be ok" }
-  }
-
-  @Test
-  fun requireOption_whenConditionIsFalse_throwsInvalidOptionException() {
-    assertFailsWith<InvalidOptionException> { requireOption(false) { "fail" } }
   }
 
   @Test

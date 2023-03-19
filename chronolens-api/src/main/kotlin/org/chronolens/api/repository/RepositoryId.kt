@@ -38,6 +38,7 @@ public data class RepositoryId(public val name: String, public val url: URL) {
      *
      * @throws IllegalArgumentException if the given [rawRepositoryId] is invalid
      */
+    @JvmStatic
     public fun parseFrom(rawRepositoryId: String): RepositoryId {
       val (name, rawUrl) = rawRepositoryId.split(SEPARATOR, limit = 2)
       val url =

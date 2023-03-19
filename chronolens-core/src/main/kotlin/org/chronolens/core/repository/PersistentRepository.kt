@@ -21,8 +21,6 @@ import java.io.UncheckedIOException
 import org.chronolens.api.database.RepositoryDatabase
 import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.Repository
-import org.chronolens.api.repository.checkRepositoryState
-import org.chronolens.api.repository.repositoryError
 import org.chronolens.model.Revision
 import org.chronolens.model.RevisionId
 import org.chronolens.model.SourceFile

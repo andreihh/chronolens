@@ -18,6 +18,6 @@ package org.chronolens.api.database
 
 import org.chronolens.api.serialization.SerializationModule
 
-public interface DatabaseProvider {
+public fun interface DatabaseProvider {
   public fun provide(serializationModule: SerializationModule): Database
 }

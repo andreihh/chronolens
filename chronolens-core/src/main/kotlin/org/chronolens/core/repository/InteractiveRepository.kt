@@ -20,10 +20,6 @@ import org.chronolens.api.parsing.ParseResult
 import org.chronolens.api.parsing.Parser
 import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.Repository
-import org.chronolens.api.repository.checkRepositoryState
-import org.chronolens.api.repository.checkValidHistory
-import org.chronolens.api.repository.checkValidPath
-import org.chronolens.api.repository.checkValidRevisionId
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsRevision
 import org.chronolens.model.Revision

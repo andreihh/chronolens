@@ -41,7 +41,7 @@ class MultiParserTest {
   }
 
   @Test
-  fun canParse_unknownLanguage_returnsFalse() {
+  fun canParse_whenUnknownLanguage_returnsFalse() {
     val parser1 = mock<Parser> { on { canParse(any()) } doReturn false }
     val parser2 = mock<Parser> { on { canParse(any()) } doReturn false }
 
@@ -58,7 +58,7 @@ class MultiParserTest {
   }
 
   @Test
-  fun tryParse_languageWithProvidedParser_returnsParsedSource() {
+  fun tryParse_whenLanguageWithProvidedParser_returnsParsedSource() {
     val path = SourcePath("Test.mock")
     val rawSource = "{ 'invalid' : 2"
     val sourceFile = SourceFile(path)
@@ -80,7 +80,7 @@ class MultiParserTest {
   }
 
   @Test
-  fun tryParse_unknownLanguage_returnsSyntaxError() {
+  fun tryParse_whenUnknownLanguage_returnsSyntaxError() {
     val error = SyntaxErrorException("Unsupported!")
     val parser1 =
       mock<Parser> {
@@ -100,7 +100,7 @@ class MultiParserTest {
   }
 
   @Test
-  fun tryParse_sourceWithErrors_returnsSyntaxError() {
+  fun tryParse_whenSourceWithErrors_returnsSyntaxError() {
     val error = SyntaxErrorException("Invalid source file!")
     val parser =
       mock<Parser> {
