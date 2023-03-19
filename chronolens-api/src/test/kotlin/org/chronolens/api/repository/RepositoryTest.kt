@@ -16,13 +16,14 @@
 
 package org.chronolens.api.repository
 
-import kotlin.streams.asStream
+import kotlin.streams.toList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import org.chronolens.api.repository.Repository.HistoryProgressListener
+import org.chronolens.model.Revision
 import org.chronolens.test.model.revision
-import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -31,45 +32,68 @@ import org.mockito.kotlin.verifyNoMoreInteractions
 class RepositoryTest {
   @Test
   fun getHistoryStream_delegatesToGetHistory() {
-    val revisions = sequenceOf(revision("1") {}, revision("2") {}, revision("3") {})
-    val repository = mock<Repository> {
-      on { getHistory() } doReturn revisions
-      on { getHistory(any()) }.thenCallRealMethod()
-      on { getHistoryStream(any()) }.thenCallRealMethod()
-    }
+    val revisions = listOf(revision("1") {}, revision("2") {}, revision("3") {})
+    val repository =
+      mock<Repository> {
+        on { getHistory() } doReturn revisions.asSequence()
+        on { getHistory(anyOrNull()) }.thenCallRealMethod()
+        on { getHistoryStream(anyOrNull()) }.thenCallRealMethod()
+      }
 
-    assertEquals(expected = revisions.asStream(), actual = repository.getHistoryStream())
+    val history = repository.getHistoryStream()
+
+    assertEquals(expected = revisions, actual = history.toList())
   }
 
   @Test
   fun getHistoryStream_canIterateOnlyOnce() {
     val revisions = sequenceOf(revision("1") {}, revision("2") {}, revision("3") {})
-    val repository = mock<Repository> {
-      on { getHistory() } doReturn revisions
-      on { getHistory(any()) }.thenCallRealMethod()
-      on { getHistoryStream(any()) }.thenCallRealMethod()
-    }
+    val repository =
+      mock<Repository> {
+        on { getHistory() } doReturn revisions
+        on { getHistory(anyOrNull()) }.thenCallRealMethod()
+        on { getHistoryStream(anyOrNull()) }.thenCallRealMethod()
+      }
 
     val history = repository.getHistoryStream()
 
-    history.forEach {}
-    assertFails { history.forEach {} }
+    history.toList()
+    assertFails { history.toList() }
+  }
+
+  @Test
+  fun getHistoryStream_withProgressListener_isLazy() {
+    val revisions = listOf(revision("1") {}, revision("2") {}, revision("3") {})
+    val repository =
+      mock<Repository> {
+        on { listRevisions() } doReturn revisions.map(Revision::id)
+        on { getHistory() } doReturn revisions.asSequence()
+        on { getHistory(anyOrNull()) }.thenCallRealMethod()
+        on { getHistoryStream(anyOrNull()) }.thenCallRealMethod()
+      }
+    val listener = mock<HistoryProgressListener>()
+
+    repository.getHistoryStream(listener)
+
+    verifyNoMoreInteractions(listener)
   }
 
   @Test
   fun getHistoryStream_withProgressListener_reportsProgress() {
-    val revisions = sequenceOf(revision("1") {}, revision("2") {}, revision("3") {})
-    val repository = mock<Repository> {
-      on { getHistory() } doReturn revisions
-      on { getHistory(any()) }.thenCallRealMethod()
-      on { getHistoryStream(any()) }.thenCallRealMethod()
-    }
-
+    val revisions = listOf(revision("1") {}, revision("2") {}, revision("3") {})
+    val repository =
+      mock<Repository> {
+        on { listRevisions() } doReturn revisions.map(Revision::id)
+        on { getHistory() } doReturn revisions.asSequence()
+        on { getHistory(anyOrNull()) }.thenCallRealMethod()
+        on { getHistoryStream(anyOrNull()) }.thenCallRealMethod()
+      }
     val listener = mock<HistoryProgressListener>()
-    repository.getHistoryStream(listener)
+
+    repository.getHistoryStream(listener).toList()
 
     verify(listener).onStart(3)
-    revisions.forEach(verify(listener)::onRevision)
+    revisions.forEach { verify(listener).onRevision(it) }
     verify(listener).onEnd()
     verifyNoMoreInteractions(listener)
   }
