@@ -27,44 +27,45 @@ class QualifiedSourceNodeIdTest {
   @Test
   fun createAbstractSourceNodeId_fails() {
     assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId.of<SourceEntity>(null, Identifier("Main"))
+      QualifiedSourceNodeId(null, Identifier("Main"), SourceEntity::class.java)
     }
   }
 
   @Test
   fun createSourceFileId_whenSimpleIdIsNotSourcePath_fails() {
     assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId.of<SourceFile>(null, Identifier("Main"))
+      QualifiedSourceNodeId(null, Identifier("Main"), SourceFile::class.java)
     }
   }
 
   @Test
   fun createTypeId_whenSimpleIdIsNotIdentifier_fails() {
     assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId.of<Type>(null, SourcePath("src/Main"))
+      QualifiedSourceNodeId(null, SourcePath("src/Main"), Type::class.java)
     }
   }
 
   @Test
   fun createFunctionId_whenSimpleIdIsNotSignature_fails() {
     assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId.of<Function>(null, Identifier("Main"))
+      QualifiedSourceNodeId(null, Identifier("Main"), Function::class.java)
     }
   }
 
   @Test
   fun createVariableId_whenSimpleIdIsNotIdentifier_fails() {
     assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId.of<Variable>(null, Signature("main()"))
+      QualifiedSourceNodeId(null, Signature("main()"), Variable::class.java)
     }
   }
 
   @Test
   fun createSourceFileId_whenNonNullParent_fails() {
     assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId.of<SourceFile>(
+      QualifiedSourceNodeId(
         qualifiedSourcePathOf("src/main/kotlin"),
-        SourcePath("Main.java")
+        SourcePath("Main.java"),
+        SourceFile::class.java
       )
     }
   }
@@ -72,21 +73,21 @@ class QualifiedSourceNodeIdTest {
   @Test
   fun createTypeId_whenNullParent_fails() {
     assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId.of<Type>(null, Identifier("Main"))
+      QualifiedSourceNodeId(null, Identifier("Main"), Type::class.java)
     }
   }
 
   @Test
   fun createFunctionId_whenNullParent_fails() {
     assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId.of<Function>(null, Signature("Main"))
+      QualifiedSourceNodeId(null, Signature("Main"), Function::class.java)
     }
   }
 
   @Test
   fun createVariableId_whenNullParent_fails() {
     assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId.of<Variable>(null, Identifier("Main"))
+      QualifiedSourceNodeId(null, Identifier("Main"), Variable::class.java)
     }
   }
 

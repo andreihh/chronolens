@@ -74,12 +74,6 @@ public sealed class SourceTreeEdit {
 
     /** Utility method. */
     @JvmStatic
-    public fun SourceTree.apply(edits: Sequence<SourceTreeEdit>) {
-      edits.forEach { apply(it) }
-    }
-
-    /** Utility method. */
-    @JvmStatic
     public fun SourceTree.apply(vararg edits: SourceTreeEdit) {
       apply(edits.asList())
     }

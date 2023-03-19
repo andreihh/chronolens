@@ -125,18 +125,6 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
     /** [Function] and [Variable] identifiers are separated from the parent id by `#`. */
     public const val MEMBER_SEPARATOR: Char = '#'
 
-    /**
-     * Creates a [QualifiedSourceNodeId] denoting a source node of type [T] with the given [parent]
-     * id and simple [id].
-     *
-     * @throws IllegalArgumentException if the created qualified id is invalid
-     */
-    @JvmStatic
-    public inline fun <reified T : SourceNode> of(
-      parent: QualifiedSourceNodeId<SourceContainer>?,
-      id: SourceNodeId
-    ): QualifiedSourceNodeId<T> = QualifiedSourceNodeId(parent, id, T::class.java)
-
     /** Returns whether the given [rawQualifiedId] id valid. */
     @JvmStatic
     public fun isValid(rawQualifiedId: String): Boolean {
@@ -181,7 +169,7 @@ private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
 
 /** Creates a qualified source path from the given [path]. */
 public fun qualifiedSourcePathOf(path: SourcePath): QualifiedSourceNodeId<SourceFile> =
-  QualifiedSourceNodeId.of(null, path)
+  QualifiedSourceNodeId(null, path, SourceFile::class.java)
 
 /**
  * Creates a qualified source path from the given [path].
@@ -244,7 +232,7 @@ public val QualifiedSourceNodeId<Variable>.name: Identifier
 /** Creates a new qualified id by appending the given [Type] [name] to this qualified id. */
 public fun QualifiedSourceNodeId<SourceContainer>.type(
   name: Identifier
-): QualifiedSourceNodeId<Type> = QualifiedSourceNodeId.of(this, name)
+): QualifiedSourceNodeId<Type> = QualifiedSourceNodeId(this, name, Type::class.java)
 
 /**
  * Creates a new qualified id by appending the given [Type] [name] to this qualified id.
@@ -259,7 +247,7 @@ public fun QualifiedSourceNodeId<SourceContainer>.type(name: String): QualifiedS
  */
 public fun QualifiedSourceNodeId<SourceContainer>.function(
   signature: Signature
-): QualifiedSourceNodeId<Function> = QualifiedSourceNodeId.of(this, signature)
+): QualifiedSourceNodeId<Function> = QualifiedSourceNodeId(this, signature, Function::class.java)
 
 /**
  * Creates a new qualified id by appending the given [Function] [signature] to this qualified id.
@@ -273,7 +261,7 @@ public fun QualifiedSourceNodeId<SourceContainer>.function(
 /** Creates a new qualified id by appending the given [Variable] [name] to this qualified id. */
 public fun QualifiedSourceNodeId<SourceContainer>.variable(
   name: Identifier
-): QualifiedSourceNodeId<Variable> = QualifiedSourceNodeId.of(this, name)
+): QualifiedSourceNodeId<Variable> = QualifiedSourceNodeId(this, name, Variable::class.java)
 
 /**
  * Creates a new qualified id by appending the given [Variable] [name] to this qualified id.
