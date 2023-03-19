@@ -42,31 +42,27 @@ class VcsProxyFactoryRegistryTest {
   }
 
   @Test
-  fun registryConnect_whenUnsupportedUndetectedUninitialized_returnsNull() {
-    assertNull(VcsProxyFactory.connect(directory))
+  fun clone_whenUndetected_returnsNonNull() {
+    assertNotNull(VcsProxyFactory.clone(URL("file:///~/repository.git"), File("./")))
   }
 
   @Test
-  fun registryConnect_whenInitialized_returnsNonNull() {
-    FakeVcsProxyFactory.createRepository(directory) {}
+  fun clone_whenInitialized_returnsNonNull() {
+    val url = URL("file:///~/repository.git")
+    FakeVcsProxyFactory.createRemoteRepository(url) {}
 
-    assertNotNull(VcsProxyFactory.connect(directory))
+    assertNotNull(VcsProxyFactory.clone(url, File("./")))
   }
 
   @Test
   fun connect_whenUndetected_returnsNull() {
-    assertNull(UndetectedVcsProxyFactory().connect(directory))
-  }
-
-  @Test
-  fun connect_whenUninitialized_returnsNull() {
-    assertNull(FakeVcsProxyFactory().connect(directory))
+    assertNull(VcsProxyFactory.connect(directory))
   }
 
   @Test
   fun connect_whenInitialized_returnsNonNull() {
     FakeVcsProxyFactory.createRepository(directory) {}
 
-    assertNotNull(FakeVcsProxyFactory().connect(directory))
+    assertNotNull(VcsProxyFactory.connect(directory))
   }
 }

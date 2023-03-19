@@ -50,7 +50,7 @@ public interface VcsProxyFactory {
    */
   public fun connect(directory: File): VcsProxy?
 
-  /** A [MultiVcsProxyFactory] encompassing all registered [VcsProxyFactory]s. */
+  /** A [MultiVcsProxyFactory] encompassing all registered [VcsProxyFactories][VcsProxyFactory]. */
   public companion object Registry :
     VcsProxyFactory by MultiVcsProxyFactory(ServiceLoader.load(VcsProxyFactory::class.java))
 }

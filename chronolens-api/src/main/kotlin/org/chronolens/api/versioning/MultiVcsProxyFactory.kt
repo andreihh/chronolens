@@ -19,6 +19,10 @@ package org.chronolens.api.versioning
 import java.io.File
 import java.net.URL
 
+/**
+ * A [VcsProxyFactory] capable of connecting to multiple version control systems by delegating to
+ * one of the provided [vcsProxyFactories].
+ */
 internal class MultiVcsProxyFactory(private val vcsProxyFactories: Iterable<VcsProxyFactory>) :
   VcsProxyFactory {
 

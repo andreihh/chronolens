@@ -16,21 +16,37 @@
 
 package org.chronolens.api.repository
 
+import java.net.MalformedURLException
 import java.net.URL
 
-public data class RepositoryId(public val url: URL) {
-  public enum class Mode {
-    LOCAL,
-    REMOTE
+/**
+ * A repository identifier comprising a unique [name] and the [url] where the repository is located.
+ */
+public data class RepositoryId(public val name: String, public val url: URL) {
+  init {
+    require(name.matches(NAME_REGEX)) { "Invalid repository name '$name'!" }
   }
 
-  public val type: Mode =
-    when (url.protocol.lowercase()) {
-      "file" -> Mode.LOCAL
-      "http",
-      "https" -> Mode.REMOTE
-      else -> throw IllegalArgumentException("Invalid repository URL '$url'!")
-    }
+  public override fun toString(): String = "$name$SEPARATOR$url"
 
-  public override fun toString(): String = url.toString()
+  public companion object {
+    private const val SEPARATOR: Char = ':'
+    private val NAME_REGEX: Regex = Regex("[a-zA-Z0-9_\\-.]+")
+
+    /**
+     * Parses the given [rawRepositoryId].
+     *
+     * @throws IllegalArgumentException if the given [rawRepositoryId] is invalid
+     */
+    public fun parseFrom(rawRepositoryId: String): RepositoryId {
+      val (name, rawUrl) = rawRepositoryId.split(SEPARATOR, limit = 2)
+      val url =
+        try {
+          URL(rawUrl)
+        } catch (e: MalformedURLException) {
+          throw IllegalArgumentException(e)
+        }
+      return RepositoryId(name, url)
+    }
+  }
 }

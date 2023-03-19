@@ -17,10 +17,12 @@
 package org.chronolens.core.serialization
 
 import java.io.ByteArrayOutputStream
+import java.net.URL
 import java.time.Instant
 import kotlin.test.Ignore
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import org.chronolens.api.repository.RepositoryId
 import org.chronolens.api.serialization.SerializationException
 import org.chronolens.api.serialization.deserialize
 import org.chronolens.model.Identifier
@@ -180,5 +182,21 @@ class JsonModuleTest {
     }
   }
 
+  // TODO: fix this
   @Test fun deserializeQualifiedSourceNodeIdKey_whenInvalid_fails() {}
+
+  @Test
+  fun deserializeRepositoryId_parsesString() {
+    val repositoryId = RepositoryId("repo.git", URL("file:///repository.git"))
+    val src = "\"$repositoryId\"".byteInputStream()
+
+    assertEquals(repositoryId, JsonModule.deserialize(src))
+  }
+
+  @Test
+  fun deserializeRepositoryId_whenInvalid_fails() {
+    val src = "\"repo*.git:file:///repository.git\"".byteInputStream()
+
+    assertFailsWith<SerializationException> { JsonModule.deserialize<RepositoryId>(src) }
+  }
 }

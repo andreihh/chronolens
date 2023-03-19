@@ -42,6 +42,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonMapperBuilder
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import org.chronolens.api.repository.RepositoryId
 import org.chronolens.api.serialization.SerializationException
 import org.chronolens.api.serialization.SerializationModule
 import org.chronolens.model.AddNode
@@ -138,6 +139,8 @@ public object JsonModule : SerializationModule {
       .addDeserializer(QualifiedSourceNodeIdDeserializer)
       .addKeySerializer(QualifiedSourceNodeIdSerializer)
       .addKeyDeserializer<QualifiedSourceNodeId<*>>(QualifiedSourceNodeIdKeyDeserializer)
+      .addSerializer(RepositoryIdSerializer)
+      .addDeserializer(RepositoryIdDeserializer)
 
   private val objectMapper =
     jacksonMapperBuilder()
@@ -235,6 +238,17 @@ private object RevisionIdSerializer : StdSerializer<RevisionId>(RevisionId::clas
 private object RevisionIdDeserializer : StdDeserializer<RevisionId>(RevisionId::class.java) {
   override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): RevisionId =
     tryParseId(p.valueAsString, ::RevisionId)
+}
+
+private object RepositoryIdSerializer : StdSerializer<RepositoryId>(RepositoryId::class.java) {
+  override fun serialize(value: RepositoryId, gen: JsonGenerator, provider: SerializerProvider?) {
+    gen.writeString(value.toString())
+  }
+}
+
+private object RepositoryIdDeserializer : StdDeserializer<RepositoryId>(RepositoryId::class.java) {
+  override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): RepositoryId =
+    tryParseId(p.valueAsString, RepositoryId::parseFrom)
 }
 
 private fun tryParseQualifiedSourceNodeId(rawQualifiedId: String): QualifiedSourceNodeId<*> =
