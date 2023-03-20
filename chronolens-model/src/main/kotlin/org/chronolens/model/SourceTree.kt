@@ -49,11 +49,11 @@ private constructor(
   /**
    * Returns the node of type [T] with the specified [id].
    *
-   * @throws NoSuchElementException if the requested node was not found
+   * @throws NoSuchElementException if a node with the given [id] doesn't exist
    */
   @JvmName("getSourceNode")
   public inline fun <reified T : SourceNode> get(id: QualifiedSourceNodeId<T>): T =
-    getOrNull(id) ?: throw NoSuchElementException("Source node with id '$id' doesn't exist!")
+    getOrNull(id) ?: throw NoSuchElementException("Source node '$id' doesn't exist!")
 
   /** Returns all the source nodes in this source tree in top-down order. */
   public fun walk(): Iterable<SourceTreeNode<*>> = sources.flatMap(SourceFile::walkSourceTree)
@@ -61,10 +61,10 @@ private constructor(
   /**
    * Returns all the source nodes in the subtree rooted at the given [id] in top-down order.
    *
-   * @throws IllegalStateException if a node with the given [id] doesn't exist
+   * @throws NoSuchElementException if a node with the given [id] doesn't exist
    */
   public fun walk(id: QualifiedSourceNodeId<*>): Iterable<SourceTreeNode<*>> =
-    nodeMap[id]?.walkSourceTree() ?: error("Source node '$id' doesn't exist in the source tree!")
+    nodeMap.getValue(id).walkSourceTree()
 
   internal fun mutate(
     block: SourceTree.(sourceMap: HashMap<SourcePath, SourceFile>, nodeMap: NodeHashMap) -> Unit

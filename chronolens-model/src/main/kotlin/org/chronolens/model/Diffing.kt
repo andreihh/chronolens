@@ -43,10 +43,9 @@ public fun SourceTree.diff(other: SourceTree): List<SourceTreeEdit> {
     val after = nodesAfter[id]
     val edit =
       when {
-        before == null && after != null -> AddNode(id, after.sourceNode)
-        before != null && after == null -> RemoveNode(id)
         before != null && after != null -> before.diff(after)
-        else -> throw AssertionError("Node '$id' doesn't exist!")
+        after != null -> AddNode(id, after.sourceNode)
+        else -> RemoveNode(id)
       }
     edit
   }

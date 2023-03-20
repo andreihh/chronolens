@@ -122,7 +122,7 @@ class SourceTreeTest {
       }
     }
 
-    assertFailsWith<IllegalStateException> {
+    assertFailsWith<NoSuchElementException> {
       sourceTree.walk(SourcePath("src/Test.java").type("Test"))
     }
   }
