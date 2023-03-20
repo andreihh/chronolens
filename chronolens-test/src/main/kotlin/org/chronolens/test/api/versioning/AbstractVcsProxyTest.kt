@@ -17,14 +17,16 @@
 package org.chronolens.test.api.versioning
 
 import java.io.File
+import java.net.URL
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsProxyFactory
 import org.junit.Rule
-import org.junit.Test
 import org.junit.rules.TemporaryFolder
 
 /** Tests for [VcsProxy] and [VcsProxyFactory] implementations. */
@@ -272,6 +274,49 @@ public abstract class AbstractVcsProxyTest {
       )
 
     val detectedVcs = assertNotNull(VcsProxyFactory.connect(tmp.root))
+
+    assertEqualVcsProxies(expected = expectedVcs, actual = detectedVcs)
+  }
+
+  @Test
+  public fun connect_whenNotInRepositoryRoot_returnsNull() {
+    createRepository(vcsRevision { change("tmp.txt", "Temporary file.") })
+    val directory = File(tmp.root, "subdir")
+    assertTrue(directory.mkdir())
+
+    assertNull(VcsProxyFactory.connect(directory))
+  }
+
+  @Test
+  public fun clone_whenNoRepository_returnsNull() {
+    val remoteRepositoryDirectory = tmp.newFolder()
+    val url = URL("file://localhost${remoteRepositoryDirectory.absolutePath}")
+    val destination = tmp.newFolder()
+
+    assertNull(VcsProxyFactory.clone(url, destination))
+  }
+
+  @Test
+  public fun clone_returnsEqualRepository() {
+    val remoteRepositoryDirectory = tmp.newFolder()
+    val url = URL("file://localhost${remoteRepositoryDirectory.absolutePath}")
+    val destination = tmp.newFolder()
+    val expectedVcs =
+      createRepository(
+        remoteRepositoryDirectory,
+        vcsRevision {
+          change("README.txt", "This is a test repository.")
+          change("tmp.txt", "Temporary file.")
+        },
+        vcsRevision {
+          delete("tmp.txt")
+          delete("README.txt")
+        },
+        vcsRevision { change("README.txt", "This is a test repo.") },
+        vcsRevision { change("gradle.properties", "org.gradle.daemon=true") },
+      )
+
+    val detectedVcs = assertNotNull(VcsProxyFactory.clone(url, destination))
 
     assertEqualVcsProxies(expected = expectedVcs, actual = detectedVcs)
   }

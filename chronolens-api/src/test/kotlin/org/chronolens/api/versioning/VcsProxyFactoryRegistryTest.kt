@@ -43,12 +43,12 @@ class VcsProxyFactoryRegistryTest {
 
   @Test
   fun clone_whenUndetected_returnsNonNull() {
-    assertNotNull(VcsProxyFactory.clone(URL("file:///~/repository.git"), File("./")))
+    assertNotNull(VcsProxyFactory.clone(URL("https:/example.com/repository.git"), File("./")))
   }
 
   @Test
   fun clone_whenInitialized_returnsNonNull() {
-    val url = URL("file:///~/repository.git")
+    val url = URL("https:/example.com/repository.git")
     FakeVcsProxyFactory.createRemoteRepository(url) {}
 
     assertNotNull(VcsProxyFactory.clone(url, File("./")))

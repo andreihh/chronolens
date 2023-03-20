@@ -24,7 +24,8 @@ import org.chronolens.test.Init
 
 public class FakeVcsProxyFactory : VcsProxyFactory {
   override fun clone(url: URL, directory: File): VcsProxy? {
-    val repository = remoteRepositories[url]
+    val repository =
+      if (url.protocol == "file") repositories[File(url.path)] else remoteRepositories[url]
     if (repository != null) {
       repositories[directory] = repository
     }
