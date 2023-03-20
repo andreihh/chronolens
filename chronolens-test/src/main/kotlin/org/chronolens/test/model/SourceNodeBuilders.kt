@@ -31,7 +31,7 @@ import org.chronolens.test.Init
 import org.chronolens.test.apply
 
 @BuilderMarker
-public class SourceFileBuilder(private val path: String) {
+public class SourceFileBuilder(private val path: SourcePath) {
   private val entities = mutableSetOf<SourceEntity>()
 
   public fun sourceEntity(sourceEntity: SourceEntity): SourceFileBuilder {
@@ -44,11 +44,11 @@ public class SourceFileBuilder(private val path: String) {
     entities += this
   }
 
-  public fun build(): SourceFile = SourceFile(SourcePath(path), entities)
+  public fun build(): SourceFile = SourceFile(path, entities)
 }
 
 @BuilderMarker
-public class TypeBuilder(private val name: String) {
+public class TypeBuilder(private val name: Identifier) {
   private var supertypes = emptySet<Identifier>()
   private var modifiers = emptySet<String>()
   private val members = mutableSetOf<SourceEntity>()
@@ -76,11 +76,11 @@ public class TypeBuilder(private val name: String) {
     members += this
   }
 
-  public fun build(): Type = Type(Identifier(name), supertypes, modifiers, members)
+  public fun build(): Type = Type(name, supertypes, modifiers, members)
 }
 
 @BuilderMarker
-public class FunctionBuilder(private val signature: String) {
+public class FunctionBuilder(private val signature: Signature) {
   private var modifiers = emptySet<String>()
   private var parameters = emptyList<Identifier>()
   private val body = mutableListOf<String>()
@@ -107,11 +107,11 @@ public class FunctionBuilder(private val signature: String) {
     body += this
   }
 
-  public fun build(): Function = Function(Signature(signature), parameters, modifiers, body)
+  public fun build(): Function = Function(signature, parameters, modifiers, body)
 }
 
 @BuilderMarker
-public class VariableBuilder(private val name: String) {
+public class VariableBuilder(private val name: Identifier) {
   private var modifiers = emptySet<String>()
   private val initializer = mutableListOf<String>()
 
@@ -129,19 +129,20 @@ public class VariableBuilder(private val name: String) {
     initializer += this
   }
 
-  public fun build(): Variable = Variable(Identifier(name), modifiers, initializer)
+  public fun build(): Variable = Variable(name, modifiers, initializer)
 }
 
 public fun sourceFile(path: String, init: Init<SourceFileBuilder>): SourceFile =
-  SourceFileBuilder(path).apply(init).build()
+  SourceFileBuilder(SourcePath(path)).apply(init).build()
 
-public fun type(name: String, init: Init<TypeBuilder>): Type = TypeBuilder(name).apply(init).build()
+public fun type(name: String, init: Init<TypeBuilder>): Type =
+  TypeBuilder(Identifier(name)).apply(init).build()
 
 public fun function(signature: String, init: Init<FunctionBuilder>): Function =
-  FunctionBuilder(signature).apply(init).build()
+  FunctionBuilder(Signature(signature)).apply(init).build()
 
 public fun variable(name: String, init: Init<VariableBuilder>): Variable =
-  VariableBuilder(name).apply(init).build()
+  VariableBuilder(Identifier(name)).apply(init).build()
 
 private fun <T> Array<T>.requireDistinct(): Set<T> {
   val set = LinkedHashSet<T>(size)

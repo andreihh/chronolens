@@ -23,6 +23,8 @@ import org.chronolens.model.SourceTree
 import org.chronolens.model.SourceTreeNode
 import org.chronolens.model.Type
 import org.chronolens.model.Variable
+import org.chronolens.model.name
+import org.chronolens.model.signature
 import org.chronolens.test.BuilderMarker
 import org.chronolens.test.Init
 import org.chronolens.test.apply
@@ -50,21 +52,18 @@ public fun sourceTree(init: Init<SourceTreeBuilder>): SourceTree =
 @JvmName("buildSourceFile")
 public fun QualifiedSourceNodeId<SourceFile>.build(
   init: Init<SourceFileBuilder>
-): SourceTreeNode<SourceFile> =
-  SourceTreeNode.of(SourceFileBuilder(this.id.toString()).apply(init).build())
+): SourceTreeNode<SourceFile> = SourceTreeNode.of(SourceFileBuilder(sourcePath).apply(init).build())
 
 @JvmName("buildType")
 public fun QualifiedSourceNodeId<Type>.build(init: Init<TypeBuilder>): SourceTreeNode<Type> =
-  SourceTreeNode(this, TypeBuilder(this.id.toString()).apply(init).build())
+  SourceTreeNode(this, TypeBuilder(name).apply(init).build())
 
 @JvmName("buildFunction")
 public fun QualifiedSourceNodeId<Function>.build(
   init: Init<FunctionBuilder>
-): SourceTreeNode<Function> =
-  SourceTreeNode(this, FunctionBuilder(this.id.toString()).apply(init).build())
+): SourceTreeNode<Function> = SourceTreeNode(this, FunctionBuilder(signature).apply(init).build())
 
 @JvmName("buildVariable")
 public fun QualifiedSourceNodeId<Variable>.build(
   init: Init<VariableBuilder>
-): SourceTreeNode<Variable> =
-  SourceTreeNode(this, VariableBuilder(this.id.toString()).apply(init).build())
+): SourceTreeNode<Variable> = SourceTreeNode(this, VariableBuilder(name).apply(init).build())

@@ -29,13 +29,14 @@ import org.chronolens.model.SetEdit
 import org.chronolens.model.SourceFile
 import org.chronolens.model.Type
 import org.chronolens.model.Variable
-import org.chronolens.model.cast
+import org.chronolens.model.name
+import org.chronolens.model.signature
 import org.chronolens.test.BuilderMarker
 import org.chronolens.test.Init
 import org.chronolens.test.apply
 
 @BuilderMarker
-public class EditTypeBuilder(private val id: String) {
+public class EditTypeBuilder(private val qualifiedId: QualifiedSourceNodeId<Type>) {
   private val supertypeEdits = mutableListOf<SetEdit<Identifier>>()
   private val modifierEdits = mutableListOf<SetEdit<String>>()
 
@@ -55,12 +56,11 @@ public class EditTypeBuilder(private val id: String) {
     return this
   }
 
-  public fun build(): EditType =
-    EditType(QualifiedSourceNodeId.parseFrom(id).cast(), supertypeEdits, modifierEdits)
+  public fun build(): EditType = EditType(qualifiedId, supertypeEdits, modifierEdits)
 }
 
 @BuilderMarker
-public class EditFunctionBuilder(private val id: String) {
+public class EditFunctionBuilder(private val qualifiedId: QualifiedSourceNodeId<Function>) {
   private val modifierEdits = mutableListOf<SetEdit<String>>()
   private val parameterEdits = mutableListOf<ListEdit<Identifier>>()
   private val bodyEdits = mutableListOf<ListEdit<String>>()
@@ -87,16 +87,11 @@ public class EditFunctionBuilder(private val id: String) {
   }
 
   public fun build(): EditFunction =
-    EditFunction(
-      QualifiedSourceNodeId.parseFrom(id).cast(),
-      parameterEdits,
-      modifierEdits,
-      bodyEdits
-    )
+    EditFunction(qualifiedId, parameterEdits, modifierEdits, bodyEdits)
 }
 
 @BuilderMarker
-public class EditVariableBuilder(private val id: String) {
+public class EditVariableBuilder(private val qualifiedId: QualifiedSourceNodeId<Variable>) {
   private val modifierEdits = mutableListOf<SetEdit<String>>()
   private val initializerEdits = mutableListOf<ListEdit<String>>()
 
@@ -110,34 +105,33 @@ public class EditVariableBuilder(private val id: String) {
     return this
   }
 
-  public fun build(): EditVariable =
-    EditVariable(QualifiedSourceNodeId.parseFrom(id).cast(), modifierEdits, initializerEdits)
+  public fun build(): EditVariable = EditVariable(qualifiedId, modifierEdits, initializerEdits)
 }
 
 @JvmName("addSourceFile")
 public fun QualifiedSourceNodeId<SourceFile>.add(
   init: Init<SourceFileBuilder>
-): AddNode<SourceFile> = AddNode(this, SourceFileBuilder(this.id.toString()).apply(init).build())
+): AddNode<SourceFile> = AddNode(this, SourceFileBuilder(sourcePath).apply(init).build())
 
 @JvmName("addType")
 public fun QualifiedSourceNodeId<Type>.add(init: Init<TypeBuilder>): AddNode<Type> =
-  AddNode(this, TypeBuilder(this.id.toString()).apply(init).build())
+  AddNode(this, TypeBuilder(name).apply(init).build())
 
 @JvmName("addFunction")
 public fun QualifiedSourceNodeId<Function>.add(init: Init<FunctionBuilder>): AddNode<Function> =
-  AddNode(this, FunctionBuilder(this.id.toString()).apply(init).build())
+  AddNode(this, FunctionBuilder(signature).apply(init).build())
 
 @JvmName("addVariable")
 public fun QualifiedSourceNodeId<Variable>.add(init: Init<VariableBuilder>): AddNode<Variable> =
-  AddNode(this, VariableBuilder(this.id.toString()).apply(init).build())
+  AddNode(this, VariableBuilder(name).apply(init).build())
 
 public fun QualifiedSourceNodeId<*>.remove(): RemoveNode = RemoveNode(this)
 
 public fun QualifiedSourceNodeId<Type>.edit(init: Init<EditTypeBuilder>): EditType =
-  EditTypeBuilder(this.toString()).apply(init).build()
+  EditTypeBuilder(this).apply(init).build()
 
 public fun QualifiedSourceNodeId<Function>.edit(init: Init<EditFunctionBuilder>): EditFunction =
-  EditFunctionBuilder(this.toString()).apply(init).build()
+  EditFunctionBuilder(this).apply(init).build()
 
 public fun QualifiedSourceNodeId<Variable>.edit(init: Init<EditVariableBuilder>): EditVariable =
-  EditVariableBuilder(this.toString()).apply(init).build()
+  EditVariableBuilder(this).apply(init).build()
