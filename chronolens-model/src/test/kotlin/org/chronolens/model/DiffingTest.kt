@@ -16,12 +16,19 @@
 
 package org.chronolens.model
 
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.chronolens.model.ListEdit.Companion.apply
 import org.chronolens.model.SetEdit.Companion.apply
+import org.chronolens.model.SourceTreeEdit.Companion.apply
+import org.chronolens.test.model.assertEqualSourceTrees
 import org.chronolens.test.model.build
-import org.junit.Test
+import org.chronolens.test.model.function
+import org.chronolens.test.model.sourceFile
+import org.chronolens.test.model.sourceTree
+import org.chronolens.test.model.type
+import org.chronolens.test.model.variable
 
 class DiffingTest {
   private fun String.apply(edits: List<ListEdit<Char>>): String =
@@ -35,6 +42,12 @@ class DiffingTest {
   private fun <T> assertDiff(src: Set<T>, dst: Set<T>) {
     assertEquals(dst, src.apply(src.diff(dst)))
     assertEquals(src, dst.apply(dst.diff(src)))
+  }
+
+  private fun assertDiff(src: SourceTree, dst: SourceTree) {
+    val result = SourceTree.of(src.sources)
+    result.apply(result.diff(dst))
+    assertEqualSourceTrees(dst, result)
   }
 
   @Test
@@ -64,5 +77,36 @@ class DiffingTest {
     val after = SourcePath("src/Main.java").build {}
 
     assertFailsWith<IllegalArgumentException> { before.diff(after) }
+  }
+
+  @Test
+  fun diff_betweenSourceTrees() {
+    val src = sourceTree {
+      +sourceFile("src/Main.java") {
+        +type("Main") {
+          +function("getVersion(String)") { parameters("name") }
+          +variable("VERSION") { modifiers("final", "static") }
+          +function("main(String...)") {}
+          +variable("innerConflict") {}
+          +type("innerConflict") {}
+        }
+      }
+      +sourceFile("src/Test.java") {}
+    }
+
+    val dst = sourceTree {
+      +sourceFile("src/Main.java") {
+        +type("Main") {
+          +function("getVersion(String)") { parameters("name") }
+          +variable("VERSION") { modifiers("final") }
+          +function("main()") {}
+          +variable("innerConflict") { modifiers("final") }
+          +type("innerConflict") { modifiers("abstract") }
+        }
+      }
+      +sourceFile("src/Test2.java") {}
+    }
+
+    assertDiff(src, dst)
   }
 }

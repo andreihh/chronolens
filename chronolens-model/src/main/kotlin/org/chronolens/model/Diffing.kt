@@ -41,6 +41,7 @@ public fun SourceTree.diff(other: SourceTree): List<SourceTreeEdit> {
   return nodeIds.filter(::isSourceFileOrParentExists).mapNotNull { id ->
     val before = nodesBefore[id]
     val after = nodesAfter[id]
+    // At least one of `before` or `after` is not null.
     val edit =
       when {
         before != null && after != null -> before.diff(after)
