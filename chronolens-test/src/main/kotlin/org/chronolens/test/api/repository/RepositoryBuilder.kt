@@ -27,7 +27,6 @@ import org.chronolens.model.RevisionId
 import org.chronolens.model.SourceFile
 import org.chronolens.model.SourcePath
 import org.chronolens.model.SourceTreeEdit
-import org.chronolens.model.qualifiedSourcePathOf
 import org.chronolens.test.BuilderMarker
 import org.chronolens.test.Init
 import org.chronolens.test.api.parsing.FakeParser
@@ -61,11 +60,10 @@ public fun repository(vararg history: RevisionChangeSet): Repository {
   val parser = FakeParser()
 
   fun getRemoveEdits(path: SourcePath): List<SourceTreeEdit> =
-    if (path in sources) listOf(RemoveNode(qualifiedSourcePathOf(path))) else emptyList()
+    if (path in sources) listOf(RemoveNode(path)) else emptyList()
 
   fun getAddEdits(sourceFile: SourceFile): List<SourceTreeEdit> =
-    getRemoveEdits(sourceFile.path) +
-      listOf(AddNode(qualifiedSourcePathOf(sourceFile.path), sourceFile))
+    getRemoveEdits(sourceFile.path) + listOf(AddNode(sourceFile.path, sourceFile))
 
   for ((index, changeSet) in history.withIndex()) {
     val revisionId = RevisionId(index.toString())

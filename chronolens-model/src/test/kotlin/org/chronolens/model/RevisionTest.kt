@@ -30,10 +30,10 @@ class RevisionTest {
 
     val actual =
       revision("123") {
-          +qualifiedSourcePathOf("Main.java").type("Main").type("MainType").add {}
-          +qualifiedSourcePathOf("Main.java").type("Main").type("MainType").edit {}
-          +qualifiedSourcePathOf("Test.java").type("Test").type("TestType").remove()
-          +qualifiedSourcePathOf("MainTest.java").type("MainTest").edit {}
+          +SourcePath("Main.java").type("Main").type("MainType").add {}
+          +SourcePath("Main.java").type("Main").type("MainType").edit {}
+          +SourcePath("Test.java").type("Test").type("TestType").remove()
+          +SourcePath("MainTest.java").type("MainTest").edit {}
         }
         .changeSet
 

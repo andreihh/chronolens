@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
+ * Copyright 2023 Andrei Heidelbacher <andrei.heidelbacher@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,105 +18,35 @@ package org.chronolens.model
 
 import org.chronolens.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
 import org.chronolens.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
-import org.chronolens.model.SourceNodeKind.FUNCTION
-import org.chronolens.model.SourceNodeKind.SOURCE_FILE
-import org.chronolens.model.SourceNodeKind.TYPE
-import org.chronolens.model.SourceNodeKind.VARIABLE
 
 /**
  * A qualified id of a concrete [SourceNode].
  *
- * @param T the concrete type of the source node denoted by this qualified id
- * @param parent the id of the parent node of the node denoted by this qualified id, or `null` if
- * this id denotes a source file
- * @param id the simple id of the node denoted by this qualified id
- * @param nodeType the reflective instantiation of [T]
- * @throws IllegalArgumentException if this qualified id denotes a source file but [parent] is not
- * null, or if this qualified id denotes a source entity but [parent] is `null`, or if [T] denotes
- * an abstract type, or if the simple [id] is not valid for the denoted node type [T]
+ * @param T the type of the source node denoted by this qualified id
  */
-public data class QualifiedSourceNodeId<out T : SourceNode>(
-  private val parent: QualifiedSourceNodeId<SourceContainer>?,
-  public val id: SourceNodeId,
-  private val nodeType: Class<T>
-) {
+public sealed interface QualifiedSourceNodeId<out T : SourceNode> {
+  /** The simple id of the node denoted by this qualified id. */
+  public val id: SourceNodeId
 
   /** The kind of the source node denoted by this qualified id. */
-  public val kind: SourceNodeKind =
-    when (nodeType.kotlin) {
-      SourceFile::class -> SOURCE_FILE
-      Type::class -> TYPE
-      Function::class -> FUNCTION
-      Variable::class -> VARIABLE
-      else -> throw IllegalArgumentException("Invalid node type '$nodeType'!")
-    }
-
-  init {
-    if (kind == SOURCE_FILE) {
-      require(parent == null) { "Source file '$id' must not have a parent!" }
-    } else {
-      requireNotNull(parent) { "Source entity id '$id' must have a parent!" }
-    }
-    when (kind) {
-      SOURCE_FILE -> require(id is SourcePath) { "'$id' must be a source path!" }
-      TYPE,
-      VARIABLE -> require(id is Identifier) { "'$id' must be an identifier!" }
-      FUNCTION -> require(id is Signature) { "'$id' must be a signature!" }
-    }
-  }
+  public val kind: SourceNodeKind
+    get() =
+      when (this) {
+        is SourcePath -> SourceNodeKind.SOURCE_FILE
+        is QualifiedTypeIdentifier -> SourceNodeKind.TYPE
+        is QualifiedSignature -> SourceNodeKind.FUNCTION
+        is QualifiedVariableIdentifier -> SourceNodeKind.VARIABLE
+      }
 
   /** The path of the source file that contains the node denoted by this qualified id. */
   public val sourcePath: SourcePath
-    get() = parent?.sourcePath ?: id as SourcePath
-
-  /**
-   * Casts this qualified id to denote a source node of type [nodeType], or `null` if the cast
-   * fails.
-   */
-  @Suppress("UNCHECKED_CAST")
-  public fun <S : SourceNode> castOrNull(nodeType: Class<S>): QualifiedSourceNodeId<S>? =
-    if (nodeType.isAssignableFrom(this.nodeType)) this as QualifiedSourceNodeId<S> else null
-
-  /**
-   * Casts this qualified id to denote a source node of type [nodeType].
-   *
-   * @throws IllegalArgumentException if the cast fails
-   */
-  public fun <S : SourceNode> cast(nodeType: Class<S>): QualifiedSourceNodeId<S> =
-    requireNotNull(castOrNull(nodeType)) {
-      "Qualified id '$this' with kind '$kind' cast to denote node type '${nodeType}' failed!"
-    }
-
-  /** Casts this qualified id to denote a source node of type [S], or `null` if the cast fails. */
-  public inline fun <reified S : SourceNode> castOrNull(): QualifiedSourceNodeId<S>? =
-    castOrNull(S::class.java)
-
-  /**
-   * Casts this qualified id to denote a source node of type [S].
-   *
-   * @throws IllegalArgumentException if the cast fails
-   */
-  public inline fun <reified S : SourceNode> cast(): QualifiedSourceNodeId<S> = cast(S::class.java)
-
-  public override fun toString(): String {
-    val builder = StringBuilder()
-
-    fun appendId(qualifiedId: QualifiedSourceNodeId<*>) {
-      qualifiedId.parent?.let(::appendId)
-      val separator =
-        when (qualifiedId.kind) {
-          SOURCE_FILE -> ""
-          TYPE -> CONTAINER_SEPARATOR
-          FUNCTION,
-          VARIABLE -> MEMBER_SEPARATOR
-        }
-      builder.append(separator)
-      builder.append(qualifiedId.id)
-    }
-
-    appendId(this)
-    return builder.toString()
-  }
+    get() =
+      when (this) {
+        is SourcePath -> this
+        is QualifiedTypeIdentifier -> parent.sourcePath
+        is QualifiedSignature -> parent.sourcePath
+        is QualifiedVariableIdentifier -> parent.sourcePath
+      }
 
   public companion object {
     /** [Type] identifiers are separated from the parent id by `:`. */
@@ -125,15 +55,17 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
     /** [Function] and [Variable] identifiers are separated from the parent id by `#`. */
     public const val MEMBER_SEPARATOR: Char = '#'
 
+    private val ID_SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
+
     /** Returns whether the given [rawQualifiedId] id valid. */
     @JvmStatic
     public fun isValid(rawQualifiedId: String): Boolean {
       // There must be at most one member separator, and it must be the last one.
       val memberSeparatorIndex = rawQualifiedId.indexOf(MEMBER_SEPARATOR)
-      val nextSeparatorIndex = rawQualifiedId.indexOfAny(SEPARATORS, memberSeparatorIndex + 1)
+      val nextSeparatorIndex = rawQualifiedId.indexOfAny(ID_SEPARATORS, memberSeparatorIndex + 1)
       if (memberSeparatorIndex != -1 && nextSeparatorIndex != -1) return false
 
-      val tokens = rawQualifiedId.split(*SEPARATORS)
+      val tokens = rawQualifiedId.split(*ID_SEPARATORS)
 
       // There is always at least one token. None of the tokens can be blank.
       if (tokens.any(String::isBlank)) return false
@@ -158,61 +90,76 @@ public data class QualifiedSourceNodeId<out T : SourceNode>(
       return Identifier.isValid(tokens.last()) || Signature.isValid(tokens.last())
     }
 
-    /** Returns the qualified id of the parent of the node denoted by this qualified id. */
+    /**
+     * Parses the given [rawQualifiedId].
+     *
+     * @throws IllegalArgumentException if the given [rawQualifiedId] is invalid
+     */
     @JvmStatic
-    public val QualifiedSourceNodeId<SourceEntity>.parentId: QualifiedSourceNodeId<SourceContainer>
-      get() = parent ?: throw AssertionError("Parent id of '$this' must not be null!")
+    public fun parseFrom(rawQualifiedId: String): QualifiedSourceNodeId<*> {
+      require(isValid(rawQualifiedId)) { "Invalid qualified id '$rawQualifiedId'!" }
+
+      val tokens = rawQualifiedId.split(*ID_SEPARATORS)
+
+      // The first token always denotes a source file.
+      var qualifiedId: QualifiedSourceNodeId<SourceContainer> = SourcePath(tokens.first())
+
+      // Stop if there is just one token.
+      if (tokens.size == 1) return qualifiedId
+
+      // Middle tokens always denote types.
+      for (token in tokens.drop(1).dropLast(1)) {
+        qualifiedId = qualifiedId.type(token)
+      }
+
+      // There are at least two tokens, so the separator exists.
+      val separator = rawQualifiedId.last { it in ID_SEPARATORS }
+      val lastId = tokens.last()
+      val isSignature = Signature.isValid(lastId)
+      return when {
+        separator == CONTAINER_SEPARATOR -> qualifiedId.type(lastId)
+        separator == MEMBER_SEPARATOR && isSignature -> qualifiedId.function(lastId)
+        separator == MEMBER_SEPARATOR && !isSignature -> qualifiedId.variable(lastId)
+        else -> throw AssertionError("Invalid separator '$separator' in '$rawQualifiedId'!")
+      }
+    }
   }
 }
 
-private val SEPARATORS = charArrayOf(CONTAINER_SEPARATOR, MEMBER_SEPARATOR)
+private data class QualifiedTypeIdentifier(
+  val parent: QualifiedSourceNodeId<SourceContainer>,
+  override val id: Identifier
+) : QualifiedSourceNodeId<Type> {
 
-/** Creates a qualified source path from the given [path]. */
-public fun qualifiedSourcePathOf(path: SourcePath): QualifiedSourceNodeId<SourceFile> =
-  QualifiedSourceNodeId(null, path, SourceFile::class.java)
-
-/**
- * Creates a qualified source path from the given [path].
- *
- * @throws IllegalArgumentException if the given [path] is not a valid [SourcePath]
- */
-public fun qualifiedSourcePathOf(path: String): QualifiedSourceNodeId<SourceFile> =
-  qualifiedSourcePathOf(SourcePath(path))
-
-/**
- * Parses the given [rawQualifiedId].
- *
- * @throws IllegalArgumentException if the given [rawQualifiedId] is invalid
- */
-public fun parseQualifiedSourceNodeIdFrom(rawQualifiedId: String): QualifiedSourceNodeId<*> {
-  require(QualifiedSourceNodeId.isValid(rawQualifiedId)) {
-    "Invalid qualified id '$rawQualifiedId'!"
-  }
-
-  val tokens = rawQualifiedId.split(*SEPARATORS)
-
-  // The first token always denotes a source file.
-  var qualifiedId: QualifiedSourceNodeId<SourceContainer> = qualifiedSourcePathOf(tokens.first())
-
-  // Stop if there is just one token.
-  if (tokens.size == 1) return qualifiedId
-
-  // Middle tokens always denote types.
-  for (token in tokens.drop(1).dropLast(1)) {
-    qualifiedId = qualifiedId.type(token)
-  }
-
-  // There are at least two tokens, so the separator exists.
-  val separator = rawQualifiedId.last { it in SEPARATORS }
-  val lastId = tokens.last()
-  val isSignature = Signature.isValid(lastId)
-  return when {
-    separator == CONTAINER_SEPARATOR -> qualifiedId.type(lastId)
-    separator == MEMBER_SEPARATOR && isSignature -> qualifiedId.function(lastId)
-    separator == MEMBER_SEPARATOR && !isSignature -> qualifiedId.variable(lastId)
-    else -> throw AssertionError("Invalid separator '$separator' in '$rawQualifiedId'!")
-  }
+  override fun toString(): String = "$parent$CONTAINER_SEPARATOR$id"
 }
+
+private data class QualifiedSignature(
+  val parent: QualifiedSourceNodeId<SourceContainer>,
+  override val id: Signature
+) : QualifiedSourceNodeId<Function> {
+
+  override fun toString(): String = "$parent$MEMBER_SEPARATOR$id"
+}
+
+private data class QualifiedVariableIdentifier(
+  val parent: QualifiedSourceNodeId<SourceContainer>,
+  override val id: Identifier
+) : QualifiedSourceNodeId<Variable> {
+
+  override fun toString(): String = "$parent$MEMBER_SEPARATOR$id"
+}
+
+/** Returns the qualified id of the parent of the node denoted by this qualified id. */
+public val QualifiedSourceNodeId<SourceEntity>.parentId: QualifiedSourceNodeId<SourceContainer>
+  get() =
+    when (this) {
+      is QualifiedTypeIdentifier -> parent
+      is QualifiedSignature -> parent
+      is QualifiedVariableIdentifier -> parent
+      else ->
+        throw AssertionError("Qualified source node id '$this' does not denote a source entity!")
+    }
 
 /** Returns the name of this qualified type id. */
 @get:JvmName("getTypeName")
@@ -232,7 +179,7 @@ public val QualifiedSourceNodeId<Variable>.name: Identifier
 /** Creates a new qualified id by appending the given [Type] [name] to this qualified id. */
 public fun QualifiedSourceNodeId<SourceContainer>.type(
   name: Identifier
-): QualifiedSourceNodeId<Type> = QualifiedSourceNodeId(this, name, Type::class.java)
+): QualifiedSourceNodeId<Type> = QualifiedTypeIdentifier(this, name)
 
 /**
  * Creates a new qualified id by appending the given [Type] [name] to this qualified id.
@@ -247,7 +194,7 @@ public fun QualifiedSourceNodeId<SourceContainer>.type(name: String): QualifiedS
  */
 public fun QualifiedSourceNodeId<SourceContainer>.function(
   signature: Signature
-): QualifiedSourceNodeId<Function> = QualifiedSourceNodeId(this, signature, Function::class.java)
+): QualifiedSourceNodeId<Function> = QualifiedSignature(this, signature)
 
 /**
  * Creates a new qualified id by appending the given [Function] [signature] to this qualified id.
@@ -261,7 +208,7 @@ public fun QualifiedSourceNodeId<SourceContainer>.function(
 /** Creates a new qualified id by appending the given [Variable] [name] to this qualified id. */
 public fun QualifiedSourceNodeId<SourceContainer>.variable(
   name: Identifier
-): QualifiedSourceNodeId<Variable> = QualifiedSourceNodeId(this, name, Variable::class.java)
+): QualifiedSourceNodeId<Variable> = QualifiedVariableIdentifier(this, name)
 
 /**
  * Creates a new qualified id by appending the given [Variable] [name] to this qualified id.
@@ -271,3 +218,44 @@ public fun QualifiedSourceNodeId<SourceContainer>.variable(
 public fun QualifiedSourceNodeId<SourceContainer>.variable(
   name: String
 ): QualifiedSourceNodeId<Variable> = variable(Identifier(name))
+
+/**
+ * Casts this qualified id to denote a source node of type [nodeType], or `null` if the cast fails.
+ */
+@Suppress("UNCHECKED_CAST")
+public fun <S : SourceNode> QualifiedSourceNodeId<*>.castOrNull(
+  nodeType: Class<S>
+): QualifiedSourceNodeId<S>? {
+  val thisNodeType =
+    when (this) {
+      is SourcePath -> SourceFile::class.java
+      is QualifiedTypeIdentifier -> Type::class.java
+      is QualifiedSignature -> Function::class.java
+      is QualifiedVariableIdentifier -> Variable::class.java
+    }
+  return if (nodeType.isAssignableFrom(thisNodeType)) this as QualifiedSourceNodeId<S> else null
+}
+
+/**
+ * Casts this qualified id to denote a source node of type [nodeType].
+ *
+ * @throws IllegalArgumentException if the cast fails
+ */
+public fun <S : SourceNode> QualifiedSourceNodeId<*>.cast(
+  nodeType: Class<S>
+): QualifiedSourceNodeId<S> =
+  requireNotNull(castOrNull(nodeType)) {
+    "Qualified id '$this' with kind '$kind' cast to denote node type '${nodeType}' failed!"
+  }
+
+/** Casts this qualified id to denote a source node of type [S], or `null` if the cast fails. */
+public inline fun <reified S : SourceNode> QualifiedSourceNodeId<*>.castOrNull():
+  QualifiedSourceNodeId<S>? = castOrNull(S::class.java)
+
+/**
+ * Casts this qualified id to denote a source node of type [S].
+ *
+ * @throws IllegalArgumentException if the cast fails
+ */
+public inline fun <reified S : SourceNode> QualifiedSourceNodeId<*>.cast():
+  QualifiedSourceNodeId<S> = cast(S::class.java)

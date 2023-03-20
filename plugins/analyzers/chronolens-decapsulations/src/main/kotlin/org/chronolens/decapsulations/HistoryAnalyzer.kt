@@ -31,6 +31,7 @@ import org.chronolens.model.SourcePath
 import org.chronolens.model.SourceTree
 import org.chronolens.model.SourceTreeEdit.Companion.apply
 import org.chronolens.model.Variable
+import org.chronolens.model.cast
 
 internal class HistoryAnalyzer(private val ignoreConstants: Boolean) {
   private val sourceTree = SourceTree.empty()

@@ -25,9 +25,9 @@ import org.chronolens.api.analysis.option
 import org.chronolens.api.repository.Repository
 import org.chronolens.api.repository.Repository.AccessMode
 import org.chronolens.api.repository.Repository.AccessMode.RANDOM_ACCESS
+import org.chronolens.model.QualifiedSourceNodeId
 import org.chronolens.model.RevisionId
 import org.chronolens.model.SourceNode
-import org.chronolens.model.parseQualifiedSourceNodeIdFrom
 import org.chronolens.model.walkSourceTree
 
 public class ModelSpec : AnalyzerSpec {
@@ -58,7 +58,7 @@ public class ModelAnalyzer(optionsProvider: OptionsProvider) : Analyzer(optionsP
       .name("qualified-id")
       .description("the qualified id of the inspected source node")
       .required()
-      .transform(::parseQualifiedSourceNodeIdFrom)
+      .transform { QualifiedSourceNodeId.parseFrom(it) }
 
   override fun analyze(repository: Repository): ModelReport {
     val revisionId = rev ?: repository.getHeadId()

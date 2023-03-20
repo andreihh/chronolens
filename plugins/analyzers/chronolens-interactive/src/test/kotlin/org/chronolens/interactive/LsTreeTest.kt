@@ -21,7 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.chronolens.api.analysis.InvalidOptionException
 import org.chronolens.api.repository.CorruptedRepositoryException
-import org.chronolens.model.qualifiedSourcePathOf
+import org.chronolens.model.SourcePath
 import org.chronolens.test.api.analysis.OptionsProviderBuilder
 import org.chronolens.test.api.repository.repository
 import org.chronolens.test.api.repository.revisionListOf
@@ -61,12 +61,10 @@ class LsTreeTest {
   fun analyze_returnsAllSourcesInRevision() {
     val repository = repository {
       +revision("1") {
-        +qualifiedSourcePathOf("src/Main.java").add {
-          +type("Main") { +function("main(String[])") {} }
-        }
+        +SourcePath("src/Main.java").add { +type("Main") { +function("main(String[])") {} } }
       }
-      +revision("2") { +qualifiedSourcePathOf("src/Test.java").add { +type("Test") {} } }
-      +revision("3") { +qualifiedSourcePathOf("src/Main.java").remove() }
+      +revision("2") { +SourcePath("src/Test.java").add { +type("Test") {} } }
+      +revision("3") { +SourcePath("src/Main.java").remove() }
     }
 
     val expectedSources =

@@ -32,8 +32,6 @@ import org.chronolens.coupling.Graph.Node
 import org.chronolens.model.QualifiedSourceNodeId
 import org.chronolens.model.Revision
 import org.chronolens.model.SourcePath
-import org.chronolens.model.parseQualifiedSourceNodeIdFrom
-import org.chronolens.model.qualifiedSourcePathOf
 
 internal class FeatureEnvyAnalyzerSpec : AnalyzerSpec {
   override val name: String
@@ -114,7 +112,7 @@ internal class FeatureEnvyAnalyzer(optionsProvider: OptionsProvider) : Analyzer(
     val functionToFileCoupling = emptySparseHashMatrix<QualifiedSourceNodeId<*>, Double>()
     for ((id1, id2) in cells) {
       val function = id1
-      val file = qualifiedSourcePathOf(id2.sourcePath)
+      val file = id2.sourcePath
       val coupling = coupling(id1, id2)
       functionToFileCoupling[function, file] =
         (functionToFileCoupling[function, file] ?: 0.0) + coupling
@@ -129,7 +127,7 @@ internal class FeatureEnvyAnalyzer(optionsProvider: OptionsProvider) : Analyzer(
     for ((function, fileCouplings) in functionToFileCoupling) {
       fun couplingWithFile(f: QualifiedSourceNodeId<*>): Double = fileCouplings[f] ?: 0.0
 
-      val file = qualifiedSourcePathOf(function.sourcePath)
+      val file = function.sourcePath
       val selfCoupling = couplingWithFile(file)
       val couplingThreshold = selfCoupling * minEnvyRatio
       val enviedFiles =
@@ -214,7 +212,7 @@ private fun Graph.colorNodes(
       .map(QualifiedSourceNodeId<*>::toString)
       .toSet()
   val fileGroups =
-    nodes.map(Node::label).groupBy { parseQualifiedSourceNodeIdFrom(it).sourcePath }.values
+    nodes.map(Node::label).groupBy { QualifiedSourceNodeId.parseFrom(it).sourcePath }.values
   val groups = fileGroups + instances.map(::listOf)
   return colorNodes(groups)
 }

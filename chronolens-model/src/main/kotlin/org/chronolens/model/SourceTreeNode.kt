@@ -16,8 +16,6 @@
 
 package org.chronolens.model
 
-import org.chronolens.model.QualifiedSourceNodeId.Companion.parentId
-
 /**
  * A fully qualified [SourceNode] within a source tree.
  *
@@ -97,7 +95,7 @@ public data class SourceTreeNode<out T : SourceNode>(
     /** Creates a new source tree node from the given [sourceFile]. */
     @JvmStatic
     public fun of(sourceFile: SourceFile): SourceTreeNode<SourceFile> =
-      SourceTreeNode(qualifiedSourcePathOf(sourceFile.path), sourceFile)
+      SourceTreeNode(sourceFile.path, sourceFile)
 
     /** Creates a new source tree node from the given [parentId] and [sourceEntity]. */
     @JvmStatic

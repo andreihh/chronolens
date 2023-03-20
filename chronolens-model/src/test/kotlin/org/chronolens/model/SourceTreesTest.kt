@@ -107,7 +107,7 @@ class SourceTreeTest {
         +variable("version") { +"2" }
       }
     }
-    val qualifiedId = qualifiedSourcePathOf("src/Test.java").type("IClass").variable("VERSION")
+    val qualifiedId = SourcePath("src/Test.java").type("IClass").variable("VERSION")
 
     assertFalse(qualifiedId in sourceTree)
   }
@@ -127,7 +127,7 @@ class SourceTreeTest {
         +variable("version") { +"2" }
       }
     }
-    val nodeId = qualifiedSourcePathOf("src/Test.java").type("IClass").variable("version")
+    val nodeId = SourcePath("src/Test.java").type("IClass").variable("version")
     val actualNode = sourceTree.get<Variable>(nodeId)
 
     assertEquals(expectedNode, actualNode)
@@ -150,7 +150,7 @@ class SourceTreeTest {
         +variable("version") { +"1" }
       }
     }
-    val nodeId = qualifiedSourcePathOf("src/Test.java").function("getVersion()")
+    val nodeId = SourcePath("src/Test.java").function("getVersion()")
 
     assertFailsWith<IllegalStateException> { sourceTree.get<Function>(nodeId) }
   }
@@ -163,7 +163,7 @@ class SourceTreeTest {
         +variable("version") { +"1" }
       }
     }
-    val nodeId = qualifiedSourcePathOf("src/Test.java").function("getVersion()")
+    val nodeId = SourcePath("src/Test.java").function("getVersion()")
 
     assertNull(sourceTree[nodeId])
   }
@@ -182,11 +182,11 @@ class SourceTreeTest {
 
     val actual = sourceTree { +sourceFile("src/Main.java") {} }
     actual.apply(
-      qualifiedSourcePathOf("src/Main.java").remove(),
-      qualifiedSourcePathOf("src/Test.java").add {},
-      qualifiedSourcePathOf("src/Test.java").type("Test").add {},
-      qualifiedSourcePathOf("src/Test.java").type("Test").function("getVersion()").add {},
-      qualifiedSourcePathOf("src/Test.java").type("Test").edit {
+      SourcePath("src/Main.java").remove(),
+      SourcePath("src/Test.java").add {},
+      SourcePath("src/Test.java").type("Test").add {},
+      SourcePath("src/Test.java").type("Test").function("getVersion()").add {},
+      SourcePath("src/Test.java").type("Test").edit {
         modifiers { +"abstract" }
         supertypes { +"Object" }
       },

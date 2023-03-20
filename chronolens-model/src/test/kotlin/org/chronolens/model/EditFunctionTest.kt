@@ -35,7 +35,7 @@ class EditFunctionTest {
       }
     }
     val edit =
-      qualifiedSourcePathOf("src/Test.java").type("Test").function("getVersion()").edit {
+      SourcePath("src/Test.java").type("Test").function("getVersion()").edit {
         modifiers { +"@Override" }
       }
 
@@ -53,7 +53,7 @@ class EditFunctionTest {
       +sourceFile("src/Test.java") { +function("getValue(int, int)") { parameters("x", "y") } }
     }
     val edit =
-      qualifiedSourcePathOf("src/Test.java").function("getValue(int, int)").edit {
+      SourcePath("src/Test.java").function("getValue(int, int)").edit {
         parameters {
           remove(0)
           add(index = 1, value = "y")
@@ -71,7 +71,7 @@ class EditFunctionTest {
   @Test
   fun apply_withNonExistingId_throws() {
     val sourceTree = sourceTree { +sourceFile("src/Test.java") { +function("get_version()") {} } }
-    val edit = qualifiedSourcePathOf("src/Test.java").function("getVersion()").edit {}
+    val edit = SourcePath("src/Test.java").function("getVersion()").edit {}
 
     assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
   }
@@ -82,9 +82,7 @@ class EditFunctionTest {
       +sourceFile("src/Test.java") { +function("getValue(int, int)") { parameters("y", "x") } }
     }
     val edit =
-      qualifiedSourcePathOf("src/Test.java").function("getValue(int, int)").edit {
-        parameters { remove(2) }
-      }
+      SourcePath("src/Test.java").function("getValue(int, int)").edit { parameters { remove(2) } }
 
     assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
   }

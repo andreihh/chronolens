@@ -32,8 +32,7 @@ class EditVariableTest {
     val expected = sourceTree {
       +sourceFile("src/Test.java") { +variable("name") { modifiers("@NotNull") } }
     }
-    val edit =
-      qualifiedSourcePathOf("src/Test.java").variable("name").edit { modifiers { +"@NotNull" } }
+    val edit = SourcePath("src/Test.java").variable("name").edit { modifiers { +"@NotNull" } }
 
     val actual = sourceTree { +sourceFile("src/Test.java") { +variable("name") {} } }
     actual.apply(edit)
@@ -44,7 +43,7 @@ class EditVariableTest {
   @Test
   fun apply_withNonExistingId_throws() {
     val sourceTree = sourceTree { +sourceFile("src/Test.java") { +variable("DEBUG") {} } }
-    val edit = qualifiedSourcePathOf("src/Test.java").variable("RELEASE").edit {}
+    val edit = SourcePath("src/Test.java").variable("RELEASE").edit {}
 
     assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
   }
@@ -52,7 +51,7 @@ class EditVariableTest {
   @Test
   fun apply_withTypeId_throws() {
     val sourceTree = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
-    val edit = qualifiedSourcePathOf("src/Test.java").variable("Test").edit {}
+    val edit = SourcePath("src/Test.java").variable("Test").edit {}
 
     assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
   }

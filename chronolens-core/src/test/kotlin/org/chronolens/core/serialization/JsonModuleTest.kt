@@ -31,7 +31,6 @@ import org.chronolens.model.Revision
 import org.chronolens.model.Signature
 import org.chronolens.model.SourcePath
 import org.chronolens.model.function
-import org.chronolens.model.qualifiedSourcePathOf
 import org.chronolens.model.type
 import org.chronolens.model.variable
 import org.chronolens.test.model.add
@@ -48,7 +47,7 @@ class JsonModuleTest {
     revision("HEAD") {
       date = Instant.ofEpochMilli(1824733L)
       author = "unknown"
-      +qualifiedSourcePathOf("res").add {
+      +SourcePath("res").add {
         +variable("DEBUG") { +"true" }
         +variable("RELEASE") { +"false" }
         +function("createIClass()") {}
@@ -59,15 +58,15 @@ class JsonModuleTest {
           +function("getVersion()") { +"1" }
         }
       }
-      +qualifiedSourcePathOf("res").function("createIClass()").remove()
-      +qualifiedSourcePathOf("res").variable("DEBUG").edit {
+      +SourcePath("res").function("createIClass()").remove()
+      +SourcePath("res").variable("DEBUG").edit {
         initializer {
           remove(0)
           add(index = 0, value = "false")
         }
       }
-      +qualifiedSourcePathOf("res").variable("RELEASE").remove()
-      +qualifiedSourcePathOf("res").type("IClass").edit { supertypes { -"Interface" } }
+      +SourcePath("res").variable("RELEASE").remove()
+      +SourcePath("res").type("IClass").edit { supertypes { -"Interface" } }
     }
 
   // TODO: figure out why this doesn't pass anymore.
@@ -167,7 +166,7 @@ class JsonModuleTest {
 
   @Test
   fun deserializeQualifiedSourcePath_parsesString() {
-    val qualifiedPath = qualifiedSourcePathOf("src/Main.java")
+    val qualifiedPath = SourcePath("src/Main.java")
     val src = "\"$qualifiedPath\"".byteInputStream()
 
     assertEquals(qualifiedPath, JsonModule.deserialize<QualifiedSourceNodeId<*>>(src))

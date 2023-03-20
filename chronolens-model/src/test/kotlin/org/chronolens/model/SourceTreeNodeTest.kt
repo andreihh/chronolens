@@ -28,7 +28,7 @@ import org.junit.Test
 class SourceTreeNodeTest {
   @Test
   fun newSourceTreeNode_ofMismatchingKinds_throws() {
-    val qualifiedId = qualifiedSourcePathOf("src/Main.java").type("Main")
+    val qualifiedId = SourcePath("src/Main.java").type("Main")
     val sourceNode = variable("Main") {}
 
     assertFailsWith<IllegalArgumentException> { SourceTreeNode(qualifiedId, sourceNode) }
@@ -36,7 +36,7 @@ class SourceTreeNodeTest {
 
   @Test
   fun newSourceTreeNode_ofMismatchingIds_throws() {
-    val qualifiedId = qualifiedSourcePathOf("src/Main.java").type("Main")
+    val qualifiedId = SourcePath("src/Main.java").type("Main")
     val sourceNode = type("main") {}
 
     assertFailsWith<IllegalArgumentException> { SourceTreeNode(qualifiedId, sourceNode) }
@@ -44,7 +44,7 @@ class SourceTreeNodeTest {
 
   @Test
   fun kind_isEqualToQualifiedIdAndSourceNodeKind() {
-    val qualifiedId = qualifiedSourcePathOf("src/Main.java").type("Main")
+    val qualifiedId = SourcePath("src/Main.java").type("Main")
     val sourceNode = type("Main") {}
     val sourceTreeNode = SourceTreeNode(qualifiedId, sourceNode)
 
@@ -63,14 +63,14 @@ class SourceTreeNodeTest {
   @Test
   fun sourcePath_ofNode_returnsPathOfContainerSourceFile() {
     val path = "src/Test.java"
-    val sourceTreeNode = qualifiedSourcePathOf(path).build { +function("getVersion(String)") {} }
+    val sourceTreeNode = SourcePath(path).build { +function("getVersion(String)") {} }
 
     assertEquals(path, sourceTreeNode.sourcePath.toString())
   }
 
   @Test
   fun castOrNull_whenValidType_returnsNode() {
-    val sourceTreeNode = qualifiedSourcePathOf("src/Test.java").build {}
+    val sourceTreeNode = SourcePath("src/Test.java").build {}
 
     assertEquals<SourceTreeNode<*>?>(
       sourceTreeNode,
@@ -80,21 +80,21 @@ class SourceTreeNodeTest {
 
   @Test
   fun castOrNull_whenInvalidType_returnsNull() {
-    val sourceTreeNode = qualifiedSourcePathOf("src/Test.java").build {}
+    val sourceTreeNode = SourcePath("src/Test.java").build {}
 
     assertNull(sourceTreeNode.castOrNull<SourceEntity>())
   }
 
   @Test
   fun cast_whenValidType_returnsNode() {
-    val sourceTreeNode = qualifiedSourcePathOf("src/Test.java").build {}
+    val sourceTreeNode = SourcePath("src/Test.java").build {}
 
     assertEquals<SourceTreeNode<*>>(sourceTreeNode, sourceTreeNode.cast<SourceContainer>())
   }
 
   @Test
   fun cast_whenInvalidType_throws() {
-    val sourceTreeNode = qualifiedSourcePathOf("src/Test.java").build {}
+    val sourceTreeNode = SourcePath("src/Test.java").build {}
 
     assertFailsWith<IllegalArgumentException> { sourceTreeNode.cast<SourceEntity>() }
   }
@@ -102,22 +102,22 @@ class SourceTreeNodeTest {
   @Test
   fun walkSourceTree_returnsAllDescendants() {
     val sourceTreeNode =
-      qualifiedSourcePathOf("src/Main.java").type("Main").build {
+      SourcePath("src/Main.java").type("Main").build {
         +type("InnerType") { +function("main(String[])") {} }
         +variable("VERSION") {}
       }
 
     val expectedSourceTreeNodes =
       listOf(
-        qualifiedSourcePathOf("src/Main.java").type("Main").build {
+        SourcePath("src/Main.java").type("Main").build {
           +type("InnerType") { +function("main(String[])") {} }
           +variable("VERSION") {}
         },
-        qualifiedSourcePathOf("src/Main.java").type("Main").type("InnerType").build {
+        SourcePath("src/Main.java").type("Main").type("InnerType").build {
           +function("main(String[])") {}
         },
-        qualifiedSourcePathOf("src/Main.java").type("Main").variable("VERSION").build {},
-        qualifiedSourcePathOf("src/Main.java")
+        SourcePath("src/Main.java").type("Main").variable("VERSION").build {},
+        SourcePath("src/Main.java")
           .type("Main")
           .type("InnerType")
           .function("main(String[])")

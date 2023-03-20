@@ -16,8 +16,6 @@
 
 package org.chronolens.model
 
-import org.chronolens.model.QualifiedSourceNodeId.Companion.parentId
-
 /**
  * Returns the edits which must be applied to [this] source tree in order to obtain the [other]
  * source tree.
@@ -124,14 +122,12 @@ public fun SourceTreeNode<*>.diff(other: SourceTreeNode<*>): SourceTreeEdit? {
   require(qualifiedId == other.qualifiedId) {
     "Can't compute diff between '$qualifiedId' and '${other.qualifiedId}'!"
   }
-  val editBuilder =
-    when (sourceNode) {
-      is SourceFile -> { _ -> null }
-      is Type -> sourceNode.diff(other.sourceNode as Type)
-      is Function -> sourceNode.diff(other.sourceNode as Function)
-      is Variable -> sourceNode.diff(other.sourceNode as Variable)
-    }
-  return editBuilder.invoke(qualifiedId.cast())
+  return when (sourceNode) {
+    is SourceFile -> null
+    is Type -> sourceNode.diff(other.sourceNode as Type).invoke(qualifiedId.cast())
+    is Function -> sourceNode.diff(other.sourceNode as Function).invoke(qualifiedId.cast())
+    is Variable -> sourceNode.diff(other.sourceNode as Variable).invoke(qualifiedId.cast())
+  }
 }
 
 private typealias SourceTreeEditBuilder<T> = (QualifiedSourceNodeId<T>) -> SourceTreeEdit?

@@ -32,7 +32,7 @@ class EditTypeTest {
     val expected = sourceTree {
       +sourceFile("src/Test.java") { +type("Test") { supertypes("Object") } }
     }
-    val edit = qualifiedSourcePathOf("src/Test.java").type("Test").edit { supertypes { +"Object" } }
+    val edit = SourcePath("src/Test.java").type("Test").edit { supertypes { +"Object" } }
 
     val actual = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
     actual.apply(edit)
@@ -43,7 +43,7 @@ class EditTypeTest {
   @Test
   fun apply_withNonExistingId_throws() {
     val sourceTree = sourceTree { +sourceFile("src/Test.java") {} }
-    val edit = qualifiedSourcePathOf("src/Test.java").type("Test").edit {}
+    val edit = SourcePath("src/Test.java").type("Test").edit {}
 
     assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
   }
@@ -51,7 +51,7 @@ class EditTypeTest {
   @Test
   fun apply_withVariableId_throws() {
     val sourceTree = sourceTree { +sourceFile("src/Test.java") { +variable("test") {} } }
-    val edit = qualifiedSourcePathOf("src/Test.java").type("test").edit {}
+    val edit = SourcePath("src/Test.java").type("test").edit {}
 
     assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
   }

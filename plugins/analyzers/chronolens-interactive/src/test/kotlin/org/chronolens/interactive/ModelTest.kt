@@ -21,7 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.chronolens.api.analysis.InvalidOptionException
 import org.chronolens.api.repository.CorruptedRepositoryException
-import org.chronolens.model.qualifiedSourcePathOf
+import org.chronolens.model.SourcePath
 import org.chronolens.model.type
 import org.chronolens.test.api.analysis.OptionsProviderBuilder
 import org.chronolens.test.api.repository.repository
@@ -61,9 +61,7 @@ class ModelTest {
   @Test
   fun analyze_whenMissingSourceFile_throws() {
     val analyzer = create(qualifiedId = "src/Test.java:Test", revision = "1")
-    val repository = repository {
-      +revision("1") { +qualifiedSourcePathOf("src/Main.java").add {} }
-    }
+    val repository = repository { +revision("1") { +SourcePath("src/Main.java").add {} } }
 
     assertFailsWith<InvalidOptionException> { analyzer.analyze(repository) }
   }
@@ -72,9 +70,7 @@ class ModelTest {
   fun analyze_whenMissingSourceNode_throws() {
     val analyzer = create(qualifiedId = "src/Main.java:Test", revision = "1")
     val repository = repository {
-      +revision("1") {
-        +qualifiedSourcePathOf("src/Main.java").add { +type("Main") { supertypes("Object") } }
-      }
+      +revision("1") { +SourcePath("src/Main.java").add { +type("Main") { supertypes("Object") } } }
     }
 
     assertFailsWith<InvalidOptionException> { analyzer.analyze(repository) }
@@ -91,13 +87,9 @@ class ModelTest {
   @Test
   fun analyze_returnsSourceNodeAtRevision() {
     val repository = repository {
-      +revision("1") { +qualifiedSourcePathOf("src/Main.java").add { +type("Main") {} } }
-      +revision("2") {
-        +qualifiedSourcePathOf("src/Main.java").type("Main").edit { supertypes { +"Object" } }
-      }
-      +revision("3") {
-        +qualifiedSourcePathOf("src/Main.java").type("Main").edit { supertypes { -"Object" } }
-      }
+      +revision("1") { +SourcePath("src/Main.java").add { +type("Main") {} } }
+      +revision("2") { +SourcePath("src/Main.java").type("Main").edit { supertypes { +"Object" } } }
+      +revision("3") { +SourcePath("src/Main.java").type("Main").edit { supertypes { -"Object" } } }
     }
 
     val expectedSourceNodes =

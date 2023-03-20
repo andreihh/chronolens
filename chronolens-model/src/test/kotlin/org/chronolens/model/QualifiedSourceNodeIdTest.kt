@@ -16,142 +16,90 @@
 
 package org.chronolens.model
 
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.junit.Test
 
 class QualifiedSourceNodeIdTest {
   @Test
-  fun createAbstractSourceNodeId_fails() {
-    assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId(null, Identifier("Main"), SourceEntity::class.java)
-    }
-  }
-
-  @Test
-  fun createSourceFileId_whenSimpleIdIsNotSourcePath_fails() {
-    assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId(null, Identifier("Main"), SourceFile::class.java)
-    }
-  }
-
-  @Test
-  fun createTypeId_whenSimpleIdIsNotIdentifier_fails() {
-    assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId(null, SourcePath("src/Main"), Type::class.java)
-    }
-  }
-
-  @Test
-  fun createFunctionId_whenSimpleIdIsNotSignature_fails() {
-    assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId(null, Identifier("Main"), Function::class.java)
-    }
-  }
-
-  @Test
-  fun createVariableId_whenSimpleIdIsNotIdentifier_fails() {
-    assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId(null, Signature("main()"), Variable::class.java)
-    }
-  }
-
-  @Test
-  fun createSourceFileId_whenNonNullParent_fails() {
-    assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId(
-        qualifiedSourcePathOf("src/main/kotlin"),
-        SourcePath("Main.java"),
-        SourceFile::class.java
-      )
-    }
-  }
-
-  @Test
-  fun createTypeId_whenNullParent_fails() {
-    assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId(null, Identifier("Main"), Type::class.java)
-    }
-  }
-
-  @Test
-  fun createFunctionId_whenNullParent_fails() {
-    assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId(null, Signature("Main"), Function::class.java)
-    }
-  }
-
-  @Test
-  fun createVariableId_whenNullParent_fails() {
-    assertFailsWith<IllegalArgumentException> {
-      QualifiedSourceNodeId(null, Identifier("Main"), Variable::class.java)
-    }
-  }
-
-  @Test
-  fun sourcePath_whenNullParent_returnsId() {
+  fun sourcePath_ofSourcePath_returnsPath() {
     val path = SourcePath("src/main/java/Main.java")
-    val qualifiedId = qualifiedSourcePathOf(path)
+
+    assertEquals(path, path.sourcePath)
+  }
+
+  @Test
+  fun sourcePath_ofType_returnsRootSourcePath() {
+    val path = SourcePath("src/main/java/Main.java")
+    val qualifiedId = path.type("Main").type("Inner")
 
     assertEquals(path, qualifiedId.sourcePath)
   }
 
   @Test
-  fun sourcePath_whenNonNullParent_returnsParentSourcePath() {
+  fun sourcePath_ofFunction_returnsRootSourcePath() {
     val path = SourcePath("src/main/java/Main.java")
-    val qualifiedId = qualifiedSourcePathOf(path).type("Main").function("main()")
+    val qualifiedId = path.type("Main").function("main()")
+
+    assertEquals(path, qualifiedId.sourcePath)
+  }
+
+  @Test
+  fun sourcePath_ofVariable_returnsRootSourcePath() {
+    val path = SourcePath("src/main/java/Main.java")
+    val qualifiedId = path.type("Main").variable("VERSION")
 
     assertEquals(path, qualifiedId.sourcePath)
   }
 
   @Test
   fun castOrNull_whenValidType_returnsId() {
-    val qualifiedId = qualifiedSourcePathOf("src/Main.java")
+    val qualifiedId = SourcePath("src/Main.java")
 
     assertEquals<QualifiedSourceNodeId<*>?>(qualifiedId, qualifiedId.castOrNull<SourceContainer>())
   }
 
   @Test
   fun castOrNull_whenInvalidType_returnsNull() {
-    val qualifiedId = qualifiedSourcePathOf("src/Main.java")
+    val qualifiedId = SourcePath("src/Main.java")
 
     assertNull(qualifiedId.castOrNull<SourceEntity>())
   }
 
   @Test
   fun cast_whenValidType_returnsId() {
-    val qualifiedId = qualifiedSourcePathOf("src/Main.java")
+    val qualifiedId = SourcePath("src/Main.java")
 
     assertEquals<QualifiedSourceNodeId<*>>(qualifiedId, qualifiedId.cast<SourceContainer>())
   }
 
   @Test
   fun cast_whenInvalidType_throws() {
-    val qualifiedId = qualifiedSourcePathOf("src/Main.java")
+    val qualifiedId = SourcePath("src/Main.java")
 
     assertFailsWith<IllegalArgumentException> { qualifiedId.cast<SourceEntity>() }
   }
 
   @Test
   fun name_ofType_returnsTypeName() {
-    val qualifiedId = qualifiedSourcePathOf("src/Main.java").type("Test")
+    val qualifiedId = SourcePath("src/Main.java").type("Test")
 
     assertEquals(Identifier("Test"), qualifiedId.name)
   }
 
   @Test
   fun signature_ofFunction_returnsFunctionSignature() {
-    val qualifiedId = qualifiedSourcePathOf("src/Main.java").function("main()")
+    val qualifiedId = SourcePath("src/Main.java").function("main()")
 
     assertEquals(Signature("main()"), qualifiedId.signature)
   }
 
   @Test
   fun name_ofVariable_returnsVariableName() {
-    val qualifiedId = qualifiedSourcePathOf("src/Main.java").variable("VERSION")
+    val qualifiedId = SourcePath("src/Main.java").variable("VERSION")
 
     assertEquals(Identifier("VERSION"), qualifiedId.name)
   }
@@ -209,25 +157,25 @@ class QualifiedSourceNodeIdTest {
   }
 
   @Test
-  fun parseQualifiedSourceNodeIdFrom_whenInputIsQualifiedIdAsString_returnsOriginalQualifiedId() {
+  fun parseFrom_whenInputIsQualifiedIdAsString_returnsOriginalQualifiedId() {
     val qualifiedIds =
       listOf(
-        qualifiedSourcePathOf("src/Main.java"),
-        qualifiedSourcePathOf("src/Main.java").type("Main"),
-        qualifiedSourcePathOf("src/Main.java").function("main(String[])"),
-        qualifiedSourcePathOf("src/Main.java").variable("VERSION"),
-        qualifiedSourcePathOf("src/Main.java").type("Main").type("InnerMain"),
-        qualifiedSourcePathOf("src/Main.java").type("Main").function("main(String[])"),
-        qualifiedSourcePathOf("src/Main.java").type("Main").variable("VERSION"),
+        SourcePath("src/Main.java"),
+        SourcePath("src/Main.java").type("Main"),
+        SourcePath("src/Main.java").function("main(String[])"),
+        SourcePath("src/Main.java").variable("VERSION"),
+        SourcePath("src/Main.java").type("Main").type("InnerMain"),
+        SourcePath("src/Main.java").type("Main").function("main(String[])"),
+        SourcePath("src/Main.java").type("Main").variable("VERSION"),
       )
 
     for (qualifiedId in qualifiedIds) {
-      assertEquals(qualifiedId, parseQualifiedSourceNodeIdFrom(qualifiedId.toString()))
+      assertEquals(qualifiedId, QualifiedSourceNodeId.parseFrom(qualifiedId.toString()))
     }
   }
 
   @Test
-  fun parseQualifiedSourceNodeIdFrom_whenInvalidId_throws() {
+  fun parseFrom_whenInvalidId_throws() {
     val rawQualifiedIds =
       listOf(
         "",
@@ -243,7 +191,7 @@ class QualifiedSourceNodeIdTest {
 
     for (rawQualifiedId in rawQualifiedIds) {
       assertFailsWith<IllegalArgumentException>("Parsing id '$rawQualifiedId' should fail!") {
-        parseQualifiedSourceNodeIdFrom(rawQualifiedId)
+        QualifiedSourceNodeId.parseFrom(rawQualifiedId)
       }
     }
   }

@@ -16,6 +16,8 @@
 
 package org.chronolens.model
 
+import org.chronolens.model.QualifiedSourceNodeId.Companion.CONTAINER_SEPARATOR
+import org.chronolens.model.QualifiedSourceNodeId.Companion.MEMBER_SEPARATOR
 import org.chronolens.model.SourceNodeId.Companion.SEPARATORS
 import org.chronolens.model.SourcePath.Companion.PATH_SEPARATOR
 
@@ -25,7 +27,8 @@ public sealed interface SourceNodeId {
 
   public companion object {
     /** Special characters that cannot occur in source node ids. */
-    public const val SEPARATORS: String = "/:#\"\\\\"
+    public const val SEPARATORS: String =
+      "$PATH_SEPARATOR$CONTAINER_SEPARATOR$MEMBER_SEPARATOR\"\\\\"
   }
 }
 
@@ -34,10 +37,15 @@ public sealed interface SourceNodeId {
  *
  * @throws IllegalArgumentException if the given [path] is invalid
  */
-public data class SourcePath(private val path: String) : SourceNodeId {
+public data class SourcePath(private val path: String) :
+  SourceNodeId, QualifiedSourceNodeId<SourceFile> {
+
   init {
     require(isValid(path)) { "Invalid source path '$path'!" }
   }
+
+  override val id: SourceNodeId
+    get() = this
 
   override fun toString(): String = path
 
