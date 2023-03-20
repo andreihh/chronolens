@@ -60,6 +60,24 @@ public class EditTypeBuilder(private val qualifiedId: QualifiedSourceNodeId<Type
 }
 
 @BuilderMarker
+public class EditVariableBuilder(private val qualifiedId: QualifiedSourceNodeId<Variable>) {
+  private val modifierEdits = mutableListOf<SetEdit<String>>()
+  private val initializerEdits = mutableListOf<ListEdit<String>>()
+
+  public fun modifiers(init: Init<SetEditBuilder<String>>): EditVariableBuilder {
+    modifierEdits += SetEditBuilder<String>().apply(init).build()
+    return this
+  }
+
+  public fun initializer(init: Init<ListEditBuilder<String>>): EditVariableBuilder {
+    initializerEdits += ListEditBuilder<String>().apply(init).build()
+    return this
+  }
+
+  public fun build(): EditVariable = EditVariable(qualifiedId, modifierEdits, initializerEdits)
+}
+
+@BuilderMarker
 public class EditFunctionBuilder(private val qualifiedId: QualifiedSourceNodeId<Function>) {
   private val modifierEdits = mutableListOf<SetEdit<String>>()
   private val parameterEdits = mutableListOf<ListEdit<Identifier>>()
@@ -90,24 +108,6 @@ public class EditFunctionBuilder(private val qualifiedId: QualifiedSourceNodeId<
     EditFunction(qualifiedId, parameterEdits, modifierEdits, bodyEdits)
 }
 
-@BuilderMarker
-public class EditVariableBuilder(private val qualifiedId: QualifiedSourceNodeId<Variable>) {
-  private val modifierEdits = mutableListOf<SetEdit<String>>()
-  private val initializerEdits = mutableListOf<ListEdit<String>>()
-
-  public fun modifiers(init: Init<SetEditBuilder<String>>): EditVariableBuilder {
-    modifierEdits += SetEditBuilder<String>().apply(init).build()
-    return this
-  }
-
-  public fun initializer(init: Init<ListEditBuilder<String>>): EditVariableBuilder {
-    initializerEdits += ListEditBuilder<String>().apply(init).build()
-    return this
-  }
-
-  public fun build(): EditVariable = EditVariable(qualifiedId, modifierEdits, initializerEdits)
-}
-
 @JvmName("addSourceFile")
 public fun QualifiedSourceNodeId<SourceFile>.add(
   init: Init<SourceFileBuilder>
@@ -117,21 +117,24 @@ public fun QualifiedSourceNodeId<SourceFile>.add(
 public fun QualifiedSourceNodeId<Type>.add(init: Init<TypeBuilder>): AddNode<Type> =
   AddNode(this, TypeBuilder(name).apply(init).build())
 
-@JvmName("addFunction")
-public fun QualifiedSourceNodeId<Function>.add(init: Init<FunctionBuilder>): AddNode<Function> =
-  AddNode(this, FunctionBuilder(signature).apply(init).build())
-
 @JvmName("addVariable")
 public fun QualifiedSourceNodeId<Variable>.add(init: Init<VariableBuilder>): AddNode<Variable> =
   AddNode(this, VariableBuilder(name).apply(init).build())
 
+@JvmName("addFunction")
+public fun QualifiedSourceNodeId<Function>.add(init: Init<FunctionBuilder>): AddNode<Function> =
+  AddNode(this, FunctionBuilder(signature).apply(init).build())
+
 public fun QualifiedSourceNodeId<*>.remove(): RemoveNode = RemoveNode(this)
 
+@JvmName("editType")
 public fun QualifiedSourceNodeId<Type>.edit(init: Init<EditTypeBuilder>): EditType =
   EditTypeBuilder(this).apply(init).build()
 
-public fun QualifiedSourceNodeId<Function>.edit(init: Init<EditFunctionBuilder>): EditFunction =
-  EditFunctionBuilder(this).apply(init).build()
-
+@JvmName("editVariable")
 public fun QualifiedSourceNodeId<Variable>.edit(init: Init<EditVariableBuilder>): EditVariable =
   EditVariableBuilder(this).apply(init).build()
+
+@JvmName("editFunction")
+public fun QualifiedSourceNodeId<Function>.edit(init: Init<EditFunctionBuilder>): EditFunction =
+  EditFunctionBuilder(this).apply(init).build()

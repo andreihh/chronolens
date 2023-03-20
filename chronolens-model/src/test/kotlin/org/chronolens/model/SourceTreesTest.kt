@@ -16,6 +16,7 @@
 
 package org.chronolens.model
 
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -31,7 +32,6 @@ import org.chronolens.test.model.sourceFile
 import org.chronolens.test.model.sourceTree
 import org.chronolens.test.model.type
 import org.chronolens.test.model.variable
-import org.junit.Test
 
 class SourceTreeTest {
   @Test

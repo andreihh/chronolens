@@ -16,6 +16,7 @@
 
 package org.chronolens.model
 
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
@@ -23,7 +24,6 @@ import org.chronolens.test.model.build
 import org.chronolens.test.model.function
 import org.chronolens.test.model.type
 import org.chronolens.test.model.variable
-import org.junit.Test
 
 class SourceTreeNodeTest {
   @Test
@@ -69,6 +69,34 @@ class SourceTreeNodeTest {
   }
 
   @Test
+  fun walkSourceTree_returnsAllDescendants() {
+    val sourceTreeNode =
+      SourcePath("src/Main.java").type("Main").build {
+        +type("InnerType") { +function("main(String[])") {} }
+        +variable("VERSION") {}
+      }
+
+    val expectedSourceTreeNodes =
+      listOf(
+        SourcePath("src/Main.java").type("Main").build {
+          +type("InnerType") { +function("main(String[])") {} }
+          +variable("VERSION") {}
+        },
+        SourcePath("src/Main.java").type("Main").type("InnerType").build {
+          +function("main(String[])") {}
+        },
+        SourcePath("src/Main.java").type("Main").variable("VERSION").build {},
+        SourcePath("src/Main.java")
+          .type("Main")
+          .type("InnerType")
+          .function("main(String[])")
+          .build {},
+      )
+
+    assertEquals(expected = expectedSourceTreeNodes, actual = sourceTreeNode.walkSourceTree())
+  }
+
+  @Test
   fun castOrNull_whenValidType_returnsNode() {
     val sourceTreeNode = SourcePath("src/Test.java").build {}
 
@@ -97,33 +125,5 @@ class SourceTreeNodeTest {
     val sourceTreeNode = SourcePath("src/Test.java").build {}
 
     assertFailsWith<IllegalArgumentException> { sourceTreeNode.cast<SourceEntity>() }
-  }
-
-  @Test
-  fun walkSourceTree_returnsAllDescendants() {
-    val sourceTreeNode =
-      SourcePath("src/Main.java").type("Main").build {
-        +type("InnerType") { +function("main(String[])") {} }
-        +variable("VERSION") {}
-      }
-
-    val expectedSourceTreeNodes =
-      listOf(
-        SourcePath("src/Main.java").type("Main").build {
-          +type("InnerType") { +function("main(String[])") {} }
-          +variable("VERSION") {}
-        },
-        SourcePath("src/Main.java").type("Main").type("InnerType").build {
-          +function("main(String[])") {}
-        },
-        SourcePath("src/Main.java").type("Main").variable("VERSION").build {},
-        SourcePath("src/Main.java")
-          .type("Main")
-          .type("InnerType")
-          .function("main(String[])")
-          .build {},
-      )
-
-    assertEquals(expected = expectedSourceTreeNodes, actual = sourceTreeNode.walkSourceTree())
   }
 }

@@ -125,8 +125,8 @@ public fun SourceTreeNode<*>.diff(other: SourceTreeNode<*>): SourceTreeEdit? {
   return when (sourceNode) {
     is SourceFile -> null
     is Type -> sourceNode.diff(other.sourceNode as Type).invoke(qualifiedId.cast())
-    is Function -> sourceNode.diff(other.sourceNode as Function).invoke(qualifiedId.cast())
     is Variable -> sourceNode.diff(other.sourceNode as Variable).invoke(qualifiedId.cast())
+    is Function -> sourceNode.diff(other.sourceNode as Function).invoke(qualifiedId.cast())
   }
 }
 
@@ -141,6 +141,15 @@ private fun Type.diff(other: Type): SourceTreeEditBuilder<Type> {
   }
 }
 
+private fun Variable.diff(other: Variable): SourceTreeEditBuilder<Variable> {
+  val modifierEdits = modifiers.diff(other.modifiers)
+  val initializerEdits = initializer.diff(other.initializer)
+  val changed = modifierEdits.isNotEmpty() || initializerEdits.isNotEmpty()
+  return { qualifiedId ->
+    if (!changed) null else EditVariable(qualifiedId, modifierEdits, initializerEdits)
+  }
+}
+
 private fun Function.diff(other: Function): SourceTreeEditBuilder<Function> {
   val parameterEdits = parameters.diff(other.parameters)
   val modifierEdits = modifiers.diff(other.modifiers)
@@ -148,14 +157,5 @@ private fun Function.diff(other: Function): SourceTreeEditBuilder<Function> {
   val changed = parameterEdits.isNotEmpty() || modifierEdits.isNotEmpty() || bodyEdits.isNotEmpty()
   return { qualifiedId ->
     if (!changed) null else EditFunction(qualifiedId, parameterEdits, modifierEdits, bodyEdits)
-  }
-}
-
-private fun Variable.diff(other: Variable): SourceTreeEditBuilder<Variable> {
-  val modifierEdits = modifiers.diff(other.modifiers)
-  val initializerEdits = initializer.diff(other.initializer)
-  val changed = modifierEdits.isNotEmpty() || initializerEdits.isNotEmpty()
-  return { qualifiedId ->
-    if (!changed) null else EditVariable(qualifiedId, modifierEdits, initializerEdits)
   }
 }

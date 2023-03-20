@@ -58,12 +58,12 @@ public fun QualifiedSourceNodeId<SourceFile>.build(
 public fun QualifiedSourceNodeId<Type>.build(init: Init<TypeBuilder>): SourceTreeNode<Type> =
   SourceTreeNode(this, TypeBuilder(name).apply(init).build())
 
-@JvmName("buildFunction")
-public fun QualifiedSourceNodeId<Function>.build(
-  init: Init<FunctionBuilder>
-): SourceTreeNode<Function> = SourceTreeNode(this, FunctionBuilder(signature).apply(init).build())
-
 @JvmName("buildVariable")
 public fun QualifiedSourceNodeId<Variable>.build(
   init: Init<VariableBuilder>
 ): SourceTreeNode<Variable> = SourceTreeNode(this, VariableBuilder(name).apply(init).build())
+
+@JvmName("buildFunction")
+public fun QualifiedSourceNodeId<Function>.build(
+  init: Init<FunctionBuilder>
+): SourceTreeNode<Function> = SourceTreeNode(this, FunctionBuilder(signature).apply(init).build())

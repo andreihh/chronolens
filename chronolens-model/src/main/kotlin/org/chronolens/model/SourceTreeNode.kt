@@ -106,8 +106,8 @@ public data class SourceTreeNode<out T : SourceNode>(
       val qualifiedId =
         when (val entity = sourceEntity as SourceEntity) {
           is Type -> parentId.type(entity.name)
-          is Function -> parentId.function(entity.signature)
           is Variable -> parentId.variable(entity.name)
+          is Function -> parentId.function(entity.signature)
         }.cast(sourceEntity.javaClass)
       return SourceTreeNode(qualifiedId, sourceEntity)
     }

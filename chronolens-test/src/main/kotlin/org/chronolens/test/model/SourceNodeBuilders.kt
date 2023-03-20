@@ -80,6 +80,28 @@ public class TypeBuilder(private val name: Identifier) {
 }
 
 @BuilderMarker
+public class VariableBuilder(private val name: Identifier) {
+  private var modifiers = emptySet<String>()
+  private val initializer = mutableListOf<String>()
+
+  public fun modifiers(vararg modifiers: String): VariableBuilder {
+    this.modifiers = modifiers.requireDistinct()
+    return this
+  }
+
+  public fun initializer(vararg initializerLines: String): VariableBuilder {
+    initializer += initializerLines
+    return this
+  }
+
+  public operator fun String.unaryPlus() {
+    initializer += this
+  }
+
+  public fun build(): Variable = Variable(name, modifiers, initializer)
+}
+
+@BuilderMarker
 public class FunctionBuilder(private val signature: Signature) {
   private var modifiers = emptySet<String>()
   private var parameters = emptyList<Identifier>()
@@ -110,39 +132,17 @@ public class FunctionBuilder(private val signature: Signature) {
   public fun build(): Function = Function(signature, parameters, modifiers, body)
 }
 
-@BuilderMarker
-public class VariableBuilder(private val name: Identifier) {
-  private var modifiers = emptySet<String>()
-  private val initializer = mutableListOf<String>()
-
-  public fun modifiers(vararg modifiers: String): VariableBuilder {
-    this.modifiers = modifiers.requireDistinct()
-    return this
-  }
-
-  public fun initializer(vararg initializerLines: String): VariableBuilder {
-    initializer += initializerLines
-    return this
-  }
-
-  public operator fun String.unaryPlus() {
-    initializer += this
-  }
-
-  public fun build(): Variable = Variable(name, modifiers, initializer)
-}
-
 public fun sourceFile(path: String, init: Init<SourceFileBuilder>): SourceFile =
   SourceFileBuilder(SourcePath(path)).apply(init).build()
 
 public fun type(name: String, init: Init<TypeBuilder>): Type =
   TypeBuilder(Identifier(name)).apply(init).build()
 
-public fun function(signature: String, init: Init<FunctionBuilder>): Function =
-  FunctionBuilder(Signature(signature)).apply(init).build()
-
 public fun variable(name: String, init: Init<VariableBuilder>): Variable =
   VariableBuilder(Identifier(name)).apply(init).build()
+
+public fun function(signature: String, init: Init<FunctionBuilder>): Function =
+  FunctionBuilder(Signature(signature)).apply(init).build()
 
 private fun <T> Array<T>.requireDistinct(): Set<T> {
   val set = LinkedHashSet<T>(size)

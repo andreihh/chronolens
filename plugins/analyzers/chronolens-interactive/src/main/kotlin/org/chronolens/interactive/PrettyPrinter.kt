@@ -80,6 +80,14 @@ internal class PrettyPrinter private constructor(private val out: Appendable) {
     )
   }
 
+  private fun Context.visit(variable: Variable) {
+    out.appendLine("${newIndent}variable ${variable.name}")
+    visit(
+      "modifiers" to variable.modifiers,
+      "initializer" to summarizeBlock(variable.initializer),
+    )
+  }
+
   private fun Context.visit(function: Function) {
     out.appendLine("${newIndent}function ${function.signature}")
     visit(
@@ -89,20 +97,12 @@ internal class PrettyPrinter private constructor(private val out: Appendable) {
     )
   }
 
-  private fun Context.visit(variable: Variable) {
-    out.appendLine("${newIndent}variable ${variable.name}")
-    visit(
-      "modifiers" to variable.modifiers,
-      "initializer" to summarizeBlock(variable.initializer),
-    )
-  }
-
   private fun Context.visit(node: SourceNode) {
     when (node) {
       is SourceFile -> visit(node)
       is Type -> visit(node)
-      is Function -> visit(node)
       is Variable -> visit(node)
+      is Function -> visit(node)
     }
   }
 

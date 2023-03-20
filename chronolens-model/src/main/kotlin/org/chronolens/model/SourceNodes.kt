@@ -33,8 +33,8 @@ public sealed interface SourceNode {
       when (this) {
         is SourceFile -> path
         is Type -> name
-        is Function -> signature
         is Variable -> name
+        is Function -> signature
       }
 
   /** The kind of this source node. Denotes a final, non-abstract type. */
@@ -43,8 +43,8 @@ public sealed interface SourceNode {
       when (this) {
         is SourceFile -> SOURCE_FILE
         is Type -> TYPE
-        is Function -> FUNCTION
         is Variable -> VARIABLE
+        is Function -> FUNCTION
       }
 
   /** The child source nodes contained in this source node. */
@@ -103,6 +103,20 @@ public data class Type(
 }
 
 /**
+ * A variable declaration found inside a [SourceFile].
+ *
+ * @property name the name of this variable
+ * @property modifiers the modifiers of this variable
+ * @property initializer the initializer lines of this variable, or an empty list if it doesn't have
+ * an initializer
+ */
+public data class Variable(
+  val name: Identifier,
+  val modifiers: Set<String> = emptySet(),
+  val initializer: List<String> = emptyList(),
+) : SourceEntity
+
+/**
  * A function declaration found inside a [SourceFile].
  *
  * The parameters of a function must have unique names.
@@ -127,26 +141,12 @@ public data class Function(
   }
 }
 
-/**
- * A variable declaration found inside a [SourceFile].
- *
- * @property name the name of this variable
- * @property modifiers the modifiers of this variable
- * @property initializer the initializer lines of this variable, or an empty list if it doesn't have
- * an initializer
- */
-public data class Variable(
-  val name: Identifier,
-  val modifiers: Set<String> = emptySet(),
-  val initializer: List<String> = emptyList(),
-) : SourceEntity
-
 /** The final, non-abstract type of a source node. */
 public enum class SourceNodeKind {
   SOURCE_FILE,
   TYPE,
+  VARIABLE,
   FUNCTION,
-  VARIABLE
 }
 
 /**

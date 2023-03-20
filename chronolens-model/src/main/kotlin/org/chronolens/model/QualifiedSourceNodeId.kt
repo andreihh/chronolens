@@ -34,8 +34,8 @@ public sealed interface QualifiedSourceNodeId<out T : SourceNode> {
       when (this) {
         is SourcePath -> SourceNodeKind.SOURCE_FILE
         is QualifiedTypeIdentifier -> SourceNodeKind.TYPE
-        is QualifiedSignature -> SourceNodeKind.FUNCTION
         is QualifiedVariableIdentifier -> SourceNodeKind.VARIABLE
+        is QualifiedSignature -> SourceNodeKind.FUNCTION
       }
 
   /** The path of the source file that contains the node denoted by this qualified id. */
@@ -44,8 +44,8 @@ public sealed interface QualifiedSourceNodeId<out T : SourceNode> {
       when (this) {
         is SourcePath -> this
         is QualifiedTypeIdentifier -> parent.sourcePath
-        is QualifiedSignature -> parent.sourcePath
         is QualifiedVariableIdentifier -> parent.sourcePath
+        is QualifiedSignature -> parent.sourcePath
       }
 
   public companion object {
@@ -134,18 +134,18 @@ private data class QualifiedTypeIdentifier(
   override fun toString(): String = "$parent$CONTAINER_SEPARATOR$id"
 }
 
-private data class QualifiedSignature(
-  val parent: QualifiedSourceNodeId<SourceContainer>,
-  override val id: Signature
-) : QualifiedSourceNodeId<Function> {
-
-  override fun toString(): String = "$parent$MEMBER_SEPARATOR$id"
-}
-
 private data class QualifiedVariableIdentifier(
   val parent: QualifiedSourceNodeId<SourceContainer>,
   override val id: Identifier
 ) : QualifiedSourceNodeId<Variable> {
+
+  override fun toString(): String = "$parent$MEMBER_SEPARATOR$id"
+}
+
+private data class QualifiedSignature(
+  val parent: QualifiedSourceNodeId<SourceContainer>,
+  override val id: Signature
+) : QualifiedSourceNodeId<Function> {
 
   override fun toString(): String = "$parent$MEMBER_SEPARATOR$id"
 }
@@ -155,8 +155,8 @@ public val QualifiedSourceNodeId<SourceEntity>.parentId: QualifiedSourceNodeId<S
   get() =
     when (this) {
       is QualifiedTypeIdentifier -> parent
-      is QualifiedSignature -> parent
       is QualifiedVariableIdentifier -> parent
+      is QualifiedSignature -> parent
       else ->
         throw AssertionError("Qualified source node id '$this' does not denote a source entity!")
     }
@@ -166,15 +166,15 @@ public val QualifiedSourceNodeId<SourceEntity>.parentId: QualifiedSourceNodeId<S
 public val QualifiedSourceNodeId<Type>.name: Identifier
   get() = id as Identifier
 
-/** Returns the signature of this qualified function id. */
-@get:JvmName("getFunctionSignature")
-public val QualifiedSourceNodeId<Function>.signature: Signature
-  get() = id as Signature
-
 /** Returns the name of this qualified variable id. */
 @get:JvmName("getVariableName")
 public val QualifiedSourceNodeId<Variable>.name: Identifier
   get() = id as Identifier
+
+/** Returns the signature of this qualified function id. */
+@get:JvmName("getFunctionSignature")
+public val QualifiedSourceNodeId<Function>.signature: Signature
+  get() = id as Signature
 
 /** Creates a new qualified id by appending the given [Type] [name] to this qualified id. */
 public fun QualifiedSourceNodeId<SourceContainer>.type(
@@ -188,6 +188,20 @@ public fun QualifiedSourceNodeId<SourceContainer>.type(
  */
 public fun QualifiedSourceNodeId<SourceContainer>.type(name: String): QualifiedSourceNodeId<Type> =
   type(Identifier(name))
+
+/** Creates a new qualified id by appending the given [Variable] [name] to this qualified id. */
+public fun QualifiedSourceNodeId<SourceContainer>.variable(
+  name: Identifier
+): QualifiedSourceNodeId<Variable> = QualifiedVariableIdentifier(this, name)
+
+/**
+ * Creates a new qualified id by appending the given [Variable] [name] to this qualified id.
+ *
+ * @throws IllegalArgumentException if the given [name] is not a valid [Identifier]
+ */
+public fun QualifiedSourceNodeId<SourceContainer>.variable(
+  name: String
+): QualifiedSourceNodeId<Variable> = variable(Identifier(name))
 
 /**
  * Creates a new qualified id by appending the given [Function] [signature] to this qualified id.
@@ -205,20 +219,6 @@ public fun QualifiedSourceNodeId<SourceContainer>.function(
   signature: String
 ): QualifiedSourceNodeId<Function> = function(Signature(signature))
 
-/** Creates a new qualified id by appending the given [Variable] [name] to this qualified id. */
-public fun QualifiedSourceNodeId<SourceContainer>.variable(
-  name: Identifier
-): QualifiedSourceNodeId<Variable> = QualifiedVariableIdentifier(this, name)
-
-/**
- * Creates a new qualified id by appending the given [Variable] [name] to this qualified id.
- *
- * @throws IllegalArgumentException if the given [name] is not a valid [Identifier]
- */
-public fun QualifiedSourceNodeId<SourceContainer>.variable(
-  name: String
-): QualifiedSourceNodeId<Variable> = variable(Identifier(name))
-
 /**
  * Casts this qualified id to denote a source node of type [nodeType], or `null` if the cast fails.
  */
@@ -230,8 +230,8 @@ public fun <S : SourceNode> QualifiedSourceNodeId<*>.castOrNull(
     when (this) {
       is SourcePath -> SourceFile::class.java
       is QualifiedTypeIdentifier -> Type::class.java
-      is QualifiedSignature -> Function::class.java
       is QualifiedVariableIdentifier -> Variable::class.java
+      is QualifiedSignature -> Function::class.java
     }
   return if (nodeType.isAssignableFrom(thisNodeType)) this as QualifiedSourceNodeId<S> else null
 }

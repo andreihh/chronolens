@@ -16,6 +16,7 @@
 
 package org.chronolens.model
 
+import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import org.chronolens.model.SourceTreeEdit.Companion.apply
 import org.chronolens.test.model.add
@@ -24,7 +25,6 @@ import org.chronolens.test.model.function
 import org.chronolens.test.model.sourceFile
 import org.chronolens.test.model.sourceTree
 import org.chronolens.test.model.type
-import org.junit.Test
 
 class AddNodeTest {
   @Test
@@ -79,21 +79,6 @@ class AddNodeTest {
 
     assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
   }
-
-  /*@Test fun `test add entity to variable throws`() {
-      val project = project {
-          sourceFile("src/Test.java") {
-              variable("version") {}
-          }
-      }
-      val edit = sourceFile("src/Test.java")
-          .variable("version").function("getVersion()")
-          .add {}
-
-      assertFailsWith<IllegalStateException> {
-          project.apply(edit)
-      }
-  }*/
 
   @Test
   fun apply_withNonExistingParent_throws() {
