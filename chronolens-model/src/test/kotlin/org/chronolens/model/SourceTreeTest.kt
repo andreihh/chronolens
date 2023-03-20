@@ -76,6 +76,58 @@ class SourceTreeTest {
   }
 
   @Test
+  fun walk_fromProvidedRoot_returnsStructurallyEqualNodes() {
+    val classVersion = variable("version") { +"1" }
+    val classFunction = function("getVersion()") {}
+    val classType =
+      type("IClass") {
+        supertypes("Object")
+        modifiers("interface")
+        +classVersion
+        +classFunction
+      }
+    val expectedNodes = setOf(classType, classVersion, classFunction)
+
+    val sourceTree = sourceTree {
+      +sourceFile("src/Test.java") {
+        +type("IClass") {
+          modifiers("interface")
+          supertypes("Object")
+          +variable("version") { +"1" }
+          +function("getVersion()") {}
+        }
+        +variable("version") { +"2" }
+      }
+    }
+    val actualNodes =
+      sourceTree
+        .walk(SourcePath("src/Test.java").type("IClass"))
+        .map(SourceTreeNode<*>::sourceNode)
+        .toSet()
+
+    assertEquals(expectedNodes, actualNodes)
+  }
+
+  @Test
+  fun walk_whenProvidedRootDoesNotExist_throws() {
+    val sourceTree = sourceTree {
+      +sourceFile("src/Test.java") {
+        +type("IClass") {
+          modifiers("interface")
+          supertypes("Object")
+          +variable("version") { +"1" }
+          +function("getVersion()") {}
+        }
+        +variable("version") { +"2" }
+      }
+    }
+
+    assertFailsWith<IllegalStateException> {
+      sourceTree.walk(SourcePath("src/Test.java").type("Test"))
+    }
+  }
+
+  @Test
   fun contains_existingNode_returnsTrue() {
     val sourceTree = sourceTree {
       +sourceFile("src/Test.java") {

@@ -115,12 +115,10 @@ public sealed interface QualifiedSourceNodeId<out T : SourceNode> {
       // There are at least two tokens, so the separator exists.
       val separator = rawQualifiedId.last { it in ID_SEPARATORS }
       val lastId = tokens.last()
-      val isSignature = Signature.isValid(lastId)
       return when {
         separator == CONTAINER_SEPARATOR -> qualifiedId.type(lastId)
-        separator == MEMBER_SEPARATOR && isSignature -> qualifiedId.function(lastId)
-        separator == MEMBER_SEPARATOR && !isSignature -> qualifiedId.variable(lastId)
-        else -> throw AssertionError("Invalid separator '$separator' in '$rawQualifiedId'!")
+        Signature.isValid(lastId) -> qualifiedId.function(lastId)
+        else -> qualifiedId.variable(lastId)
       }
     }
   }

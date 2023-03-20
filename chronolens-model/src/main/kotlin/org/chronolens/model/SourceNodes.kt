@@ -157,7 +157,6 @@ public enum class SourceNodeKind {
 private fun SourceContainer.validateChildrenIds() {
   val ids = HashSet<Pair<SourceNodeKind, SourceNodeId>>(children.size)
   for (child in children) {
-    require(child.kind != SOURCE_FILE) { "Node '$id' cannot contain source file '${child.id}'!" }
     require(child.kind to child.id !in ids) {
       "Node '$id' contains duplicate child '${child.id}' of kind '${child.kind}'!"
     }
