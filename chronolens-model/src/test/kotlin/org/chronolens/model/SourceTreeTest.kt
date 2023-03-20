@@ -165,7 +165,7 @@ class SourceTreeTest {
   }
 
   @Test
-  fun getNode_returnsStructurallyEqualNode() {
+  fun getSourceNode_returnsStructurallyEqualNode() {
     val expectedNode = variable("version") { +"1" }
 
     val sourceTree = sourceTree {
@@ -185,17 +185,8 @@ class SourceTreeTest {
     assertEquals(expectedNode, actualNode)
   }
 
-  // TODO: check how to replace this test.
-  /*@Test
-  fun getNode_withIncorrectType_throws() {
-      val sourceTree = sourceTree { +sourceFile("src/Test.java") { +type("IClass") {} } }
-      val nodeId = qualifiedPathOf("src/Test.java").type("IClass")
-
-      assertFailsWith<IllegalStateException> { sourceTree.get<Variable>(nodeId) }
-  }*/
-
   @Test
-  fun getNode_nonExistingId_throws() {
+  fun getSourceNode_nonExistingId_throws() {
     val sourceTree = sourceTree {
       +sourceFile("src/Test.java") {
         +type("IClass") {}
@@ -204,7 +195,7 @@ class SourceTreeTest {
     }
     val nodeId = SourcePath("src/Test.java").function("getVersion()")
 
-    assertFailsWith<IllegalStateException> { sourceTree.get<Function>(nodeId) }
+    assertFailsWith<NoSuchElementException> { sourceTree.get<Function>(nodeId) }
   }
 
   @Test

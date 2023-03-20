@@ -42,26 +42,18 @@ private constructor(
   /** Returns whether the specified [id] exists in this source tree. */
   public operator fun contains(id: QualifiedSourceNodeId<*>): Boolean = get(id) != null
 
-  /**
-   * Returns the node of type [T] with the specified [id], or `null` if no such node was found.
-   *
-   * @throws IllegalStateException if the requested node is not of type [T]
-   */
-  public inline fun <reified T : SourceNode> getOrNull(id: QualifiedSourceNodeId<T>): T? {
-    val node = get(id) ?: return null
-    check(node is T) { "'$id' is not of type '${T::class}'!" }
-    return node
-  }
+  /** Returns the node of type [T] with the specified [id], or `null` if no such node was found. */
+  public inline fun <reified T : SourceNode> getOrNull(id: QualifiedSourceNodeId<T>): T? =
+    get(id) as T?
 
   /**
    * Returns the node of type [T] with the specified [id].
    *
-   * @throws IllegalStateException if the requested node is not of type [T], or if no such node was
-   * found
+   * @throws NoSuchElementException if the requested node was not found
    */
-  @JvmName("getNode")
+  @JvmName("getSourceNode")
   public inline fun <reified T : SourceNode> get(id: QualifiedSourceNodeId<T>): T =
-    checkNotNull(getOrNull(id)) { "Node '$id' not found!" }
+    getOrNull(id) ?: throw NoSuchElementException("Source node with id '$id' doesn't exist!")
 
   /** Returns all the source nodes in this source tree in top-down order. */
   public fun walk(): Iterable<SourceTreeNode<*>> = sources.flatMap(SourceFile::walkSourceTree)
@@ -117,3 +109,7 @@ internal fun NodeHashMap.putSourceTree(root: SourceFile) = putSourceTree(SourceT
 internal fun NodeHashMap.removeSourceTree(root: SourceTreeNode<*>) {
   this -= root.walkSourceTree().map(SourceTreeNode<*>::qualifiedId).toSet()
 }
+
+internal inline fun <reified T : SourceNode> NodeHashMap.getSourceNode(
+  id: QualifiedSourceNodeId<T>
+): T = this[id]?.sourceNode as T

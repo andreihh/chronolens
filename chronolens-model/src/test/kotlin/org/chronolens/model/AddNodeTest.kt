@@ -17,7 +17,7 @@
 package org.chronolens.model
 
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
+import kotlin.test.assertFails
 import org.chronolens.model.SourceTreeEdit.Companion.apply
 import org.chronolens.test.model.add
 import org.chronolens.test.model.assertEquals
@@ -77,7 +77,7 @@ class AddNodeTest {
     val sourceTree = sourceTree { +sourceFile("src/Test.java") { +type("Test") {} } }
     val edit = SourcePath("src/Test.java").type("Test").add {}
 
-    assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
+    assertFails { sourceTree.apply(edit) }
   }
 
   @Test
@@ -85,6 +85,6 @@ class AddNodeTest {
     val sourceTree = sourceTree { +sourceFile("src/Main.java") {} }
     val edit = SourcePath("src/Main.java").type("Main").function("getVersion()").add {}
 
-    assertFailsWith<IllegalStateException> { sourceTree.apply(edit) }
+    assertFails { sourceTree.apply(edit) }
   }
 }

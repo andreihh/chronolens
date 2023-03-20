@@ -56,6 +56,37 @@ class QualifiedSourceNodeIdTest {
   }
 
   @Test
+  fun parentId_ofSourceFile_returnsParent() {
+    val qualifiedId = SourcePath("src/Main.java")
+
+    assertNull(qualifiedId.parentId)
+  }
+
+  @Test
+  fun parentId_ofType_returnsParent() {
+    val parentId = SourcePath("src/Main.java").type("Main")
+    val qualifiedId = parentId.type("Inner")
+
+    assertEquals(parentId, qualifiedId.parentId)
+  }
+
+  @Test
+  fun parentId_ofVariable_returnsParent() {
+    val parentId = SourcePath("src/Main.java").type("Main")
+    val qualifiedId = parentId.variable("VERSION")
+
+    assertEquals(parentId, qualifiedId.parentId)
+  }
+
+  @Test
+  fun parentId_ofFunction_returnsParent() {
+    val parentId = SourcePath("src/Main.java").type("Main")
+    val qualifiedId = parentId.function("main()")
+
+    assertEquals(parentId, qualifiedId.parentId)
+  }
+
+  @Test
   fun name_ofType_returnsTypeName() {
     val qualifiedId = SourcePath("src/Main.java").type("Test")
 

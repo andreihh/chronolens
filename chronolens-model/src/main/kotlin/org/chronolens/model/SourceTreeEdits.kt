@@ -223,7 +223,7 @@ private fun <T : SourceEntity> NodeHashMap.updateAncestorsOf(sourceTreeNode: Sou
   fun Type.updated() = copy(members = members.updatedWithEntity())
 
   val parentId = sourceTreeNode.parentId
-  when (val parent = this[parentId]?.sourceNode ?: error("Parent '$parentId' must exist!")) {
+  when (val parent = getSourceNode(parentId)) {
     is SourceFile -> {
       this[parentId] = SourceTreeNode(parentId, parent.updated())
     }
@@ -232,6 +232,5 @@ private fun <T : SourceEntity> NodeHashMap.updateAncestorsOf(sourceTreeNode: Sou
       this[parentId] = newParent
       updateAncestorsOf(newParent)
     }
-    else -> error("Unknown container '${parent::kind}' with id '$parentId'!")
   }
 }

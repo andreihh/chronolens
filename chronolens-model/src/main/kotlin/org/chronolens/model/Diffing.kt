@@ -33,7 +33,7 @@ public fun SourceTree.diff(other: SourceTree): List<SourceTreeEdit> {
   }
 
   fun isSourceFileOrParentExists(id: QualifiedSourceNodeId<*>): Boolean {
-    val parentId = id.castOrNull<SourceEntity>()?.parentId ?: return true
+    val parentId = id.parentId ?: return true
     return parentId in nodesBefore && parentId in nodesAfter
   }
 

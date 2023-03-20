@@ -148,16 +148,25 @@ private data class QualifiedSignature(
   override fun toString(): String = "$parent$MEMBER_SEPARATOR$id"
 }
 
+/**
+ * Returns the qualified id of the parent of the node denoted by this qualified id, or `null` if
+ * this qualified id denotes a [SourceFile].
+ */
+@get:JvmName("getParentIdOrNull")
+public val QualifiedSourceNodeId<*>.parentId: QualifiedSourceNodeId<SourceContainer>?
+  get() =
+    when (this) {
+      is SourcePath -> null
+      is QualifiedTypeIdentifier -> parent
+      is QualifiedSignature -> parent
+      is QualifiedVariableIdentifier -> parent
+    }
+
 /** Returns the qualified id of the parent of the node denoted by this qualified id. */
 public val QualifiedSourceNodeId<SourceEntity>.parentId: QualifiedSourceNodeId<SourceContainer>
   get() =
-    when (this) {
-      is QualifiedTypeIdentifier -> parent
-      is QualifiedVariableIdentifier -> parent
-      is QualifiedSignature -> parent
-      else ->
-        throw AssertionError("Qualified source node id '$this' does not denote a source entity!")
-    }
+    (this as QualifiedSourceNodeId<*>).parentId
+      ?: throw AssertionError("Qualified source node id '$this' does not denote a source entity!")
 
 /** Returns the name of this qualified type id. */
 @get:JvmName("getTypeName")
