@@ -18,7 +18,7 @@ package org.chronolens.git
 
 import java.io.File
 import java.time.Instant
-import org.chronolens.api.process.ProcessExecutorProvider
+import org.chronolens.api.process.ProcessExecutor
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsRevision
 
@@ -28,8 +28,7 @@ internal class GitProxy(private val directory: File) : VcsProxy {
   private val headId = "HEAD"
   private val format = "--format=%ct:%an"
 
-  private fun execute(vararg command: String) =
-    ProcessExecutorProvider.INSTANCE.provide(directory).execute(*command)
+  private fun execute(vararg command: String) = ProcessExecutor.execute(directory, *command)
 
   private fun formatCommits(rawCommits: String): List<String> =
     rawCommits
@@ -109,4 +108,6 @@ internal class GitProxy(private val directory: File) : VcsProxy {
     val formattedCommits = formatCommits(rawCommits)
     return formattedCommits.map(::parseCommit)
   }
+
+  override fun close() {}
 }

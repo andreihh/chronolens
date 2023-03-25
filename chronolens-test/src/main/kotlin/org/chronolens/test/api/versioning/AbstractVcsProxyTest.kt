@@ -42,6 +42,9 @@ public abstract class AbstractVcsProxyTest {
    */
   protected abstract fun createRepository(directory: File, vararg revisions: VcsChangeSet): VcsProxy
 
+  protected open val shouldFailIfClosed: Boolean
+    get() = true
+
   protected fun createRepository(vararg revisions: VcsChangeSet): VcsProxy =
     createRepository(tmp.root, *revisions)
 
@@ -250,6 +253,41 @@ public abstract class AbstractVcsProxyTest {
     assertFailsWith<IllegalArgumentException> {
       vcs.getHistory(revisionId = "invalid-revision", path = "gradle.properties")
     }
+  }
+
+  @Test
+  public fun close_isIdempotent() {
+    val vcs =
+      createRepository(
+        vcsRevision { change("gradle.properties", "org.gradle.daemon=false") },
+        vcsRevision { change("gradle.properties", "org.gradle.daemon=true") },
+      )
+
+    vcs.close()
+    vcs.close()
+  }
+
+  @Test
+  public fun allOperations_whenClosedVcs_throw() {
+    if (!shouldFailIfClosed) {
+      return
+    }
+
+    val vcs =
+      createRepository(
+        vcsRevision { change("gradle.properties", "org.gradle.daemon=false") },
+        vcsRevision { change("gradle.properties", "org.gradle.daemon=true") },
+      )
+    val head = vcs.getHead().id
+
+    vcs.close()
+
+    assertFailsWith<IllegalStateException> { vcs.getHead() }
+    assertFailsWith<IllegalStateException> { vcs.getRevision(head) }
+    assertFailsWith<IllegalStateException> { vcs.getChangeSet(head) }
+    assertFailsWith<IllegalStateException> { vcs.listFiles(head) }
+    assertFailsWith<IllegalStateException> { vcs.getFile(head, "gradle.properties") }
+    assertFailsWith<IllegalStateException> { vcs.getHistory() }
   }
 
   @Test

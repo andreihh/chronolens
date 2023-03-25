@@ -16,12 +16,22 @@
 
 package org.chronolens.api.versioning
 
+import java.io.UncheckedIOException
+
 /** A version control system (VCS) proxy which interacts with a connected repository. */
-public interface VcsProxy {
-  /** Returns the `head` revision. */
+public interface VcsProxy : AutoCloseable {
+  /**
+   * Returns the `head` revision.
+   *
+   * @throws UncheckedIOException if any I/O errors occur
+   */
   public fun getHead(): VcsRevision
 
-  /** Returns the revision with the given [revisionId], or `null` if no such revision exists. */
+  /**
+   * Returns the revision with the given [revisionId], or `null` if no such revision exists.
+   *
+   * @throws UncheckedIOException if any I/O errors occur
+   */
   public fun getRevision(revisionId: String): VcsRevision?
 
   /**
@@ -29,6 +39,7 @@ public interface VcsProxy {
    * the given [revisionId].
    *
    * @throws IllegalArgumentException if [revisionId] doesn't exist
+   * @throws UncheckedIOException if any I/O errors occur
    */
   public fun getChangeSet(revisionId: String): Set<String>
 
@@ -37,6 +48,7 @@ public interface VcsProxy {
    * given [revisionId].
    *
    * @throws IllegalArgumentException if [revisionId] doesn't exist
+   * @throws UncheckedIOException if any I/O errors occur
    */
   public fun listFiles(revisionId: String): Set<String>
 
@@ -45,6 +57,7 @@ public interface VcsProxy {
    * revision with the given [revisionId], or `null` if it doesn't exist in the specified revision.
    *
    * @throws IllegalArgumentException if [revisionId] doesn't exist
+   * @throws UncheckedIOException if any I/O errors occur
    */
   public fun getFile(revisionId: String, path: String): String?
 
@@ -57,6 +70,17 @@ public interface VcsProxy {
    * represents the repository root.
    *
    * @throws IllegalArgumentException if [revisionId] doesn't exist
+   * @throws UncheckedIOException if any I/O errors occur
    */
   public fun getHistory(revisionId: String = getHead().id, path: String = ""): List<VcsRevision>
+
+  /**
+   * Closes this VCS proxy, relinquishing any underlying resources.
+   *
+   * This method is idempotent. Calling any other method after the VCS proxy was closed may fail
+   * with an [IllegalStateException].
+   *
+   * @throws UncheckedIOException if any I/O errors occur
+   */
+  override fun close()
 }

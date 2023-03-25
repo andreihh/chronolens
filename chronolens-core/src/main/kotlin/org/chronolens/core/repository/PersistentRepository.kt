@@ -28,64 +28,62 @@ import org.chronolens.model.SourceTree
 import org.chronolens.model.SourceTreeEdit.Companion.apply
 
 /**
- * A wrapper around a repository which has its interpreted history persisted on disk.
+ * A wrapper around a repository which has its interpreted history persisted in a database.
  *
- * All queries read the interpreted history directly from disk, not having to reinterpret it again
- * or to communicate with other subprocesses.
+ * All queries read the interpreted history directly from the database, not having to reinterpret it
+ * again or to communicate with other subprocesses.
  */
-internal class PersistentRepository(private val storage: RepositoryDatabase) : Repository {
-  private val history by lazy {
-    try {
-      val revisionIds = storage.readHistoryIds()
-      check(revisionIds.isNotEmpty()) { "Empty repository!" }
-      revisionIds
-    } catch (e: IOException) {
-      throw UncheckedIOException(e)
-    }
-  }
-
-  private val head by lazy { history.last() }
-
-  override fun getHeadId(): RevisionId = head
+internal class PersistentRepository(private val database: RepositoryDatabase) : Repository {
+  override fun getHeadId(): RevisionId = listRevisions().last()
 
   override fun listSources(revisionId: RevisionId): Set<SourcePath> =
     getSnapshot(revisionId).sources.map(SourceFile::path).toSet()
 
-  override fun listRevisions(): List<RevisionId> = history
+  override fun listRevisions(): List<RevisionId> = runOrThrowUnchecked {
+    val revisionIds = database.readHistoryIds()
+    check(revisionIds.isNotEmpty()) { "Empty repository!" }
+    revisionIds
+  }
 
   override fun getSource(path: SourcePath, revisionId: RevisionId): SourceFile? =
     getSnapshot(revisionId)[path]
 
   override fun getSnapshot(revisionId: RevisionId): SourceTree {
-    require(revisionId in history) { "Revision '$revisionId' doesn't exist!" }
     val snapshot = SourceTree.empty()
     for (revision in getHistory()) {
       snapshot.apply(revision.edits)
       if (revision.id == revisionId) return snapshot
     }
-    error("Revision '$revisionId' should exist but not found in history!")
+    throw IllegalArgumentException("Revision '$revisionId' doesn't exist!")
   }
 
-  override fun getHistory(): Sequence<Revision> =
-    try {
-      storage.readHistory().ifEmpty { error("History must not be empty!") }
-    } catch (e: IOException) {
-      throw UncheckedIOException(e)
-    }
+  override fun getHistory(): Sequence<Revision> = runOrThrowUnchecked {
+    database.readHistory().ifEmpty { error("History must not be empty!") }
+  }
+
+  override fun close() {
+    runOrThrowUnchecked { database.close() }
+  }
 }
 
 /**
- * Writes the history of [this] repository to the given [storage] and reports the progress to the
+ * Writes the history of [this] repository to the given [database] and reports the progress to the
  * given [listener].
  *
- * @throws IllegalStateException if the repository is corrupted
- * @throws IOException if any I/O errors occur
+ * @throws IllegalStateException if the repository is corrupted or closed
+ * @throws UncheckedIOException if any I/O errors occur
  */
-@Throws(IOException::class)
 public fun Repository.persist(
-  storage: RepositoryDatabase,
+  database: RepositoryDatabase,
   listener: Repository.HistoryProgressListener? = null
-): Repository {
-  storage.writeHistory(getHistory(listener))
-  return PersistentRepository(storage)
+): Repository = runOrThrowUnchecked {
+  database.writeHistory(getHistory(listener))
+  PersistentRepository(database)
 }
+
+private fun <T> runOrThrowUnchecked(block: () -> T): T =
+  try {
+    block()
+  } catch (e: IOException) {
+    throw UncheckedIOException(e)
+  }

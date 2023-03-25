@@ -25,6 +25,7 @@ import org.chronolens.model.RevisionId
 import org.chronolens.test.model.revision
 
 // TODO: add tests for reports and for appending history.
+// TODO: add an AbstractDatabaseTest
 class FakeRepositoryDatabaseTest {
   private val database = FakeRepositoryDatabase()
 

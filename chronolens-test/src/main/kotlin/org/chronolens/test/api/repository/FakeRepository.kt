@@ -29,6 +29,7 @@ internal class FakeRepository(revisions: List<Revision>) : Repository {
     check(revisions.isNotEmpty()) { "History must not be empty!" }
     revisions
   }
+  private var closed = false
 
   private val snapshots by lazy {
     val snapshots = mutableMapOf<RevisionId, SourceTree>()
@@ -40,18 +41,33 @@ internal class FakeRepository(revisions: List<Revision>) : Repository {
     snapshots
   }
 
-  override fun getHeadId(): RevisionId = history.last().id
+  override fun getHeadId(): RevisionId = runIfNotClosedOrThrow { history.last().id }
 
-  override fun listSources(revisionId: RevisionId): Set<SourcePath> =
+  override fun listSources(revisionId: RevisionId): Set<SourcePath> = runIfNotClosedOrThrow {
     requireNotNull(snapshots[revisionId]).sources.map(SourceFile::path).toSet()
+  }
 
-  override fun listRevisions(): List<RevisionId> = history.map(Revision::id)
+  override fun listRevisions(): List<RevisionId> = runIfNotClosedOrThrow {
+    history.map(Revision::id)
+  }
 
   override fun getSource(path: SourcePath, revisionId: RevisionId): SourceFile? =
-    requireNotNull(snapshots[revisionId])[path]
+    runIfNotClosedOrThrow {
+      requireNotNull(snapshots[revisionId])[path]
+    }
 
-  override fun getSnapshot(revisionId: RevisionId): SourceTree =
+  override fun getSnapshot(revisionId: RevisionId): SourceTree = runIfNotClosedOrThrow {
     requireNotNull(snapshots[revisionId])
+  }
 
-  override fun getHistory(): Sequence<Revision> = history.asSequence()
+  override fun getHistory(): Sequence<Revision> = runIfNotClosedOrThrow { history.asSequence() }
+
+  override fun close() {
+    closed = true
+  }
+
+  private fun <T> runIfNotClosedOrThrow(block: () -> T): T {
+    check(!closed) { "Repository was already closed!" }
+    return block()
+  }
 }

@@ -16,18 +16,23 @@
 
 package org.chronolens.core.subprocess
 
+import java.io.File
+import java.io.UncheckedIOException
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.chronolens.api.process.ProcessException
+import org.chronolens.api.process.ProcessExecutor
 import org.chronolens.api.process.ProcessResult
 import org.junit.Test
 
 class SubprocessTest {
+  private fun execute(vararg command: String) = ProcessExecutor.execute(File("."), *command)
+
   @Test
   fun `test get stdout`() {
     val message = "Hello, world!"
     val expected = "$message\n"
-    val actual = Subprocess.execute("echo", message).get()
+    val actual = execute("echo", message).get()
     assertEquals(expected, actual)
   }
 
@@ -38,7 +43,7 @@ class SubprocessTest {
     val expectedExitValue = 1
 
     val script = "echo $message >&2; exit $expectedExitValue"
-    val actual = Subprocess.execute("bash", "-c", script) as ProcessResult.Error
+    val actual = execute("bash", "-c", script) as ProcessResult.Error
 
     assertEquals(expectedMessage, actual.message)
     assertEquals(expectedExitValue, actual.exitValue)
@@ -47,7 +52,7 @@ class SubprocessTest {
   @Test
   fun `test killed throws`() {
     assertFailsWith<ProcessException> {
-      Subprocess.execute("bash", "-c", "exit 137") // UNIX SIGKILL
+      execute("bash", "-c", "exit 137") // UNIX SIGKILL
     }
   }
 
@@ -56,13 +61,13 @@ class SubprocessTest {
     Thread.currentThread().interrupt()
     assertFailsWith<ProcessException> {
       while (true) {
-        Subprocess.execute("bash", "-c", "sleep 1").get()
+        execute("bash", "-c", "sleep 1").get()
       }
     }
   }
 
   @Test
   fun `test invalid command throws`() {
-    assertFailsWith<ProcessException> { Subprocess.execute("non-existing-program") }
+    assertFailsWith<UncheckedIOException> { execute("non-existing-program") }
   }
 }

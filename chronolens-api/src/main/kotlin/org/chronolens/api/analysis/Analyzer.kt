@@ -33,7 +33,7 @@ public abstract class Analyzer(optionsProvider: OptionsProvider) :
   public abstract val accessMode: Repository.AccessMode
 
   /**
-   * Performs the analysis on the given [repository].
+   * Performs the analysis on the given [repository], without closing it.
    *
    * @throws InvalidOptionException if one of the provided options are invalid
    * @throws IllegalStateException if the repository is corrupted

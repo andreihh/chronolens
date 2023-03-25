@@ -41,6 +41,9 @@ import org.junit.Test
 public abstract class AbstractRepositoryTest {
   protected abstract fun createRepository(vararg history: RevisionChangeSet): Repository
 
+  protected open val shouldFailIfClosed: Boolean
+    get() = true
+
   private val repository by lazy {
     createRepository(
       revisionChangeSet {
@@ -320,6 +323,12 @@ public abstract class AbstractRepositoryTest {
   }
 
   @Test
+  public fun close_isIdempotent() {
+    repository.close()
+    repository.close()
+  }
+
+  @Test
   public fun allOperations_whenEmptyRepository_throw() {
     val emptyRepository = createRepository()
 
@@ -329,5 +338,21 @@ public abstract class AbstractRepositoryTest {
     assertFailsWith<IllegalStateException> { emptyRepository.listRevisions() }
     assertFailsWith<IllegalStateException> { emptyRepository.getSnapshot() }
     assertFailsWith<IllegalStateException> { emptyRepository.getHistory().toList() }
+  }
+
+  @Test
+  public fun allOperations_whenClosedRepository_throw() {
+    if (!shouldFailIfClosed) {
+      return
+    }
+
+    repository.close()
+
+    assertFailsWith<IllegalStateException> { repository.getHeadId() }
+    assertFailsWith<IllegalStateException> { repository.listSources() }
+    assertFailsWith<IllegalStateException> { repository.getSource(SourcePath("src/Main.kts")) }
+    assertFailsWith<IllegalStateException> { repository.listRevisions() }
+    assertFailsWith<IllegalStateException> { repository.getSnapshot() }
+    assertFailsWith<IllegalStateException> { repository.getHistory().toList() }
   }
 }

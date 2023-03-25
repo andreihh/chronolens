@@ -20,6 +20,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.UncheckedIOException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors.defaultThreadFactory
 import java.util.concurrent.Executors.newSingleThreadExecutor
@@ -27,11 +28,10 @@ import java.util.concurrent.Future
 import java.util.concurrent.ThreadFactory
 import org.chronolens.api.process.ProcessException
 import org.chronolens.api.process.ProcessExecutor
-import org.chronolens.api.process.ProcessExecutorProvider
 import org.chronolens.api.process.ProcessResult
 
 /** A subprocess executor. */
-public class Subprocess : ProcessExecutorProvider {
+public class Subprocess : ProcessExecutor {
   private val executor =
     newSingleThreadExecutor(
       object : ThreadFactory {
@@ -49,21 +49,19 @@ public class Subprocess : ProcessExecutorProvider {
 
   private fun <T> submit(task: () -> T): Future<T> = executor.submit(task)
 
-  override fun provide(directory: File): ProcessExecutor = ProcessExecutor { command ->
+  override fun execute(directory: File, vararg command: String): ProcessResult {
     var process: Process? = null
     try {
       process = ProcessBuilder().directory(directory).command(*command).start()
       process.outputStream.close()
       val error = submit { process.errorStream.readText() }
       val input = process.inputStream.readText()
-      return@ProcessExecutor when (val exitValue = process.waitFor()) {
+      return when (val exitValue = process.waitFor()) {
         0 -> ProcessResult.Success(input)
-        // See http://tldp.org/LDP/abs/html/exitcodes.html for various
-        // UNIX exit codes. See
-        // http://man7.org/linux/man-pages/man7/signal.7.html for
-        // various UNIX signal values. See
-        // https://msdn.microsoft.com/en-us/library/cc704588.aspx for
-        // more details regarding Windows exit codes.
+        // See http://tldp.org/LDP/abs/html/exitcodes.html for various UNIX exit codes. See
+        // http://man7.org/linux/man-pages/man7/signal.7.html for various UNIX signal values. See
+        // https://msdn.microsoft.com/en-us/library/cc704588.aspx for more details regarding Windows
+        // exit codes.
         130,
         131,
         137,
@@ -76,21 +74,9 @@ public class Subprocess : ProcessExecutorProvider {
     } catch (e: ExecutionException) {
       throw ProcessException(e)
     } catch (e: IOException) {
-      throw ProcessException(e)
+      throw UncheckedIOException(e)
     } finally {
       process?.destroy()
     }
-  }
-
-  public companion object {
-    /** Delegates to [execute] for the given [directory]. */
-    @JvmStatic
-    public fun execute(directory: File, vararg command: String): ProcessResult =
-      ProcessExecutorProvider.INSTANCE.provide(directory).execute(*command)
-
-    /** Delegates to [execute] for the current working directory. */
-    @JvmStatic
-    public fun execute(vararg command: String): ProcessResult =
-      ProcessExecutorProvider.INSTANCE.provide(File(".")).execute(*command)
   }
 }

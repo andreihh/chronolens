@@ -37,11 +37,8 @@ import org.chronolens.model.diff
 internal class InteractiveRepository(private val vcs: VcsProxy, private val parser: Parser) :
   Repository {
 
-  private val head by lazy { vcs.getHead().id.let(::checkValidRevisionId) }
-  private val history by lazy { vcs.getHistory().checkValidHistory() }
-
   private fun getSourceContent(revisionId: RevisionId, path: SourcePath): String? =
-    vcs.getFile(revisionId = revisionId.toString(), path.toString())
+    vcs.getFile(revisionId = revisionId.toString(), path = path.toString())
 
   private fun getChangeSet(revisionId: String): Set<SourcePath> =
     vcs.getChangeSet(revisionId = revisionId).map(::checkValidPath).toSet()
@@ -55,9 +52,12 @@ internal class InteractiveRepository(private val vcs: VcsProxy, private val pars
       .map(VcsRevision::id)
       .map(::RevisionId)
 
-  override fun getHeadId(): RevisionId = head
+  private fun getVcsHistory(): List<VcsRevision> = vcs.getHistory().checkValidHistory()
 
-  override fun listRevisions(): List<RevisionId> = history.map(VcsRevision::id).map(::RevisionId)
+  override fun getHeadId(): RevisionId = vcs.getHead().id.let(::checkValidRevisionId)
+
+  override fun listRevisions(): List<RevisionId> =
+    getVcsHistory().map(VcsRevision::id).map(::RevisionId)
 
   override fun listSources(revisionId: RevisionId): Set<SourcePath> =
     getAllSources(revisionId).filter(parser::canParse).toSet()
@@ -95,7 +95,7 @@ internal class InteractiveRepository(private val vcs: VcsProxy, private val pars
 
   override fun getHistory(): Sequence<Revision> {
     val sourceTree = SourceTree.empty()
-    return history.asSequence().map { (revisionId, date, author) ->
+    return getVcsHistory().asSequence().map { (revisionId, date, author) ->
       val changeSet = getChangeSet(revisionId)
       val before = HashSet<SourceFile>(changeSet.size)
       val after = HashSet<SourceFile>(changeSet.size)
@@ -114,6 +114,10 @@ internal class InteractiveRepository(private val vcs: VcsProxy, private val pars
       sourceTree.apply(edits)
       Revision(RevisionId(revisionId), date, author, edits)
     }
+  }
+
+  override fun close() {
+    vcs.close()
   }
 }
 

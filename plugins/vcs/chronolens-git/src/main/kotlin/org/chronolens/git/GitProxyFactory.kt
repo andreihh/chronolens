@@ -18,7 +18,7 @@ package org.chronolens.git
 
 import java.io.File
 import java.net.URL
-import org.chronolens.api.process.ProcessExecutorProvider
+import org.chronolens.api.process.ProcessExecutor
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsProxyFactory
 
@@ -27,16 +27,13 @@ internal class GitProxyFactory : VcsProxyFactory {
   private val vcs: String = "git"
 
   private fun getPrefix(directory: File): String? {
-    val result =
-      ProcessExecutorProvider.INSTANCE.provide(directory).execute(vcs, "rev-parse", "--show-prefix")
+    val result = ProcessExecutor.execute(directory, vcs, "rev-parse", "--show-prefix")
     val rawPrefix = result.getOrNull() ?: return null
     return rawPrefix.lines().first()
   }
 
   override fun clone(url: URL, directory: File): VcsProxy? {
-    val cloneResult =
-      ProcessExecutorProvider.INSTANCE.provide(directory)
-        .execute(vcs, "clone", url.toString(), "./")
+    val cloneResult = ProcessExecutor.execute(directory, vcs, "clone", url.toString(), "./")
     return if (cloneResult.isSuccess) connect(directory) else null
   }
 

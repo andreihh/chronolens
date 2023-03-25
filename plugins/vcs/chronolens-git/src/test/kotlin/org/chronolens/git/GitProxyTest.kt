@@ -19,7 +19,7 @@ package org.chronolens.git
 import java.io.File
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.chronolens.api.process.ProcessExecutorProvider
+import org.chronolens.api.process.ProcessExecutor
 import org.chronolens.api.process.ProcessResult
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsProxyFactory
@@ -28,7 +28,7 @@ import org.chronolens.test.api.versioning.VcsChangeSet
 
 class GitProxyTest : AbstractVcsProxyTest() {
   private fun executeVcs(directory: File, vararg options: String): ProcessResult =
-    ProcessExecutorProvider.INSTANCE.provide(directory).execute("git", *options)
+    ProcessExecutor.execute(directory, "git", *options)
 
   private fun commit(directory: File, changeSet: VcsChangeSet) {
     for ((path, content) in changeSet) {
@@ -53,4 +53,7 @@ class GitProxyTest : AbstractVcsProxyTest() {
 
     return assertNotNull(VcsProxyFactory.connect(directory))
   }
+
+  override val shouldFailIfClosed: Boolean
+    get() = false
 }

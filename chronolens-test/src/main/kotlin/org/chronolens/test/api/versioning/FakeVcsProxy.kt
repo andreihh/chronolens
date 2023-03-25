@@ -24,6 +24,7 @@ internal class FakeVcsProxy(revisions: List<VcsChangeSet>) : VcsProxy {
   private val history = mutableListOf<VcsRevision>()
   private val changeSets = mutableMapOf<String, VcsChangeSet>()
   private val snapshots = mutableMapOf<String, Map<String, String>>()
+  private var closed = false
 
   init {
     val snapshot = mutableMapOf<String, String>()
@@ -43,24 +44,40 @@ internal class FakeVcsProxy(revisions: List<VcsChangeSet>) : VcsProxy {
     }
   }
 
-  override fun getHead(): VcsRevision =
+  override fun getHead(): VcsRevision = runIfNotClosedOrThrow {
     history.lastOrNull() ?: error("Repository must not be empty!")
+  }
 
-  override fun getRevision(revisionId: String): VcsRevision? = history.find { it.id == revisionId }
+  override fun getRevision(revisionId: String): VcsRevision? = runIfNotClosedOrThrow {
+    history.find { it.id == revisionId }
+  }
 
-  override fun listFiles(revisionId: String): Set<String> =
+  override fun listFiles(revisionId: String): Set<String> = runIfNotClosedOrThrow {
     requireNotNull(snapshots[revisionId]).keys
+  }
 
-  override fun getFile(revisionId: String, path: String): String? =
+  override fun getFile(revisionId: String, path: String): String? = runIfNotClosedOrThrow {
     requireNotNull(snapshots[revisionId])[path]
+  }
 
-  override fun getChangeSet(revisionId: String): Set<String> =
+  override fun getChangeSet(revisionId: String): Set<String> = runIfNotClosedOrThrow {
     requireNotNull(changeSets[revisionId]).keys
+  }
 
-  override fun getHistory(revisionId: String, path: String): List<VcsRevision> {
-    require(revisionId in changeSets)
-    return history
-      .dropLastWhile { it.id != revisionId }
-      .filter { changeSets.getValue(it.id).touches(path) }
+  override fun getHistory(revisionId: String, path: String): List<VcsRevision> =
+    runIfNotClosedOrThrow {
+      require(revisionId in changeSets)
+      history
+        .dropLastWhile { it.id != revisionId }
+        .filter { changeSets.getValue(it.id).touches(path) }
+    }
+
+  override fun close() {
+    closed = true
+  }
+
+  private fun <T> runIfNotClosedOrThrow(block: () -> T): T {
+    check(!closed) { "VCS was already closed!" }
+    return block()
   }
 }

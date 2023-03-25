@@ -42,7 +42,7 @@ public class FakeRepositoryDatabase : RepositoryDatabase {
     throwIfClosed()
     throwIfError()
     return history.asSequence().map { revision ->
-      throwUncheckedIfClosed()
+      throwIfClosed()
       throwUncheckedIfError()
       revision
     }
@@ -90,17 +90,8 @@ public class FakeRepositoryDatabase : RepositoryDatabase {
     this.error = null
   }
 
-  @Throws(IOException::class)
   private fun throwIfClosed() {
-    if (closed) {
-      throw IOException("Database was already closed!")
-    }
-  }
-
-  private fun throwUncheckedIfClosed() {
-    if (closed) {
-      throw UncheckedIOException(IOException("Database was already closed!"))
-    }
+    check(!closed) { "Database was already closed!" }
   }
 
   @Throws(IOException::class)

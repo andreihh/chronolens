@@ -26,7 +26,7 @@ import org.chronolens.model.SourcePath
 import org.chronolens.model.SourceTree
 
 /** A wrapper that connects to a repository and allows querying the source and history models. */
-public interface Repository {
+public interface Repository : AutoCloseable {
   /** Specifies access requirements for connecting to a [Repository]. */
   public enum class AccessMode {
     /** No specific requirements. */
@@ -119,6 +119,17 @@ public interface Repository {
   /** Delegates to [getHistory]. */
   public fun getHistoryStream(listener: HistoryProgressListener? = null): Stream<Revision> =
     getHistory(listener).asStream()
+
+  /**
+   * Closes this repository, relinquishing any underlying resources.
+   *
+   * This method is idempotent. Calling any other method after the repository was closed may fail
+   * with an [IllegalStateException].
+   *
+   * @throws IllegalStateException if the repository is corrupted and couldn't be closed
+   * @throws UncheckedIOException if any I/O errors occur
+   */
+  override fun close()
 
   /** A listener notified on the progress of iterating through a repository's history. */
   public interface HistoryProgressListener {

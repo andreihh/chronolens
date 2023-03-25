@@ -16,17 +16,27 @@
 
 package org.chronolens.api.process
 
+import java.io.File
+import java.io.UncheckedIOException
+import java.util.ServiceLoader
+
 /** A process executor. */
 public fun interface ProcessExecutor {
   /**
-   * Executes the given [command] in a subprocess in a set working directory and returns its result.
+   * Executes the given [command] in a subprocess in the given working [directory] and returns its
+   * result.
    *
    * The [command]'s output to `stdout` and `stderr` must be `UTF-8` encoded text.
    *
    * @return the parsed input from `stdout` (if the process terminated normally) or from `stderr`
    * (if the process terminated abnormally)
    * @throws ProcessException if the given [command] is invalid or if the current thread is
-   * interrupted while waiting for the process to terminate or if any input related errors occur
+   * interrupted while waiting for the process to terminate
+   * @throws UncheckedIOException if any I/O errors occur
    */
-  public fun execute(vararg command: String): ProcessResult
+  public fun execute(directory: File, vararg command: String): ProcessResult
+
+  // TODO: think if we can get rid of this.
+  public companion object :
+    ProcessExecutor by ServiceLoader.load(ProcessExecutor::class.java).single()
 }
