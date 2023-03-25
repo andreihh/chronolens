@@ -54,7 +54,7 @@ internal class InteractiveRepository(private val vcs: VcsProxy, private val pars
 
   private fun getVcsHistory(): List<VcsRevision> = vcs.getHistory().checkValidHistory()
 
-  override fun getHeadId(): RevisionId = vcs.getHead().id.let(::checkValidRevisionId)
+  override fun getHeadId(): RevisionId = checkValidRevisionId(vcs.getHead().id)
 
   override fun listRevisions(): List<RevisionId> =
     getVcsHistory().map(VcsRevision::id).map(::RevisionId)
@@ -145,4 +145,40 @@ private fun Collection<String>.checkValidSources(): Set<SourcePath> {
     sourceFiles += source
   }
   return sourceFiles
+}
+
+/**
+ * Checks that the given source file [path] is valid.
+ *
+ * @throws IllegalStateException if the given [path] is invalid
+ */
+private fun checkValidPath(path: String): SourcePath {
+  check(SourcePath.isValid(path)) { "Invalid source file path '$path'!" }
+  return SourcePath(path)
+}
+
+/**
+ * Checks that the given revision [id] is valid.
+ *
+ * @throws IllegalStateException if the given [id] is invalid
+ */
+private fun checkValidRevisionId(id: String): RevisionId {
+  check(RevisionId.isValid(id)) { "Invalid revision id '$id'!" }
+  return RevisionId(id)
+}
+
+/**
+ * Checks that [this] list of revision ids represent a valid history.
+ *
+ * @throws IllegalStateException if [this] list is empty, contains duplicates or invalid revision
+ * ids
+ */
+private fun List<String>.checkValidHistory(): List<RevisionId> {
+  check(isNotEmpty()) { "History must not be empty!" }
+  val revisionIds = HashSet<RevisionId>(this.size)
+  for (id in this.map(::checkValidRevisionId)) {
+    check(id !in revisionIds) { "Duplicated revision id '$id'!" }
+    revisionIds += id
+  }
+  return this.map(::RevisionId)
 }

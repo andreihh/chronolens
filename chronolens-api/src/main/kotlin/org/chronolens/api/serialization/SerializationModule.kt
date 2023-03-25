@@ -49,13 +49,14 @@ import org.chronolens.model.SourceTreeNode
  * - [Revision]s
  * - [RepositoryId]s as [String]s
  * - [Report]s (open polymorphic type)
+ * - [Collection]s of the above-mentioned types
  */
 public interface SerializationModule {
   /**
    * Serializes the given [value] object to the given [out] stream.
    *
    * @throws SerializationException if there are any serialization errors
-   * @throws IOException if there are any output related errors
+   * @throws IOException if there are any I/O errors
    */
   @Throws(IOException::class) public fun serialize(out: OutputStream, value: Any)
 
@@ -63,7 +64,7 @@ public interface SerializationModule {
    * Serializes the given [value] object into a [String].
    *
    * @throws SerializationException if there are any serialization errors
-   * @throws IOException if there are any output related errors
+   * @throws IOException if there are any I/O errors
    */
   @Throws(IOException::class)
   public fun stringify(value: Any): String =
@@ -76,7 +77,7 @@ public interface SerializationModule {
    * Deserializes an object of the given non-generic [type] from the given [src] stream.
    *
    * @throws SerializationException if there are any deserialization errors
-   * @throws IOException if there are any input related errors
+   * @throws IOException if there are any I/O errors
    */
   @Throws(IOException::class) public fun <T : Any> deserialize(src: InputStream, type: Class<T>): T
 }

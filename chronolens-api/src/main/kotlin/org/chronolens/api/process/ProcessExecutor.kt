@@ -30,8 +30,8 @@ public fun interface ProcessExecutor {
    *
    * @return the parsed input from `stdout` (if the process terminated normally) or from `stderr`
    * (if the process terminated abnormally)
-   * @throws ProcessException if the given [command] is invalid or if the current thread is
-   * interrupted while waiting for the process to terminate
+   * @throws ProcessException if the current thread is interrupted while waiting for the process to
+   * terminate or an unexpected error occurs
    * @throws UncheckedIOException if any I/O errors occur
    */
   public fun execute(directory: File, vararg command: String): ProcessResult

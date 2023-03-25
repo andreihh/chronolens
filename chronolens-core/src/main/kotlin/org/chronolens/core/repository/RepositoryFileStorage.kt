@@ -29,10 +29,9 @@ import org.chronolens.model.RevisionId
 
 internal class RepositoryFileStorage(rootDirectory: File) : RepositoryDatabase {
   private val storageDirectory = File(rootDirectory, STORAGE_ROOT_DIRECTORY)
-  private val historyFile: File = File(storageDirectory, "HISTORY")
+  private val historyFile: File = File(storageDirectory, "history.json")
   private val revisionsDirectory: File = File(storageDirectory, "revisions")
 
-  @Throws(IOException::class)
   private fun getRevisionFile(revisionId: RevisionId): File =
     File(revisionsDirectory, "$revisionId.json")
 
@@ -45,12 +44,11 @@ internal class RepositoryFileStorage(rootDirectory: File) : RepositoryDatabase {
 
   @Throws(IOException::class)
   private fun writeRevision(revision: Revision) {
-    getRevisionFile(revision.id).outputStream().use { out -> JsonModule.serialize(out, revision) }
+    JsonModule.serialize(getRevisionFile(revision.id), revision)
   }
 
   @Throws(IOException::class)
-  override fun readHistoryIds(): List<RevisionId> =
-    historyFile.readFileLines().dropLastWhile(String::isBlank).map(::RevisionId)
+  override fun readHistoryIds(): List<RevisionId> = JsonModule.deserialize(historyFile)
 
   @Throws(IOException::class)
   override fun readHistory(): Sequence<Revision> = readHistoryIds().asSequence().map(::readRevision)
@@ -58,16 +56,12 @@ internal class RepositoryFileStorage(rootDirectory: File) : RepositoryDatabase {
   @Throws(IOException::class)
   override fun writeHistory(revisions: Sequence<Revision>) {
     mkdirs(revisionsDirectory)
-    historyFile.printWriter().use { out ->
-      try {
-        revisions.forEach { revision ->
-          out.println(revision.id)
-          writeRevision(revision)
-        }
-      } catch (e: UncheckedIOException) {
-        throw IOException(e)
-      }
+    val revisionIds = arrayListOf<RevisionId>()
+    revisions.forEach { revision ->
+      revisionIds += revision.id
+      writeRevision(revision)
     }
+    JsonModule.serialize(historyFile, revisionIds)
   }
 
   override fun appendHistory(revisions: Sequence<Revision>) {
@@ -112,19 +106,24 @@ private fun mkdirs(directory: File) {
 }
 
 /**
- * Delegates to [File.readLines] and keeps the lines up to the first empty line.
+ * Delegates to [JsonModule.serialize].
  *
- * @throws IllegalStateException if [this] file doesn't exist or is not a file
+ * @throws IllegalStateException if the serialization failed with a [SerializationException] or the
+ * given [dst] file doesn't exist or is not a file
  * @throws IOException if any I/O errors occur
  */
 @Throws(IOException::class)
-private fun File.readFileLines(): List<String> {
-  checkFileExists(this)
-  return readLines().takeWhile(String::isNotEmpty)
+private fun JsonModule.serialize(dst: File, value: Any) {
+  try {
+    checkFileExists(dst)
+    dst.outputStream().use { serialize(it, value) }
+  } catch (e: SerializationException) {
+    throw IllegalStateException(e)
+  }
 }
 
 /**
- * Delegates to [JsonModule.serialize].
+ * Delegates to [JsonModule.deserialize].
  *
  * @throws IllegalStateException if the deserialization failed with a [SerializationException] or
  * the given [src] file doesn't exist or is not a file
