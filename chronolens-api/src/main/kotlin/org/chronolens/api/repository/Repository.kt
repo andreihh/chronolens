@@ -42,7 +42,7 @@ public interface Repository {
   /**
    * Returns the id of the `head` revision.
    *
-   * @throws CorruptedRepositoryException if the repository is corrupted
+   * @throws IllegalStateException if the repository is corrupted
    * @throws UncheckedIOException if any I/O errors occur
    */
   public fun getHeadId(): RevisionId
@@ -51,7 +51,7 @@ public interface Repository {
    * Returns the interpretable source files from the revision with the specified [revisionId].
    *
    * @throws IllegalArgumentException if [revisionId] doesn't exist
-   * @throws CorruptedRepositoryException if the repository is corrupted
+   * @throws IllegalStateException if the repository is corrupted
    * @throws UncheckedIOException if any I/O errors occur
    */
   public fun listSources(revisionId: RevisionId = getHeadId()): Set<SourcePath>
@@ -59,7 +59,7 @@ public interface Repository {
   /**
    * Returns the list of all revision ids in chronological order.
    *
-   * @throws CorruptedRepositoryException if the repository is corrupted
+   * @throws IllegalStateException if the repository is corrupted
    * @throws UncheckedIOException if any I/O errors occur
    */
   public fun listRevisions(): List<RevisionId>
@@ -74,7 +74,7 @@ public interface Repository {
    * file will be returned.
    *
    * @throws IllegalArgumentException if [revisionId] doesn't exist
-   * @throws CorruptedRepositoryException if the repository is corrupted
+   * @throws IllegalStateException if the repository is corrupted
    * @throws UncheckedIOException if any I/O errors occur
    */
   public fun getSource(path: SourcePath, revisionId: RevisionId = getHeadId()): SourceFile?
@@ -83,7 +83,7 @@ public interface Repository {
    * Returns the snapshot of the repository at the revision with the specified [revisionId].
    *
    * @throws IllegalArgumentException if [revisionId] doesn't exist
-   * @throws CorruptedRepositoryException if the repository is corrupted
+   * @throws IllegalStateException if the repository is corrupted
    * @throws UncheckedIOException if any I/O errors occur
    */
   public fun getSnapshot(revisionId: RevisionId = getHeadId()): SourceTree
@@ -91,10 +91,10 @@ public interface Repository {
   /**
    * Returns a lazy view of all revisions in chronological order.
    *
-   * Iterating over the sequence may throw an [UncheckedIOException] if any I/O errors occur, or a
-   * [CorruptedRepositoryException] if the repository is corrupted.
+   * Iterating over the sequence may throw an [IllegalStateException] if the repository is
+   * corrupted, or an [UncheckedIOException] if any I/O errors occur.
    *
-   * @throws CorruptedRepositoryException if the repository is corrupted
+   * @throws IllegalStateException if the repository is corrupted
    * @throws UncheckedIOException if any I/O errors occur
    */
   public fun getHistory(): Sequence<Revision>
@@ -102,6 +102,12 @@ public interface Repository {
   /**
    * Returns the repository history and reports the progress to the given [listener]. The history
    * can be iterated through only once.
+   *
+   * Iterating over the sequence may throw an [IllegalStateException] if the repository is
+   * corrupted, or an [UncheckedIOException] if any I/O errors occur.
+   *
+   * @throws IllegalStateException if the repository is corrupted
+   * @throws UncheckedIOException if any I/O errors occur
    */
   public fun getHistory(listener: HistoryProgressListener?): Sequence<Revision> {
     val history = getHistory().constrainOnce()
@@ -110,7 +116,7 @@ public interface Repository {
     return history.map(tracker::onRevision)
   }
 
-  /** Delegates to [getHistory]. The history can be iterated through only once. */
+  /** Delegates to [getHistory]. */
   public fun getHistoryStream(listener: HistoryProgressListener? = null): Stream<Revision> =
     getHistory(listener).asStream()
 

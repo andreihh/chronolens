@@ -21,7 +21,6 @@ import java.io.IOException
 import java.io.UncheckedIOException
 import org.chronolens.api.database.RepositoryDatabase
 import org.chronolens.api.parsing.Parser
-import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.Repository
 import org.chronolens.api.repository.Repository.AccessMode
 import org.chronolens.api.repository.Repository.AccessMode.ANY
@@ -36,7 +35,7 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
    * Returns the [Repository] detected in the given [rootDirectory] that supports the specified
    * [accessMode], or `null` if no supported repository could be unambiguously detected.
    *
-   * @throws CorruptedRepositoryException if the detected repository is corrupted
+   * @throws IllegalStateException if the detected repository is corrupted
    * @throws UncheckedIOException if any I/O errors occur
    */
   public fun tryConnect(accessMode: AccessMode): Repository? =
@@ -50,13 +49,13 @@ public class RepositoryConnector private constructor(private val rootDirectory: 
    * Returns the [Repository] detected in the given [rootDirectory] that supports the specified
    * [accessMode].
    *
-   * @throws CorruptedRepositoryException if the detected repository is corrupted or if no supported
+   * @throws IllegalStateException if the detected repository is corrupted or if no supported
    * repository could be unambiguously detected
    * @throws UncheckedIOException if any I/O errors occur
    */
   public fun connect(accessMode: AccessMode): Repository =
     tryConnect(accessMode)
-      ?: repositoryError("No repository found in '$rootDirectory' for mode '$accessMode'!")
+      ?: error("No repository found in '$rootDirectory' for mode '$accessMode'!")
 
   public fun tryOpen(): RepositoryDatabase? =
     try {

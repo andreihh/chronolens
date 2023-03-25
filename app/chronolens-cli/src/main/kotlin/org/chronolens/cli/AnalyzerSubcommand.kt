@@ -28,7 +28,6 @@ import kotlinx.cli.ExperimentalCli
 import kotlinx.cli.Subcommand
 import org.chronolens.api.analysis.AnalyzerSpec
 import org.chronolens.api.analysis.InvalidOptionException
-import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.serialization.SerializationException
 import org.chronolens.core.repository.RepositoryConnector
 import org.chronolens.core.serialization.JsonModule
@@ -56,9 +55,6 @@ class AnalyzerSubcommand(analyzerSpec: AnalyzerSpec) :
       }
     } catch (e: InvalidOptionException) {
       System.err.println("An invalid option has been provided!")
-      e.printStackTrace()
-    } catch (e: CorruptedRepositoryException) {
-      System.err.println("The repository is corrupted!")
       e.printStackTrace()
     } catch (e: SerializationException) {
       System.err.println("A serialization error occurred!")

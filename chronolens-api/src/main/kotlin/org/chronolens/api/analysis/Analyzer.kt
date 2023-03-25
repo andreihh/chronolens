@@ -17,7 +17,6 @@
 package org.chronolens.api.analysis
 
 import java.io.UncheckedIOException
-import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.Repository
 
 /**
@@ -37,7 +36,7 @@ public abstract class Analyzer(optionsProvider: OptionsProvider) :
    * Performs the analysis on the given [repository].
    *
    * @throws InvalidOptionException if one of the provided options are invalid
-   * @throws CorruptedRepositoryException if the repository is corrupted
+   * @throws IllegalStateException if the repository is corrupted
    * @throws UncheckedIOException if any I/O errors occur
    */
   public abstract fun analyze(repository: Repository): Report

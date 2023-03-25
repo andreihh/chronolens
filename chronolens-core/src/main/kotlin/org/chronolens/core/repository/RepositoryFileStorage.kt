@@ -21,7 +21,6 @@ import java.io.IOException
 import java.io.UncheckedIOException
 import org.chronolens.api.analysis.Report
 import org.chronolens.api.database.RepositoryDatabase
-import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.serialization.SerializationException
 import org.chronolens.api.serialization.deserialize
 import org.chronolens.core.serialization.JsonModule
@@ -94,10 +93,10 @@ internal class RepositoryFileStorage(rootDirectory: File) : RepositoryDatabase {
 /**
  * Checks that the given [file] exists and is a file.
  *
- * @throws CorruptedRepositoryException if the given [file] doesn't exist or is not a file
+ * @throws IllegalStateException if the given [file] doesn't exist or is not a file
  */
 private fun checkFileExists(file: File) {
-  checkRepositoryState(file.isFile) { "File '$file' does not exist or is not a file!" }
+  check(file.isFile) { "File '$file' does not exist or is not a file!" }
 }
 
 /**
@@ -115,7 +114,7 @@ private fun mkdirs(directory: File) {
 /**
  * Delegates to [File.readLines] and keeps the lines up to the first empty line.
  *
- * @throws CorruptedRepositoryException if [this] file doesn't exist or is not a file
+ * @throws IllegalStateException if [this] file doesn't exist or is not a file
  * @throws IOException if any I/O errors occur
  */
 @Throws(IOException::class)
@@ -127,8 +126,8 @@ private fun File.readFileLines(): List<String> {
 /**
  * Delegates to [JsonModule.serialize].
  *
- * @throws CorruptedRepositoryException if the deserialization failed with a
- * [SerializationException] or the given [src] file doesn't exist or is not a file
+ * @throws IllegalStateException if the deserialization failed with a [SerializationException] or
+ * the given [src] file doesn't exist or is not a file
  * @throws IOException if any I/O errors occur
  */
 @Throws(IOException::class)
@@ -137,5 +136,5 @@ private inline fun <reified T : Any> JsonModule.deserialize(src: File): T =
     checkFileExists(src)
     src.inputStream().use { deserialize(it) }
   } catch (e: SerializationException) {
-    throw CorruptedRepositoryException(e)
+    throw IllegalStateException(e)
   }

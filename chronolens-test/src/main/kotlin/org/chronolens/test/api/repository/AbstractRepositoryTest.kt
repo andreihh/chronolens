@@ -23,7 +23,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.Repository
 import org.chronolens.api.repository.Repository.HistoryProgressListener
 import org.chronolens.model.Revision
@@ -324,13 +323,11 @@ public abstract class AbstractRepositoryTest {
   public fun allOperations_whenEmptyRepository_throw() {
     val emptyRepository = createRepository()
 
-    assertFailsWith<CorruptedRepositoryException> { emptyRepository.getHeadId() }
-    assertFailsWith<CorruptedRepositoryException> { emptyRepository.listSources() }
-    assertFailsWith<CorruptedRepositoryException> {
-      emptyRepository.getSource(SourcePath("src/Main.kts"))
-    }
-    assertFailsWith<CorruptedRepositoryException> { emptyRepository.listRevisions() }
-    assertFailsWith<CorruptedRepositoryException> { emptyRepository.getSnapshot() }
-    assertFailsWith<CorruptedRepositoryException> { emptyRepository.getHistory().toList() }
+    assertFailsWith<IllegalStateException> { emptyRepository.getHeadId() }
+    assertFailsWith<IllegalStateException> { emptyRepository.listSources() }
+    assertFailsWith<IllegalStateException> { emptyRepository.getSource(SourcePath("src/Main.kts")) }
+    assertFailsWith<IllegalStateException> { emptyRepository.listRevisions() }
+    assertFailsWith<IllegalStateException> { emptyRepository.getSnapshot() }
+    assertFailsWith<IllegalStateException> { emptyRepository.getHistory().toList() }
   }
 }

@@ -16,7 +16,6 @@
 
 package org.chronolens.test.api.repository
 
-import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.Repository
 import org.chronolens.model.Revision
 import org.chronolens.model.RevisionId
@@ -27,9 +26,7 @@ import org.chronolens.model.SourceTreeEdit.Companion.apply
 
 internal class FakeRepository(revisions: List<Revision>) : Repository {
   private val history by lazy {
-    if (revisions.isEmpty()) {
-      throw CorruptedRepositoryException("History must not be empty!")
-    }
+    check(revisions.isNotEmpty()) { "History must not be empty!" }
     revisions
   }
 

@@ -20,7 +20,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.chronolens.api.analysis.InvalidOptionException
-import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.model.SourcePath
 import org.chronolens.test.api.analysis.OptionsProviderBuilder
 import org.chronolens.test.api.repository.repository
@@ -54,7 +53,7 @@ class LsTreeTest {
     val analyzer = create("HEAD")
     val repository = repository {}
 
-    assertFailsWith<CorruptedRepositoryException> { analyzer.analyze(repository) }
+    assertFailsWith<IllegalStateException> { analyzer.analyze(repository) }
   }
 
   @Test

@@ -18,7 +18,6 @@ package org.chronolens.core.repository
 
 import org.chronolens.api.parsing.ParseResult
 import org.chronolens.api.parsing.Parser
-import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.Repository
 import org.chronolens.api.versioning.VcsProxy
 import org.chronolens.api.versioning.VcsRevision
@@ -38,21 +37,21 @@ import org.chronolens.model.diff
 internal class InteractiveRepository(private val vcs: VcsProxy, private val parser: Parser) :
   Repository {
 
-  private val head by lazy { tryRun { vcs.getHead() }.id.let(::checkValidRevisionId) }
-  private val history by lazy { tryRun { vcs.getHistory() }.checkValidHistory() }
+  private val head by lazy { vcs.getHead().id.let(::checkValidRevisionId) }
+  private val history by lazy { vcs.getHistory().checkValidHistory() }
 
-  private fun getSourceContent(revisionId: RevisionId, path: SourcePath): String? = tryRun {
+  private fun getSourceContent(revisionId: RevisionId, path: SourcePath): String? =
     vcs.getFile(revisionId = revisionId.toString(), path.toString())
-  }
 
   private fun getChangeSet(revisionId: String): Set<SourcePath> =
-    tryRun { vcs.getChangeSet(revisionId = revisionId) }.map(::checkValidPath).toSet()
+    vcs.getChangeSet(revisionId = revisionId).map(::checkValidPath).toSet()
 
   private fun getAllSources(revisionId: RevisionId): Set<SourcePath> =
-    tryRun { vcs.listFiles(revisionId = revisionId.toString()) }.checkValidSources()
+    vcs.listFiles(revisionId = revisionId.toString()).checkValidSources()
 
   private fun getSourceHistory(revisionId: RevisionId, path: SourcePath) =
-    tryRun { vcs.getHistory(revisionId = revisionId.toString(), path = path.toString()) }
+    vcs
+      .getHistory(revisionId = revisionId.toString(), path = path.toString())
       .map(VcsRevision::id)
       .map(::RevisionId)
 
@@ -90,7 +89,7 @@ internal class InteractiveRepository(private val vcs: VcsProxy, private val pars
   }
 
   override fun getSnapshot(revisionId: RevisionId): SourceTree {
-    val sources = listSources(revisionId).map { getSource(it, revisionId) }.checkNoNulls()
+    val sources = listSources(revisionId).map { checkNotNull(getSource(it, revisionId)) }
     return SourceTree.of(sources)
   }
 
@@ -121,8 +120,8 @@ internal class InteractiveRepository(private val vcs: VcsProxy, private val pars
 /**
  * Checks that [this] list of revision ids represent a valid history.
  *
- * @throws CorruptedRepositoryException if [this] list is empty, or contains invalid or duplicated
- * revision ids
+ * @throws IllegalStateException if [this] list is empty, or contains invalid or duplicated revision
+ * ids
  */
 private fun List<VcsRevision>.checkValidHistory(): List<VcsRevision> {
   this.map(VcsRevision::id).checkValidHistory()
@@ -132,35 +131,14 @@ private fun List<VcsRevision>.checkValidHistory(): List<VcsRevision> {
 /**
  * Checks that [this] collection of source paths is valid.
  *
- * @throws CorruptedRepositoryException if [this] collection contains any invalid or duplicated
- * source paths
+ * @throws IllegalStateException if [this] collection contains any invalid or duplicated source
+ * paths
  */
 private fun Collection<String>.checkValidSources(): Set<SourcePath> {
   val sourceFiles = LinkedHashSet<SourcePath>(this.size)
   for (source in this.map(::checkValidPath)) {
-    checkRepositoryState(source !in sourceFiles) { "Duplicated source file '$source'!" }
+    check(source !in sourceFiles) { "Duplicated source file '$source'!" }
     sourceFiles += source
   }
   return sourceFiles
 }
-
-/**
- * Checks that [this] collection doesn't contain any `null` elements.
- *
- * @throws CorruptedRepositoryException if any element is `null`
- */
-private fun <T : Any> Collection<T?>.checkNoNulls(): Collection<T> {
-  for (item in this) {
-    if (item == null) {
-      throw CorruptedRepositoryException("'null' found in '$this'!")
-    }
-  }
-  @Suppress("UNCHECKED_CAST") return this as Collection<T>
-}
-
-private fun <T> tryRun(block: () -> T): T =
-  try {
-    block()
-  } catch (e: IllegalStateException) {
-    throw CorruptedRepositoryException(e)
-  }

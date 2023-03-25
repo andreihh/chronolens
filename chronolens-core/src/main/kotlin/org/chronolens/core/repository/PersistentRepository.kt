@@ -19,7 +19,6 @@ package org.chronolens.core.repository
 import java.io.IOException
 import java.io.UncheckedIOException
 import org.chronolens.api.database.RepositoryDatabase
-import org.chronolens.api.repository.CorruptedRepositoryException
 import org.chronolens.api.repository.Repository
 import org.chronolens.model.Revision
 import org.chronolens.model.RevisionId
@@ -38,7 +37,7 @@ internal class PersistentRepository(private val storage: RepositoryDatabase) : R
   private val history by lazy {
     try {
       val revisionIds = storage.readHistoryIds()
-      checkRepositoryState(revisionIds.isNotEmpty()) { "Empty repository!" }
+      check(revisionIds.isNotEmpty()) { "Empty repository!" }
       revisionIds
     } catch (e: IOException) {
       throw UncheckedIOException(e)
@@ -64,12 +63,12 @@ internal class PersistentRepository(private val storage: RepositoryDatabase) : R
       snapshot.apply(revision.edits)
       if (revision.id == revisionId) return snapshot
     }
-    repositoryError("Revision '$revisionId' should exist but not found in history!")
+    error("Revision '$revisionId' should exist but not found in history!")
   }
 
   override fun getHistory(): Sequence<Revision> =
     try {
-      storage.readHistory().ifEmpty { repositoryError("History must not be empty!") }
+      storage.readHistory().ifEmpty { error("History must not be empty!") }
     } catch (e: IOException) {
       throw UncheckedIOException(e)
     }
@@ -79,7 +78,7 @@ internal class PersistentRepository(private val storage: RepositoryDatabase) : R
  * Writes the history of [this] repository to the given [storage] and reports the progress to the
  * given [listener].
  *
- * @throws CorruptedRepositoryException if the repository is corrupted
+ * @throws IllegalStateException if the repository is corrupted
  * @throws IOException if any I/O errors occur
  */
 @Throws(IOException::class)
