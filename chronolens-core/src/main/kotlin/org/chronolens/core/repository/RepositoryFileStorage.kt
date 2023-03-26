@@ -47,8 +47,10 @@ internal class RepositoryFileStorage(rootDirectory: File) : RepositoryDatabase {
     JsonModule.serialize(getRevisionFile(revision.id), revision)
   }
 
+  // TODO: figure out why this needs to be an array rather than a list.
   @Throws(IOException::class)
-  override fun readHistoryIds(): List<RevisionId> = JsonModule.deserialize(historyFile)
+  override fun readHistoryIds(): List<RevisionId> =
+    JsonModule.deserialize<Array<RevisionId>>(historyFile).asList()
 
   @Throws(IOException::class)
   override fun readHistory(): Sequence<Revision> = readHistoryIds().asSequence().map(::readRevision)
@@ -115,7 +117,6 @@ private fun mkdirs(directory: File) {
 @Throws(IOException::class)
 private fun JsonModule.serialize(dst: File, value: Any) {
   try {
-    checkFileExists(dst)
     dst.outputStream().use { serialize(it, value) }
   } catch (e: SerializationException) {
     throw IllegalStateException(e)

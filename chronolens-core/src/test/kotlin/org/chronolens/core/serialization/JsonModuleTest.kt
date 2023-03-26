@@ -22,6 +22,7 @@ import java.time.Instant
 import kotlin.test.Ignore
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.fail
 import org.chronolens.api.repository.RepositoryId
 import org.chronolens.api.serialization.SerializationException
 import org.chronolens.api.serialization.deserialize
@@ -79,7 +80,7 @@ class JsonModuleTest {
 
   @Test
   fun `test deserialize revision`() {
-    val src = javaClass.getResourceAsStream("data.json")
+    val src = javaClass.getResourceAsStream("data.json") ?: fail("Test data not found!")
     val actualData = JsonModule.deserialize<Revision>(src)
     assertEquals(data, actualData)
   }
@@ -93,6 +94,7 @@ class JsonModuleTest {
     assertEquals(data, actualData)
   }
 
+  // TODO: figure out why this needs to be an array rather than a list.
   @Test
   fun `test serialize and deserialize history`() {
     val history = List(size = 10) { data }
