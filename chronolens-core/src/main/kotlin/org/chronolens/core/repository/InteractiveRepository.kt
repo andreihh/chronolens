@@ -27,7 +27,6 @@ import org.chronolens.model.SourceFile
 import org.chronolens.model.SourcePath
 import org.chronolens.model.SourceTree
 import org.chronolens.model.SourceTreeEdit.Companion.apply
-import org.chronolens.model.diff
 
 /**
  * A wrapper around a repository persisted in a version control system (VCS).

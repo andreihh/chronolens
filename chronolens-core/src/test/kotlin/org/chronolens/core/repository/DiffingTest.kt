@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package org.chronolens.model
+package org.chronolens.core.repository
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import org.chronolens.model.ListEdit
 import org.chronolens.model.ListEdit.Companion.apply
 import org.chronolens.model.SetEdit.Companion.apply
+import org.chronolens.model.SourcePath
+import org.chronolens.model.SourceTree
 import org.chronolens.model.SourceTreeEdit.Companion.apply
 import org.chronolens.test.model.assertEqualSourceTrees
 import org.chronolens.test.model.build

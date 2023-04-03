@@ -16,6 +16,7 @@
 
 package org.chronolens.model
 
+import org.chronolens.core.repository.diff
 import org.chronolens.model.SourceTreeEdit.Companion.apply
 import org.chronolens.test.model.assertEquals
 import org.chronolens.test.model.function
@@ -27,6 +28,7 @@ import org.junit.Test
 
 class SourceTreeEditTest {
   private fun assertDiff(before: SourceTree, after: SourceTree) {
+    // TODO: remove this dependency.
     val edits = before.diff(after)
     val actualAfter = SourceTree.of(before.sources)
     actualAfter.apply(edits)

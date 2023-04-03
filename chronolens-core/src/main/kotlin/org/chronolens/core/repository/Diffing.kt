@@ -14,7 +14,25 @@
  * limitations under the License.
  */
 
-package org.chronolens.model
+package org.chronolens.core.repository
+
+import org.chronolens.model.AddNode
+import org.chronolens.model.EditFunction
+import org.chronolens.model.EditType
+import org.chronolens.model.EditVariable
+import org.chronolens.model.Function
+import org.chronolens.model.ListEdit
+import org.chronolens.model.QualifiedSourceNodeId
+import org.chronolens.model.RemoveNode
+import org.chronolens.model.SetEdit
+import org.chronolens.model.SourceFile
+import org.chronolens.model.SourceTree
+import org.chronolens.model.SourceTreeEdit
+import org.chronolens.model.SourceTreeNode
+import org.chronolens.model.Type
+import org.chronolens.model.Variable
+import org.chronolens.model.cast
+import org.chronolens.model.parentId
 
 /**
  * Returns the edits which must be applied to [this] source tree in order to obtain the [other]
@@ -122,11 +140,11 @@ public fun SourceTreeNode<*>.diff(other: SourceTreeNode<*>): SourceTreeEdit? {
   require(qualifiedId == other.qualifiedId) {
     "Can't compute diff between '$qualifiedId' and '${other.qualifiedId}'!"
   }
-  return when (sourceNode) {
+  return when (val node = sourceNode) {
     is SourceFile -> null
-    is Type -> sourceNode.diff(other.sourceNode as Type).invoke(qualifiedId.cast())
-    is Variable -> sourceNode.diff(other.sourceNode as Variable).invoke(qualifiedId.cast())
-    is Function -> sourceNode.diff(other.sourceNode as Function).invoke(qualifiedId.cast())
+    is Type -> node.diff(other.sourceNode as Type).invoke(qualifiedId.cast())
+    is Variable -> node.diff(other.sourceNode as Variable).invoke(qualifiedId.cast())
+    is Function -> node.diff(other.sourceNode as Function).invoke(qualifiedId.cast())
   }
 }
 
