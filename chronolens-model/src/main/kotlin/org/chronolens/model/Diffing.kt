@@ -21,16 +21,16 @@ package org.chronolens.model
  * source tree.
  */
 public fun SourceTree.diff(other: SourceTree): List<SourceTreeEdit> {
-  val thisSources = this.sources.map(SourceFile::path)
-  val otherSources = other.sources.map(SourceFile::path)
-  val allSources = thisSources.union(otherSources)
-
-  val nodesBefore = NodeHashMap()
-  val nodesAfter = NodeHashMap()
-  for (path in allSources) {
-    this[path]?.let(nodesBefore::putSourceTree)
-    other[path]?.let(nodesAfter::putSourceTree)
+  fun SourceTree.toNodeMap(): HashMap<QualifiedSourceNodeId<*>, SourceTreeNode<*>> {
+    val nodeMap = hashMapOf<QualifiedSourceNodeId<*>, SourceTreeNode<*>>()
+    for (node in this@toNodeMap.walk()) {
+      nodeMap[node.qualifiedId] = node
+    }
+    return nodeMap
   }
+
+  val nodesBefore = this.toNodeMap()
+  val nodesAfter = other.toNodeMap()
 
   fun isSourceFileOrParentExists(id: QualifiedSourceNodeId<*>): Boolean {
     val parentId = id.parentId ?: return true
