@@ -85,6 +85,7 @@ class DiffingTest {
   @Test
   fun diff_betweenSourceTrees() {
     val src = sourceTree {
+      // Edited
       +sourceFile("src/Main.java") {
         +type("Main") {
           +function("getVersion(String)") { parameters("name") }
@@ -93,11 +94,27 @@ class DiffingTest {
           +variable("innerConflict") {}
           +type("innerConflict") {}
         }
+        +type("changeSupertypes") { supertypes("Object") }
+        +type("changeModifiers") { modifiers("public", "abstract") }
+        +variable("changeModifiers") { modifiers("public", "final") }
+        +variable("changeInitializer") { initializer("1", "2") }
+        +function("changeModifiers()") { modifiers("public", "abstract") }
+        +function("changeParameters()") { parameters("first", "second") }
+        +function("changeBody()") { body("1", "2") }
       }
-      +sourceFile("src/Test.java") {}
+      // Removed
+      +sourceFile("src/Removed.java") {}
+      // No diffs
+      +sourceFile("src/Test.java") {
+        +type("Test") {
+          +variable("testVersion") {}
+          +function("runTests()") {}
+        }
+      }
     }
 
     val dst = sourceTree {
+      // Edited
       +sourceFile("src/Main.java") {
         +type("Main") {
           +function("getVersion(String)") { parameters("name") }
@@ -106,8 +123,23 @@ class DiffingTest {
           +variable("innerConflict") { modifiers("final") }
           +type("innerConflict") { modifiers("abstract") }
         }
+        +type("changeSupertypes") { supertypes("Comparable") }
+        +type("changeModifiers") { modifiers("public") }
+        +variable("changeModifiers") { modifiers("public") }
+        +variable("changeInitializer") { initializer("1") }
+        +function("changeModifiers()") { modifiers("public") }
+        +function("changeParameters()") { parameters("first") }
+        +function("changeBody()") { body("1") }
       }
-      +sourceFile("src/Test2.java") {}
+      // Added
+      +sourceFile("src/Added.java") {}
+      // No diffs
+      +sourceFile("src/Test.java") {
+        +type("Test") {
+          +variable("testVersion") {}
+          +function("runTests()") {}
+        }
+      }
     }
 
     assertDiff(src, dst)
