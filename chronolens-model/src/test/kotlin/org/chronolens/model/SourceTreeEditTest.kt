@@ -16,9 +16,9 @@
 
 package org.chronolens.model
 
-import org.chronolens.core.repository.diff
 import org.chronolens.model.SourceTreeEdit.Companion.apply
 import org.chronolens.test.model.assertEquals
+import org.chronolens.test.model.edit
 import org.chronolens.test.model.function
 import org.chronolens.test.model.sourceFile
 import org.chronolens.test.model.sourceTree
@@ -27,41 +27,10 @@ import org.chronolens.test.model.variable
 import org.junit.Test
 
 class SourceTreeEditTest {
-  private fun assertDiff(before: SourceTree, after: SourceTree) {
-    // TODO: remove this dependency.
-    val edits = before.diff(after)
+  private fun assertDiff(before: SourceTree, after: SourceTree, edit: SourceTreeEdit) {
     val actualAfter = SourceTree.of(before.sources)
-    actualAfter.apply(edits)
+    actualAfter.apply(edit)
     assertEquals(after, actualAfter)
-  }
-
-  @Test
-  fun `test diff equal source trees`() {
-    val before = sourceTree {
-      +sourceFile("src/Main.java") {
-        +type("Main") {
-          +function("getVersion(String)") { parameters("name") }
-          +variable("VERSION") {
-            modifiers("final", "static")
-            +"1"
-          }
-        }
-      }
-    }
-
-    val after = sourceTree {
-      +sourceFile("src/Main.java") {
-        +type("Main") {
-          +function("getVersion(String)") { parameters("name") }
-          +variable("VERSION") {
-            modifiers("final", "static")
-            +"1"
-          }
-        }
-      }
-    }
-
-    assertDiff(before, after)
   }
 
   @Test
@@ -72,7 +41,9 @@ class SourceTreeEditTest {
       +sourceFile("src/Main.java") { +type("Main") { modifiers("interface") } }
     }
 
-    assertDiff(before, after)
+    val edit = SourcePath("src/Main.java").type("Main").edit { modifiers { +"interface" } }
+
+    assertDiff(before, after, edit)
   }
 
   @Test
@@ -83,7 +54,9 @@ class SourceTreeEditTest {
       +sourceFile("src/Main.java") { +type("Main") { supertypes("Object") } }
     }
 
-    assertDiff(before, after)
+    val edit = SourcePath("src/Main.java").type("Main").edit { supertypes { +"Object" } }
+
+    assertDiff(before, after, edit)
   }
 
   @Test
@@ -94,7 +67,10 @@ class SourceTreeEditTest {
       +sourceFile("src/Test.java") { +function("getVersion()") { modifiers("abstract") } }
     }
 
-    assertDiff(before, after)
+    val edit =
+      SourcePath("src/Test.java").function("getVersion()").edit { modifiers { +"abstract" } }
+
+    assertDiff(before, after, edit)
   }
 
   @Test
@@ -111,7 +87,15 @@ class SourceTreeEditTest {
       }
     }
 
-    assertDiff(before, after)
+    val edit =
+      SourcePath("src/Test.java").function("getVersion(String, int)").edit {
+        parameters {
+          remove(0)
+          add(0, "className")
+        }
+      }
+
+    assertDiff(before, after, edit)
   }
 
   @Test
@@ -124,7 +108,15 @@ class SourceTreeEditTest {
       +sourceFile("src/Test.java") { +function("getVersion()") { +"RELEASE" } }
     }
 
-    assertDiff(before, after)
+    val edit =
+      SourcePath("src/Test.java").function("getVersion()").edit {
+        body {
+          remove(0)
+          add(0, "RELEASE")
+        }
+      }
+
+    assertDiff(before, after, edit)
   }
 
   @Test
@@ -135,7 +127,9 @@ class SourceTreeEditTest {
 
     val after = sourceTree { +sourceFile("src/Test.java") { +variable("version") {} } }
 
-    assertDiff(before, after)
+    val edit = SourcePath("src/Test.java").variable("version").edit { modifiers { -"public" } }
+
+    assertDiff(before, after, edit)
   }
 
   @Test
@@ -144,6 +138,14 @@ class SourceTreeEditTest {
 
     val after = sourceTree { +sourceFile("src/Test.java") { +variable("version") { +"RELEASE" } } }
 
-    assertDiff(before, after)
+    val edit =
+      SourcePath("src/Test.java").variable("version").edit {
+        initializer {
+          remove(0)
+          add(0, "RELEASE")
+        }
+      }
+
+    assertDiff(before, after, edit)
   }
 }
